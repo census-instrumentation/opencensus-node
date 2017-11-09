@@ -1,0 +1,22 @@
+# IntelliJ IDEA
+.idea
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings
+bin
+
+# OS X
+.DS_Store
+
+# Emacs
+*~
+\#*\#
+
+# Vim
+.swp
+
+# Other
+TAGS
