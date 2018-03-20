@@ -1,0 +1,43 @@
+{
+  "name": "opencensus-nodejs-xp",
+  "version": "0.0.1",
+  "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "opencensus",
+    "nodejs",
+    "tracing",
+    "profiling"
+  ],
+  "author": "Google Inc.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.00"
+  },
+  "devDependencies": {
+    "@types/continuation-local-storage": "^3.2.1",
+    "@types/debug": "0.0.30",
+    "@types/end-of-stream": "^1.4.0",
+    "@types/mocha": "^2.2.48",
+    "@types/node": "^9.4.7",
+    "@types/semver": "^5.5.0",
+    "@types/shimmer": "^1.0.1",
+    "@types/uuid": "^3.4.3",
+    "mocha": "^5.0.4",
+    "typescript": "^2.7.2"
+  },
+  "dependencies": {
+    "async_hooks": "^1.0.0",
+    "continuation-local-storage": "^3.2.1",
+    "debug": "^3.1.0",
+    "end-of-stream": "^1.4.1",
+    "require-in-the-middle": "^2.2.1",
+    "semver": "^5.5.0",
+    "shimmer": "^1.2.0",
+    "uuid": "^3.2.1"
+  }
+}
