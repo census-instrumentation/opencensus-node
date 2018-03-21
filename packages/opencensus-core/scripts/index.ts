@@ -29,7 +29,8 @@ const unitTestExcludeGlobs: string[] = TRACE_TEST_EXCLUDE_INTEGRATION ? [
   `${BUILD_DIRECTORY}/test/test-mysql-pool.js`,
   `${BUILD_DIRECTORY}/test/test-plugins-*`,
   `${BUILD_DIRECTORY}/test/test-trace-web-frameworks.js`,
-  `${BUILD_DIRECTORY}/test/test-unpatch.js`
+  `${BUILD_DIRECTORY}/test/test-unpatch.js`,
+  `${BUILD_DIRECTORY}/test/test-trace.js`
 ] : [];
 
 /**
@@ -55,7 +56,7 @@ async function run(steps: string[]) {
       await compile({ strict: !!strict, languageLevel });
       continue;
     } else {
-      switch (step) {        
+      switch (step) {                
         case 'run-unit-tests':
           await runTests({
             includeGlobs: [
