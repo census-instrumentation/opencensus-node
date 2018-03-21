@@ -4,22 +4,24 @@ import { Span } from '../src/trace/span';
 let assert = require('assert');
 
 describe('Trace', function () {
-  let trace = new Trace();
-
-  describe('new Trace()', function () {
-    it('should be a Trace instance', function () {      
+  describe('new Trace()', function () {    
+    it('should be a Trace instance', function () {
+      let trace = new Trace();
       assert.ok(trace instanceof Trace);
     });
   });
 
   describe('start()', function () {
     it('trace was started', function () {
-      trace.start()
+      let trace = new Trace();
+      trace.start();
       assert.ok(trace.started);
     });
   });
 
   describe('startSpan()', function () {
+    let trace = new Trace();
+    trace.start()
     let span = trace.startSpan("spanName", "spanType");
     it('should be a Span instance', function () {
       assert.ok(span instanceof Span);
@@ -32,14 +34,36 @@ describe('Trace', function () {
 
   describe('end()', function () {
     it('trace was ended', function () {
+      let trace = new Trace();
+      trace.start()
       trace.end();
       assert.ok(trace.ended);
     });
   });
 
-  describe('startSpan() after ended trace', function () {
-    it('should throws an exception', function () {
-      assert.throws(() => trace.startSpan("spanName", "spanType"));
+  describe('end() before trace started', function () {
+    it('trace was not ended', function () {
+      let trace = new Trace();
+      trace.end();
+      assert.ok(!trace.ended);
+    });
+  });
+
+  describe('startSpan() before trace started', function () {
+    it('should return null', function () {
+      let trace = new Trace();
+      let span = trace.startSpan("spanName", "spanType");
+      assert.ok(span == null);
+    });
+  });
+
+  describe('startSpan() after trace ended', function () {
+    it('should return null', function () {
+      let trace = new Trace();
+      trace.start()
+      trace.end();
+      let span = trace.startSpan("spanName", "spanType");
+      assert.ok(span == null);
     });
   });
 
