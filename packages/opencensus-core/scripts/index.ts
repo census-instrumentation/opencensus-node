@@ -68,40 +68,6 @@ async function run(steps: string[]) {
             timeout: 4000
           });
           break;
-        case 'run-unit-tests-with-coverage':
-          await runTests({
-            includeGlobs: [
-              `${BUILD_DIRECTORY}/test/test-*.js`,
-              `${BUILD_DIRECTORY}/test/plugins/test-*.js`
-            ],
-            excludeGlobs: unitTestExcludeGlobs,
-            rootDir: BUILD_DIRECTORY,
-            coverage: true,
-            timeout: 4000
-          });
-          break;
-        case 'run-system-tests':
-          await spawnP(
-            'npm', ['install'], { cwd: 'system-test' }
-          );
-          if (CI_PULL_REQUEST && !(await existsP('node-team-test-d0b0be11c23d.json'))) {
-            console.log('> Not running system tests in PRs');
-          } else {
-            await runTests({
-              includeGlobs: [
-                `system-test/*.js`,
-              ],
-              rootDir: '.',
-              coverage: false
-            });
-          }
-          break;
-        case 'report-coverage':
-          await reportCoverage();
-          break;
-        case 'test-non-interference':
-          await testNonInterference();
-          break;
         default:
           console.log(`> ${step}: not found`);
           break;
