@@ -12,7 +12,7 @@ describe('Trace', function () {
   });
 
   describe('start()', function () {
-    it('trace was started', function () {
+    it('the trace was started', function () {
       let trace = new Trace();
       trace.start();
       assert.ok(trace.started);
@@ -23,17 +23,17 @@ describe('Trace', function () {
     let trace = new Trace();
     trace.start()
     let span = trace.startSpan("spanName", "spanType");
-    it('should be a Span instance', function () {
+    it('should return a Span instance', function () {
       assert.ok(span instanceof Span);
     });
 
-    it('span was started', function () {
+    it('the new span was started', function () {
       assert.ok(span.started);
     });
   });
 
   describe('end()', function () {
-    it('trace was ended', function () {
+    it('the trace was ended', function () {
       let trace = new Trace();
       trace.start()
       trace.end();
@@ -42,7 +42,7 @@ describe('Trace', function () {
   });
 
   describe('end() before trace started', function () {
-    it('trace was not ended', function () {
+    it('the trace was not ended', function () {
       let trace = new Trace();
       trace.end();
       assert.ok(!trace.ended);
