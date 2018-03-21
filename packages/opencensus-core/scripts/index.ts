@@ -14,13 +14,8 @@ const {
   TRACE_SYSTEM_TEST_ENCRYPTED_CREDENTIALS_IV
 } = process.env;
 
-import { checkInstall } from './check-install';
 import { compile } from './compile';
-import { encryptCredentials, decryptCredentials } from './credentials';
-import { initTestFixtures } from './init-test-fixtures';
-import { reportCoverage } from './report-coverage';
 import { runTests } from './run-tests';
-import { testNonInterference } from './test-non-interference';
 import { BUILD_DIRECTORY, existsP, spawnP } from './utils';
 
 // The identifying string in the service account credentials file path.
