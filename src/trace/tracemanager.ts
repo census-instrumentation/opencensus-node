@@ -19,7 +19,8 @@ import {Trace} from './trace'
 import {Span} from './span' 
 import {PluginLoader} from './plugins/pluginloader'
 import {debug} from '../internal/util'
-import {Stackdriver} from '../exporters/stackdriver'
+import {Stackdriver} from '../exporters/stackdriver/stackdriver'
+import {StackdriverOptions} from '../exporters/stackdriver/options'
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -39,7 +40,7 @@ export class TraceManager {
         this._active = false;
         this.contextManager = cls.createNamespace();
         this.pluginLoader = new PluginLoader(this);
-        this.exporter = new Stackdriver('opencensus-cesar');
+        this.exporter = new Stackdriver(new StackdriverOptions('opencensus-cesar'));
     }
 
     public get currentTrace(): Trace  {

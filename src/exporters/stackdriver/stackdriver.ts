@@ -1,18 +1,21 @@
-import {debug} from '../internal/util'
+import {debug} from '../../internal/util'
+import {StackdriverOptions} from './options'
+import {Exporter} from '../exporter'
 import {google} from 'googleapis'
-import { JWT } from 'google-auth-library';
+import {JWT} from 'google-auth-library';
+import { Trace } from '../../trace/trace';
 const cloudTrace = google.cloudtrace('v1')
 var uuidv4 = require('uuid/v4');
 
-export class Stackdriver {
+export class Stackdriver implements Exporter {
     projectId: string;
         
     // TODO: Pass a stackdriver options objetc instead
-    constructor(projectId: string) {
-        this.projectId = projectId;
+    constructor(options: StackdriverOptions) {
+        this.projectId = options.projectId;
     }
     
-    emit(trace) {
+    emit(trace: Trace) {
         debug('CURRENT TRACE ', trace)
         let resource = this.generateResource("cesar-opencensus",
                                 "2018-03-21T19:36:49.074Z",
