@@ -1,8 +1,6 @@
 import {debug} from '../internal/util'
 import {google} from 'googleapis'
 import { JWT } from 'google-auth-library';
-//import { auth } from 'google-auth-library'
-//import { request } from 'http';
 const cloudTrace = google.cloudtrace('v1')
 var uuidv4 = require('uuid/v4');
 
@@ -14,25 +12,28 @@ export class Stackdriver {
         this.projectId = projectId;
     }
     
-    emit() {
+    emit(trace) {
+        debug('CURRENT TRACE ', trace)
         let resource = this.generateResource("cesar-opencensus",
                                 "2018-03-21T19:36:49.074Z",
                                 "2018-03-21T19:36:49.242Z")
-        this.authorize(function(projectId, authClient, resource) {
-            let request = {
-                projectId: projectId,
-                resource: resource,
-                auth: authClient
+        this.authorize(this.sendTrace, resource);
+    }
+
+    sendTrace(projectId, authClient, resource) {
+        let request = {
+            projectId: projectId,
+            resource: resource,
+            auth: authClient
+        }
+        cloudTrace.projects.patchTraces(request, function(err) {
+            if (err) {
+                debug(err);
+                return;
+            } else {
+                debug(JSON.stringify(request.resource));
             }
-            cloudTrace.projects.patchTraces(request, function(err) {
-                if (err) {
-                    debug(err);
-                    return;
-                } else {
-                    debug(JSON.stringify(request.resource));
-                }
-            })
-        }, resource);
+        })
     }
 
     private generateTraceId() {
