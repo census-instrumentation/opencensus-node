@@ -5,7 +5,12 @@
   "main": "build/src/index.js",
   "types": "build/src/index.d.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run script run-unit-tests",
+    "compile-all": "npm run script compile-auto",
+    "compile-strict": "npm run script compile-auto-strict",
+    "compile": "npm run script compile-auto compile-auto-strict",
+    "clean": "rimraf build/*",
+    "script": "ts-node -P ./scripts ./scripts"
   },
   "keywords": [
     "opencensus",
@@ -27,7 +32,10 @@
     "@types/semver": "^5.5.0",
     "@types/shimmer": "^1.0.1",
     "@types/uuid": "^3.4.3",
+    "gts": "^0.5.1",
+    "ncp": "^2.0.0",
     "mocha": "^5.0.4",
+    "ts-node": "^4.0.0",
     "typescript": "^2.7.2"
   },
   "dependencies": {

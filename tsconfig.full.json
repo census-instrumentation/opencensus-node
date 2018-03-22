@@ -1,0 +1,19 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "build",
+    "target": "es2015",
+    "allowUnreachableCode": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "noEmitOnError": false
+  },
+  "include": [
+    "src/*.ts",
+    "src/plugins/*.ts",
+    "test/*.ts",
+    "test/plugins/*.ts"
+  ]
+}
