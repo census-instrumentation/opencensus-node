@@ -1,17 +1,19 @@
 import {debug} from '../internal/util'
 import {google} from 'googleapis'
 import { JWT } from 'google-auth-library';
+import { Exporter } from './exporter';
+import { StackdriveOptions } from './options';
 //import { auth } from 'google-auth-library'
 //import { request } from 'http';
 const cloudTrace = google.cloudtrace('v1')
 var uuidv4 = require('uuid/v4');
 
-export class Stackdriver {
+export class Stackdriver implements Exporter {
     projectId: string;
         
     // TODO: Pass a stackdriver options objetc instead
-    constructor(projectId: string) {
-        this.projectId = projectId;
+    constructor(options: StackdriveOptions) {
+        this.projectId = options.projectId;
     }
     
     emit() {
