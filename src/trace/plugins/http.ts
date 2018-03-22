@@ -128,8 +128,11 @@ function isRequestBlacklisted (agent, req) {
           var req = orig.apply(this, arguments)
           var name = req.method + ' ' + req._headers.host + url.parse(req.path).pathname
 
-          var span = self.traceManager.startSpan(name, spanType)
-          //var id = span.id && span.traceId
+          //TODO only for tests. Remove and implement a blacklist
+          if (name.indexOf('googleapi') < 0) {
+            var span = self.traceManager.startSpan(name, spanType)
+            var id = span.id && span.traceId
+          }
 
           if (!span) return req
           /*if (req._headers.host === traceManager._conf.serverHost) {

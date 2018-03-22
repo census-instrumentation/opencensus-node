@@ -16,7 +16,45 @@ export class Stackdriver implements Exporter {
     }
     
     emit(trace: Trace) {
-        debug('CURRENT TRACE ', trace)
+        //debug('ONE SPAN CLOCK ', trace['spans'][0]['clock'])
+        
+        /*
+        let spanList = []
+        trace['spans'].forEach(span => {
+
+            let startTime = span['clock']['_startTime'];
+            let endTime = new Date(startTime.getTime() + span['clock']['diff'][1]);
+
+            let temp = { 
+                "name": span['_name'],
+                "kind": "RPC_CLIENT",
+                "spanId": span['_id'],
+                "startTime": startTime,
+                "endTime": endTime
+            };
+            debug(temp)
+        });*/
+
+        /*let resource = {
+            "traces": [
+              {
+                "projectId": this.projectId,
+                "traceId": trace['_id'],
+                "spans": [
+                    {
+                      "spanId": this.generateSpanId(),
+                      "kind": "RPC_CLIENT",
+                      "name": this.generateSpanName(),
+                      //"startTime": "".toISOString(),
+                      //"endTime": "".endTime.toISOString()
+                    }
+                  ]
+              }
+            ]
+            
+        }*/
+
+        //TODO Send creted spans (random span is created for tests only)
         let resource = this.generateResource("cesar-opencensus",
                                 "2018-03-21T19:36:49.074Z",
                                 "2018-03-21T19:36:49.242Z")
