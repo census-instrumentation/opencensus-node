@@ -65,10 +65,10 @@ export class HttpPlugin extends BasePlugin<TraceManager> implements Plugin<Trace
           trace.type = 'request'
           //trans.req = req
           //trans.res = res
-          debug('created trace %o', {id: trace.id, name: trace.name, startTime: trace.startTime})
+          //debug('created trace %o', {id: trace.id, name: trace.name, startTime: trace.startTime})
 
           eos(res, function (err) {
-            if (!err) return trace.end()
+            if (!err) return self.traceManager.endTrace()
 
             /*if (traceManager._conf.errorOnAbortedRequests && !trans.ended) {
               var duration = Date.now() - trans._timer.start
@@ -83,7 +83,7 @@ export class HttpPlugin extends BasePlugin<TraceManager> implements Plugin<Trace
             // Handle case where res.end is called after an error occurred on the
             // stream (e.g. if the underlying socket was prematurely closed)
             res.on('prefinish', function () {
-              trace.end()
+              self.traceManager.endTrace()
             })
           })
         }
@@ -123,13 +123,16 @@ function isRequestBlacklisted (agent, req) {
       return function (orig) {
         return function () {
       
-          debug('intercepted call to %s.request %o', self.moduleName, {id: id})
+          //debug('intercepted call to %s.request %o', self.moduleName, {id: id})
 
           var req = orig.apply(this, arguments)
           var name = req.method + ' ' + req._headers.host + url.parse(req.path).pathname
 
-          var span = self.traceManager.startSpan(name, spanType)
-          var id = span.id && span.traceId
+          //TODO only for tests. Remove and implement a blacklist
+          if (name.indexOf('googleapi') < 0) {
+            var span = self.traceManager.startSpan(name, spanType)
+            var id = span.id && span.traceId
+          }
 
           if (!span) return req
           /*if (req._headers.host === traceManager._conf.serverHost) {
@@ -144,7 +147,7 @@ function isRequestBlacklisted (agent, req) {
           return req
 
           function onresponse (res) {
-            debug('intercepted http.ClientRequest response event %o', {id: id})
+            //debug('intercepted http.ClientRequest response event %o', {id: id})
 
             // Inspired by:
             // https://github.com/nodejs/node/blob/9623ce572a02632b7596452e079bba066db3a429/lib/events.js#L258-L274
@@ -165,7 +168,7 @@ function isRequestBlacklisted (agent, req) {
             }
 
             function onEnd () {
-              debug('intercepted http.IncomingMessage end event %o', {id: id})
+              //debug('intercepted http.IncomingMessage end event %o', {id: id})
               span.end()
             }
           }
@@ -185,8 +188,8 @@ function isRequestBlacklisted (agent, req) {
           var trace = self.traceManager.currentTrace
   
           if (trace) {
-            // It shouldn't be possible for the statusCode to be falsy, but just in
-            // case we're in a bad state we should avoid throwing
+          // It shouldn't be possible for the statusCode to be falsy, but just in
+          // case we're in a bad state we should avoid throwing
           //  trace.result = 'HTTP ' + (this.statusCode || '').toString()[0] + 'xx'
       
             // End transacton early in case of SSE
@@ -194,7 +197,7 @@ function isRequestBlacklisted (agent, req) {
               Object.keys(headers).some(function (key) {
                 if (key.toLowerCase() !== 'content-type') return false
                 if (String(headers[key]).toLowerCase().indexOf('text/event-stream') !== 0) return false
-                debug('detected SSE response - ending trace %o', { id: trace.id })
+                //debug('detected SSE response - ending trace %o', { id: trace.id })
                 self.traceManager.endTrace()
                 return true
               })

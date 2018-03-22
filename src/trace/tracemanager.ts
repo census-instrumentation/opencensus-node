@@ -19,6 +19,8 @@ import {Trace} from './trace'
 import {Span} from './span' 
 import {PluginLoader} from './plugins/pluginloader'
 import {debug} from '../internal/util'
+import {Stackdriver} from '../exporters/stackdriver/stackdriver'
+import {StackdriverOptions} from '../exporters/stackdriver/options'
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -29,6 +31,7 @@ export class TraceManager {
     private _active: boolean;
     private contextManager: cls.Namespace;
     private pluginLoader: PluginLoader;
+    private exporter
 
     //TODO: temp solution 
     private endedTraces: Trace[] = [];
@@ -37,6 +40,7 @@ export class TraceManager {
         this._active = false;
         this.contextManager = cls.createNamespace();
         this.pluginLoader = new PluginLoader(this);
+        this.exporter = new Stackdriver(new StackdriverOptions('opencensus-cesar'));
     }
 
     public get currentTrace(): Trace  {
@@ -64,10 +68,13 @@ export class TraceManager {
         return newTrace;
     }
 
-    public endTrace():void {
+    public endTrace(): void {
         if (!this.currentTrace) return debug('cannot end trace - no active trace found')
         this.currentTrace.end();
+        this.exporter.emit(this.currentTrace);
         this.addEndedTrace(this.currentTrace);
+        //this.clearCurrentTrace();
+        this.startTrace();
     }
     
     public clearCurrentTrace() {
@@ -83,6 +90,12 @@ export class TraceManager {
         }
         return newSpan;
     }
+
+    /*public endSpan(span: Span) {
+        debug('END SPAN', span);
+        span.end();
+        this.exporter.emit(this.currentTrace);
+    }*/
 
     
     private addEndedTrace(trace: Trace) {
