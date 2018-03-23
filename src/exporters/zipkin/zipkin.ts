@@ -17,21 +17,82 @@
 
 import {Exporter} from "../exporter"
 import {ZipkinOptions} from "./options"
+import { Trace } from "../../trace/model/trace";
+import * as http from "http"
 
 export class Zipkin implements Exporter {
+    url: string;
+    serviceName: string;
+
     constructor(options: ZipkinOptions) {
-        throw new Error("Method not implemented.");
+        this.url = options.url;
+        this.serviceName = options.serviceName;
     }
-    emit() {
-        throw new Error("Method not implemented.");
-    }
-    generateTraceId(): string {
-        throw new Error("Method not implemented.");
-    }
-    generateSpanId(): string {
-        throw new Error("Method not implemented.");
-    }
-    generateSpanName(): string {
-        throw new Error("Method not implemented.");
+    emit(trace: Trace) {
+        let spans = [];
+
+        let spanRoot = {
+            "traceId": trace.traceId,
+            "name": trace.name,
+            "id": trace.id,
+            "kind": "CLIENT",
+            "timestamp": trace.startTime,
+            "duration": trace.duration,
+            "debug": true,
+            "shared": true,
+            "localEndpoint": {
+                "serviceName": this.serviceName
+            }
+        }
+        spans.push(spanRoot);
+
+        for (let span of trace.spans) {
+            let spanObj = {
+                "traceId": trace.traceId,
+                "parentId": trace.id,
+                "name": span.name,
+                "id": span.id,
+                "kind": "CLIENT",
+                "timestamp": span.startTime,
+                "duration": span.duration,
+                "debug": true,
+                "shared": true,
+                "localEndpoint": {
+                    "serviceName": this.serviceName
+                }
+            }
+            spans.push(spanObj);
+        }
+
+        const options = {
+            hostname: 'localhost',
+            port: 9411,
+            path: '/api/v2/spans',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        };
+
+
+        const req = http.request(options, (res) => {
+            console.log(`STATUS: ${res.statusCode}`);
+            console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+            res.setEncoding('utf8');
+            res.on('data', (chunk) => {
+                console.log(`BODY: ${chunk}`);
+            });
+            res.on('end', () => {
+                console.log('No more data in response.');
+            });
+        });
+
+        req.on('error', (e) => {
+            console.error(`problem with request: ${e.message}`);
+        });
+
+        // write data to request body
+        req.write(spans);
+        req.end();
     }
 }

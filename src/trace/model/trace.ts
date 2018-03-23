@@ -14,51 +14,47 @@
  * limitations under the License.
  */
 
-import * as uuid from 'uuid'
-
-import {Span} from './span'
-import {Clock} from '../../internal/clock'
-import {debug} from '../../internal/util'
-import {TraceBaseModel} from '../types/tracetypes'
+import { Span } from './span'
+import { Clock } from '../../internal/clock'
+import * as uuid from 'uuid';
+import { debug } from '../../internal/util'
+import { TraceBaseModel } from '../types/tracetypes'
 
 export class Trace extends TraceBaseModel {
 
-    private spans: Span[] = [];
+    private _spans: Span[];
     private _traceId: string;
 
     constructor() {
         super()
-       this._traceId = (uuid.v4().split('-').join(''));
+        this.setId((uuid.v4().split('-').join('')));
+        this._spans = [];
     }
 
-    public get traceSpans() : Span[] {
-        return this.spans;
+    public get spans() {
+        return this._spans;
     }
-    
-    public get traceId() : string {
+
+    public get traceId() {
         return this._traceId;
     }
-         
+
     public start() {
-        super.start()     
-        debug('starting trace  %o', {traceId: this.traceId})
+        super.start()
+        debug('starting trace  %o', { id: this.id })
     }
-    
+
     public end() {
         super.end()
 
         //TODO - Define logic for list of spans
-        this.spans.forEach(function (span) {
+        this._spans.forEach(function (span) {
             if (span.ended || !span.started) return
             span.truncate()
         })
-     
-        debug('ending trace  %o', 
-                {id: this.id,
-                name: this.name,
-                startTime: this.startTime,
-                endTime: this.endTime,
-                duration: this.duration})
+
+        debug('ending trace  %o',
+            { id: this.id, name: this.name, startTime: this.startTime, endTime: this.endTime, duration: this.duration })
     }
 
     public startSpan(name: string, type: string) {
@@ -66,7 +62,7 @@ export class Trace extends TraceBaseModel {
         newSpan.name = name
         newSpan.type = type
         newSpan.start();
-        this.spans.push(newSpan);
+        this._spans.push(newSpan);
         return newSpan;
     }
 
