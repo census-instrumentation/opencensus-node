@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Clock} from '../../internal/clock';
+import {Clock} from '../../internal/clock'
 import {debug, randomSpanId} from '../../internal/util'
 
   
@@ -153,15 +153,26 @@ export abstract class TraceBaseModel {
     //TODO: review
     public truncate() {
         if (!this.started) {
-            debug('calling truncate non-started %s - ignoring %o', this._className, {id: this.id, name: this.name, type: this.type})
+            debug('calling truncate non-started %s - ignoring %o',
+                    this._className,
+                        {id: this.id,
+                        name: this.name,
+                        type: this.type})
             return
           } else if (this.ended) {
-            debug('calling truncate already ended %s - ignoring %o',this._className, {id: this.id, name: this.name, type: this.type})
+            debug('calling truncate already ended %s - ignoring %o',
+                    this._className,
+                        {id: this.id,
+                        name: this.name,
+                        type: this.type})
             return
         }
         this._truncated = true
         this.end()
-        debug('truncating %s  %o', this._className, {id: this.id, name: this.name })
+        debug('truncating %s  %o',
+                this._className,
+                    {id: this.id,
+                    name: this.name})
       }
       
 }

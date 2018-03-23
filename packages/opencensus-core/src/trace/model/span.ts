@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {Clock} from '../../internal/clock';
-import {Trace} from './trace';
+import {Clock} from '../../internal/clock'
+import {Trace} from './trace'
 import {debug, randomSpanId} from '../../internal/util'
 import {TraceBaseModel} from '../types/tracetypes'
 
@@ -53,18 +53,21 @@ export class Span extends TraceBaseModel {
     
     public start() {
         super.start();
-         debug('starting span  %o', {id: this.id, traceId: this.traceId, name: this.name })
+         debug('starting span  %o', 
+                {id: this.id,
+                traceId: this.traceId,
+                name: this.name})
     }
 
     public end(): void {
         super.end();
         debug('ending span  %o', 
-            {spanId: this.id, 
-             traceId: this.trace.id, 
-             name: this.name ,
-             startTime: this.startTime, 
-             endTime: this.endTime, 
-             duration: this.duration}
+                {spanId: this.id, 
+                traceId: this.trace.id, 
+                name: this.name ,
+                startTime: this.startTime, 
+                endTime: this.endTime, 
+                duration: this.duration}
         )
        
     }

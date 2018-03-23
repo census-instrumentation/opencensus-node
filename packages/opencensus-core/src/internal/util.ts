@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import * as crypto from 'crypto';
-import * as Debug from "debug";
+import * as crypto from 'crypto'
+import * as Debug from "debug"
 
 export  const debug = Debug("opencensus");
 
