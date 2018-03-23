@@ -28,6 +28,10 @@ export class Trace extends TraceBaseModel {
         super()
        this.setId((uuid.v4().split('-').join('')));
     }
+
+    public get traceSpans() : Span[] {
+        return this.spans;
+    }
      
     public start() {
         super.start()     
