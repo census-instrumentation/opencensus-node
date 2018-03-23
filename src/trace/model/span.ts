@@ -23,29 +23,24 @@ import {TraceBaseModel} from '../types/tracetypes'
 export class Span extends TraceBaseModel {
 
     private trace: TraceBaseModel;   
-    private _parentSpanId: string;
+   // private _parentSpanId: string;
     
    constructor(trace: TraceBaseModel) {
       super()
       this.trace = trace;
-      this.setId(randomSpanId());
     }
 
     public get traceId() : string {
-        return this.trace.id;
-    }
-
-    public set parentSpanId(parentSpanId : string) {
-        this._parentSpanId = parentSpanId;
+        return this.trace.traceId;
     }
 
     public get parentSpanId() : string {
-        return this._parentSpanId;
+        return this.trace.id;
     }
         
     public get traceContext() {
         return {
-          traceId: this.trace.id.toString(),
+          traceId: this.traceId.toString(),
           spanId: this.id.toString(),
           options: 1  // always traced
         };
@@ -60,7 +55,7 @@ export class Span extends TraceBaseModel {
         super.end();
         debug('ending span  %o', 
             {spanId: this.id, 
-             traceId: this.trace.id, 
+             traceId: this.traceId, 
              name: this.name ,
              startTime: this.startTime, 
              endTime: this.endTime, 

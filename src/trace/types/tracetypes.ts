@@ -48,6 +48,7 @@ export abstract class TraceBaseModel {
       this.clock = null;
       this._truncated = false;
       this._ended = false;
+      this.setId(randomSpanId());
     }
 
     public get id() : string {
@@ -57,6 +58,8 @@ export abstract class TraceBaseModel {
     protected setId(id : string) {
         this._id = id;
     }
+
+    abstract get traceId():string;
     
     public get name() {
         return this._name;
@@ -109,6 +112,14 @@ export abstract class TraceBaseModel {
     public get duration() : number {
         return this.clock.duration;
     }   
+
+    public get traceContext() {
+        return {
+          traceId: this.traceId.toString(),
+          spanId: this.id.toString(),
+          options: 1  // always traced
+        };
+    }    
 
     //TODO: maybe key and values must be truncate
     public addAtribute(key: string, value: string) {

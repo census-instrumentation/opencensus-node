@@ -65,7 +65,7 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
           trace.type = 'request'
           //trans.req = req
           //trans.res = res
-          //debug('created trace %o', {id: trace.id, name: trace.name, startTime: trace.startTime})
+          //debug('created trace %o', {id: trace.traceId, name: trace.name, startTime: trace.startTime})
 
           eos(res, function (err) {
             if (!err) return self.tracer.endTrace()
@@ -197,7 +197,7 @@ function isRequestBlacklisted (agent, req) {
               Object.keys(headers).some(function (key) {
                 if (key.toLowerCase() !== 'content-type') return false
                 if (String(headers[key]).toLowerCase().indexOf('text/event-stream') !== 0) return false
-                //debug('detected SSE response - ending trace %o', { id: trace.id })
+                //debug('detected SSE response - ending trace %o', { id: trace.traceId })
                 self.tracer.endTrace()
                 return true
               })

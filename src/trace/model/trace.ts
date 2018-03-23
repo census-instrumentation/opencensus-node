@@ -23,19 +23,24 @@ import {TraceBaseModel} from '../types/tracetypes'
 export class Trace extends TraceBaseModel {
 
     private spans: Span[] = [];
+    private _traceId: string;
 
     constructor() {
         super()
-       this.setId((uuid.v4().split('-').join('')));
+       this._traceId = (uuid.v4().split('-').join(''));
     }
 
     public get traceSpans() : Span[] {
         return this.spans;
     }
-     
+    
+    public get traceId() : string {
+        return this._traceId;
+    }
+         
     public start() {
         super.start()     
-        debug('starting trace  %o', {id: this.id})
+        debug('starting trace  %o', {traceId: this.traceId})
     }
     
     public end() {
@@ -48,7 +53,7 @@ export class Trace extends TraceBaseModel {
         })
      
         debug('ending trace  %o', 
-            {id: this.id, name: this.name, startTime: this.startTime, endTime: this.endTime, duration: this.duration})
+            {traceId: this.traceId, name: this.name, startTime: this.startTime, endTime: this.endTime, duration: this.duration})
     }
 
     public startSpan(name: string, type: string) {

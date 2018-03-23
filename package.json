@@ -46,6 +46,7 @@
     "continuation-local-storage": "^3.2.1",
     "debug": "^3.1.0",
     "end-of-stream": "^1.4.1",
+    "npm": "^5.7.1",
     "require-in-the-middle": "^2.2.1",
     "semver": "^5.5.0",
     "shimmer": "^1.2.0",
