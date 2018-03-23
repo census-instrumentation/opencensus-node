@@ -35,10 +35,9 @@ export class Tracer {
     //TODO: temp solution 
     private endedTraces: Trace[] = [];
 
-    constructor(exporter:Exporter) {
+    constructor() {
         this._active = false;
         this.contextManager = cls.createNamespace();
-        this.exporter = exporter;
     }
 
     public get currentTrace(): Trace  {
@@ -118,6 +117,10 @@ export class Tracer {
         // This is safe because isActive checks the value of this.namespace.
         const namespace = this.contextManager as cls.Namespace;
         namespace.bindEmitter(emitter);
+    }
+
+    public registerExporter(exporter:Exporter) {
+        this.exporter = exporter;
     }
 
 }  
