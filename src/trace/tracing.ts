@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import * as cls from '../internal/cls';
+import * as cls from '../internal/cls'
 import {Trace} from './model/trace'
 import {Span} from './model/span' 
 import {PluginLoader} from './plugins/pluginloader'
 import {debug} from '../internal/util'
 import {Stackdriver} from '../exporters/stackdriver/stackdriver'
 import {StackdriverOptions} from '../exporters/stackdriver/options'
-import { Tracer } from './model/tracer';
-import { Exporter } from '../exporters/exporter';
+import { Tracer } from './model/tracer'
+import { Exporter } from '../exporters/exporter'
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -36,9 +36,9 @@ export class Tracing {
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express']
     
     constructor() {
-        //TODO: export should be set by config or a register method
-        this._exporter = new Stackdriver(new StackdriverOptions('opencensus-cesar'));
-        this._tracer = new Tracer(this._exporter);
+        this._exporter = new Stackdriver(new StackdriverOptions('cesar-opencensus'));
+        this._tracer = new Tracer();
+        this._tracer.registerExporter(this._exporter)
         this.pluginLoader = new PluginLoader(this._tracer);
     }
 

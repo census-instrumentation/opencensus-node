@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Clock} from '../../internal/clock';
+import {Clock} from '../../internal/clock'
 import {debug, randomSpanId} from '../../internal/util'
 
   
@@ -48,6 +48,7 @@ export abstract class TraceBaseModel {
       this.clock = null;
       this._truncated = false;
       this._ended = false;
+      this.setId(randomSpanId());
     }
 
     public get id() : string {
@@ -57,6 +58,8 @@ export abstract class TraceBaseModel {
     protected setId(id : string) {
         this._id = id;
     }
+
+    abstract get traceId():string;
     
     public get name() {
         return this._name;
@@ -110,6 +113,14 @@ export abstract class TraceBaseModel {
         return this.clock.duration;
     }   
 
+    public get traceContext() {
+        return {
+          traceId: this.traceId.toString(),
+          spanId: this.id.toString(),
+          options: 1  // always traced
+        };
+    }    
+
     //TODO: maybe key and values must be truncate
     public addAtribute(key: string, value: string) {
         this.attributes[key] = value;
@@ -153,15 +164,26 @@ export abstract class TraceBaseModel {
     //TODO: review
     public truncate() {
         if (!this.started) {
-            debug('calling truncate non-started %s - ignoring %o', this._className, {id: this.id, name: this.name, type: this.type})
+            debug('calling truncate non-started %s - ignoring %o',
+                    this._className,
+                        {id: this.id,
+                        name: this.name,
+                        type: this.type})
             return
           } else if (this.ended) {
-            debug('calling truncate already ended %s - ignoring %o',this._className, {id: this.id, name: this.name, type: this.type})
+            debug('calling truncate already ended %s - ignoring %o',
+                    this._className,
+                        {id: this.id,
+                        name: this.name,
+                        type: this.type})
             return
         }
         this._truncated = true
         this.end()
-        debug('truncating %s  %o', this._className, {id: this.id, name: this.name })
+        debug('truncating %s  %o',
+                this._className,
+                    {id: this.id,
+                    name: this.name})
       }
       
 }

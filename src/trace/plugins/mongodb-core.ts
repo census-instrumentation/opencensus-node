@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import * as semver from 'semver';
+import * as semver from 'semver'
 import * as url from 'url'
-import * as eos from 'end-of-stream';
+import * as eos from 'end-of-stream'
 import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 import {Plugin, BasePlugin} from './plugingtypes'

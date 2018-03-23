@@ -16,6 +16,7 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
+
 import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 

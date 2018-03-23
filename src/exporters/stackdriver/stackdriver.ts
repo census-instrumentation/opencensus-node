@@ -1,67 +1,73 @@
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as uuidv4 from 'uuid/v4';
+
 import {debug} from '../../internal/util'
 import {StackdriverOptions} from './options'
 import {Exporter} from '../exporter'
 import {google} from 'googleapis'
-import {JWT} from 'google-auth-library';
-import { Trace } from '../../trace/model/trace';
-const cloudTrace = google.cloudtrace('v1')
-var uuidv4 = require('uuid/v4');
+import {JWT} from 'google-auth-library'
+import {Trace} from '../../trace/model/trace'
+
+const cloudTrace = google.cloudtrace('v1');
 
 export class Stackdriver implements Exporter {
     projectId: string;
         
-    // TODO: Pass a stackdriver options objetc instead
     constructor(options: StackdriverOptions) {
         this.projectId = options.projectId;
     }
     
-    emit(trace: Trace) {
-        //debug('ONE SPAN CLOCK ', trace['spans'][0]['clock'])
-        
-        /*
+    public emit(trace: Trace) {
+        // Builds span data
         let spanList = []
-        trace['spans'].forEach(span => {
+        trace.traceSpans.forEach(span => {
+            spanList.push({ 
+                "name": span.name,
+                "kind": "SPAN_KIND_UNSPECIFIED",
+                "spanId": span.id,
+                "startTime": span.startTime,
+                "endTime": span.endTime
+            });
+        });
 
-            let startTime = span['clock']['_startTime'];
-            let endTime = new Date(startTime.getTime() + span['clock']['diff'][1]);
+        // Builds root span data
+        spanList.push({ 
+            "name": trace.name,
+            "kind": "SPAN_KIND_UNSPECIFIED",
+            "spanId": trace.id,
+            "startTime": trace.startTime,
+            "endTime": trace.endTime
+        });
 
-            let temp = { 
-                "name": span['_name'],
-                "kind": "RPC_CLIENT",
-                "spanId": span['_id'],
-                "startTime": startTime,
-                "endTime": endTime
-            };
-            debug(temp)
-        });*/
-
-        /*let resource = {
+        // Builds trace data
+        let resource = {
             "traces": [
-              {
-                "projectId": this.projectId,
-                "traceId": trace['_id'],
-                "spans": [
-                    {
-                      "spanId": this.generateSpanId(),
-                      "kind": "RPC_CLIENT",
-                      "name": this.generateSpanName(),
-                      //"startTime": "".toISOString(),
-                      //"endTime": "".endTime.toISOString()
-                    }
-                  ]
-              }
+                {
+                  "projectId": this.projectId,
+                  "traceId": trace.traceId,
+                  "spans": spanList
+                }
             ]
-            
-        }*/
-
-        //TODO Send creted spans (random span is created for tests only)
-        let resource = this.generateResource("cesar-opencensus",
-                                "2018-03-21T19:36:49.074Z",
-                                "2018-03-21T19:36:49.242Z")
+        }
         this.authorize(this.sendTrace, resource);
     }
 
-    sendTrace(projectId, authClient, resource) {
+    private sendTrace(projectId, authClient, resource) {
         let request = {
             projectId: projectId,
             resource: resource,
@@ -72,80 +78,9 @@ export class Stackdriver implements Exporter {
                 debug(err);
                 return;
             } else {
-                debug(JSON.stringify(request.resource));
+                debug('\nSENT TRACE:\n', request.resource);
             }
         })
-    }
-
-    private generateTraceId() {
-        let traceId = uuidv4().replace(/-/g, '');
-        return traceId;
-    }
-    
-    private generateSpanId() {
-        const spanIdMax = Math.pow(10, 17);
-        const spanIdMin = Math.pow(10, 16);
-        
-        const spanId = Math.random() * (spanIdMax - spanIdMin) + spanIdMin;
-        return spanId.toString();
-    }
-    
-    private generateSpanName() {
-        const spanIdMax = Math.pow(10, 3);
-        const spanIdMin = Math.pow(10, 2);
-      
-        const spanIdNum = Math.random() * (spanIdMax - spanIdMin) + spanIdMin;
-        return 'Test' + spanIdNum.toString().substring(0, 2);
-    }
-
-    private generateResource(projectId, startTime, endTime) {
-        let resource = {
-            "traces": [
-              {
-                "projectId": "cesar-opencensus",
-                "traceId": this.generateTraceId(),
-                "spans": [
-                  {
-                    "spanId": this.generateSpanId(),
-                    "kind": "RPC_CLIENT",
-                    "name": this.generateSpanName(),
-                    //"startTime": startTime.toISOString(),
-                    //"endTime": endTime.toISOString()
-                    "startTime": startTime,
-                    "endTime": endTime
-                  }
-                ]
-              }
-            ]
-        }
-        return resource;
-    }
-
-    private generateRequest(projectId, authClient, startTime, endTime) {
-        let request = {
-          projectId: projectId,
-          resource: {
-            "traces": [
-              {
-                "projectId": "cesar-opencensus",
-                "traceId": this.generateTraceId(),
-                "spans": [
-                  {
-                    "spanId": this.generateSpanId(),
-                    "kind": "RPC_CLIENT",
-                    "name": this.generateSpanName(),
-                    //"startTime": startTime.toISOString(),
-                    //"endTime": endTime.toISOString()
-                    "startTime": startTime,
-                    "endTime": endTime
-                  }
-                ]
-              }
-            ]
-          },
-          auth: authClient
-        }
-        return request;
     }
 
     private authorize(callback, resource) {

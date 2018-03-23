@@ -28,13 +28,17 @@ export class Clock {
     }
 
     public end(): void {
-        if (this._ended) return
+        if (this._ended){
+            return
+        }
         this.diff = process.hrtime(this._hrtime)
         this._ended = true
       }
       
     public get duration(): number {
-        if (!this._ended) return null
+        if (!this._ended){
+             return null
+        }
         var ns = this.diff[0] * 1e9 + this.diff[1]
         return ns / 1e6
       }
