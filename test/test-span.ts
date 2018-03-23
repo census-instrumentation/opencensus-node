@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Span } from '../src/trace/span';
-import { Trace } from '../src/trace/trace';
+import { Span } from '../src/trace/model/span';
+import { Trace } from '../src/trace/model/trace';
 
 var assert = require('assert');
 

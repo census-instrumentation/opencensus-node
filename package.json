@@ -4,6 +4,7 @@
   "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.js",
+  "repository": "census-instrumentation/opencensus-node",
   "scripts": {
     "test": "npm run script run-unit-tests",
     "compile-all": "npm run script compile-auto",

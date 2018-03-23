@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-export interface Plugin <TM> {
-    applyPatch(module: any, manager: TM, version: string): void; 
+export interface Plugin <T> {
+    applyPatch(module: any, tracer: T, version: string): void; 
 }
 
-export abstract class BasePlugin <TM>  {
+export abstract class BasePlugin <T>  {
 
     public module: any;
     public moduleName: string;
-    public traceManager: TM;
+    public tracer: T;
     public version: string;
 
     constructor (moduleName: string) {
         this.moduleName = moduleName;
     }
 
-    setPluginContext(http: any, traceManager: TM, version: string) {
+    setPluginContext(http: any, tracer: T, version: string) {
         this.module = http;
-        this.traceManager = traceManager;
+        this.tracer = tracer;
         this.version = version;     
     }
 

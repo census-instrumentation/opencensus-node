@@ -14,40 +14,47 @@
  * limitations under the License.
  */
 
-import { TraceManager } from '../src/trace/tracemanager';
-import { Trace } from '../src/trace/trace';
-import { Span } from '../src/trace/span';
+import { Tracer } from '../src/trace/model/tracer';
+import { Trace } from '../src/trace/model/trace';
+import { Span } from '../src/trace/model/span';
+import { Exporter } from '../src/exporters/exporter';
 
 let assert = require('assert');
 
-describe('TraceManager', function () {
-  describe('new TraceManager()', function () {
-    it('should be a TraceManager instance', function () {
-      let traceManager = new TraceManager();
-      assert.ok(traceManager instanceof TraceManager);
+class NoopExporter implements Exporter {
+  emit(trace: Trace) {}
+}
+
+let noopExporter = new NoopExporter();
+
+describe('Tracer', function () {
+  describe('new Tracer()', function () {
+    it('should be a Tracer instance', function () {
+      let tracer = new Tracer(noopExporter);
+      assert.ok(tracer instanceof Tracer);
     });
   });
 
   describe('start()', function () {
-    let traceManager = new TraceManager();
-    let traceManagerStarted = traceManager.start();
+    let tracer = new Tracer(noopExporter);
+    let tracerStarted = tracer.start();
 
-    it('should return a TraceManager instance', function () {
-      assert.ok(traceManagerStarted instanceof TraceManager);
+    it('should return a tracer instance', function () {
+      assert.ok(tracerStarted instanceof Tracer);
     });
 
     it('should set true on active property', function () {
-      assert.ok(traceManagerStarted.active);
+      assert.ok(tracerStarted.active);
     });
   });
 
   describe('startTrace()', function () {
-    let traceManager;
+    let tracer;
     let trace;
 
     before(() => {
-      traceManager = new TraceManager();
-      trace = traceManager.startTrace();
+      tracer = new Tracer(noopExporter);
+      trace = tracer.startTrace();
     })
 
     it('should return a Trace instance', function () {
@@ -55,7 +62,7 @@ describe('TraceManager', function () {
     });
 
     it('the new trace was set as current trace', function () {
-      assert.equal(traceManager.currentTrace.id, trace.id);
+      assert.equal(tracer.currentTrace.id, trace.id);
     });
 
     it('the new trace was started', function () {
@@ -65,26 +72,26 @@ describe('TraceManager', function () {
 
   describe('endTrace()', function () {
     it('the current trace was ended', function () {
-      let traceManager = new TraceManager();
-      let trace = traceManager.startTrace();
-      traceManager.endTrace();
+      let tracer = new Tracer(noopExporter);
+      let trace = tracer.startTrace();
+      tracer.endTrace();
       assert.ok(trace.ended);
     });
   });
 
   describe('clearCurrentTrace()', function () {
     it('the current trace is null', function () {
-      let traceManager = new TraceManager();
-      let trace = traceManager.startTrace();
-      traceManager.clearCurrentTrace();
-      assert.ok(traceManager.currentTrace == null);
+      let tracer = new Tracer(noopExporter);
+      let trace = tracer.startTrace();
+      tracer.clearCurrentTrace();
+      assert.ok(tracer.currentTrace == null);
     });
   });
 
   describe('startSpan()', function () {
-    let traceManager = new TraceManager();
-    let trace = traceManager.startTrace();
-    let span = traceManager.startSpan("spanName", "spanType");
+    let tracer = new Tracer(noopExporter);
+    let trace = tracer.startTrace();
+    let span = tracer.startSpan("spanName", "spanType");
     it('should return a Span instance', function () {
       assert.ok(span instanceof Span);
     });

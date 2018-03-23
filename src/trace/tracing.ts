@@ -36,9 +36,10 @@ export class Tracing {
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express']
     
     constructor() {
-        this.pluginLoader = new PluginLoader(this._tracer);
+        //TODO: export should be set by config or a register method
         this._exporter = new Stackdriver(new StackdriverOptions('opencensus-cesar'));
         this._tracer = new Tracer(this._exporter);
+        this.pluginLoader = new PluginLoader(this._tracer);
     }
 
     public start(config?:Object): Tracing {

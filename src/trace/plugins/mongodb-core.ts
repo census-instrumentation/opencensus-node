@@ -59,7 +59,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchCommand (self: MongoDBPlugin) {
     return function (orig) { 
         return function (ns, cmd) {
-          var trace = self.traceManager.currentTrace
+          var trace = self.tracer.currentTrace
           var id = trace && trace.id
           var span
 
@@ -77,7 +77,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
               else type = 'command'
 
               arguments[index] = wrappedCallback
-              span = self.traceManager.startSpan(ns + '.' + type, self.SPAN_MONGODB_QUERY_TYPE)
+              span = self.tracer.startSpan(ns + '.' + type, self.SPAN_MONGODB_QUERY_TYPE)
             }
           }
 
@@ -96,7 +96,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchQuery (self: MongoDBPlugin) {
     return function (orig, name) {
         return function  (ns) {
-          var trace = self.traceManager.currentTrace
+          var trace = self.tracer.currentTrace
           var id = trace && trace.id
           var span
 
@@ -107,7 +107,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
             var cb = arguments[index]
             if (typeof cb === 'function' ) {
               arguments[index] = wrappedCallback
-              span = self.traceManager.startSpan(ns + '.' + name,  self.SPAN_MONGODB_QUERY_TYPE)
+              span = self.tracer.startSpan(ns + '.' + name,  self.SPAN_MONGODB_QUERY_TYPE)
             }
           }
 
@@ -125,7 +125,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchCursor(self: MongoDBPlugin) {
     return function (orig, name) {
         return function  () {
-          var trace = self.traceManager.currentTrace
+          var trace = self.tracer.currentTrace
           var id = trace && trace.id
           var span
 
@@ -135,7 +135,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
             var cb = arguments[0]
             if (typeof cb === 'function') {
               arguments[0] = wrappedCallback
-              span = self.traceManager.startSpan(this.ns + '.' + (this.cmd.find ? 'find' : name),  self.SPAN_MONGODB_QUERY_TYPE)
+              span = self.tracer.startSpan(this.ns + '.' + (this.cmd.find ? 'find' : name),  self.SPAN_MONGODB_QUERY_TYPE)
             }
           }
 

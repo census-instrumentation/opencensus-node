@@ -59,7 +59,7 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
           // don't leak previous transaction
           traceManager.clearCurrentTrace()
         } else */ { 
-          let trace  = self.traceManager.startTrace();
+          let trace  = self.tracer.startTrace();
           //TODO: review this logic maybe and request method
           trace.name = req.url?(url.parse(req.url).pathname||'/'):'/';
           trace.type = 'request'
@@ -68,7 +68,7 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
           //debug('created trace %o', {id: trace.id, name: trace.name, startTime: trace.startTime})
 
           eos(res, function (err) {
-            if (!err) return self.traceManager.endTrace()
+            if (!err) return self.tracer.endTrace()
 
             /*if (traceManager._conf.errorOnAbortedRequests && !trans.ended) {
               var duration = Date.now() - trans._timer.start
@@ -83,7 +83,7 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
             // Handle case where res.end is called after an error occurred on the
             // stream (e.g. if the underlying socket was prematurely closed)
             res.on('prefinish', function () {
-              self.traceManager.endTrace()
+              self.tracer.endTrace()
             })
           })
         }
@@ -130,7 +130,7 @@ function isRequestBlacklisted (agent, req) {
 
           //TODO only for tests. Remove and implement a blacklist
           if (name.indexOf('googleapi') < 0) {
-            var span = self.traceManager.startSpan(name, spanType)
+            var span = self.tracer.startSpan(name, spanType)
             var id = span.id && span.traceId
           }
 
@@ -185,7 +185,7 @@ function isRequestBlacklisted (agent, req) {
       
           var result = orig.apply(this, arguments)
       
-          var trace = self.traceManager.currentTrace
+          var trace = self.tracer.currentTrace
   
           if (trace) {
           // It shouldn't be possible for the statusCode to be falsy, but just in
@@ -198,7 +198,7 @@ function isRequestBlacklisted (agent, req) {
                 if (key.toLowerCase() !== 'content-type') return false
                 if (String(headers[key]).toLowerCase().indexOf('text/event-stream') !== 0) return false
                 //debug('detected SSE response - ending trace %o', { id: trace.id })
-                self.traceManager.endTrace()
+                self.tracer.endTrace()
                 return true
               })
             }
