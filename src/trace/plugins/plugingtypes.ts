@@ -15,7 +15,7 @@
  */
 
 export interface Plugin <TM> {
-    applyPatch: (module: any, manager: TM, version: string) => void; 
+    applyPatch(module: any, manager: TM, version: string): void; 
 }
 
 export abstract class BasePlugin <TM>  {

@@ -21,7 +21,7 @@ import {debug, randomSpanId} from '../../internal/util'
 export interface MapLabels { [propName: string]: string; }
 export interface MapObjects { [propName: string]: any; }
 
-export abstract class TracerComponent {
+export abstract class TraceBaseModel {
 
     private _className: string;
     private _id: string;

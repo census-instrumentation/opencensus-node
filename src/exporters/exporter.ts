@@ -1,5 +1,5 @@
 import { ExporterOptions } from './exporterOptions';
-import { Trace } from '../trace/trace';
+import { Trace } from '../trace/model/trace';
 
 export interface Exporter {
     

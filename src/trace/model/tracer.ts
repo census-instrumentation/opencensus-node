@@ -14,33 +14,31 @@
  * limitations under the License.
  */
 
-import * as cls from '../internal/cls';
+import * as cls from '../../internal/cls';
 import {Trace} from './trace'
 import {Span} from './span' 
-import {PluginLoader} from './plugins/pluginloader'
-import {debug} from '../internal/util'
-import {Stackdriver} from '../exporters/stackdriver/stackdriver'
-import {StackdriverOptions} from '../exporters/stackdriver/options'
+import {debug} from '../../internal/util'
+import {Stackdriver} from '../../exporters/stackdriver/stackdriver'
+import {StackdriverOptions} from '../../exporters/stackdriver/options'
+import { Exporter } from '../../exporters/exporter';
 
 export type Func<T> = (...args: any[]) => T;
 
-export class TraceManager {
+export class Tracer {
 
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express']
     
     private _active: boolean;
     private contextManager: cls.Namespace;
-    private pluginLoader: PluginLoader;
-    private exporter
+    private exporter: Exporter;
 
     //TODO: temp solution 
     private endedTraces: Trace[] = [];
 
-    constructor() {
+    constructor(exporter:Exporter) {
         this._active = false;
         this.contextManager = cls.createNamespace();
-        this.pluginLoader = new PluginLoader(this);
-        this.exporter = new Stackdriver(new StackdriverOptions('opencensus-cesar'));
+        this.exporter = exporter;
     }
 
     public get currentTrace(): Trace  {
@@ -51,8 +49,7 @@ export class TraceManager {
          this.contextManager.set('trace', trace);
     }
 
-    public start(config?:Object): TraceManager {
-        this.pluginLoader.loadPlugins(this.PLUGINS);
+    public start(config?:Object): Tracer {
         this._active = true;
         return this;
     }
@@ -71,10 +68,8 @@ export class TraceManager {
     public endTrace(): void {
         if (!this.currentTrace) return debug('cannot end trace - no active trace found')
         this.currentTrace.end();
-        this.exporter.emit(this.currentTrace);
         this.addEndedTrace(this.currentTrace);
         //this.clearCurrentTrace();
-        this.startTrace();
     }
     
     public clearCurrentTrace() {
@@ -97,11 +92,11 @@ export class TraceManager {
         this.exporter.emit(this.currentTrace);
     }*/
 
-    
     private addEndedTrace(trace: Trace) {
         if (this.active) {
             //TODO: temp solution
-            this.endedTraces.push(trace);
+            //this.endedTraces.push(trace);
+            this.exporter.emit(this.currentTrace);            
         }
     }
 

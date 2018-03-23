@@ -3,7 +3,7 @@ import {StackdriverOptions} from './options'
 import {Exporter} from '../exporter'
 import {google} from 'googleapis'
 import {JWT} from 'google-auth-library';
-import { Trace } from '../../trace/trace';
+import { Trace } from '../../trace/model/trace';
 const cloudTrace = google.cloudtrace('v1')
 var uuidv4 = require('uuid/v4');
 

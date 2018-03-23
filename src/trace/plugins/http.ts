@@ -19,19 +19,19 @@ import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as eos from 'end-of-stream';
-import {TraceManager} from '../tracemanager'
+import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 import {Plugin, BasePlugin} from './plugingtypes'
 
-export class HttpPlugin extends BasePlugin<TraceManager> implements Plugin<TraceManager> {
+export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
  
    constructor() {
      super('http');
     }
       
-   public applyPatch (http: any, traceManager: TraceManager, version: string) {
+   public applyPatch (http: any, tracer: Tracer, version: string) {
     
-      this.setPluginContext(http, traceManager, version);
+      this.setPluginContext(http, tracer, version);
 
       debug('patching http.Server.prototype.emit function')
       shimmer.wrap(http && http.Server && http.Server.prototype, 'emit', this.patchHttpRequest(this))

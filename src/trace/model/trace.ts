@@ -15,12 +15,12 @@
  */
 
 import {Span} from './span' 
-import {Clock} from '../internal/clock'
+import {Clock} from '../../internal/clock'
 import * as uuid from 'uuid';
-import {debug} from '../internal/util'
-import {TracerComponent} from './types/tracetypes'
+import {debug} from '../../internal/util'
+import {TraceBaseModel} from '../types/tracetypes'
 
-export class Trace extends TracerComponent {
+export class Trace extends TraceBaseModel {
 
     private spans: Span[] = [];
 

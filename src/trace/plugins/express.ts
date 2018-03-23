@@ -18,11 +18,11 @@ import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as eos from 'end-of-stream';
-import {TraceManager} from '../tracemanager'
+import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 import {Plugin, BasePlugin} from './plugingtypes'
 
-export class ExpressPlugin extends BasePlugin<TraceManager> implements Plugin<TraceManager> {
+export class ExpressPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
 
     readonly mountStackLockedSym = Symbol('OpencensusMountStackLocked')
     readonly unwrap = Symbol('OpencensusUnwrap')
@@ -44,11 +44,11 @@ export class ExpressPlugin extends BasePlugin<TraceManager> implements Plugin<Tr
     }
   
     //TODO - review this method logic
-   public applyPatch (express: any, traceManager: TraceManager, version: string) {
+   public applyPatch (express: any, tracer: Tracer, version: string) {
 
       let self:ExpressPlugin = this;
     
-      this.setPluginContext(express, traceManager, version);
+      this.setPluginContext(express, tracer, version);
 
       if (!semver.satisfies(version, '^4.0.0')) {
         debug('express version %s not supported - aborting...', version)
