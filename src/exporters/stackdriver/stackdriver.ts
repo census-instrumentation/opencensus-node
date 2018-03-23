@@ -15,21 +15,33 @@ export class Stackdriver implements Exporter {
     }
     
     public emit(trace: Trace) {
+        // Builds span data
         let spanList = []
         trace.traceSpans.forEach(span => {
             spanList.push({ 
                 "name": span.name,
-                "kind": "RPC_CLIENT",
+                "kind": "SPAN_KIND_UNSPECIFIED",
                 "spanId": span.id,
                 "startTime": span.startTime,
                 "endTime": span.endTime
             });
         });
+
+        // Builds root span data
+        spanList.push({ 
+            "name": trace.name,
+            "kind": "SPAN_KIND_UNSPECIFIED",
+            "spanId": trace.id,
+            "startTime": trace.startTime,
+            "endTime": trace.endTime
+        });
+
+        // Builds trace data
         let resource = {
             "traces": [
                 {
                   "projectId": this.projectId,
-                  "traceId": trace.id,
+                  "traceId": trace.traceId,
                   "spans": spanList
                 }
             ]
