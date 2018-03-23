@@ -18,7 +18,7 @@ import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as eos from 'end-of-stream';
-import {TraceManager} from '../tracemanager'
+import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 import {HttpPlugin} from './http'
 
@@ -29,9 +29,9 @@ class HttpsPlugin extends HttpPlugin {
     this.moduleName = 'https'
   }
 
-  public applyPatch (https: any, traceManager: TraceManager, version: string) {
+  public applyPatch (https: any, tracer: Tracer, version: string) {
     
-        this.setPluginContext(https, traceManager, version);
+        this.setPluginContext(https, tracer, version);
 
         debug('patching  https.Server.prototype.emit function')
         shimmer.wrap(https && https.Server && https.Server.prototype, 'emit', this.patchHttpRequest(this))

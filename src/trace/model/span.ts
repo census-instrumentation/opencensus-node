@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import {Clock} from '../internal/clock';
+import {Clock} from '../../internal/clock';
 import {Trace} from './trace';
-import {debug, randomSpanId} from '../internal/util'
-import {TracerComponent} from './types/tracetypes'
+import {debug, randomSpanId} from '../../internal/util'
+import {TraceBaseModel} from '../types/tracetypes'
 
 
-export class Span extends TracerComponent {
+export class Span extends TraceBaseModel {
 
-    private trace: TracerComponent;   
+    private trace: TraceBaseModel;   
     private _parentSpanId: string;
     
-   constructor(trace: TracerComponent) {
+   constructor(trace: TraceBaseModel) {
       super()
       this.trace = trace;
       this.setId(randomSpanId());

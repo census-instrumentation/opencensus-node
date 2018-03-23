@@ -1,5 +1,5 @@
 'use strict'
 
-import {TraceManager} from './trace/tracemanager';
+import {Tracing} from './trace/tracing';
 
-module.exports = new TraceManager()
+module.exports = new Tracing()

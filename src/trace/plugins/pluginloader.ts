@@ -16,17 +16,17 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import {TraceManager} from '../tracemanager'
+import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 
 
 export class PluginLoader {
     
     //private modules: string[];
-    private _traceManager: TraceManager;
+    private _tracer: Tracer;
 
-    constructor(traceManager: TraceManager) {
-        this._traceManager = traceManager;
+    constructor(tracer: Tracer) {
+        this._tracer = tracer;
     }
 
     public loadPlugins(plugins: string[]) {
@@ -51,7 +51,7 @@ export class PluginLoader {
         
             debug('patching %s@%s module', name, version)
             //TODO: maybe a more generic way to pass plugin path, ex.: pass by a parameter
-            return require('./' + name ).applyPatch(exports, self._traceManager, version)
+            return require('./' + name ).applyPatch(exports, self._tracer, version)
           })
     }
 

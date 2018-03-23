@@ -15,15 +15,15 @@
  */
 
 import * as semver from 'semver';
-import * as url from 'url';
+import * as url from 'url'
 import * as eos from 'end-of-stream';
-import {TraceManager} from '../tracemanager'
+import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 import {Plugin, BasePlugin} from './plugingtypes'
 
 var shimmer = require('shimmer');
 
-class MongoDBPlugin extends BasePlugin<TraceManager> implements Plugin<TraceManager> {
+class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
 
   readonly SERVER_FNS = ['insert', 'update', 'remove', 'auth']
   readonly CURSOR_FNS_FIRST = ['_find', '_getmore']
@@ -33,8 +33,8 @@ class MongoDBPlugin extends BasePlugin<TraceManager> implements Plugin<TraceMana
      super('mongodb-core');
     }
       
-   public applyPatch (mongodb: any, traceManager: TraceManager, version: string) {
-        this.setPluginContext(mongodb, traceManager, version);
+   public applyPatch (mongodb: any, tracer: Tracer, version: string) {
+        this.setPluginContext(mongodb, tracer, version);
 
         if (!semver.satisfies(version, '>=1.2.19 <4.0.0')) {
           debug('mongodb-core version %s not supported - aborting...', version)
