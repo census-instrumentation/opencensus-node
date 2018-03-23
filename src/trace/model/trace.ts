@@ -41,7 +41,7 @@ export class Trace extends TraceBaseModel {
 
     public start() {
         super.start()
-        debug('starting trace  %o', { id: this.id })
+        debug('starting trace  %o', { traceId: this.traceId })
     }
 
     public end() {
@@ -54,7 +54,13 @@ export class Trace extends TraceBaseModel {
         })
 
         debug('ending trace  %o',
-            { id: this.id, name: this.name, startTime: this.startTime, endTime: this.endTime, duration: this.duration })
+            {
+                id: this.id,
+                name: this.name,
+                startTime: this.startTime,
+                endTime: this.endTime,
+                duration: this.duration
+            })
     }
 
     public startSpan(name: string, type: string) {

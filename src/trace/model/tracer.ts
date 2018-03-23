@@ -15,11 +15,11 @@
  */
 
 import * as cls from '../../internal/cls'
-import {Trace} from './trace'
-import {Span} from './span' 
-import {debug} from '../../internal/util'
-import {Stackdriver} from '../../exporters/stackdriver/stackdriver'
-import {StackdriverOptions} from '../../exporters/stackdriver/options'
+import { Trace } from './trace'
+import { Span } from './span'
+import { debug } from '../../internal/util'
+import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
+import { StackdriverOptions } from '../../exporters/stackdriver/options'
 import { Exporter } from '../../exporters/exporter'
 
 export type Func<T> = (...args: any[]) => T;
@@ -27,7 +27,7 @@ export type Func<T> = (...args: any[]) => T;
 export class Tracer {
 
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express'];
-    
+
     private _active: boolean;
     private contextManager: cls.Namespace;
     private exporter: Exporter;
@@ -40,15 +40,15 @@ export class Tracer {
         this.contextManager = cls.createNamespace();
     }
 
-    public get currentTrace(): Trace  {
-       return this.contextManager.get('trace');
+    public get currentTrace(): Trace {
+        return this.contextManager.get('trace');
     }
 
-    private setCurrentTrace(trace:Trace) {
-         this.contextManager.set('trace', trace);
+    private setCurrentTrace(trace: Trace) {
+        this.contextManager.set('trace', trace);
     }
 
-    public start(config?:Object): Tracer {
+    public start(config?: Object): Tracer {
         this._active = true;
         return this;
     }
@@ -65,22 +65,22 @@ export class Tracer {
     }
 
     public endTrace(): void {
-        if (!this.currentTrace){
+        if (!this.currentTrace) {
             return debug('cannot end trace - no active trace found')
         }
         this.currentTrace.end();
         this.addEndedTrace(this.currentTrace);
         //this.clearCurrentTrace();
     }
-    
+
     public clearCurrentTrace() {
         this.setCurrentTrace(null);
     }
 
-    public startSpan(name:string, type: string): Span {
+    public startSpan(name: string, type: string): Span {
         let newSpan: Span = null;
-        if (!this.currentTrace) { 
-            debug('no current trace found - cannot start a new span'); 
+        if (!this.currentTrace) {
+            debug('no current trace found - cannot start a new span');
         } else {
             newSpan = this.currentTrace.startSpan(name, type);
         }
@@ -97,35 +97,35 @@ export class Tracer {
         if (this.active) {
             //TODO: temp solution
             //this.endedTraces.push(trace);
-            this.exporter.emit(this.currentTrace);            
+            this.exporter.writeTrace(this.currentTrace);
         }
     }
 
     public wrap<T>(fn: Func<T>): Func<T> {
         if (!this.active) {
-           return fn;
-         }
-    
+            return fn;
+        }
+
         // This is safe because isActive checks the value of this.namespace.
         const namespace = this.contextManager as cls.Namespace;
         return namespace.bind<T>(fn);
     }
-    
+
     public wrapEmitter(emitter: NodeJS.EventEmitter): void {
-         if (!this.active) {
-           return;
-         }
+        if (!this.active) {
+            return;
+        }
 
         // This is safe because isActive checks the value of this.namespace.
         const namespace = this.contextManager as cls.Namespace;
         namespace.bindEmitter(emitter);
     }
 
-    public registerExporter(exporter:Exporter) {
+    public registerExporter(exporter: Exporter) {
         this.exporter = exporter;
     }
 
-}  
+}
 
 
 

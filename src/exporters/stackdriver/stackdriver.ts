@@ -16,64 +16,67 @@
 
 import * as uuidv4 from 'uuid/v4';
 
-import {debug} from '../../internal/util'
-import {StackdriverOptions} from './options'
-import {Exporter} from '../exporter'
-import {google} from 'googleapis'
-import {JWT} from 'google-auth-library'
-import {Trace} from '../../trace/model/trace'
+import { debug } from '../../internal/util'
+import { StackdriverOptions } from './options'
+import { Exporter } from '../exporter'
+import { google } from 'googleapis'
+import { JWT } from 'google-auth-library'
+import { Trace } from '../../trace/model/trace'
 
 const cloudTrace = google.cloudtrace('v1');
 
 export class Stackdriver implements Exporter {
     projectId: string;
-        
+    buffer: object;
+
     constructor(options: StackdriverOptions) {
         this.projectId = options.projectId;
+        this.buffer = {};
     }
-    
-    public emit(trace: Trace) {
+
+    // TODO: Rename to "writeTrace"
+    public writeTrace(trace: Trace) {
         // Builds span data
         let spanList = []
-        trace.traceSpans.forEach(span => {
-            spanList.push({ 
-                "name": span.name,
-                "kind": "SPAN_KIND_UNSPECIFIED",
-                "spanId": span.id,
-                "startTime": span.startTime,
-                "endTime": span.endTime
-            });
+        trace.spans.forEach(span => {
+            spanList.push(this.translateSpan(span));
         });
 
         // Builds root span data
-        spanList.push({ 
-            "name": trace.name,
-            "kind": "SPAN_KIND_UNSPECIFIED",
-            "spanId": trace.id,
-            "startTime": trace.startTime,
-            "endTime": trace.endTime
-        });
+        spanList.push(this.translateSpan(trace));
 
         // Builds trace data
         let resource = {
             "traces": [
                 {
-                  "projectId": this.projectId,
-                  "traceId": trace.traceId,
-                  "spans": spanList
+                    "projectId": this.projectId,
+                    "traceId": trace.traceId,
+                    "spans": spanList
                 }
             ]
         }
+        //this.buffer[trace.traceId] = resource
         this.authorize(this.sendTrace, resource);
     }
 
+    private translateSpan(span) {
+        return {
+            "name": span.name,
+            "kind": "SPAN_KIND_UNSPECIFIED",
+            "spanId": span.id,
+            "startTime": span.startTime,
+            "endTime": span.endTime
+        }
+    }
+
+    // TODO: Rename to "flushBuffer" and "publish"
     private sendTrace(projectId, authClient, resource) {
         let request = {
             projectId: projectId,
             resource: resource,
             auth: authClient
         }
-        cloudTrace.projects.patchTraces(request, function(err) {
+        cloudTrace.projects.patchTraces(request, function (err) {
             if (err) {
                 debug(err);
                 return;
@@ -84,7 +87,7 @@ export class Stackdriver implements Exporter {
     }
 
     private authorize(callback, resource) {
-        google.auth.getApplicationDefault(function(err, authClient: JWT, projectId) {
+        google.auth.getApplicationDefault(function (err, authClient: JWT, projectId) {
             if (err) {
                 console.error('authentication failed: ', err);
                 return;
