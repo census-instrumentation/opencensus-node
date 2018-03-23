@@ -35,24 +35,12 @@ export class Stackdriver implements Exporter {
     public emit(trace: Trace) {
         // Builds span data
         let spanList = []
-        trace.traceSpans.forEach(span => {
-            spanList.push({ 
-                "name": span.name,
-                "kind": "SPAN_KIND_UNSPECIFIED",
-                "spanId": span.id,
-                "startTime": span.startTime,
-                "endTime": span.endTime
-            });
+        trace.spans.forEach(span => {
+            spanList.push(this.queueSpan(span));
         });
 
         // Builds root span data
-        spanList.push({ 
-            "name": trace.name,
-            "kind": "SPAN_KIND_UNSPECIFIED",
-            "spanId": trace.id,
-            "startTime": trace.startTime,
-            "endTime": trace.endTime
-        });
+        spanList.push(this.queueSpan(trace));
 
         // Builds trace data
         let resource = {
@@ -65,6 +53,16 @@ export class Stackdriver implements Exporter {
             ]
         }
         this.authorize(this.sendTrace, resource);
+    }
+
+    private queueSpan(span) {
+        return { 
+            "name": span.name,
+            "kind": "SPAN_KIND_UNSPECIFIED",
+            "spanId": span.id,
+            "startTime": span.startTime,
+            "endTime": span.endTime
+        }
     }
 
     private sendTrace(projectId, authClient, resource) {
