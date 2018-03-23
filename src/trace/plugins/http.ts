@@ -1,4 +1,3 @@
-
 /**
  * Copyright 2018 Google Inc. All Rights Reserved.
  *
@@ -15,10 +14,11 @@
  * limitations under the License.
  */
 
-import * as semver from 'semver';
-import * as shimmer from 'shimmer';
-import * as url from 'url';
-import * as eos from 'end-of-stream';
+import * as semver from 'semver'
+import * as shimmer from 'shimmer'
+import * as url from 'url'
+import * as eos from 'end-of-stream'
+
 import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 import {Plugin, BasePlugin} from './plugingtypes'

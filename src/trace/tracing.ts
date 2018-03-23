@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import * as cls from '../internal/cls';
+import * as cls from '../internal/cls'
 import {Trace} from './model/trace'
 import {Span} from './model/span' 
 import {PluginLoader} from './plugins/pluginloader'
 import {debug} from '../internal/util'
 import {Stackdriver} from '../exporters/stackdriver/stackdriver'
 import {StackdriverOptions} from '../exporters/stackdriver/options'
-import { Tracer } from './model/tracer';
-import { Exporter } from '../exporters/exporter';
+import { Tracer } from './model/tracer'
+import { Exporter } from '../exporters/exporter'
 
 export type Func<T> = (...args: any[]) => T;
 

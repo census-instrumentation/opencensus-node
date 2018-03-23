@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import * as semver from 'semver';
-import * as shimmer from 'shimmer';
-import * as url from 'url';
-import * as eos from 'end-of-stream';
+import * as semver from 'semver'
+import * as shimmer from 'shimmer'
+import * as url from 'url'
+import * as eos from 'end-of-stream'
+
 import {Tracer} from '../model/tracer'
 import {debug} from '../../internal/util'
 import {Plugin, BasePlugin} from './plugingtypes'
@@ -130,7 +131,8 @@ export class ExpressPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> 
                 }
               })
             } else {
-              debug('skip patching  layer.handle_request (layer: %s, path: %s)', (layer && layer.name) || typeof layer, fn)
+              debug('skip patching  layer.handle_request (layer: %s, path: %s)',
+                    (layer && layer.name) || typeof layer, fn)
             }
           }
 

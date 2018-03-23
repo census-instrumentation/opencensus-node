@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {Span} from './span' 
+import * as uuid from 'uuid'
+
+import {Span} from './span'
 import {Clock} from '../../internal/clock'
-import * as uuid from 'uuid';
 import {debug} from '../../internal/util'
 import {TraceBaseModel} from '../types/tracetypes'
 
@@ -48,7 +49,11 @@ export class Trace extends TraceBaseModel {
         })
      
         debug('ending trace  %o', 
-            {id: this.id, name: this.name, startTime: this.startTime, endTime: this.endTime, duration: this.duration})
+                {id: this.id,
+                name: this.name,
+                startTime: this.startTime,
+                endTime: this.endTime,
+                duration: this.duration})
     }
 
     public startSpan(name: string, type: string) {

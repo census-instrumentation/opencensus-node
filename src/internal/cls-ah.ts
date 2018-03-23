@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Google Inc. All Rights Reserved.
+ * Copyright 2018 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import * as asyncHook from 'async_hooks';
-import {Context, Func, Namespace as CLSNamespace} from 'continuation-local-storage';
-import {EventEmitter} from 'events';
-import * as shimmer from 'shimmer';
+import * as asyncHook from 'async_hooks'
+import {Context, Func, Namespace as CLSNamespace} from 'continuation-local-storage'
+import {EventEmitter} from 'events'
+import * as shimmer from 'shimmer'
 
 const wrappedSymbol = Symbol('context_wrapped');
 let contexts: {[asyncId: number]: Context;} = {};

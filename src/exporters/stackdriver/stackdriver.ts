@@ -1,11 +1,29 @@
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as uuidv4 from 'uuid/v4';
+
 import {debug} from '../../internal/util'
 import {StackdriverOptions} from './options'
 import {Exporter} from '../exporter'
 import {google} from 'googleapis'
-import {JWT} from 'google-auth-library';
-import { Trace } from '../../trace/model/trace';
-const cloudTrace = google.cloudtrace('v1')
-var uuidv4 = require('uuid/v4');
+import {JWT} from 'google-auth-library'
+import {Trace} from '../../trace/model/trace'
+
+const cloudTrace = google.cloudtrace('v1');
 
 export class Stackdriver implements Exporter {
     projectId: string;
@@ -48,7 +66,6 @@ export class Stackdriver implements Exporter {
                 debug(err);
                 return;
             } else {
-                //debug('\nSENT TRACE:\n', JSON.stringify(request.resource));
                 debug('\nSENT TRACE:\n', request.resource);
             }
         })
