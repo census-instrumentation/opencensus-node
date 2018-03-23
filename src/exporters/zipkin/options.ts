@@ -18,5 +18,9 @@
 import {ExporterOptions} from "../exporterOptions"
 
 export class ZipkinOptions implements ExporterOptions {
-    
+    url: string;
+
+    constructor(url) {
+        this.url = url;
+    }
 }

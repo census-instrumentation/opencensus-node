@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Clock} from '../../internal/clock'
-import {debug, randomSpanId} from '../../internal/util'
+import { Clock } from '../../internal/clock'
+import { debug, randomSpanId } from '../../internal/util'
 
-  
+
 export interface MapLabels { [propName: string]: string; }
 export interface MapObjects { [propName: string]: any; }
 
@@ -29,7 +29,7 @@ export abstract class TraceBaseModel {
     //------
     private _remoteParent: string;
     private attributes: MapLabels = {};
-    private annotations: MapObjects  = {};
+    private annotations: MapObjects = {};
     //messageEvents
     //links
     private _name: string;
@@ -38,36 +38,36 @@ export abstract class TraceBaseModel {
     private _type: string;
     private _status: number;
     //TODO truncated 
-    private _truncated: boolean; 
+    private _truncated: boolean;
 
-   constructor() {
-      this._className = this.constructor.name;
-      this._name = null;
-      this._type = null;
-      this._started = false;
-      this.clock = null;
-      this._truncated = false;
-      this._ended = false;
-      this.setId(randomSpanId());
+    constructor() {
+        this._className = this.constructor.name;
+        this._name = null;
+        this._type = null;
+        this._started = false;
+        this.clock = null;
+        this._truncated = false;
+        this._ended = false;
+        this.setId(randomSpanId());
     }
 
-    public get id() : string {
+    public get id(): string {
         return this._id;
     }
- 
-    protected setId(id : string) {
+
+    protected setId(id: string) {
         this._id = id;
     }
 
-    abstract get traceId():string;
-    
+    abstract get traceId(): string;
+
     public get name() {
         return this._name;
     }
 
     public get started(): boolean {
         return this._started;
-    }    
+    }
 
     public get ended(): boolean {
         return this._ended;
@@ -77,22 +77,22 @@ export abstract class TraceBaseModel {
         this._name = name;
     }
 
-    public get type() : string {
+    public get type(): string {
         return this._type;
     }
-    
-    public set type(type : string) {
+
+    public set type(type: string) {
         this._type = type;
     }
-        
-    public set remoteParente(remoteParent : string) {
+
+    public set remoteParente(remoteParent: string) {
         this._remoteParent = remoteParent;
     }
 
-    public get remoteSpanId() : string {
+    public get remoteSpanId(): string {
         return this._remoteParent;
     }
-    
+
     public get status(): number {
         return this._status;
     }
@@ -100,26 +100,26 @@ export abstract class TraceBaseModel {
     public set status(status: number) {
         this._status = status;
     }
-  
+
     public get startTime(): Date {
         return this.clock.startTime;
     }
-    
+
     public get endTime(): Date {
         return this.clock.endTime;
     }
 
-    public get duration() : number {
+    public get duration(): number {
         return this.clock.duration;
-    }   
+    }
 
     public get traceContext() {
         return {
-          traceId: this.traceId.toString(),
-          spanId: this.id.toString(),
-          options: 1  // always traced
+            traceId: this.traceId.toString(),
+            spanId: this.id.toString(),
+            options: 1  // always traced
         };
-    }    
+    }
 
     //TODO: maybe key and values must be truncate
     public addAtribute(key: string, value: string) {
@@ -129,35 +129,35 @@ export abstract class TraceBaseModel {
     //TODO: maybe keys and values must be truncate
     public addAnotation(key: string, value: {}) {
         this.annotations[key] = value;
-    }   
-    
+    }
+
     public start() {
         if (this.started) {
             debug('calling %s.start() on already started %s %o',
                 this._className, this._className,
-                 {id: this.id, name: this.name, type: this.type})
+                { id: this.id, name: this.name, type: this.type })
             return
-        }        
+        }
         this.clock = new Clock();
-        this._started = true;   
+        this._started = true;
     }
 
     public end(): void {
         if (!this.started) {
-            debug('calling %s.end() on un-started %s %o', 
+            debug('calling %s.end() on un-started %s %o',
                 this._className, this._className,
-                {id: this.id,  name: this.name, type: this.type})
+                { id: this.id, name: this.name, type: this.type })
             return
         } else if (this.ended) {
-            debug('calling %s.end() on already ended %s %o', 
+            debug('calling %s.end() on already ended %s %o',
                 this._className, this._className,
-                {id:this.id ,  name: this.name, type: this.type})
+                { id: this.id, name: this.name, type: this.type })
             return
-        }   
+        }
         this._started = false;
         this._ended = true;
         this.clock.end();
-       
+
     }
 
 
@@ -165,25 +165,31 @@ export abstract class TraceBaseModel {
     public truncate() {
         if (!this.started) {
             debug('calling truncate non-started %s - ignoring %o',
-                    this._className,
-                        {id: this.id,
-                        name: this.name,
-                        type: this.type})
+                this._className,
+                {
+                    id: this.id,
+                    name: this.name,
+                    type: this.type
+                })
             return
-          } else if (this.ended) {
+        } else if (this.ended) {
             debug('calling truncate already ended %s - ignoring %o',
-                    this._className,
-                        {id: this.id,
-                        name: this.name,
-                        type: this.type})
+                this._className,
+                {
+                    id: this.id,
+                    name: this.name,
+                    type: this.type
+                })
             return
         }
         this._truncated = true
         this.end()
         debug('truncating %s  %o',
-                this._className,
-                    {id: this.id,
-                    name: this.name})
-      }
-      
+            this._className,
+            {
+                id: this.id,
+                name: this.name
+            })
+    }
+
 }

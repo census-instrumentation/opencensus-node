@@ -15,47 +15,62 @@
  */
 
 import * as cls from '../internal/cls'
-import {Trace} from './model/trace'
-import {Span} from './model/span' 
-import {PluginLoader} from './plugins/pluginloader'
-import {debug} from '../internal/util'
-import {Stackdriver} from '../exporters/stackdriver/stackdriver'
-import {StackdriverOptions} from '../exporters/stackdriver/options'
+import { Trace } from './model/trace'
+import { Span } from './model/span'
+import { PluginLoader } from './plugins/pluginloader'
+import { debug } from '../internal/util'
+import { Stackdriver } from '../exporters/stackdriver/stackdriver'
+import { StackdriverOptions } from '../exporters/stackdriver/options'
+import { Zipkin } from '../exporters/zipkin/zipkin'
+import { ZipkinOptions } from '../exporters/zipkin/options'
 import { Tracer } from './model/tracer'
 import { Exporter } from '../exporters/exporter'
+import { ExporterOptions } from '../exporters/exporterOptions';
 
 export type Func<T> = (...args: any[]) => T;
 
 export class Tracing {
 
     private _active: Boolean;
-    private _tracer: Tracer;  
-    private _exporter: Exporter;     
+    private _tracer: Tracer;
+    private _exporter: Exporter;
     private pluginLoader: PluginLoader;
 
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express']
-    
+
     constructor() {
-        this._exporter = new Stackdriver(new StackdriverOptions('cesar-opencensus'));
         this._tracer = new Tracer();
-        this._tracer.registerExporter(this._exporter)
         this.pluginLoader = new PluginLoader(this._tracer);
     }
 
-    public start(config?:Object): Tracing {
+    public start(): Tracing {
         this.pluginLoader.loadPlugins(this.PLUGINS);
         this._active = true;
         this._tracer.start();
         return this;
     }
 
-    public get Tracer() : Tracer {
+    public get Tracer(): Tracer {
         return this._tracer;
     }
 
-    public get Exporter() : Exporter {
+    public get Exporter(): Exporter {
         return this._exporter;
     }
-        
+
+    public startStackdriver(projectId: string): Tracing {
+        let stackdriverOptions = new StackdriverOptions(projectId);
+        this._exporter = new Stackdriver(stackdriverOptions);
+        this._tracer.registerExporter(this._exporter);
+        return this.start();
+    }
+
+    public startZipkin(url: string): Tracing {
+        let zipkinOptions = new ZipkinOptions(url);
+        this._exporter = new Zipkin(zipkinOptions);
+        this._tracer.registerExporter(this._exporter);
+        return this.start();
+    }
+
 }
 
