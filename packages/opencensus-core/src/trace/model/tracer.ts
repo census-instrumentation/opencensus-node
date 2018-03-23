@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import * as cls from '../../internal/cls';
+import * as cls from '../../internal/cls'
 import {Trace} from './trace'
 import {Span} from './span' 
 import {debug} from '../../internal/util'
 import {Stackdriver} from '../../exporters/stackdriver/stackdriver'
 import {StackdriverOptions} from '../../exporters/stackdriver/options'
-import { Exporter } from '../../exporters/exporter';
+import { Exporter } from '../../exporters/exporter'
 
 export type Func<T> = (...args: any[]) => T;
 
 export class Tracer {
 
-    readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express']
+    readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express'];
     
     private _active: boolean;
     private contextManager: cls.Namespace;
@@ -35,10 +35,9 @@ export class Tracer {
     //TODO: temp solution 
     private endedTraces: Trace[] = [];
 
-    constructor(exporter:Exporter) {
+    constructor() {
         this._active = false;
         this.contextManager = cls.createNamespace();
-        this.exporter = exporter;
     }
 
     public get currentTrace(): Trace  {
@@ -66,7 +65,9 @@ export class Tracer {
     }
 
     public endTrace(): void {
-        if (!this.currentTrace) return debug('cannot end trace - no active trace found')
+        if (!this.currentTrace){
+            return debug('cannot end trace - no active trace found')
+        }
         this.currentTrace.end();
         this.addEndedTrace(this.currentTrace);
         //this.clearCurrentTrace();
@@ -81,7 +82,7 @@ export class Tracer {
         if (!this.currentTrace) { 
             debug('no current trace found - cannot start a new span'); 
         } else {
-            newSpan = this.currentTrace.startSpan(name, type)
+            newSpan = this.currentTrace.startSpan(name, type);
         }
         return newSpan;
     }
@@ -118,6 +119,10 @@ export class Tracer {
         // This is safe because isActive checks the value of this.namespace.
         const namespace = this.contextManager as cls.Namespace;
         namespace.bindEmitter(emitter);
+    }
+
+    public registerExporter(exporter:Exporter) {
+        this.exporter = exporter;
     }
 
 }  

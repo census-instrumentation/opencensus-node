@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {Clock} from '../../internal/clock';
-import {Trace} from './trace';
+import {Clock} from '../../internal/clock'
+import {Trace} from './trace'
 import {debug, randomSpanId} from '../../internal/util'
 import {TraceBaseModel} from '../types/tracetypes'
 
@@ -23,29 +23,24 @@ import {TraceBaseModel} from '../types/tracetypes'
 export class Span extends TraceBaseModel {
 
     private trace: TraceBaseModel;   
-    private _parentSpanId: string;
+   // private _parentSpanId: string;
     
    constructor(trace: TraceBaseModel) {
       super()
       this.trace = trace;
-      this.setId(randomSpanId());
     }
 
     public get traceId() : string {
-        return this.trace.id;
-    }
-
-    public set parentSpanId(parentSpanId : string) {
-        this._parentSpanId = parentSpanId;
+        return this.trace.traceId;
     }
 
     public get parentSpanId() : string {
-        return this._parentSpanId;
+        return this.trace.id;
     }
         
     public get traceContext() {
         return {
-          traceId: this.trace.id.toString(),
+          traceId: this.traceId.toString(),
           spanId: this.id.toString(),
           options: 1  // always traced
         };
@@ -53,18 +48,21 @@ export class Span extends TraceBaseModel {
     
     public start() {
         super.start();
-         debug('starting span  %o', {id: this.id, traceId: this.traceId, name: this.name })
+         debug('starting span  %o', 
+                {id: this.id,
+                traceId: this.traceId,
+                name: this.name})
     }
 
     public end(): void {
         super.end();
         debug('ending span  %o', 
-            {spanId: this.id, 
-             traceId: this.trace.id, 
-             name: this.name ,
-             startTime: this.startTime, 
-             endTime: this.endTime, 
-             duration: this.duration}
+                {spanId: this.id, 
+                traceId: this.trace.id, 
+                name: this.name ,
+                startTime: this.startTime, 
+                endTime: this.endTime, 
+                duration: this.duration}
         )
        
     }
