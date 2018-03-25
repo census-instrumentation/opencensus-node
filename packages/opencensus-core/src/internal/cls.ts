@@ -16,6 +16,7 @@
 
 import * as CLS from 'continuation-local-storage'
 import * as semver from 'semver'
+import { debug } from './util'
 
 export type Namespace = CLS.Namespace;
 export type Func<T> = CLS.Func<T>;
@@ -23,8 +24,11 @@ export type Func<T> = CLS.Func<T>;
 const useAsyncHooks: boolean = semver.satisfies(process.version, '>=8') ;//&&
    // !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
 
+debug('useAsyncHooks = %s',useAsyncHooks);
+
 const cls: typeof CLS =
     useAsyncHooks ? require('./cls-ah') : require('continuation-local-storage');
+
 
 const TRACE_NAMESPACE = 'opencensus.io';
 
@@ -48,19 +52,4 @@ export function getNamespace(): CLS.Namespace {
   return cls.getNamespace(TRACE_NAMESPACE);
 }
 
-/*
-export function set(name:string, trace:any) {
-    getNamespace().set(name, trace);
-}
 
-export function get(name:string): any {
-  // First getNamespace check is necessary in case any
-  // patched closures escaped before the agent was stopped and the
-  // namespace was destroyed.
-  var result: any = null;
-  if (getNamespace() && getNamespace().get(name)) {
-    result = getNamespace().get(name);
-  }
-  return result;
-}
-*/

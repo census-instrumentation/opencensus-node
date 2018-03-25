@@ -15,14 +15,26 @@
  */
 
 import * as cls from '../../internal/cls'
-import { Trace } from './trace'
+import { RootSpan } from './rootspan'
 import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
-import { Exporter } from '../../exporters/exporter'
+import { Exporter, NoopExporter } from '../../exporters/exporter'
+import { TraceContext } from '../types/tracetypes';
 
 export type Func<T> = (...args: any[]) => T;
+
+export interface TracerConfig {
+        exporter?: Exporter,
+        sampleRate?: number;
+        ignoreUrls?:  Array<string|RegExp>;
+}
+
+export const defaultConfig: TracerConfig = {
+   exporter: new NoopExporter(),
+   sampleRate: 1.0
+}
 
 export class Tracer {
 
@@ -31,40 +43,52 @@ export class Tracer {
     private _active: boolean;
     private contextManager: cls.Namespace;
     private exporter: Exporter;
+    private config: TracerConfig;
 
     //TODO: temp solution 
-    private endedTraces: Trace[] = [];
+    private endedTraces: RootSpan[] = [];
 
     constructor() {
         this._active = false;
         this.contextManager = cls.createNamespace();
     }
 
-    public get currentTrace(): Trace {
+    public get currentTrace(): RootSpan {
         return this.contextManager.get('trace');
     }
 
-    private setCurrentTrace(trace: Trace) {
+    private setCurrentTrace(trace: RootSpan) {
         this.contextManager.set('trace', trace);
     }
 
-    public start(config?: Object): Tracer {
+    public start(config?: TracerConfig): Tracer {
         this._active = true;
+        this.config = config || defaultConfig;
+        this.exporter = this.config.exporter;
         return this;
+    }
+
+    public stop() {
+        this._active = false;
     }
 
     public get active(): boolean {
         return this._active;
     }
 
-    public startTrace(): Trace {
-        let newTrace = new Trace();
+    public startRootSpan(context?: TraceContext): RootSpan {
+        let newTrace = new RootSpan(context);
         this.setCurrentTrace(newTrace);
         newTrace.start();
         return newTrace;
     }
 
-    public endTrace(): void {
+    //TODO: review
+    public runInContex<T>(fn: Func<T>): T {
+        return this.contextManager.runAndReturn (fn)
+    }
+
+    public endRootSpan(): void {
         if (!this.currentTrace) {
             return debug('cannot end trace - no active trace found')
         }
@@ -93,7 +117,7 @@ export class Tracer {
         this.exporter.emit(this.currentTrace);
     }*/
 
-    private addEndedTrace(trace: Trace) {
+    private addEndedTrace(trace: RootSpan) {
         if (this.active) {
             //TODO: temp solution
             //this.endedTraces.push(trace);
