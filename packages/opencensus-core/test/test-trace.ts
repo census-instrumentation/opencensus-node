@@ -16,27 +16,30 @@
 
 import { RootSpan } from '../src/trace/model/rootspan';
 import { Span } from '../src/trace/model/span';
+import { Tracer } from '../src/trace/model/tracer';
+import { SpanBaseModel } from '../src/trace/types/tracetypes';
 
 let assert = require('assert');
+let tracer = new Tracer()
 
 describe('Trace', function () {
   describe('new Trace()', function () {    
     it('should be a Trace instance', function () {
-      let root = new RootSpan();
-      assert.ok(root instanceof RootSpan);
+      let root = new RootSpan(tracer);
+      assert.ok(root instanceof SpanBaseModel);
     });
   });
 
   describe('start()', function () {
     it('the trace was started', function () {
-      let root = new RootSpan();
+      let root = new RootSpan(tracer);
       root.start();
       assert.ok(root.started);
     });
   });
 
   describe('startSpan()', function () {
-    let root = new RootSpan();
+    let root = new RootSpan(tracer);
     root.start()
     let span = root.startSpan("spanName", "spanType");
     it('should return a Span instance', function () {
@@ -50,7 +53,7 @@ describe('Trace', function () {
 
   describe('end()', function () {
     it('the trace was ended', function () {
-      let root = new RootSpan();
+      let root = new RootSpan(tracer);
       root.start()
       root.end();
       assert.ok(root.ended);
@@ -59,7 +62,7 @@ describe('Trace', function () {
 
   describe('end() before trace started', function () {
     it('the trace was not ended', function () {
-      let root = new RootSpan();
+      let root = new RootSpan(tracer);
       root.end();
       assert.ok(!root.ended);
     });
@@ -67,7 +70,7 @@ describe('Trace', function () {
 
   describe('startSpan() before trace started', function () {
     it('should return null', function () {
-      let root = new RootSpan();
+      let root = new RootSpan(tracer);
       let span = root.startSpan("spanName", "spanType");
       assert.ok(span == null);
     });
@@ -75,7 +78,7 @@ describe('Trace', function () {
 
   describe('startSpan() after trace ended', function () {
     it('should return null', function () {
-      let root = new RootSpan();
+      let root = new RootSpan(tracer);
       root.start()
       root.end();
       let span = root.startSpan("spanName", "spanType");

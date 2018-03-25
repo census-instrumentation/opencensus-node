@@ -27,12 +27,16 @@ export interface TraceContext {
         options?: number  
 }
 
+export interface OnEndSpanEventListener {
+    onEndSpan(span: SpanBaseModel): void; 
+}
+
 export abstract class SpanBaseModel {
 
     protected _className: string;
     private _id: string;
     private clock: Clock;
-    //------
+    //--Tra----
     private _remoteParent: string;
     private _name: string;
     private _started: boolean;
@@ -163,7 +167,6 @@ export abstract class SpanBaseModel {
         this._started = false;
         this._ended = true;
         this.clock.end();
-
     }
 
 

@@ -18,15 +18,18 @@ import { Span } from './span'
 import { Clock } from '../../internal/clock'
 import * as uuid from 'uuid';
 import { debug } from '../../internal/util'
-import { SpanBaseModel, TraceContext } from '../types/tracetypes'
+import { SpanBaseModel, TraceContext, OnEndSpanEventListener } from '../types/tracetypes'
+import { Tracer } from './tracer';
 
-export class RootSpan extends SpanBaseModel {
+export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
+    private tracer: Tracer;
     private _spans: Span[];
     private _traceId: string;
 
-    constructor(context?: TraceContext ) {
+    constructor(tracer: Tracer, context?: TraceContext ) {
         super()
+        this.tracer = tracer;
         this._traceId = context&&context.traceId?context.traceId:(uuid.v4().split('-').join(''));
         this._spans = [];
     }
@@ -61,6 +64,12 @@ export class RootSpan extends SpanBaseModel {
                 startTime: this.startTime,
                 endTime: this.endTime,
                 duration: this.duration })
+        
+        this.tracer.onEndSpan(this)
+    }
+
+    public onEndSpan(span: Span) {
+        debug('%s notified ending by %o',{id: span.id, name: span.name})
     }
 
     public startSpan(name: string, type: string) {
