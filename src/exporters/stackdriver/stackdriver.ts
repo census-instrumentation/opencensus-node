@@ -21,7 +21,7 @@ import { StackdriverOptions } from './options'
 import { Exporter } from '../exporter'
 import { google } from 'googleapis'
 import { JWT } from 'google-auth-library'
-import { Trace } from '../../trace/model/trace'
+import { RootSpan } from '../../trace/model/rootspan'
 
 const cloudTrace = google.cloudtrace('v1');
 
@@ -35,7 +35,7 @@ export class Stackdriver implements Exporter {
     }
 
     // TODO: Rename to "writeTrace"
-    public writeTrace(trace: Trace) {
+    public writeTrace(trace: RootSpan) {
         // Builds span data
         let spanList = []
         trace.spans.forEach(span => {

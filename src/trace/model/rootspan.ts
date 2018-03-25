@@ -18,16 +18,16 @@ import { Span } from './span'
 import { Clock } from '../../internal/clock'
 import * as uuid from 'uuid';
 import { debug } from '../../internal/util'
-import { TraceBaseModel } from '../types/tracetypes'
+import { SpanBaseModel, TraceContext } from '../types/tracetypes'
 
-export class Trace extends TraceBaseModel {
+export class RootSpan extends SpanBaseModel {
 
     private _spans: Span[];
     private _traceId: string;
 
-    constructor() {
+    constructor(context?: TraceContext ) {
         super()
-        this.setId((uuid.v4().split('-').join('')));
+        this._traceId = context&&context.traceId?context.traceId:(uuid.v4().split('-').join(''));
         this._spans = [];
     }
 
@@ -41,7 +41,7 @@ export class Trace extends TraceBaseModel {
 
     public start() {
         super.start()
-        debug('starting trace  %o', { traceId: this.traceId })
+        debug('starting %s  %o', this._className, { traceId: this.traceId, id: this.id })
     }
 
     public end() {
@@ -53,14 +53,14 @@ export class Trace extends TraceBaseModel {
             span.truncate()
         })
 
-        debug('ending trace  %o',
-            {
-                id: this.id,
+        debug('ending %s  %o',
+            this._className,
+            {   id: this.id,
+                traceId: this.traceId,
                 name: this.name,
                 startTime: this.startTime,
                 endTime: this.endTime,
-                duration: this.duration
-            })
+                duration: this.duration })
     }
 
     public startSpan(name: string, type: string) {

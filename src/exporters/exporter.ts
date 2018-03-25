@@ -16,9 +16,13 @@
 
 
 import {ExporterOptions} from './exporterOptions'
-import {Trace} from '../trace/model/trace'
+import {RootSpan} from '../trace/model/rootspan'
 
 export interface Exporter {
-    
-    writeTrace(trace: Trace);
+    writeTrace(root: RootSpan);
 }
+
+export class NoopExporter implements Exporter {
+    writeTrace(root: RootSpan) {}
+}
+

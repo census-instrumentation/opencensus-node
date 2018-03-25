@@ -15,7 +15,7 @@
  */
 
 import * as cls from '../internal/cls'
-import { Trace } from './model/trace'
+import { RootSpan } from './model/rootspan'
 import { Span } from './model/span'
 import { PluginLoader } from './plugins/pluginloader'
 import { debug } from '../internal/util'
@@ -50,7 +50,12 @@ export class Tracing {
         return this;
     }
 
-    public get Tracer(): Tracer {
+    public stop() {
+        this._active = false;
+        this._tracer.stop();
+    }
+    
+    public get Tracer() : Tracer {
         return this._tracer;
     }
 

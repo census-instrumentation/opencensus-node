@@ -17,7 +17,7 @@
 
 import { Exporter } from "../exporter"
 import { ZipkinOptions } from "./options"
-import { Trace } from "../../trace/model/trace";
+import { RootSpan } from "../../trace/model/rootspan";
 import * as http from "http"
 
 export class Zipkin implements Exporter {
@@ -29,7 +29,7 @@ export class Zipkin implements Exporter {
         this.serviceName = options.serviceName;
     }
     
-    writeTrace(trace: Trace) {
+    writeTrace(trace: RootSpan) {
         let spans = [];
 
         let spanRoot = {
