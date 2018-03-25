@@ -59,7 +59,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchCommand (self: MongoDBPlugin) {
     return function (orig) { 
         return function (ns, cmd) {
-          var trace = self.tracer.currentTrace
+          var trace = self.tracer.currentRootSpan
           var id = trace && trace.id
           var span
 
@@ -96,7 +96,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchQuery (self: MongoDBPlugin) {
     return function (orig, name) {
         return function  (ns) {
-          var trace = self.tracer.currentTrace
+          var trace = self.tracer.currentRootSpan
           var id = trace && trace.id
           var span
 
@@ -125,7 +125,7 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchCursor(self: MongoDBPlugin) {
     return function (orig, name) {
         return function  () {
-          var trace = self.tracer.currentTrace
+          var trace = self.tracer.currentRootSpan
           var id = trace && trace.id
           var span
 

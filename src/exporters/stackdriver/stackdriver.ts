@@ -35,22 +35,22 @@ export class Stackdriver implements Exporter {
     }
 
     // TODO: Rename to "writeTrace"
-    public writeTrace(trace: RootSpan) {
+    public writeTrace(root: RootSpan) {
         // Builds span data
         let spanList = []
-        trace.spans.forEach(span => {
+        root.spans.forEach(span => {
             spanList.push(this.translateSpan(span));
         });
 
         // Builds root span data
-        spanList.push(this.translateSpan(trace));
+        spanList.push(this.translateSpan(root));
 
         // Builds trace data
         let resource = {
             "traces": [
                 {
                     "projectId": this.projectId,
-                    "traceId": trace.traceId,
+                    "traceId": root.traceId,
                     "spans": spanList
                 }
             ]
@@ -98,5 +98,9 @@ export class Stackdriver implements Exporter {
             }
             callback(projectId, authClient, resource);
         });
+    }
+
+    public onEndSpan(rootSpan: RootSpan) {
+        this.writeTrace(rootSpan);
     }
 }

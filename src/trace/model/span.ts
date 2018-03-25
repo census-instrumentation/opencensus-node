@@ -22,10 +22,10 @@ import { SpanBaseModel, TraceContext } from '../types/tracetypes'
 
 export class Span extends SpanBaseModel {
 
-    private root: SpanBaseModel;
+    private root: RootSpan;
   //  private _parentSpanId: string;
 
-    constructor(root: SpanBaseModel) {
+    constructor(root: RootSpan) {
         super()
         this.root = root;
     }
@@ -56,8 +56,13 @@ export class Span extends SpanBaseModel {
             })
     }
 
+    private notifyEnd () {
+        this.root.onEndSpan(this);
+    }
+
     public end(): void {
         super.end();
+        this.notifyEnd();
         debug('ending span  %o',
             {
                 spanId: this.id,

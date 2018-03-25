@@ -19,6 +19,7 @@ import { Exporter } from "../exporter"
 import { ZipkinOptions } from "./options"
 import { RootSpan } from "../../trace/model/rootspan";
 import * as http from "http"
+import { debug } from "../../internal/util"
 
 export class Zipkin implements Exporter {
     url: string;
@@ -29,16 +30,16 @@ export class Zipkin implements Exporter {
         this.serviceName = options.serviceName;
     }
     
-    writeTrace(trace: RootSpan) {
+    writeTrace(root: RootSpan) {
         let spans = [];
 
         let spanRoot = {
-            "traceId": trace.traceId,
-            "name": trace.name,
-            "id": trace.id,
-            "kind": "CLIENT",
-            "timestamp": trace.startTime,
-            "duration": trace.duration,
+            "traceId": root.traceId,
+            "name": root.name,
+            "id": root.id,
+            "kind": "SERVER",
+            "timestamp": root.startTime.getTime()*1000,
+            "duration": root.duration*1000000,
             "debug": true,
             "shared": true,
             "localEndpoint": {
@@ -47,15 +48,15 @@ export class Zipkin implements Exporter {
         }
         spans.push(spanRoot);
 
-        for (let span of trace.spans) {
+        for (let span of root.spans) {
             let spanObj = {
-                "traceId": trace.traceId,
-                "parentId": trace.id,
+                "traceId": root.traceId,
+                "parentId": root.id,
                 "name": span.name,
                 "id": span.id,
-                "kind": "CLIENT",
-                "timestamp": span.startTime,
-                "duration": span.duration,
+                "kind": "SERVER",
+                "timestamp": span.startTime.getTime()*1000,
+                "duration": span.duration*1000000,
                 "debug": true,
                 "shared": true,
                 "localEndpoint": {
@@ -77,23 +78,32 @@ export class Zipkin implements Exporter {
 
 
         const req = http.request(options, (res) => {
-            console.log(`STATUS: ${res.statusCode}`);
-            console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+            debug(`STATUS: ${res.statusCode}`);
+            debug(`HEADERS: ${JSON.stringify(res.headers)}`);
             res.setEncoding('utf8');
             res.on('data', (chunk) => {
-                console.log(`BODY: ${chunk}`);
+                debug(`BODY: ${chunk}`);
             });
             res.on('end', () => {
-                console.log('No more data in response.');
+                debug('No more data in response.');
             });
         });
 
         req.on('error', (e) => {
-            console.error(`problem with request: ${e.message}`);
+            debug(`problem with request: ${e.message}`);
         });
 
         // write data to request body
-        req.write(spans);
+        let spansJson: string[] = spans.map((span)=> JSON.stringify(span));
+        spansJson.join("");
+        let outputJson:string = `[${spansJson}]`
+        debug('Zipkins span list Json: %s', outputJson);
+        req.write(outputJson);
         req.end();
     }
+
+    public onEndSpan(rootSpan: RootSpan) {
+        this.writeTrace(rootSpan);
+    }
+
 }
