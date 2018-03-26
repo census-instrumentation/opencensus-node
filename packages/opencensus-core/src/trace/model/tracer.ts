@@ -15,90 +15,107 @@
  */
 
 import * as cls from '../../internal/cls'
-import { Trace } from './trace'
+import { RootSpan } from './rootspan'
 import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
-import { Exporter } from '../../exporters/exporter'
+import { TraceContext, OnEndSpanEventListener } from '../types/tracetypes';
+import { TracerConfig, defaultConfig } from '../tracing';
 
 export type Func<T> = (...args: any[]) => T;
 
-export class Tracer {
+
+export class Tracer implements OnEndSpanEventListener {
 
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express'];
 
     private _active: boolean;
     private contextManager: cls.Namespace;
-    private exporter: Exporter;
+    private config: TracerConfig;
 
+    //TODO: simple solution - to be rewied in future
+    private eventListeners: OnEndSpanEventListener[] = [];   
     //TODO: temp solution 
-    private endedTraces: Trace[] = [];
+    private endedTraces: RootSpan[] = [];
 
     constructor() {
         this._active = false;
         this.contextManager = cls.createNamespace();
     }
 
-    public get currentTrace(): Trace {
-        return this.contextManager.get('trace');
+    public get currentRootSpan(): RootSpan {
+        return this.contextManager.get('rootspan');
     }
 
-    private setCurrentTrace(trace: Trace) {
-        this.contextManager.set('trace', trace);
+    private setCurrentRootSpan(root: RootSpan) {
+        this.contextManager.set('rootspan', root);
     }
 
-    public start(config?: Object): Tracer {
+    public start(config?: TracerConfig): Tracer {
         this._active = true;
+        this.config = config || defaultConfig;
         return this;
+    }
+
+    public stop() {
+        this._active = false;
     }
 
     public get active(): boolean {
         return this._active;
     }
 
-    public startTrace(): Trace {
-        let newTrace = new Trace();
-        this.setCurrentTrace(newTrace);
+    public startRootSpan(context?: TraceContext): RootSpan {
+        let newTrace = new RootSpan(this, context);
+        this.setCurrentRootSpan(newTrace);
         newTrace.start();
         return newTrace;
     }
 
-    public endTrace(): void {
-        if (!this.currentTrace) {
+
+    public onEndSpan(root:RootSpan): void {
+        if (!this.currentRootSpan) {
             return debug('cannot end trace - no active trace found')
         }
-        this.currentTrace.end();
-        this.addEndedTrace(this.currentTrace);
+        if(this.currentRootSpan != root) {
+            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.') 
+        }
+        this.notifyEndSpan(this.currentRootSpan);
         //this.clearCurrentTrace();
     }
 
+    //TODO: review
+    public runInContex<T>(fn: Func<T>): T {
+        return this.contextManager.runAndReturn (fn)
+    }
+    
+    public registerEndSpanListener(listner: OnEndSpanEventListener) {
+            this.eventListeners.push(listner);
+    }
+
+    private notifyEndSpan(root: RootSpan) {
+        if (this.active) {
+            if(this.eventListeners&&this.eventListeners.length >0) {
+                this.eventListeners.forEach((listener) => listener.onEndSpan(root))
+            }
+        } else {
+            debug ('this tracer is inactivate cant notify endspan')
+        }
+    }
+
     public clearCurrentTrace() {
-        this.setCurrentTrace(null);
+        this.setCurrentRootSpan(null);
     }
 
     public startSpan(name: string, type: string): Span {
         let newSpan: Span = null;
-        if (!this.currentTrace) {
+        if (!this.currentRootSpan) {
             debug('no current trace found - cannot start a new span');
         } else {
-            newSpan = this.currentTrace.startSpan(name, type);
+            newSpan = this.currentRootSpan.startSpan(name, type);
         }
         return newSpan;
-    }
-
-    /*public endSpan(span: Span) {
-        debug('END SPAN', span);
-        span.end();
-        this.exporter.emit(this.currentTrace);
-    }*/
-
-    private addEndedTrace(trace: Trace) {
-        if (this.active) {
-            //TODO: temp solution
-            //this.endedTraces.push(trace);
-            this.exporter.writeTrace(this.currentTrace);
-        }
     }
 
     public wrap<T>(fn: Func<T>): Func<T> {
@@ -119,10 +136,6 @@ export class Tracer {
         // This is safe because isActive checks the value of this.namespace.
         const namespace = this.contextManager as cls.Namespace;
         namespace.bindEmitter(emitter);
-    }
-
-    public registerExporter(exporter: Exporter) {
-        this.exporter = exporter;
     }
 
 }

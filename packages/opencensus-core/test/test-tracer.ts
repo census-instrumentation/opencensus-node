@@ -14,29 +14,26 @@
  * limitations under the License.
  */
 
-import { Tracer } from '../src/trace/model/tracer';
-import { Trace } from '../src/trace/model/trace';
+import { Tracer, defaultConfig } from '../src/trace/model/tracer';
+import { RootSpan } from '../src/trace/model/trace';
 import { Span } from '../src/trace/model/span';
-import { Exporter } from '../src/exporters/exporter';
+import { Exporter, NoopExporter } from '../src/exporters/exporter';
 
 let assert = require('assert');
 
-class NoopExporter implements Exporter {
-  emit(trace: Trace) {}
-}
 
-let noopExporter = new NoopExporter();
+let noopExporter = new NoopExporter ();
 
 describe('Tracer', function () {
   describe('new Tracer()', function () {
     it('should be a Tracer instance', function () {
-      let tracer = new Tracer(noopExporter);
+      let tracer = new Tracer();
       assert.ok(tracer instanceof Tracer);
     });
   });
 
   describe('start()', function () {
-    let tracer = new Tracer(noopExporter);
+    let tracer = new Tracer();
     let tracerStarted = tracer.start();
 
     it('should return a tracer instance', function () {
@@ -53,12 +50,12 @@ describe('Tracer', function () {
     let trace;
 
     before(() => {
-      tracer = new Tracer(noopExporter);
+      tracer = new Tracer();
       trace = tracer.startTrace();
     })
 
     it('should return a Trace instance', function () {
-      assert.ok(trace instanceof Trace);
+      assert.ok(trace instanceof RootSpan);
     });
 
     it('the new trace was set as current trace', function () {
@@ -72,25 +69,25 @@ describe('Tracer', function () {
 
   describe('endTrace()', function () {
     it('the current trace was ended', function () {
-      let tracer = new Tracer(noopExporter);
-      let trace = tracer.startTrace();
-      tracer.endTrace();
+      let tracer = new Tracer();
+      let trace = tracer.startRootSpan();
+      tracer.endRootSpan();
       assert.ok(trace.ended);
     });
   });
 
   describe('clearCurrentTrace()', function () {
     it('the current trace is null', function () {
-      let tracer = new Tracer(noopExporter);
-      let trace = tracer.startTrace();
+      let tracer = new Tracer();
+      let trace = tracer.startRootSpan();
       tracer.clearCurrentTrace();
       assert.ok(tracer.currentTrace == null);
     });
   });
 
   describe('startSpan()', function () {
-    let tracer = new Tracer(noopExporter);
-    let trace = tracer.startTrace();
+    let tracer = new Tracer();
+    let trace = tracer.startRootSpan();
     let span = tracer.startSpan("spanName", "spanType");
     it('should return a Span instance', function () {
       assert.ok(span instanceof Span);

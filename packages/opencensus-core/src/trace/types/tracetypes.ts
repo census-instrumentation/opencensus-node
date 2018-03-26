@@ -21,22 +21,32 @@ import { debug, randomSpanId } from '../../internal/util'
 export interface MapLabels { [propName: string]: string; }
 export interface MapObjects { [propName: string]: any; }
 
-export abstract class TraceBaseModel {
+export interface TraceContext {
+        traceId: string,
+        spanId: string,
+        options?: number  
+}
 
-    private _className: string;
+export interface OnEndSpanEventListener {
+    onEndSpan(span: SpanBaseModel): void; 
+}
+
+export abstract class SpanBaseModel {
+
+    protected _className: string;
     private _id: string;
     private clock: Clock;
-    //------
+    //--Tra----
     private _remoteParent: string;
-    private attributes: MapLabels = {};
-    private annotations: MapObjects = {};
-    //messageEvents
-    //links
     private _name: string;
     private _started: boolean;
     private _ended: boolean;
     private _type: string;
     private _status: number;
+    private attributes: MapLabels = {};
+    private annotations: MapObjects = {};
+    //messageEvents
+    //links
     //TODO truncated 
     private _truncated: boolean;
 
@@ -113,7 +123,7 @@ export abstract class TraceBaseModel {
         return this.clock.duration;
     }
 
-    public get traceContext() {
+    public get traceContext(): TraceContext {
         return {
             traceId: this.traceId.toString(),
             spanId: this.id.toString(),
@@ -157,7 +167,6 @@ export abstract class TraceBaseModel {
         this._started = false;
         this._ended = true;
         this.clock.end();
-
     }
 
 

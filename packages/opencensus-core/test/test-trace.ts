@@ -14,31 +14,34 @@
  * limitations under the License.
  */
 
-import { Trace } from '../src/trace/model/trace';
+import { RootSpan } from '../src/trace/model/rootspan';
 import { Span } from '../src/trace/model/span';
+import { Tracer } from '../src/trace/model/tracer';
+import { SpanBaseModel } from '../src/trace/types/tracetypes';
 
 let assert = require('assert');
+let tracer = new Tracer()
 
 describe('Trace', function () {
   describe('new Trace()', function () {    
     it('should be a Trace instance', function () {
-      let trace = new Trace();
-      assert.ok(trace instanceof Trace);
+      let root = new RootSpan(tracer);
+      assert.ok(root instanceof SpanBaseModel);
     });
   });
 
   describe('start()', function () {
     it('the trace was started', function () {
-      let trace = new Trace();
-      trace.start();
-      assert.ok(trace.started);
+      let root = new RootSpan(tracer);
+      root.start();
+      assert.ok(root.started);
     });
   });
 
   describe('startSpan()', function () {
-    let trace = new Trace();
-    trace.start()
-    let span = trace.startSpan("spanName", "spanType");
+    let root = new RootSpan(tracer);
+    root.start()
+    let span = root.startSpan("spanName", "spanType");
     it('should return a Span instance', function () {
       assert.ok(span instanceof Span);
     });
@@ -50,35 +53,35 @@ describe('Trace', function () {
 
   describe('end()', function () {
     it('the trace was ended', function () {
-      let trace = new Trace();
-      trace.start()
-      trace.end();
-      assert.ok(trace.ended);
+      let root = new RootSpan(tracer);
+      root.start()
+      root.end();
+      assert.ok(root.ended);
     });
   });
 
   describe('end() before trace started', function () {
     it('the trace was not ended', function () {
-      let trace = new Trace();
-      trace.end();
-      assert.ok(!trace.ended);
+      let root = new RootSpan(tracer);
+      root.end();
+      assert.ok(!root.ended);
     });
   });
 
   describe('startSpan() before trace started', function () {
     it('should return null', function () {
-      let trace = new Trace();
-      let span = trace.startSpan("spanName", "spanType");
+      let root = new RootSpan(tracer);
+      let span = root.startSpan("spanName", "spanType");
       assert.ok(span == null);
     });
   });
 
   describe('startSpan() after trace ended', function () {
     it('should return null', function () {
-      let trace = new Trace();
-      trace.start()
-      trace.end();
-      let span = trace.startSpan("spanName", "spanType");
+      let root = new RootSpan(tracer);
+      root.start()
+      root.end();
+      let span = root.startSpan("spanName", "spanType");
       assert.ok(span == null);
     });
   });

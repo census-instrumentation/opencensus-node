@@ -15,30 +15,30 @@
  */
 
 import { Clock } from '../../internal/clock'
-import { Trace } from './trace'
+import { RootSpan } from './rootspan'
 import { debug, randomSpanId } from '../../internal/util'
-import { TraceBaseModel } from '../types/tracetypes'
+import { SpanBaseModel, TraceContext } from '../types/tracetypes'
 
 
-export class Span extends TraceBaseModel {
+export class Span extends SpanBaseModel {
 
-    private trace: TraceBaseModel;
-    // private _parentSpanId: string;
+    private root: RootSpan;
+  //  private _parentSpanId: string;
 
-    constructor(trace: TraceBaseModel) {
+    constructor(root: RootSpan) {
         super()
-        this.trace = trace;
+        this.root = root;
     }
 
     public get traceId(): string {
-        return this.trace.traceId;
+        return this.root.traceId;
     }
 
     public get parentSpanId(): string {
-        return this.trace.id;
+        return this.root.id;
     }
 
-    public get traceContext() {
+    public get traceContext(): TraceContext {
         return {
             traceId: this.traceId.toString(),
             spanId: this.id.toString(),
@@ -50,18 +50,23 @@ export class Span extends TraceBaseModel {
         super.start();
         debug('starting span  %o',
             {
-                id: this.id,
                 traceId: this.traceId,
+                spanId: this.id,
                 name: this.name
             })
     }
 
+    private notifyEnd () {
+        this.root.onEndSpan(this);
+    }
+
     public end(): void {
         super.end();
+        this.notifyEnd();
         debug('ending span  %o',
             {
                 spanId: this.id,
-                traceId: this.trace.id,
+                traceId: this.traceId,
                 name: this.name,
                 startTime: this.startTime,
                 endTime: this.endTime,

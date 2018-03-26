@@ -15,23 +15,28 @@
  */
 
 import { Span } from '../src/trace/model/span';
-import { Trace } from '../src/trace/model/trace';
+import { RootSpan } from '../src/trace/model/rootspan';
+import { SpanBaseModel } from '../src/trace/types/tracetypes';
+import { Tracer } from '../src/trace/model/tracer';
+
 
 var assert = require('assert');
 
+let tracer = new Tracer()
+
 describe('Span creation', function () {
 
-    let trace;
+    let root;
     let span;
 
     before(function () {
-        trace = new Trace();
-        span = trace.startSpan('spanName', 'typeSpan');
+        root = new RootSpan(tracer);
+        span = root.startSpan('spanName', 'typeSpan');
     });
 
     it('should create an span on the trace', function () {
-        assert.ok(trace instanceof Trace);
-        span = trace.startSpan('spanName', 'typeSpan');
+        assert.ok(root instanceof SpanBaseModel);
+        span = root.startSpan('spanName', 'typeSpan');
         assert.ok(span instanceof Span);
         assert.ok(span.id);
     });
@@ -49,12 +54,12 @@ describe('Span creation', function () {
 
 describe('Span checking creation', function () {
 
-    let trace;
+    let root;
     let span;
 
     before(function () {
-        trace = new Trace();
-        span = trace.startSpan('spanName', 'typeSpan');
+        root = new RootSpan(tracer);
+        span = root.startSpan('spanName', 'typeSpan');
     });
 
     it('should not start span after it ended', function () {
@@ -65,16 +70,16 @@ describe('Span checking creation', function () {
 
 describe('Span data', function () {
 
-    let trace;
+    let root;
 
     before(function () {
-        trace = new Trace();
+        root = new RootSpan(tracer);
     });
 
     it('generates unique numeric span ID strings', function () {
         var numberOfSpansToCheck = 5;
         for (var i = 0; i < numberOfSpansToCheck; i++) {
-            var span = trace.startSpan('spanName' + i, 'typeSpan' + i);
+            var span = root.startSpan('spanName' + i, 'typeSpan' + i);
             var spanId = span.id;
             assert.ok(typeof spanId === 'string');
             assert.ok(spanId.match(/\d+/));

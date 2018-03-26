@@ -14,34 +14,37 @@
  * limitations under the License.
  */
 
-import * as uuid from 'uuid'
-
 import { Span } from './span'
 import { Clock } from '../../internal/clock'
+import * as uuid from 'uuid';
 import { debug } from '../../internal/util'
-import { TraceBaseModel } from '../types/tracetypes'
+import { SpanBaseModel, TraceContext, OnEndSpanEventListener } from '../types/tracetypes'
+import { Tracer } from './tracer';
 
-export class Trace extends TraceBaseModel {
+export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
-    private _spans: Span[] = [];
+    private tracer: Tracer;
+    private _spans: Span[];
     private _traceId: string;
 
-    constructor() {
+    constructor(tracer: Tracer, context?: TraceContext ) {
         super()
-        this._traceId = (uuid.v4().split('-').join(''));
+        this.tracer = tracer;
+        this._traceId = context&&context.traceId?context.traceId:(uuid.v4().split('-').join(''));
+        this._spans = [];
     }
 
-    public get spans(): Span[] {
+    public get spans() {
         return this._spans;
     }
 
-    public get traceId(): string {
+    public get traceId() {
         return this._traceId;
     }
 
     public start() {
         super.start()
-        debug('starting trace  %o', { traceId: this.traceId })
+        debug('starting %s  %o', this._className, { traceId: this.traceId, id: this.id })
     }
 
     public end() {
@@ -53,14 +56,20 @@ export class Trace extends TraceBaseModel {
             span.truncate()
         })
 
-        debug('ending trace  %o',
-            {
-                id: this.id,
+        debug('ending %s  %o',
+            this._className,
+            {   id: this.id,
+                traceId: this.traceId,
                 name: this.name,
                 startTime: this.startTime,
                 endTime: this.endTime,
-                duration: this.duration
-            })
+                duration: this.duration })
+        
+        this.tracer.onEndSpan(this)
+    }
+
+    public onEndSpan(span: Span) {
+        debug('%s notified ending by %o',{id: span.id, name: span.name})
     }
 
     public startSpan(name: string, type: string) {
