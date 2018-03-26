@@ -91,6 +91,7 @@ export class Tracer implements OnEndSpanEventListener {
     }
     
     public registerEndSpanListener(listner: OnEndSpanEventListener) {
+
             this.eventListeners.push(listner);
     }
 
