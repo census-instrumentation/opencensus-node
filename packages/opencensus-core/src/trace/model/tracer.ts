@@ -20,8 +20,10 @@ import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
+import { Exporter } from '../../exporters/exporter'
 import { TraceContext, OnEndSpanEventListener } from '../types/tracetypes';
 import { TracerConfig, defaultConfig } from '../tracing';
+import { Buffer } from '../../exporters/buffer'
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -30,12 +32,13 @@ export class Tracer implements OnEndSpanEventListener {
 
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express'];
 
+    //public buffer: Buffer;
     private _active: boolean;
     private contextManager: cls.Namespace;
     private config: TracerConfig;
 
     //TODO: simple solution - to be rewied in future
-    private eventListeners: OnEndSpanEventListener[] = [];   
+    private eventListeners: OnEndSpanEventListener[] = [];
     //TODO: temp solution 
     private endedTraces: RootSpan[] = [];
 
@@ -58,6 +61,10 @@ export class Tracer implements OnEndSpanEventListener {
         return this;
     }
 
+    public getEventListeners(): OnEndSpanEventListener[] {
+        return this.eventListeners;
+    }
+
     public stop() {
         this._active = false;
     }
@@ -74,12 +81,12 @@ export class Tracer implements OnEndSpanEventListener {
     }
 
 
-    public onEndSpan(root:RootSpan): void {
+    public onEndSpan(root: RootSpan): void {
         if (!this.currentRootSpan) {
             return debug('cannot end trace - no active trace found')
         }
-        if(this.currentRootSpan != root) {
-            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.') 
+        if (this.currentRootSpan != root) {
+            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.')
         }
         this.notifyEndSpan(this.currentRootSpan);
         //this.clearCurrentTrace();
@@ -87,21 +94,27 @@ export class Tracer implements OnEndSpanEventListener {
 
     //TODO: review
     public runInContex<T>(fn: Func<T>): T {
-        return this.contextManager.runAndReturn (fn)
+        return this.contextManager.runAndReturn(fn)
+    }
+
+    public registerEndSpanListener(listener: OnEndSpanEventListener) {
+        this.eventListeners.push(listener);
+        //this.buffer.registerExporter(exporter)
     }
     
-    public registerEndSpanListener(listner: OnEndSpanEventListener) {
-
-            this.eventListeners.push(listner);
-    }
+    /*public registerExporter(exporter: Exporter) {
+        //this.eventListeners.push(listner);
+        this.buffer.registerExporter(exporter)
+    }*/
 
     private notifyEndSpan(root: RootSpan) {
         if (this.active) {
-            if(this.eventListeners&&this.eventListeners.length >0) {
+            //this.buffer.onEndSpan(root);
+            if (this.eventListeners && this.eventListeners.length > 0) {
                 this.eventListeners.forEach((listener) => listener.onEndSpan(root))
             }
         } else {
-            debug ('this tracer is inactivate cant notify endspan')
+            debug('this tracer is inactivate cant notify endspan')
         }
     }
 
