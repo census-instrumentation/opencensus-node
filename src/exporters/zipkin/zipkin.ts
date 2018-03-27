@@ -38,8 +38,8 @@ export class Zipkin implements Exporter {
             "name": root.name,
             "id": root.id,
             "kind": "SERVER",
-            "timestamp": root.startTime.getTime()*1000,
-            "duration": root.duration*1000000,
+            "timestamp": (root.startTime.getTime()*1000).toFixed(),
+            "duration": (root.duration*1000).toFixed(),
             "debug": true,
             "shared": true,
             "localEndpoint": {
@@ -55,8 +55,8 @@ export class Zipkin implements Exporter {
                 "name": span.name,
                 "id": span.id,
                 "kind": "SERVER",
-                "timestamp": span.startTime.getTime()*1000,
-                "duration": span.duration*1000000,
+                "timestamp": (span.startTime.getTime()*1000).toFixed(),
+                "duration": (span.duration*1000).toFixed(),
                 "debug": true,
                 "shared": true,
                 "localEndpoint": {
