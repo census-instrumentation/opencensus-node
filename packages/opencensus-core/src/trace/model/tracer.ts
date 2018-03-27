@@ -67,10 +67,10 @@ export class Tracer implements OnEndSpanEventListener {
     }
 
     public startRootSpan(context?: TraceContext): RootSpan {
-        let newTrace = new RootSpan(this, context);
-        this.setCurrentRootSpan(newTrace);
-        newTrace.start();
-        return newTrace;
+        let newRootSpan = new RootSpan(this, context);
+        this.setCurrentRootSpan(newRootSpan);
+        newRootSpan.start();
+        return newRootSpan;
     }
 
 
