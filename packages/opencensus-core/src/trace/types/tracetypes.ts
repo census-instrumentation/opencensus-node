@@ -16,6 +16,7 @@
 
 import { Clock } from '../../internal/clock'
 import { debug, randomSpanId } from '../../internal/util'
+import { Sampler } from '../model/sampler'
 
 
 export interface MapLabels { [propName: string]: string; }
@@ -49,6 +50,7 @@ export abstract class SpanBaseModel {
     //links
     //TODO truncated 
     private _truncated: boolean;
+    private _sampler: Sampler;
 
     constructor() {
         this._className = this.constructor.name;
@@ -139,6 +141,16 @@ export abstract class SpanBaseModel {
     //TODO: maybe keys and values must be truncate
     public addAnotation(key: string, value: {}) {
         this.annotations[key] = value;
+    }
+
+    public get sampler(){
+        debug('tracetypes get sampler()')
+        return this._sampler;
+    }
+
+    public set sampler(sampler:Sampler){
+        debug('tracetypes set sempler(sampler)')
+        this._sampler = sampler;
     }
 
     public start() {

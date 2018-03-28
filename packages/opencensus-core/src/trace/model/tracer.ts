@@ -22,8 +22,9 @@ import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
 import { Exporter } from '../../exporters/exporter'
 import { TraceContext, OnEndSpanEventListener } from '../types/tracetypes';
-import { TracerConfig, defaultConfig } from '../tracing';
+import { TracerConfig, defaultConfig } from '../tracing'
 import { Buffer } from '../../exporters/buffer'
+import { Sampler } from './sampler'
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -38,7 +39,7 @@ export class Tracer implements OnEndSpanEventListener {
     private config: TracerConfig;
 
     //TODO: simple solution - to be rewied in future
-    private eventListeners: OnEndSpanEventListener[] = [];
+    private eventListeners: OnEndSpanEventListener[] = [];   
     //TODO: temp solution 
     private endedTraces: RootSpan[] = [];
 
@@ -73,9 +74,16 @@ export class Tracer implements OnEndSpanEventListener {
         return this._active;
     }
 
-    public startRootSpan(context?: TraceContext): RootSpan {
+    public startRootSpan(context?: TraceContext, sampler?: Sampler): RootSpan {
         let newTrace = new RootSpan(this, context);
+        debug("tracer startRootSpan ")
         this.setCurrentRootSpan(newTrace);
+        if(sampler == null){
+            sampler = new Sampler(newTrace.traceId);
+            sampler.always();
+        }
+        debug("tracer startRootSpan ")
+        newTrace.sampler = sampler;
         newTrace.start();
         return newTrace;
     }
@@ -86,7 +94,7 @@ export class Tracer implements OnEndSpanEventListener {
             return debug('cannot end trace - no active trace found')
         }
         if (this.currentRootSpan != root) {
-            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.')
+            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.') 
         }
         this.notifyEndSpan(this.currentRootSpan);
         //this.clearCurrentTrace();
@@ -96,16 +104,11 @@ export class Tracer implements OnEndSpanEventListener {
     public runInContex<T>(fn: Func<T>): T {
         return this.contextManager.runAndReturn(fn)
     }
-
+    
     public registerEndSpanListener(listener: OnEndSpanEventListener) {
         this.eventListeners.push(listener);
         //this.buffer.registerExporter(exporter)
     }
-    
-    /*public registerExporter(exporter: Exporter) {
-        //this.eventListeners.push(listner);
-        this.buffer.registerExporter(exporter)
-    }*/
 
     private notifyEndSpan(root: RootSpan) {
         if (this.active) {

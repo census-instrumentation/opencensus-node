@@ -19,7 +19,8 @@ import { Clock } from '../../internal/clock'
 import * as uuid from 'uuid';
 import { debug } from '../../internal/util'
 import { SpanBaseModel, TraceContext, OnEndSpanEventListener } from '../types/tracetypes'
-import { Tracer } from './tracer';
+import { Tracer } from './tracer'
+import { Sampler } from './sampler'
 
 export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
@@ -73,12 +74,18 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     }
 
     public startSpan(name: string, type: string) {
-        let newSpan = new Span(this);
-        newSpan.name = name
-        newSpan.type = type
-        newSpan.start();
-        this._spans.push(newSpan);
-        return newSpan;
+        if(!this.sampler == null || this.sampler.continue(this._traceId)){
+            let newSpan = new Span(this);
+            newSpan.name = name
+            newSpan.type = type
+            newSpan.start();
+            this._spans.push(newSpan);
+            return newSpan;
+        }else{
+            //TODO
+            debug("ELDREY -> RootSpan return startSpan null")
+            return
+        }
     }
 
 }
