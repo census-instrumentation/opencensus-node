@@ -11,6 +11,7 @@
     "compile-strict": "npm run script compile-auto-strict",
     "compile": "npm run script compile-auto compile-auto-strict",
     "clean": "rimraf build/*",
+    "fix": "gts fix",
     "script": "ts-node -P ./scripts ./scripts"
   },
   "keywords": [
