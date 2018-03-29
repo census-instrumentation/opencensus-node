@@ -19,15 +19,16 @@ import { Exporter } from "../exporter"
 import { ZipkinOptions } from "./options"
 import { RootSpan } from "../../trace/model/rootspan";
 import * as http from "http"
+import * as url from "url";
 import { debug } from "../../internal/util"
 
 export class Zipkin implements Exporter {
-    url: string;
-    serviceName: string;
+    private zipkinUrl_: url.UrlWithStringQuery;
+    private serviceName_: string;
 
     constructor(options: ZipkinOptions) {
-        this.url = options.url;
-        this.serviceName = options.serviceName;
+        this.zipkinUrl_ = url.parse(options.url);
+        this.serviceName_ = options.serviceName;
     }
     
     writeTrace(root: RootSpan) {
@@ -43,7 +44,7 @@ export class Zipkin implements Exporter {
             "debug": true,
             "shared": true,
             "localEndpoint": {
-                "serviceName": this.serviceName
+                "serviceName": this.serviceName_
             }
         }
         spans.push(spanRoot);
@@ -60,16 +61,16 @@ export class Zipkin implements Exporter {
                 "debug": true,
                 "shared": true,
                 "localEndpoint": {
-                    "serviceName": this.serviceName
+                    "serviceName": this.serviceName_
                 }
             }
             spans.push(spanObj);
         }
 
         const options = {
-            hostname: 'localhost',
-            port: 9411,
-            path: '/api/v2/spans',
+            hostname: this.zipkinUrl_.hostname,
+            port: this.zipkinUrl_.port,
+            path: this.zipkinUrl_.path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
