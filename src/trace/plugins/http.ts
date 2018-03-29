@@ -89,44 +89,47 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
           debug('ignoring blacklisted request to %s', req.url)
           // don't leak previous transaction
           traceManager.clearCurrentTrace()
-        } else */ { 
-          let root  = self.tracer.startRootSpan();
-          //TODO: review this logic maybe and request method
-          let method = req.method || 'GET';
-          root.name = method + ' '+ (req.url?(url.parse(req.url).pathname||'/'):'/');
-          root.type = 'request'
 
-          debug('root.name = %s, http method = $s',root.name,method)
-          //trans.req = req
-          //trans.res = res
-          //debug('created trace %o', {id: trace.traceId, name: trace.name, startTime: trace.startTime})
+        } else  { */
+                let method = req.method || 'GET';
+                let name = method + ' '+ (req.url?(url.parse(req.url).pathname||'/'):'/');
 
-          eos(res, function (err) {
-            if (!err) return root.end()
+                return self.tracer.startRootSpan({name:name}, (root) => {
+                  //TODO: review this logic maybe and request method
+                  root.type = 'request'
 
-            /*if (traceManager._conf.errorOnAbortedRequests && !trans.ended) {
-              var duration = Date.now() - trans._timer.start
-              if (duration > traceManager._conf.abortedErrorThreshold) {
-                traceManager.captureError('Socket closed with active HTTP request (>' + (traceManager._conf.abortedErrorThreshold / 1000) + ' sec)', {
-                  request: req,
-                  extra: { abortTime: duration }
-                })
-              }
-            } */
+                  debug('root.name = %s, http method = $s',root.name,method)
+                  //trans.req = req
+                  //trans.res = res
+                  //debug('created trace %o', {id: trace.traceId, name: trace.name, startTime: trace.startTime})
 
-            // Handle case where res.end is called after an error occurred on the
-            // stream (e.g. if the underlying socket was prematurely closed)
-            res.on('prefinish', function () {
-              root.end()
-            })
-          })
+                  eos(res, function (err) {
+                    if (!err) return root.end()
+
+                    /*if (traceManager._conf.errorOnAbortedRequests && !trans.ended) {
+                      var duration = Date.now() - trans._timer.start
+                      if (duration > traceManager._conf.abortedErrorThreshold) {
+                        traceManager.captureError('Socket closed with active HTTP request (>' + (traceManager._conf.abortedErrorThreshold / 1000) + ' sec)', {
+                          request: req,
+                          extra: { abortTime: duration }
+                        })
+                      }
+                    } */
+
+                    // Handle case where res.end is called after an error occurred on the
+                    // stream (e.g. if the underlying socket was prematurely closed)
+                    res.on('prefinish', function () {
+                      root.end()
+                    })
+                  })
+                  return orig.apply(this, arguments)
+           })
+        } else {
+          return orig.apply(this, arguments)
         }
       }
-
-      return orig.apply(this, arguments)
     }
   }
-}
 /*
 function isRequestBlacklisted (agent, req) {
   var i
