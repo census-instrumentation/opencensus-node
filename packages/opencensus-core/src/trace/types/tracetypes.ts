@@ -95,7 +95,7 @@ export abstract class SpanBaseModel {
         this._type = type;
     }
 
-    public set remoteParente(remoteParent: string) {
+    public set remoteParent(remoteParent: string) {
         this._remoteParent = remoteParent;
     }
 

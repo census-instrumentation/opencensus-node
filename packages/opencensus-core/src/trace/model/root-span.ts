@@ -27,10 +27,10 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     private _spans: Span[];
     private _traceId: string;
 
-    constructor(tracer: Tracer, context?: TraceContext ) {
+    constructor(tracer: Tracer, context?: TraceContext) {
         super()
         this.tracer = tracer;
-        this._traceId = context&&context.traceId?context.traceId:(uuid.v4().split('-').join(''));
+        this._traceId = context && context.traceId ? context.traceId : (uuid.v4().split('-').join(''));
         this._spans = [];
     }
 
@@ -58,24 +58,26 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
         debug('ending %s  %o',
             this._className,
-            {   id: this.id,
+            {
+                id: this.id,
                 traceId: this.traceId,
                 name: this.name,
                 startTime: this.startTime,
                 endTime: this.endTime,
-                duration: this.duration })
-        
+                duration: this.duration
+            })
+
         this.tracer.onEndSpan(this)
     }
 
     public onEndSpan(span: Span) {
-        debug('%s notified ending by %o',{id: span.id, name: span.name})
+        debug('%s notified ending by %o', { id: span.id, name: span.name })
     }
 
-    public startSpan(name: string, type: string) {
+    public startSpan(name?: string, type?: string) {
         let newSpan = new Span(this);
-        newSpan.name = name
-        newSpan.type = type
+        if (name) { newSpan.name = name }
+        if (type) { newSpan.type = type }
         newSpan.start();
         this._spans.push(newSpan);
         return newSpan;
