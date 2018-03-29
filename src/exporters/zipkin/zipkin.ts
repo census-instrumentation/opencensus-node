@@ -23,12 +23,12 @@ import * as url from "url";
 import { debug } from "../../internal/util"
 
 export class Zipkin implements Exporter {
-    private zipkinUrl_: url.UrlWithStringQuery;
-    private serviceName_: string;
+    private _zipkinUrl: url.UrlWithStringQuery;
+    private _serviceName: string;
 
     constructor(options: ZipkinOptions) {
-        this.zipkinUrl_ = url.parse(options.url);
-        this.serviceName_ = options.serviceName;
+        this._zipkinUrl = url.parse(options.url);
+        this._serviceName = options.serviceName;
     }
     
     writeTrace(root: RootSpan) {
@@ -44,7 +44,7 @@ export class Zipkin implements Exporter {
             "debug": true,
             "shared": true,
             "localEndpoint": {
-                "serviceName": this.serviceName_
+                "serviceName": this._serviceName
             }
         }
         spans.push(spanRoot);
@@ -61,21 +61,23 @@ export class Zipkin implements Exporter {
                 "debug": true,
                 "shared": true,
                 "localEndpoint": {
-                    "serviceName": this.serviceName_
+                    "serviceName": this._serviceName
                 }
             }
             spans.push(spanObj);
         }
 
         const options = {
-            hostname: this.zipkinUrl_.hostname,
-            port: this.zipkinUrl_.port,
-            path: this.zipkinUrl_.path,
+            hostname: this._zipkinUrl.hostname,
+            port: this._zipkinUrl.port,
+            path: this._zipkinUrl.path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             }
         };
+        
+        debug('Zipkins exporter options: %o', { hostname: options.hostname,  port: options.port, path: options.path});
 
 
         const req = http.request(options, (res) => {
@@ -98,7 +100,7 @@ export class Zipkin implements Exporter {
         let spansJson: string[] = spans.map((span)=> JSON.stringify(span));
         spansJson.join("");
         let outputJson:string = `[${spansJson}]`
-        //debug('Zipkins span list Json: %s', outputJson);
+     //   debug('Zipkins span list Json: %s', outputJson);
         req.write(outputJson);
         req.end();
     }
