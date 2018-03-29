@@ -77,12 +77,16 @@ export class Tracer implements OnEndSpanEventListener {
         return this.contextManager.runAndReturn((root) => {
             let newRoot = new RootSpan(this, options);
             this.setCurrentRootSpan(newRoot);
-            if(sampler == null){
-                sampler = new Sampler(newTrace.traceId);
-                sampler.always();
+            debug('ELDREY -> START ROOT SPAN OPTIONS: ',options);
+            if(options.sampler == null){
+                options.sampler = new Sampler(newRoot.traceId);
+                options.sampler.always();
             }
-            newRoot.sampler = sampler;
-            newRoot.start();
+            newRoot.sampler = options.sampler;
+            if(newRoot.sampler.continue(newRoot.traceId)){
+                debug('ELDREY -> START ROOT SPAN .START()');
+                newRoot.start();
+            }
             return fn(newRoot);
         });
     }
@@ -124,7 +128,7 @@ export class Tracer implements OnEndSpanEventListener {
         let newSpan: Span = null;
         if (!this.currentRootSpan) {
             debug('no current trace found - cannot start a new span');
-        } else {
+        } else{
             newSpan = this.currentRootSpan.startSpan(name, type);
         }
         return newSpan;

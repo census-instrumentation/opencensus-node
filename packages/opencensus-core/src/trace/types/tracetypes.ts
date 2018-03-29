@@ -31,6 +31,7 @@ export interface TraceContext {
 export interface TraceOptions {
     name:string;
     traceContext?:TraceContext;
+    sampler?:Sampler;
 }
 
 export interface OnEndSpanEventListener {

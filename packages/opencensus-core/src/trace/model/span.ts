@@ -61,19 +61,20 @@ export class Span extends SpanBaseModel {
     }
 
     public end(): void {
-        super.end();
-        this.notifyEnd();
-        debug('ending span  %o',
-            {
-                spanId: this.id,
-                traceId: this.traceId,
-                name: this.name,
-                startTime: this.startTime,
-                endTime: this.endTime,
-                duration: this.duration
-            }
-        )
-
+        // if(this.sampler.continue(this.traceId)) {
+            
+            super.end();
+            this.notifyEnd();
+            debug('ending span  %o',
+                {
+                    spanId: this.id,
+                    traceId: this.traceId,
+                    name: this.name,
+                    startTime: this.startTime,
+                    endTime: this.endTime,
+                    duration: this.duration
+                });
+        // }
     }
 
 

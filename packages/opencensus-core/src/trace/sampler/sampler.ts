@@ -18,7 +18,7 @@ import { debug, randomSpanId } from '../../internal/util'
 
 
 const minNumber = 1e-4;
-const maxNumber = 1;
+const maxNumber = 0xffffffffffffffff;
 
 export class Sampler{
      traceId:       string;
@@ -69,13 +69,15 @@ export class Sampler{
 
      public continue (traceId:string):boolean{
         debug('Samplre continue')
-        let lower_bytes = traceId.substring(traceId.length - 4)
+        let lower_bytes = traceId.substring(16)
         let j;
         let lower_long: number
-        for(j = 0; j < lower_bytes.length; j++) {
-            lower_long =  lower_bytes.charCodeAt(j);
-        }
+        debug('ELDREY -> SAMPLER CONTINUE lower_bytes :',lower_bytes)
 
+        lower_long = parseInt(lower_bytes, 16);
+
+        debug('ELDREY -> SAMPLER CONTINUE lower_long :',lower_long)
+        debug('ELDREY -> SAMPLER CONTINUE this.idUpperBound :',this.idUpperBound)
         if(lower_long <= this.idUpperBound){
             return true
         }else{

@@ -76,18 +76,12 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     }
 
     public startSpan(name: string, type: string) {
-        if(!this.sampler == null || this.sampler.continue(this._traceId)){
-            let newSpan = new Span(this);
-            newSpan.name = name
-            newSpan.type = type
-            newSpan.start();
-            this._spans.push(newSpan);
-            return newSpan;
-        }else{
-            //TODO
-            debug("ELDREY -> RootSpan return startSpan null")
-            return
-        }
+        let newSpan = new Span(this);
+        newSpan.name = name
+        newSpan.type = type
+        newSpan.start();
+        this._spans.push(newSpan);
+        return newSpan;
     }
 
 }
