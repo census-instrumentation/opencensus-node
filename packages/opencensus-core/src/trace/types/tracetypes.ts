@@ -69,6 +69,7 @@ export abstract class SpanBaseModel {
         this.setId(randomSpanId());
     }
 
+
     public get id(): string {
         return this._id;
     }
@@ -120,15 +121,22 @@ export abstract class SpanBaseModel {
     }
 
     public get startTime(): Date {
-        return this.clock.startTime;
+        if(this.clock){
+            return this.clock.startTime;
+        }
+        
     }
 
     public get endTime(): Date {
-        return this.clock.endTime;
+        if(this.clock){
+            return this.clock.endTime;
+        }
     }
 
     public get duration(): number {
-        return this.clock.duration;
+        if(this.clock){
+            return this.clock.duration;
+        }
     }
 
     public get traceContext(): TraceContext {
@@ -173,13 +181,16 @@ export abstract class SpanBaseModel {
     public end(): void {
         if (!this.started) {
             debug('calling %s.end() on un-started %s %o',
-                this._className, this._className,
-                { id: this.id, name: this.name, type: this.type })
+            this._className, this._className,
+            { id: this.id, name: this.name, type: this.type })
+            this._started = false;
+            this._ended = true;
+            // this.clock.end();
             return
         } else if (this.ended) {
             debug('calling %s.end() on already ended %s %o',
-                this._className, this._className,
-                { id: this.id, name: this.name, type: this.type })
+            this._className, this._className,
+            { id: this.id, name: this.name, type: this.type })
             return
         }
         this._started = false;

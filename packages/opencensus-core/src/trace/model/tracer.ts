@@ -73,21 +73,19 @@ export class Tracer implements OnEndSpanEventListener {
     }
 
     public startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
-        debug('starting root span: %o', options)
         return this.contextManager.runAndReturn((root) => {
             let newRoot = new RootSpan(this, options);
             this.setCurrentRootSpan(newRoot);
-            debug('ELDREY -> START ROOT SPAN OPTIONS: ',options);
             if(options.sampler == null){
                 options.sampler = new Sampler(newRoot.traceId);
-                options.sampler.always();
+                options.sampler.probability(0.6);
             }
             newRoot.sampler = options.sampler;
             if(newRoot.sampler.continue(newRoot.traceId)){
-                debug('ELDREY -> START ROOT SPAN .START()');
                 newRoot.start();
+                return fn(newRoot);
             }
-            return fn(newRoot);
+            return fn(null);
         });
     }
 

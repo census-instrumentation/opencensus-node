@@ -70,17 +70,20 @@ export class Sampler{
      public continue (traceId:string):boolean{
         debug('Samplre continue')
         let lower_bytes = traceId.substring(16)
-        let j;
         let lower_long: number
-        debug('ELDREY -> SAMPLER CONTINUE lower_bytes :',lower_bytes)
+        debug('SAMPLER CONTINUE lower_bytes :',lower_bytes)
 
         lower_long = parseInt(lower_bytes, 16);
 
-        debug('ELDREY -> SAMPLER CONTINUE lower_long :',lower_long)
-        debug('ELDREY -> SAMPLER CONTINUE this.idUpperBound :',this.idUpperBound)
+        debug('SAMPLER CONTINUE lower_long :',lower_long)
+        debug('SAMPLER CONTINUE this.idUpperBound :',this.idUpperBound)
+        debug('SAMPLER CONTINUE diff :',lower_long - this.idUpperBound)
+
         if(lower_long <= this.idUpperBound){
+            debug('trace sampler TRUE')
             return true
         }else{
+            debug('trace sampler FALSE')
             return false;
         }
      }
