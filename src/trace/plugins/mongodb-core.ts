@@ -59,13 +59,14 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchCommand (self: MongoDBPlugin) {
     return function (orig) { 
         return function (ns, cmd) {
-          var trace = self.tracer.currentRootSpan
-          var id = trace && trace.id
+          var root = self.tracer.currentRootSpan
+          var id = root && root.id
           var span
 
+          //debug('New mongodb span for rootSpan %o', { traceId: root.traceId, name: root.name })
           debug('intercepted call to mongodb-core.Server.prototype.command %o', { id: id, ns: ns })
 
-          if (trace && arguments.length > 0) {
+          if (root && arguments.length > 0) {
             var index = arguments.length - 1
             var cb = arguments[index]
             if (typeof cb === 'function') {
@@ -96,13 +97,14 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchQuery (self: MongoDBPlugin) {
     return function (orig, name) {
         return function  (ns) {
-          var trace = self.tracer.currentRootSpan
-          var id = trace && trace.id
+          var root = self.tracer.currentRootSpan
+          var id = root && root.id
           var span
 
+         // debug('New mongodb span for rootSpan %o', { traceId: root.traceId, name: root.name })
           debug('intercepted call to mongodb-core.Server.prototype.%s %o', name, { id: id, ns: ns })
 
-          if (trace && arguments.length > 0) {
+          if (root && arguments.length > 0) {
             var index = arguments.length - 1
             var cb = arguments[index]
             if (typeof cb === 'function' ) {
@@ -125,13 +127,14 @@ class MongoDBPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
    patchCursor(self: MongoDBPlugin) {
     return function (orig, name) {
         return function  () {
-          var trace = self.tracer.currentRootSpan
-          var id = trace && trace.id
+          var root = self.tracer.currentRootSpan
+          var id = root && root.id
           var span
 
+         // debug('New mongodb span for rootSpan %o', { traceId: root.traceId, name: root.name })
           debug('intercepted call to mongodb-core.Cursor.prototype.%s %o', name, { id: id })
 
-          if (trace && arguments.length > 0) {
+          if (root && arguments.length > 0) {
             var cb = arguments[0]
             if (typeof cb === 'function') {
               arguments[0] = wrappedCallback

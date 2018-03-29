@@ -23,36 +23,6 @@ import { Tracer } from '../model/tracer'
 import { debug } from '../../internal/util'
 import { Plugin, BasePlugin } from './plugingtypes'
 
-/*
-module.exports = {
-  TraceId: 'X-B3-TraceId',
-  SpanId: 'X-B3-SpanId',
-  ParentSpanId: 'X-B3-ParentSpanId',
-  Sampled: 'X-B3-Sampled',
-  Flags: 'X-B3-Flags'
-}; 
-
-function appendZipkinHeaders(req, traceId) {
-  const headers = req.headers || {};
-  headers[HttpHeaders.TraceId] = traceId.traceId;
-  headers[HttpHeaders.SpanId] = traceId.spanId;
-
-  traceId._parentId.ifPresent(psid => {
-    headers[HttpHeaders.ParentSpanId] = psid;
-  });
-  traceId.sampled.ifPresent(sampled => {
-    headers[HttpHeaders.Sampled] = sampled ? '1' : '0';
-  });
-
-  return headers;
-}
-
-function addZipkinHeaders(req, traceId) {
-  const headers = appendZipkinHeaders(req, traceId);
-  return Object.assign({}, req, {headers});
-}
-
-*/
 
 export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
  
@@ -67,7 +37,8 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
       debug('patching http.Server.prototype.emit function')
       shimmer.wrap(http && http.Server && http.Server.prototype, 'emit', this.patchHttpRequest(this))
 
-      debug('patching http.request function')
+      //TODO: outgouing requests
+      //debug('patching http.request function')
      // shimmer.wrap(http, 'request', this.patchOutgoingRequest(this))
 
       debug('patching http.ServerResponse.prototype.writeHead function')
@@ -103,15 +74,19 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
                   root.type = 'request'
                   debug('root.name = %s, http method = $s',root.name,method)
 
+                  self.tracer.wrapEmitter(req);
+                  self.tracer.wrapEmitter(res);
+
                   //debug('created trace %o', {id: trace.traceId, name: trace.name, startTime: trace.startTime})
 
                   eos(res, function (err) {
                     if (!err) return root.end()
 
-                    /*if (traceManager._conf.errorOnAbortedRequests && !trans.ended) {
-                      var duration = Date.now() - trans._timer.start
-                      if (duration > traceManager._conf.abortedErrorThreshold) {
-                        traceManager.captureError('Socket closed with active HTTP request (>' + (traceManager._conf.abortedErrorThreshold / 1000) + ' sec)', {
+                    //TODO improve erro handleing
+                    /*if (!root.ended) {
+                      var duration = Date.now() - root.clock.start
+                      if (duration > tracer.abortedErrorThreshold) {
+                        tracer.captureError('Socket closed with active HTTP request (>' + (tracer.abortedErrorThreshold / 1000) + ' sec)', {
                           request: req,
                           extra: { abortTime: duration }
                         })
