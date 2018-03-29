@@ -20,8 +20,8 @@ import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
-import { TraceContext, OnEndSpanEventListener } from '../types/tracetypes';
-import { TracerConfig, defaultConfig } from '../tracing';
+import { TraceContext, TraceOptions, OnEndSpanEventListener } from '../types/tracetypes';
+import {  TracerConfig, defaultConfig } from '../tracing';
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -66,29 +66,28 @@ export class Tracer implements OnEndSpanEventListener {
         return this._active;
     }
 
-    public startRootSpan(context?: TraceContext): RootSpan {
-        let newTrace = new RootSpan(this, context);
-        this.setCurrentRootSpan(newTrace);
-        newTrace.start();
-        return newTrace;
+    public startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
+        debug('starting root span: %o', options)
+        return this.contextManager.runAndReturn((root) => {
+            let newRoot = new RootSpan(this, options);
+            this.setCurrentRootSpan(newRoot);
+            newRoot.start();
+            return fn(newRoot);
+        });
     }
 
 
     public onEndSpan(root:RootSpan): void {
-        if (!this.currentRootSpan) {
+        if (!root) {
             return debug('cannot end trace - no active trace found')
         }
         if(this.currentRootSpan != root) {
-            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.') 
+             debug('currentRootSpan != root on notifyEnd. Need more investigation.') 
         }
-        this.notifyEndSpan(this.currentRootSpan);
+        this.notifyEndSpan(root);
         //this.clearCurrentTrace();
     }
 
-    //TODO: review
-    public runInContex<T>(fn: Func<T>): T {
-        return this.contextManager.runAndReturn (fn)
-    }
     
     public registerEndSpanListener(listner: OnEndSpanEventListener) {
             this.eventListeners.push(listner);
@@ -96,6 +95,7 @@ export class Tracer implements OnEndSpanEventListener {
 
     private notifyEndSpan(root: RootSpan) {
         if (this.active) {
+            debug ('starting to notify listeners the end of rootspans')
             if(this.eventListeners&&this.eventListeners.length >0) {
                 this.eventListeners.forEach((listener) => listener.onEndSpan(root))
             }

@@ -33,7 +33,7 @@ export class ConsoleLogExporter implements Exporter {
 
     writeTrace(root: RootSpan) {
         let rootStr: string = ( `
-        RootSpan: {traceId: ${root.traceId}, spanId: ${root.id}, name: ${root.name} }
+        RootSpan: {writing RootSpan: traceId: ${root.traceId}, spanId: ${root.id}, name: ${root.name} }
         `);
         let spansStr: string[] = 
            root.spans.map((span)=>`   ChildSpan: {traceId: ${span.traceId}, spanId: ${span.id}, name: ${span.name} }

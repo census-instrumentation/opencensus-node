@@ -23,36 +23,6 @@ import { Tracer } from '../model/tracer'
 import { debug } from '../../internal/util'
 import { Plugin, BasePlugin } from './plugingtypes'
 
-/*
-module.exports = {
-  TraceId: 'X-B3-TraceId',
-  SpanId: 'X-B3-SpanId',
-  ParentSpanId: 'X-B3-ParentSpanId',
-  Sampled: 'X-B3-Sampled',
-  Flags: 'X-B3-Flags'
-}; 
-
-function appendZipkinHeaders(req, traceId) {
-  const headers = req.headers || {};
-  headers[HttpHeaders.TraceId] = traceId.traceId;
-  headers[HttpHeaders.SpanId] = traceId.spanId;
-
-  traceId._parentId.ifPresent(psid => {
-    headers[HttpHeaders.ParentSpanId] = psid;
-  });
-  traceId.sampled.ifPresent(sampled => {
-    headers[HttpHeaders.Sampled] = sampled ? '1' : '0';
-  });
-
-  return headers;
-}
-
-function addZipkinHeaders(req, traceId) {
-  const headers = appendZipkinHeaders(req, traceId);
-  return Object.assign({}, req, {headers});
-}
-
-*/
 
 export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
  
@@ -67,7 +37,8 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
       debug('patching http.Server.prototype.emit function')
       shimmer.wrap(http && http.Server && http.Server.prototype, 'emit', this.patchHttpRequest(this))
 
-      debug('patching http.request function')
+      //TODO: outgouing requests
+      //debug('patching http.request function')
      // shimmer.wrap(http, 'request', this.patchOutgoingRequest(this))
 
       debug('patching http.ServerResponse.prototype.writeHead function')
@@ -80,76 +51,63 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
  patchHttpRequest(self: HttpPlugin) {
   return function (orig) {
     return function (event, req, res) {
-      debug('intercepted request event %s', event)
-      if (event === 'request') {
-        debug('intercepted request event call to %s.Server.prototype.emit', self.moduleName)
+        debug('intercepted request event %s', event)
+        if (event === 'request') {
+          debug('intercepted request event call to %s.Server.prototype.emit', self.moduleName)
  
 
-       /* if (isRequestBlacklisted(traceManager, req)) {
-          debug('ignoring blacklisted request to %s', req.url)
-          // don't leak previous transaction
-          traceManager.clearCurrentTrace()
-        } else */ { 
-          let root  = self.tracer.startRootSpan();
-          //TODO: review this logic maybe and request method
-          let method = req.method || 'GET';
-          root.name = method + ' '+ (req.url?(url.parse(req.url).pathname||'/'):'/');
-          root.type = 'request'
+        // TODO: Don't trace ourselves lest we get into infinite loops
+        /*if (isSelftRequest(options, api)) {
+          return request(options, callback);
+        } else  { */
+                let method = req.method || 'GET';
+                let name = method + ' '+ (req.url?(url.parse(req.url).pathname||'/'):'/');
 
-          debug('root.name = %s, http method = $s',root.name,method)
-          //trans.req = req
-          //trans.res = res
-          //debug('created trace %o', {id: trace.traceId, name: trace.name, startTime: trace.startTime})
+                //TODO: Add propagation
+                return self.tracer.startRootSpan({name:name}, (root) => {
+                  
+                  if(!root) {
+                    return orig.apply(this, arguments)
+                  }
 
-          eos(res, function (err) {
-            if (!err) return root.end()
+                  //TODO: review this logic maybe and request method
+                  root.type = 'request'
+                  debug('root.name = %s, http method = $s',root.name,method)
 
-            /*if (traceManager._conf.errorOnAbortedRequests && !trans.ended) {
-              var duration = Date.now() - trans._timer.start
-              if (duration > traceManager._conf.abortedErrorThreshold) {
-                traceManager.captureError('Socket closed with active HTTP request (>' + (traceManager._conf.abortedErrorThreshold / 1000) + ' sec)', {
-                  request: req,
-                  extra: { abortTime: duration }
-                })
-              }
-            } */
+                  self.tracer.wrapEmitter(req);
+                  self.tracer.wrapEmitter(res);
 
-            // Handle case where res.end is called after an error occurred on the
-            // stream (e.g. if the underlying socket was prematurely closed)
-            res.on('prefinish', function () {
-              root.end()
-            })
-          })
+                  //debug('created trace %o', {id: trace.traceId, name: trace.name, startTime: trace.startTime})
+
+                  eos(res, function (err) {
+                    if (!err) return root.end()
+
+                    //TODO improve erro handleing
+                    /*if (!root.ended) {
+                      var duration = Date.now() - root.clock.start
+                      if (duration > tracer.abortedErrorThreshold) {
+                        tracer.captureError('Socket closed with active HTTP request (>' + (tracer.abortedErrorThreshold / 1000) + ' sec)', {
+                          request: req,
+                          extra: { abortTime: duration }
+                        })
+                      }
+                    } */
+
+                    // Handle case where res.end is called after an error occurred on the
+                    // stream (e.g. if the underlying socket was prematurely closed)
+                    res.on('prefinish', function () {
+                      root.end()
+                    })
+                  })
+                  return orig.apply(this, arguments)
+           })
+        } else {
+          return orig.apply(this, arguments)
         }
       }
-
-      return orig.apply(this, arguments)
     }
   }
-}
-/*
-function isRequestBlacklisted (agent, req) {
-  var i
 
-  for (i = 0; i < agent._conf.ignoreUrlStr.length; i++) {
-    if (agent._conf.ignoreUrlStr[i] === req.url) return true
-  }
-  for (i = 0; i < agent._conf.ignoreUrlRegExp.length; i++) {
-    if (agent._conf.ignoreUrlRegExp[i].test(req.url)) return true
-  }
-
-  var ua = req.headers['user-agent']
-  if (!ua) return false
-
-  for (i = 0; i < agent._conf.ignoreUserAgentStr.length; i++) {
-    if (ua.indexOf(agent._conf.ignoreUserAgentStr[i]) === 0) return true
-  }
-  for (i = 0; i < agent._conf.ignoreUserAgentRegExp.length; i++) {
-    if (agent._conf.ignoreUserAgentRegExp[i].test(ua)) return true
-  }
-
-  return false
-}*/
 
     patchOutgoingRequest (self: HttpPlugin) {
       var spanType = 'ext.' + self.moduleName + '.http'

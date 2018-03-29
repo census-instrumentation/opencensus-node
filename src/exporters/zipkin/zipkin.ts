@@ -98,7 +98,7 @@ export class Zipkin implements Exporter {
         let spansJson: string[] = spans.map((span)=> JSON.stringify(span));
         spansJson.join("");
         let outputJson:string = `[${spansJson}]`
-        debug('Zipkins span list Json: %s', outputJson);
+        //debug('Zipkins span list Json: %s', outputJson);
         req.write(outputJson);
         req.end();
     }
