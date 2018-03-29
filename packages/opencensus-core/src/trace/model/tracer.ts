@@ -92,14 +92,14 @@ export class Tracer implements OnEndSpanEventListener {
     }
 
 
-    public onEndSpan(root: RootSpan): void {
-        if (!this.currentRootSpan) {
+    public onEndSpan(root:RootSpan): void {
+        if (!root) {
             return debug('cannot end trace - no active trace found')
         }
-        if (this.currentRootSpan != root) {
-            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.') 
+        if(this.currentRootSpan != root) {
+             debug('currentRootSpan != root on notifyEnd. Need more investigation.') 
         }
-        this.notifyEndSpan(this.currentRootSpan);
+        this.notifyEndSpan(root);
         //this.clearCurrentTrace();
     }
 
@@ -111,8 +111,8 @@ export class Tracer implements OnEndSpanEventListener {
 
     private notifyEndSpan(root: RootSpan) {
         if (this.active) {
-            //this.buffer.onEndSpan(root);
-            if (this.eventListeners && this.eventListeners.length > 0) {
+            debug ('starting to notify listeners the end of rootspans')
+            if(this.eventListeners&&this.eventListeners.length >0) {
                 this.eventListeners.forEach((listener) => listener.onEndSpan(root))
             }
         } else {
