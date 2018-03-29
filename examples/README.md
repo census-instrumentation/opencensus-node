@@ -5,19 +5,24 @@ Note: This code was tested on the following Node versions:
 - v6.10.0 (for console exporter only)
 - v9.8.0 (for Stackdriver and Zipkin exporters)
 
+At this momment the automatic instrumetation is only for apps using http and mongo-db.
+
 ___
 
 ## Setup
 
-1. Clone the OpenCensus Node repository **TODO link to repository**
-<>
+1. Clone the OpenCensus Node repository https://github.com/census-instrumentation/opencensus-node.git
+```bash
+git clone https://github.com/census-instrumentation/opencensus-node.git
+cd opencensus-node
+```
 
 2. Switch to branch `dev` with:
 ```bash
 git checkout dev
 ```
 
-3. Navigate to the OpenCensus Node project folder and install the dependencies with:
+3. Install the dependencies with:
 ```bash
 npm install
 ```
@@ -27,21 +32,84 @@ npm install
 node_modules/.bin/tsc
 ```
 
-5. Clone the application we will instrument (EasyNotes Application)
-<https://github.com/callicoder/node-easy-notes-app>
+5. In a different folder, clone the example application to be instrumented (EasyNotes Application)
+```bash
+ git clone https://github.com/callicoder/node-easy-notes-app
+```
 
 6. Navigate to the application folder and install the dependencies with:
 ```bash
+cd node-easy-notes-app
 npm install
 ```
 
-7. Navigate to the `node_modules` folder inside the EasyNotes application and create a link to OpenCensus Node project folder with:
+7. Check if the app is running. PS.: a mongodb installation is required
 ```bash
+$ node server.js
+Server is listening on port 3000
+Successfully connected to the database
+```
+
+## Add opencensus instrumentation 
+
+To add opencensus instrumetation, follow the step below:
+
+1. Navigate to the `node_modules` folder inside the EasyNotes application and create a link to OpenCensus Node project folder with:
+```bash
+cd node_modules
 ln -s <your path>/opencensus-node/build/src  opencensus-nodejs
+cd ..
+```
+
+2. Edit server.js and add the following line, as the first line of the file:
+```javascript
+ var tracing = require("opencensus-nodejs").start()
+ ...
+ var express = require('express');
+ ```
+
+
+## Running the Instrumented Application
+
+Save the file server.js and run the app with debugging option. 
+
+```bash
+$ DEBUG=opencensus node server.js
+opencensus useAsyncHooks = true +0ms  
+opencensus patching http@9.8.0 module +75ms  
+opencensus patching http.Server.prototype.emit function +7ms  
+....
+Server is listening on port 3000
+Successfully connected to the database
+```
+This options uses a default exporter to console.
+
+To test de api you can use the commands:
+```bash
+#To insert a note:
+curl -X POST http://localhost:3000/notes --data '{"title": "Note 1", "content": "this is the note content"}' -H "Content-Type: application/json"
+
+#To get notes:
+curl http://localhost:3000/notes
+```
+
+## Exporting to Zipkins
+
+1. Download Zipkin choosing one of the three available options on [Quickstart](https://zipkin.io/pages/quickstart.html): through Docker, on Java or manually compiling the source code. Tests were executed running Zipkin with Java, through the following commands on terminal:
+```bash
+    wget -O zipkin.jar 'https://search.maven.org/remote_content?g=io.zipkin.java&a=zipkin-server&v=LATEST&c=exec'
+    java -jar zipkin.jar
+```
+
+2. Open the `server.js` file in the EasyNotes application and insert this code on top:
+```javascript
+var tracing = require("opencensus-nodejs")
+              .addZipkin("http://localhost:9411/api/v2/spans", "easy-notes")
+              .start()
 ```
 
 
-## Instrument using Stackdriver
+## Exporting to Stackdriver
 
 1. Make sure you enabled Stackdriver Tracing on Google Cloud Platform. More info at <https://cloud.google.com/trace/docs/quickstart>
 
@@ -58,22 +126,8 @@ var traceMng = require("opencensus-nodejs")
                .start();
 ```
 
-## Instrument using Zipkin
 
-1. Download Zipkin choosing one of the three available options on [Quickstart](https://zipkin.io/pages/quickstart.html): through Docker, on Java or manually compiling the source code. Tests were executed running Zipkin with Java, through the following commands on terminal:
-```bash
-    wget -O zipkin.jar 'https://search.maven.org/remote_content?g=io.zipkin.java&a=zipkin-server&v=LATEST&c=exec'
-    java -jar zipkin.jar
-```
-
-2. Open the `server.js` file in the EasyNotes application and insert this code on top:
-```javascript
-var tracing = require("opencensus-nodejs")
-              .addZipkin("http://localhost:9411/api/v2/spans", "easy-notes")
-              .start()
-```
-
-## Instrumenting with multiple Exporters
+## Exporting to multiple Exporters
 
 It is possible to instrument with more than one code. To achieve this, simply add more than one Exporter in series.
 
@@ -82,15 +136,4 @@ var tracing = require("opencensus-nodejs")
               .addZipkin(“http://localhost:9411/api/v2/spans“, "easy-notes")
               .addStackdriver("your-project")
               .start()
-```
-
-## Running the Instrumented Application
-
-It is possible both to run with debugging information and without it. To run with debugging information use:
-```bash
-DEBUG=opencensus node server.js
-```
-To run without debugging information, simply use:
-```bash
-node server.js
 ```
