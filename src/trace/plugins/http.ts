@@ -80,27 +80,29 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
  patchHttpRequest(self: HttpPlugin) {
   return function (orig) {
     return function (event, req, res) {
-      debug('intercepted request event %s', event)
-      if (event === 'request') {
-        debug('intercepted request event call to %s.Server.prototype.emit', self.moduleName)
+        debug('intercepted request event %s', event)
+        if (event === 'request') {
+          debug('intercepted request event call to %s.Server.prototype.emit', self.moduleName)
  
 
-       /* if (isRequestBlacklisted(traceManager, req)) {
-          debug('ignoring blacklisted request to %s', req.url)
-          // don't leak previous transaction
-          traceManager.clearCurrentTrace()
-
+        // TODO: Don't trace ourselves lest we get into infinite loops
+        /*if (isSelftRequest(options, api)) {
+          return request(options, callback);
         } else  { */
                 let method = req.method || 'GET';
                 let name = method + ' '+ (req.url?(url.parse(req.url).pathname||'/'):'/');
 
+                //TODO: Add propagation
                 return self.tracer.startRootSpan({name:name}, (root) => {
+                  
+                  if(!root) {
+                    return orig.apply(this, arguments)
+                  }
+
                   //TODO: review this logic maybe and request method
                   root.type = 'request'
-
                   debug('root.name = %s, http method = $s',root.name,method)
-                  //trans.req = req
-                  //trans.res = res
+
                   //debug('created trace %o', {id: trace.traceId, name: trace.name, startTime: trace.startTime})
 
                   eos(res, function (err) {
@@ -130,29 +132,7 @@ export class HttpPlugin extends BasePlugin<Tracer> implements Plugin<Tracer> {
       }
     }
   }
-/*
-function isRequestBlacklisted (agent, req) {
-  var i
 
-  for (i = 0; i < agent._conf.ignoreUrlStr.length; i++) {
-    if (agent._conf.ignoreUrlStr[i] === req.url) return true
-  }
-  for (i = 0; i < agent._conf.ignoreUrlRegExp.length; i++) {
-    if (agent._conf.ignoreUrlRegExp[i].test(req.url)) return true
-  }
-
-  var ua = req.headers['user-agent']
-  if (!ua) return false
-
-  for (i = 0; i < agent._conf.ignoreUserAgentStr.length; i++) {
-    if (ua.indexOf(agent._conf.ignoreUserAgentStr[i]) === 0) return true
-  }
-  for (i = 0; i < agent._conf.ignoreUserAgentRegExp.length; i++) {
-    if (agent._conf.ignoreUserAgentRegExp[i].test(ua)) return true
-  }
-
-  return false
-}*/
 
     patchOutgoingRequest (self: HttpPlugin) {
       var spanType = 'ext.' + self.moduleName + '.http'
