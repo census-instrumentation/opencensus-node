@@ -14,86 +14,94 @@
  * limitations under the License.
  */
 
-import { Tracer, defaultConfig } from '../src/trace/model/tracer';
-import { RootSpan } from '../src/trace/model/trace';
+import { Tracer } from '../src/trace/model/tracer';
+import { RootSpan } from '../src/trace/model/rootspan';
 import { Span } from '../src/trace/model/span';
-import { Exporter, NoopExporter } from '../src/exporters/exporter';
+import { Exporter } from '../src/exporters/exporter';
 
 let assert = require('assert');
 
-
-let noopExporter = new NoopExporter ();
-
 describe('Tracer', function () {
+  const options = { name: "test" };
+  const callback = (root) => {
+
+    return root;
+  }
+
   describe('new Tracer()', function () {
-    it('should be a Tracer instance', function () {
+    it('should create a Tracer instance', function () {
       let tracer = new Tracer();
       assert.ok(tracer instanceof Tracer);
     });
   });
 
   describe('start()', function () {
-    let tracer = new Tracer();
-    let tracerStarted = tracer.start();
-
     it('should return a tracer instance', function () {
+      let tracer = new Tracer();
+      let tracerStarted = tracer.start();
       assert.ok(tracerStarted instanceof Tracer);
     });
 
-    it('should set true on active property', function () {
+    it('the trace was started', function () {
+      let tracer = new Tracer();
+      let tracerStarted = tracer.start();
       assert.ok(tracerStarted.active);
     });
   });
 
-  describe('startTrace()', function () {
-    let tracer;
-    let trace;
+  describe('startRootSpan()', function () {
 
-    before(() => {
-      tracer = new Tracer();
-      trace = tracer.startTrace();
-    })
+    it('should start the rootSpan', function () {
+      const tracer = new Tracer();
+      tracer.start();
+      const root = tracer.startRootSpan(options, callback);
 
-    it('should return a Trace instance', function () {
-      assert.ok(trace instanceof RootSpan);
+      assert.ok(root.started);
     });
 
-    it('the new trace was set as current trace', function () {
-      assert.equal(tracer.currentTrace.id, trace.id);
-    });
+    it('should set the new span root as currentRootSpan', function () {
+      const tracer = new Tracer();
+      tracer.start();
+      const root = tracer.startRootSpan(options, callback);
 
-    it('the new trace was started', function () {
-      assert.ok(trace.started);
+      assert.equal(tracer.currentRootSpan.id, root.id);
     });
   });
 
-  describe('endTrace()', function () {
-    it('the current trace was ended', function () {
-      let tracer = new Tracer();
-      let trace = tracer.startRootSpan();
-      tracer.endRootSpan();
+  describe('end()', function () {
+    it('should end current trace', function () {
+      const tracer = new Tracer();
+      const trace = tracer.startRootSpan(options, callback);
+      trace.end();
       assert.ok(trace.ended);
     });
   });
 
-  describe('clearCurrentTrace()', function () {
-    it('the current trace is null', function () {
-      let tracer = new Tracer();
-      let trace = tracer.startRootSpan();
+  describe('clearCurrentRootSpan()', function () {
+    it('should set the current root span to null', function () {
+      const tracer = new Tracer();
+      const trace = tracer.startRootSpan(options, callback);
       tracer.clearCurrentTrace();
-      assert.ok(tracer.currentTrace == null);
+
+      assert.ok(tracer.currentRootSpan == null);
     });
   });
 
   describe('startSpan()', function () {
-    let tracer = new Tracer();
-    let trace = tracer.startRootSpan();
-    let span = tracer.startSpan("spanName", "spanType");
     it('should return a Span instance', function () {
+      const tracer = new Tracer();
+      const trace = tracer.startRootSpan(options, callback);
+      trace.start();
+      const span = tracer.startSpan("spanName", "spanType");
+      console.log(span);
       assert.ok(span instanceof Span);
     });
 
-    it('span was started', function () {
+    it('should start a span', function () {
+      const tracer = new Tracer();
+      const trace = tracer.startRootSpan(options, callback);
+      trace.start();
+      const span = tracer.startSpan("spanName", "spanType");
       assert.ok(span.started);
     });
   });
