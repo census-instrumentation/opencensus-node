@@ -28,6 +28,11 @@ export interface TraceContext {
         options?: number  
 }
 
+export interface TraceOptions {
+    name:string;
+    traceContext?:TraceContext;
+}
+
 export interface OnEndSpanEventListener {
     onEndSpan(span: SpanBaseModel): void; 
 }

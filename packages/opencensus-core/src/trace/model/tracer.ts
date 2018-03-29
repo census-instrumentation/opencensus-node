@@ -20,10 +20,8 @@ import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
-import { Exporter } from '../../exporters/exporter'
-import { TraceContext, OnEndSpanEventListener } from '../types/tracetypes';
-import { TracerConfig, defaultConfig } from '../tracing'
-import { Buffer } from '../../exporters/buffer'
+import { TraceContext, TraceOptions, OnEndSpanEventListener } from '../types/tracetypes';
+import {  TracerConfig, defaultConfig } from '../tracing';
 import { Sampler } from './sampler'
 
 export type Func<T> = (...args: any[]) => T;
@@ -74,18 +72,19 @@ export class Tracer implements OnEndSpanEventListener {
         return this._active;
     }
 
-    public startRootSpan(context?: TraceContext, sampler?: Sampler): RootSpan {
-        let newTrace = new RootSpan(this, context);
-        debug("tracer startRootSpan ")
-        this.setCurrentRootSpan(newTrace);
-        if(sampler == null){
-            sampler = new Sampler(newTrace.traceId);
-            sampler.always();
-        }
-        debug("tracer startRootSpan ")
-        newTrace.sampler = sampler;
-        newTrace.start();
-        return newTrace;
+    public startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
+        debug('starting root span: %o', options)
+        return this.contextManager.runAndReturn((root) => {
+            let newRoot = new RootSpan(this, options);
+            this.setCurrentRootSpan(newRoot);
+            if(sampler == null){
+                sampler = new Sampler(newTrace.traceId);
+                sampler.always();
+            }
+            newRoot.sampler = sampler;
+            newRoot.start();
+            return fn(newRoot);
+        });
     }
 
 
@@ -100,10 +99,6 @@ export class Tracer implements OnEndSpanEventListener {
         //this.clearCurrentTrace();
     }
 
-    //TODO: review
-    public runInContex<T>(fn: Func<T>): T {
-        return this.contextManager.runAndReturn(fn)
-    }
     
     public registerEndSpanListener(listener: OnEndSpanEventListener) {
         this.eventListeners.push(listener);
