@@ -18,7 +18,7 @@ import { Span } from './span'
 import { Clock } from '../../internal/clock'
 import * as uuid from 'uuid';
 import { debug } from '../../internal/util'
-import { SpanBaseModel, TraceContext, OnEndSpanEventListener } from '../types/tracetypes'
+import { SpanBaseModel, TraceContext, OnEndSpanEventListener, TraceOptions } from '../types/tracetypes'
 import { Tracer } from './tracer';
 
 export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
@@ -27,10 +27,12 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     private _spans: Span[];
     private _traceId: string;
 
-    constructor(tracer: Tracer, context?: TraceContext) {
+    //TODO - improve root name setup
+    constructor(tracer: Tracer, context?: TraceOptions ) {
         super()
         this.tracer = tracer;
-        this._traceId = context && context.traceId ? context.traceId : (uuid.v4().split('-').join(''));
+        this._traceId = context&&context.traceContext&&context.traceContext.traceId?context.traceContext.traceId:(uuid.v4().split('-').join(''));
+        this.name = context&&context.name?context.name:'undefined';
         this._spans = [];
     }
 

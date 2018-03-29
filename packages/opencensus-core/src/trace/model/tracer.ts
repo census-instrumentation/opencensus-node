@@ -20,10 +20,8 @@ import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
-import { Exporter } from '../../exporters/exporter'
-import { TraceContext, OnEndSpanEventListener } from '../types/tracetypes';
-import { TracerConfig, defaultConfig } from '../tracing';
-import { Buffer } from '../../exporters/buffer'
+import { TraceContext, TraceOptions, OnEndSpanEventListener } from '../types/tracetypes';
+import {  TracerConfig, defaultConfig } from '../tracing';
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -73,13 +71,14 @@ export class Tracer implements OnEndSpanEventListener {
         return this._active;
     }
 
-    public startRootSpan(name?: string, type?: string, context?: TraceContext): RootSpan {
-        let newRootSpan = new RootSpan(this, context);
-        if (name) { newRootSpan.name = name }
-        if (type) { newRootSpan.type = type }
-        this.setCurrentRootSpan(newRootSpan);
-        newRootSpan.start();
-        return newRootSpan;
+    public startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
+        debug('starting root span: %o', options)
+        return this.contextManager.runAndReturn((root) => {
+            let newRoot = new RootSpan(this, options);
+            this.setCurrentRootSpan(newRoot);
+            newRoot.start();
+            return fn(newRoot);
+        });
     }
 
 
@@ -94,14 +93,9 @@ export class Tracer implements OnEndSpanEventListener {
         //this.clearCurrentTrace();
     }
 
-    //TODO: review
-    public runInContex<T>(fn: Func<T>): T {
-        return this.contextManager.runAndReturn(fn)
-    }
-
-    public registerEndSpanListener(listener: OnEndSpanEventListener) {
-        this.eventListeners.push(listener);
-        //this.buffer.registerExporter(exporter)
+    
+    public registerEndSpanListener(listner: OnEndSpanEventListener) {
+            this.eventListeners.push(listner);
     }
 
     /*public registerExporter(exporter: Exporter) {
