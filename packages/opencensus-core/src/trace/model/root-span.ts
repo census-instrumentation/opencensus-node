@@ -71,7 +71,7 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     }
 
     public onEndSpan(span: Span) {
-        debug('%s notified ending by %o',{id: span.id, name: span.name})
+        debug('ended span notified  %o', {id: span.id, name: span.name})
     }
 
     public startSpan(name: string, type: string) {
