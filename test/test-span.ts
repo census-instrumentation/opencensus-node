@@ -24,59 +24,58 @@ var assert = require('assert');
 
 let tracer = new Tracer()
 
-describe('Span creation', function () {
+describe('Span', function () {
 
-    let root;
-    let span;
+describe('startSpan()', function () {
 
-    before(function () {
-        root = new RootSpan(tracer);
-        span = root.startSpan('spanName', 'typeSpan');
-    });
+    it('should create an span', function () {
+        const rootSpan = new RootSpan(tracer);
+        assert.ok(rootSpan instanceof SpanBaseModel);
 
-    it('should create an span on the trace', function () {
-        assert.ok(root instanceof SpanBaseModel);
-        span = root.startSpan('spanName', 'typeSpan');
+        rootSpan.start();
+        const span = rootSpan.startSpan('spanName', 'typeSpan');
         assert.ok(span instanceof Span);
         assert.ok(span.id);
     });
 
     it('should start a span', function () {
+        const rootSpan = new RootSpan(tracer);
+        rootSpan.start();
+        const span = rootSpan.startSpan('spanName', 'typeSpan');
         span.start();
         assert.ok(span.started);
     });
 
     it('should end a span', function () {
+        const rootSpan = new RootSpan(tracer);
+        rootSpan.start();
+        const span = rootSpan.startSpan('spanName', 'typeSpan');
+        span.start();
         span.end();
         assert.ok(span.ended);
     });
 });
 
-describe('Span checking creation', function () {
-
-    let root;
-    let span;
-
-    before(function () {
-        root = new RootSpan(tracer);
-        span = root.startSpan('spanName', 'typeSpan');
-    });
+describe('Span checking after creation', function () {
 
     it('should not start span after it ended', function () {
+        const root = new RootSpan(tracer);
+        root.start();
+        const span = root.startSpan('spanName', 'typeSpan');
+        span.start();
         span.end();
+
+        span.start();
         assert.equal(span.ended, true);
     });
 });
 
 describe('Span data', function () {
 
-    let root;
+    it('should create an unique numeric span ID strings', function () {
+        const root = new RootSpan(tracer);
+        root.start();
 
-    before(function () {
-        root = new RootSpan(tracer);
-    });
-
-    it('generates unique numeric span ID strings', function () {
         var numberOfSpansToCheck = 5;
         for (var i = 0; i < numberOfSpansToCheck; i++) {
             var span = root.startSpan('spanName' + i, 'typeSpan' + i);
@@ -89,8 +88,9 @@ describe('Span data', function () {
     });
 
     // TODO
-    it('truncates namespace', function(){
+    it('should truncate namespace', function () {
         this.skip();
     });
 });
 
+});
