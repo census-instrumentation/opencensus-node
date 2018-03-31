@@ -22,6 +22,7 @@ import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
 import { TraceContext, TraceOptions, OnEndSpanEventListener } from '../types/tracetypes';
 import {  TracerConfig, defaultConfig } from '../tracing';
+import { Sampler } from './sampler'
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -30,6 +31,7 @@ export class Tracer implements OnEndSpanEventListener {
 
     readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express'];
 
+    //public buffer: Buffer;
     private _active: boolean;
     private contextManager: cls.Namespace;
     private config: TracerConfig;
@@ -58,6 +60,10 @@ export class Tracer implements OnEndSpanEventListener {
         return this;
     }
 
+    public getEventListeners(): OnEndSpanEventListener[] {
+        return this.eventListeners;
+    }
+
     public stop() {
         this._active = false;
     }
@@ -67,12 +73,19 @@ export class Tracer implements OnEndSpanEventListener {
     }
 
     public startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
-        debug('starting root span: %o', options)
         return this.contextManager.runAndReturn((root) => {
             let newRoot = new RootSpan(this, options);
             this.setCurrentRootSpan(newRoot);
-            newRoot.start();
-            return fn(newRoot);
+            if(options.sampler == null){
+                options.sampler = new Sampler(newRoot.traceId);
+                options.sampler.probability(0.6);
+            }
+            newRoot.sampler = options.sampler;
+            if(newRoot.sampler.continue(newRoot.traceId)){
+                newRoot.start();
+                return fn(newRoot);
+            }
+            return fn(null);
         });
     }
 
@@ -89,8 +102,9 @@ export class Tracer implements OnEndSpanEventListener {
     }
 
     
-    public registerEndSpanListener(listner: OnEndSpanEventListener) {
-            this.eventListeners.push(listner);
+    public registerEndSpanListener(listener: OnEndSpanEventListener) {
+        this.eventListeners.push(listener);
+        //this.buffer.registerExporter(exporter)
     }
 
     private notifyEndSpan(root: RootSpan) {
@@ -100,7 +114,7 @@ export class Tracer implements OnEndSpanEventListener {
                 this.eventListeners.forEach((listener) => listener.onEndSpan(root))
             }
         } else {
-            debug ('this tracer is inactivate cant notify endspan')
+            debug('this tracer is inactivate cant notify endspan')
         }
     }
 
@@ -112,7 +126,7 @@ export class Tracer implements OnEndSpanEventListener {
         let newSpan: Span = null;
         if (!this.currentRootSpan) {
             debug('no current trace found - cannot start a new span');
-        } else {
+        } else{
             newSpan = this.currentRootSpan.startSpan(name, type);
         }
         return newSpan;

@@ -16,6 +16,7 @@
 
 import { Clock } from '../../internal/clock'
 import { debug, randomSpanId } from '../../internal/util'
+import { Sampler } from '../model/sampler'
 
 
 export interface MapLabels { [propName: string]: string; }
@@ -30,6 +31,7 @@ export interface TraceContext {
 export interface TraceOptions {
     name:string;
     traceContext?:TraceContext;
+    sampler?:Sampler;
 }
 
 export interface OnEndSpanEventListener {
@@ -54,6 +56,7 @@ export abstract class SpanBaseModel {
     //links
     //TODO truncated 
     private _truncated: boolean;
+    private _sampler: Sampler;
 
     constructor() {
         this._className = this.constructor.name;
@@ -65,6 +68,7 @@ export abstract class SpanBaseModel {
         this._ended = false;
         this.setId(randomSpanId());
     }
+
 
     public get id(): string {
         return this._id;
@@ -117,15 +121,22 @@ export abstract class SpanBaseModel {
     }
 
     public get startTime(): Date {
-        return this.clock.startTime;
+        if(this.clock){
+            return this.clock.startTime;
+        }
+        
     }
 
     public get endTime(): Date {
-        return this.clock.endTime;
+        if(this.clock){
+            return this.clock.endTime;
+        }
     }
 
     public get duration(): number {
-        return this.clock.duration;
+        if(this.clock){
+            return this.clock.duration;
+        }
     }
 
     public get traceContext(): TraceContext {
@@ -146,6 +157,16 @@ export abstract class SpanBaseModel {
         this.annotations[key] = value;
     }
 
+    public get sampler(){
+        debug('tracetypes get sampler()')
+        return this._sampler;
+    }
+
+    public set sampler(sampler:Sampler){
+        debug('tracetypes set sempler(sampler)')
+        this._sampler = sampler;
+    }
+
     public start() {
         if (this.started) {
             debug('calling %s.start() on already started %s %o',
@@ -160,13 +181,16 @@ export abstract class SpanBaseModel {
     public end(): void {
         if (!this.started) {
             debug('calling %s.end() on un-started %s %o',
-                this._className, this._className,
-                { id: this.id, name: this.name, type: this.type })
+            this._className, this._className,
+            { id: this.id, name: this.name, type: this.type })
+            this._started = false;
+            this._ended = true;
+            // this.clock.end();
             return
         } else if (this.ended) {
             debug('calling %s.end() on already ended %s %o',
-                this._className, this._className,
-                { id: this.id, name: this.name, type: this.type })
+            this._className, this._className,
+            { id: this.id, name: this.name, type: this.type })
             return
         }
         this._started = false;
