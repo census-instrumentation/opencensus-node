@@ -20,7 +20,6 @@ import * as uuid from 'uuid';
 import { debug } from '../../internal/util'
 import { SpanBaseModel, TraceOptions, TraceContext, OnEndSpanEventListener } from '../types/tracetypes'
 import { Tracer } from './tracer'
-import { Sampler } from '../config/sampler'
 
 export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
