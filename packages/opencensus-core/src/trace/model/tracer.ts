@@ -22,7 +22,7 @@ import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
 import { TraceContext, TraceOptions, OnEndSpanEventListener } from '../types/tracetypes';
 import {  TracerConfig, defaultConfig } from '../tracing';
-import { Sampler } from './sampler'
+import { Sampler } from '../config/sampler'
 
 export type Func<T> = (...args: any[]) => T;
 

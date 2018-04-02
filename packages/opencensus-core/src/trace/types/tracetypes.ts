@@ -16,7 +16,7 @@
 
 import { Clock } from '../../internal/clock'
 import { debug, randomSpanId } from '../../internal/util'
-import { Sampler } from '../model/sampler'
+import { Sampler } from '../config/sampler'
 
 
 export interface MapLabels { [propName: string]: string; }
@@ -37,6 +37,14 @@ export interface TraceOptions {
 export interface OnEndSpanEventListener {
     onEndSpan(span: SpanBaseModel): void; 
 }
+
+export interface SpanData {
+    labels: {[key: string]: string};
+    name: string;
+    spanId: string;
+    parentSpanId?: string;
+  }
+
 
 export abstract class SpanBaseModel {
 

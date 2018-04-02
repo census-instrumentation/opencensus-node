@@ -52,7 +52,7 @@ Successfully connected to the database
 
 ## Add opencensus instrumentation 
 
-To add opencensus instrumetation, follow the step below:
+To add opencensus instrumetation, follow the steps below:
 
 1. Navigate to the `node_modules` folder inside the EasyNotes application and create a link to OpenCensus Node project folder with:
 ```bash
@@ -66,8 +66,7 @@ cd ..
  var tracing = require("opencensus-nodejs").start()
  ...
  var express = require('express');
- ```
-
+```
 
 ## Running the Instrumented Application
 

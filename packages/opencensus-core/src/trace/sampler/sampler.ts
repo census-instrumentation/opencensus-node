@@ -44,17 +44,17 @@ export class Sampler{
 
      }
 
-     public always():Sampler{
+     public always(): Sampler{
          this.idUpperBound = maxNumber;
          return this;
      }
 
-     public never():Sampler{
+     public never(): Sampler{
          this.idUpperBound = minNumber;
          return this;
      }
 
-     public probability(probability:number):Sampler{
+     public probability(probability:number): Sampler{
         if(probability < minNumber){
             return this.never();
 
