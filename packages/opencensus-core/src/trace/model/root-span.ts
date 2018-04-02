@@ -28,11 +28,14 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     private _traceId: string;
 
     //TODO - improve root name setup
-    constructor(tracer: Tracer, context?: TraceOptions ) {
+    constructor(tracer: Tracer, context?: TraceOptions) {
         super()
         this.tracer = tracer;
-        this._traceId = context&&context.traceContext&&context.traceContext.traceId?context.traceContext.traceId:(uuid.v4().split('-').join(''));
-        this.name = context&&context.name?context.name:'undefined';
+        this._traceId = context && context.traceContext && context.traceContext.traceId ? context.traceContext.traceId : (uuid.v4().split('-').join(''));
+        this.name = context && context.name ? context.name : 'undefined';
+        if (context && context.traceContext) {
+            this.setParentSpanId(context.traceContext.spanId || '')
+        }
         this._spans = [];
     }
 
@@ -44,9 +47,20 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
         return this._traceId;
     }
 
+    public getOptions() {
+        return {
+            name: this.name,
+            traceContext: {
+                traceId: this.traceId,
+                spanId: this.id,
+                parentSpanId: this.getParentSpanId
+            }
+        }
+    }
+
     public start() {
         super.start()
-        debug('starting %s  %o', this._className, { traceId: this.traceId, id: this.id })
+        debug('starting %s  %o', this._className, { traceId: this.traceId, id: this.id, parentSpanId: this.getParentSpanId() })
     }
 
     public end() {
@@ -76,14 +90,14 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
         debug('%s notified ending by %o', { id: span.id, name: span.name })
     }
 
-    public startSpan(name?: string, type?: string) {
+    public startSpan(name?: string, type?: string, parentSpanId?: string) {
         let newSpan = new Span(this);
         if (name) { newSpan.name = name }
         if (type) { newSpan.type = type }
+        if (type) { newSpan.setParentSpanId(parentSpanId || '') }
         newSpan.start();
         this._spans.push(newSpan);
         return newSpan;
     }
-
 }
 

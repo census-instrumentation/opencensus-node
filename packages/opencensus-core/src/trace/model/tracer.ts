@@ -20,8 +20,8 @@ import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
-import { TraceContext, TraceOptions, OnEndSpanEventListener } from '../types/tracetypes';
-import {  TracerConfig, defaultConfig } from '../tracing';
+import { TraceContext, TraceOptions, OnEndSpanEventListener, SpanBaseModel } from '../types/tracetypes';
+import { TracerConfig, defaultConfig } from '../tracing';
 
 export type Func<T> = (...args: any[]) => T;
 
@@ -81,27 +81,23 @@ export class Tracer implements OnEndSpanEventListener {
         });
     }
 
-
     public onEndSpan(root: RootSpan): void {
         if (!this.currentRootSpan) {
-            return debug('cannot end trace - no active trace found')
+            return debug('cannot end trace - no active trace found', this.currentRootSpan)
         }
         if (this.currentRootSpan != root) {
-            return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.')
+            debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.')
+            debug('ROOT SPAN ', root)
+            return debug('CURRENT ROOT SPAN ', this.currentRootSpan)
+            //return debug('currentRootSpan != root on notifyEnd. Possbile implementation bug.')
         }
         this.notifyEndSpan(this.currentRootSpan);
         //this.clearCurrentTrace();
     }
 
-    
     public registerEndSpanListener(listner: OnEndSpanEventListener) {
-            this.eventListeners.push(listner);
+        this.eventListeners.push(listner);
     }
-
-    /*public registerExporter(exporter: Exporter) {
-        //this.eventListeners.push(listner);
-        this.buffer.registerExporter(exporter)
-    }*/
 
     private notifyEndSpan(root: RootSpan) {
         if (this.active) {
@@ -118,15 +114,49 @@ export class Tracer implements OnEndSpanEventListener {
         this.setCurrentRootSpan(null);
     }
 
-    public startSpan(name?: string, type?: string): Span {
+    public startSpan(name?: string, type?: string, parentSpanId?: string): Span {
         let newSpan: Span = null;
         if (!this.currentRootSpan) {
             debug('no current trace found - must start a new root span first');
         } else {
-            newSpan = this.currentRootSpan.startSpan(name, type);
+            newSpan = this.currentRootSpan.startSpan(name, type, parentSpanId);
         }
         return newSpan;
     }
+
+    /*public startSpan<T>(fn: (span: Span) => T): T {
+        //debug('starting span: %o', options)
+        if (!this.currentRootSpan) {
+            debug('no current trace found - must start a new root span first');
+            return null;
+        } else {
+            return this.contextManager.runAndReturn((span) => {
+                let newSpan = this.currentRootSpan.startSpan();
+                return fn(newSpan);
+            });
+        }
+    }*/
+
+    /*public startSpan<T>(options: TraceOptions, fn: (span: SpanBaseModel) => T): T {
+        //debug('starting span: %o', options)
+        if (this.currentRootSpan) {
+            // Has an active root span
+            debug('starting span')
+            return this.contextManager.runAndReturn((span) => {
+                let newSpan = this.currentRootSpan.startSpan();
+                return fn(newSpan);
+            });
+        } else {
+            // Has no active root span
+            debug('starting root span: %o', options)
+            return this.contextManager.runAndReturn((root) => {
+                let newRoot = new RootSpan(this, options);
+                this.setCurrentRootSpan(newRoot);
+                newRoot.start();
+                return fn(newRoot);
+            });
+        }
+    }*/
 
     public wrap<T>(fn: Func<T>): Func<T> {
         if (!this.active) {

@@ -24,7 +24,7 @@ export interface MapObjects { [propName: string]: any; }
 export interface TraceContext {
         traceId: string,
         spanId: string,
-        options?: number  
+        options?: number
 }
 
 export interface TraceOptions {
@@ -43,6 +43,7 @@ export abstract class SpanBaseModel {
     private clock: Clock;
     //--Tra----
     private _remoteParent: string;
+    private _parentSpanId: string;
     private _name: string;
     private _started: boolean;
     private _ended: boolean;
@@ -63,6 +64,7 @@ export abstract class SpanBaseModel {
         this.clock = null;
         this._truncated = false;
         this._ended = false;
+        this._parentSpanId = ''
         this.setId(randomSpanId());
     }
 
@@ -90,6 +92,14 @@ export abstract class SpanBaseModel {
 
     public set name(name: string) {
         this._name = name;
+    }
+
+    public setParentSpanId(parentSpanId: string) {
+        this._parentSpanId = parentSpanId;
+    }
+
+    public getParentSpanId() {
+        return this._parentSpanId
     }
 
     public get type(): string {
