@@ -20,20 +20,21 @@ import { debug, randomSpanId } from '../../internal/util'
 const minNumber = 1e-4;
 const maxNumber = 0xffffffffffffffff;
 
+/**
+ * Class Sampler
+ */
 export class Sampler{
-     traceId:       string;
-     spanId:        string;
-     isRemote:      boolean;
-     idUpperBound:  number;
+     traceId:               string;
+     spanId:                string;
+     isRemote:              boolean;
+     private idUpperBound:  number;
 
      /**
-      * 
-      * @param traceId 
-      * @param spanId 
-      * @param isRemote 
+      * @param traceId Used for probability calculation
+      * @param spanId todo: integration with propagation class
+      * @param isRemote todo: integration with propagation class
       */
      constructor(traceId?:string, spanId?:string, isRemote?:boolean){
-         debug('Samplre constructor')
          if(traceId){ 
              this.traceId   = traceId;
          }
@@ -43,17 +44,29 @@ export class Sampler{
         this.isRemote  = isRemote || false;
 
      }
-
+    /**
+     * @description Set idUpperBound with maxNumber
+     * @returns a Sampler object
+     */
      public always(): Sampler{
          this.idUpperBound = maxNumber;
          return this;
      }
-
+    /**
+     * @description Set idUpperBound with minNumber
+     * @returns a Sampler object
+     */
      public never(): Sampler{
          this.idUpperBound = minNumber;
          return this;
      }
-
+    /**
+     * @description Set idUpperBound with the probability. If probability 
+     * parameter is bigger then 1 set always. If probability parameter less 
+     * than 0, set never.
+     * @param probability probability between 0 and 1 
+     * @returns a Sampler object
+     */
      public probability(probability:number): Sampler{
         if(probability < minNumber){
             return this.never();
@@ -66,24 +79,18 @@ export class Sampler{
         this.idUpperBound = probability * maxNumber;
         return this;
      }
-
-     public continue (traceId:string):boolean{
-        debug('Samplre continue')
-        let lower_bytes = traceId.substring(16)
-        let lower_long: number
-        debug('SAMPLER CONTINUE lower_bytes :',lower_bytes)
-
-        lower_long = parseInt(lower_bytes, 16);
-
-        debug('SAMPLER CONTINUE lower_long :',lower_long)
-        debug('SAMPLER CONTINUE this.idUpperBound :',this.idUpperBound)
-        debug('SAMPLER CONTINUE diff :',lower_long - this.idUpperBound)
+    /**
+     * @description 
+     * @param traceId 
+     * @returns a boolean
+     */
+     public shouldSample (traceId:string):boolean{
+        const lower_bytes = traceId.substring(16)
+        const lower_long = parseInt(lower_bytes, 16);
 
         if(lower_long <= this.idUpperBound){
-            debug('trace sampler TRUE')
             return true
         }else{
-            debug('trace sampler FALSE')
             return false;
         }
      }

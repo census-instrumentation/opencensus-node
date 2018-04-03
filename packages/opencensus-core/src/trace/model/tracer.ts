@@ -78,10 +78,10 @@ export class Tracer implements OnEndSpanEventListener {
             this.setCurrentRootSpan(newRoot);
             if(options.sampler == null){
                 options.sampler = new Sampler(newRoot.traceId);
-                options.sampler.probability(0.6);
+                options.sampler.always();
             }
             newRoot.sampler = options.sampler;
-            if(newRoot.sampler.continue(newRoot.traceId)){
+            if(newRoot.sampler.shouldSample(newRoot.traceId)){
                 newRoot.start();
                 return fn(newRoot);
             }

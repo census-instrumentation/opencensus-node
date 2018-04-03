@@ -191,9 +191,6 @@ export abstract class SpanBaseModel {
             debug('calling %s.end() on un-started %s %o',
             this._className, this._className,
             { id: this.id, name: this.name, type: this.type })
-            this._started = false;
-            this._ended = true;
-            // this.clock.end();
             return
         } else if (this.ended) {
             debug('calling %s.end() on already ended %s %o',
