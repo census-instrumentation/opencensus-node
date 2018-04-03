@@ -18,8 +18,8 @@ import { Span } from './span'
 import { Clock } from '../../internal/clock'
 import * as uuid from 'uuid';
 import { debug } from '../../internal/util'
-import { SpanBaseModel, TraceContext, OnEndSpanEventListener, TraceOptions } from '../types/tracetypes'
-import { Tracer } from './tracer';
+import { SpanBaseModel, TraceOptions, TraceContext, OnEndSpanEventListener } from '../types/tracetypes'
+import { Tracer } from './tracer'
 
 export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
