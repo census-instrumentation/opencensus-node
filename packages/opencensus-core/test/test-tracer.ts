@@ -18,7 +18,6 @@ import { Tracer } from '../src/trace/model/tracer';
 import { RootSpan } from '../src/trace/model/rootspan';
 import { Span } from '../src/trace/model/span';
 import { Exporter } from '../src/exporters/exporter';
-import { Sampler } from '../src/trace/config/sampler';
 
 let assert = require('assert');
 
