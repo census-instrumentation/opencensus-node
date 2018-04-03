@@ -47,14 +47,11 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
         return this._traceId;
     }
 
-    public getOptions() {
-        return {
-            name: this.name,
-            traceContext: {
-                traceId: this.traceId,
-                spanId: this.id,
-                parentSpanId: this.getParentSpanId
-            }
+    public getContext(): TraceContext {
+        return <TraceContext>{
+            traceId: this.traceId,
+            spanId: this.id,
+            parentSpanId: this.getParentSpanId
         }
     }
 

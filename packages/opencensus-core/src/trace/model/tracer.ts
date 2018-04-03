@@ -80,9 +80,8 @@ export class Tracer implements OnEndSpanEventListener {
                 options = <TraceOptions>{}
             }
             if (!options.sampler) {
-                // options.sampler = new Sampler(newRoot.traceId);
-                // options.sampler.probability(0.6);
                 options.sampler = new Sampler(newRoot.traceId);
+                // options.sampler.probability(0.6);
                 options.sampler.always();
             }
             newRoot.sampler = options.sampler;
@@ -134,40 +133,6 @@ export class Tracer implements OnEndSpanEventListener {
         }
         return newSpan;
     }
-
-    /*public startSpan<T>(fn: (span: Span) => T): T {
-        //debug('starting span: %o', options)
-        if (!this.currentRootSpan) {
-            debug('no current trace found - must start a new root span first');
-            return null;
-        } else {
-            return this.contextManager.runAndReturn((span) => {
-                let newSpan = this.currentRootSpan.startSpan();
-                return fn(newSpan);
-            });
-        }
-    }*/
-
-    /*public startSpan<T>(options: TraceOptions, fn: (span: SpanBaseModel) => T): T {
-        //debug('starting span: %o', options)
-        if (this.currentRootSpan) {
-            // Has an active root span
-            debug('starting span')
-            return this.contextManager.runAndReturn((span) => {
-                let newSpan = this.currentRootSpan.startSpan();
-                return fn(newSpan);
-            });
-        } else {
-            // Has no active root span
-            debug('starting root span: %o', options)
-            return this.contextManager.runAndReturn((root) => {
-                let newRoot = new RootSpan(this, options);
-                this.setCurrentRootSpan(newRoot);
-                newRoot.start();
-                return fn(newRoot);
-            });
-        }
-    }*/
 
     public wrap<T>(fn: Func<T>): Func<T> {
         if (!this.active) {
