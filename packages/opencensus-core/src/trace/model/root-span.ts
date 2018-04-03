@@ -75,6 +75,18 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     }
 
     public startSpan(name: string, type: string) {
+        if (!this.started) {
+            debug('calling %s.startSpan() on un-started %s %o',
+                this._className, this._className,
+                { id: this.id, name: this.name, type: this.type })
+            return
+        }
+        if (this.ended) {
+            debug('calling %s.startSpan() on ended %s %o',
+                this._className, this._className,
+                { id: this.id, name: this.name, type: this.type })
+            return
+        }
         let newSpan = new Span(this);
         newSpan.name = name
         newSpan.type = type

@@ -71,7 +71,7 @@ export class Sampler{
         if(probability < minNumber){
             return this.never();
 
-        } else if (probability > maxNumber){
+        } else if (probability > maxNumber) {
             return this.always();
 
         }
@@ -93,6 +93,6 @@ export class Sampler{
         }else{
             return false;
         }
-     }
+    }
 
- }
+}

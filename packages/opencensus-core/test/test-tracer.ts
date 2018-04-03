@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 Google Inc. All Rights Reserved.
+ * Copyright 2018 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,7 @@ let assert = require('assert');
 
 describe('Tracer', function () {
   const options = { name: "test" };
-  const callback = (root) => {
-
-    return root;
-  }
+  const callback = (root) => { return root; }
 
   describe('new Tracer()', function () {
     it('should create a Tracer instance', function () {
@@ -52,35 +49,27 @@ describe('Tracer', function () {
   describe('startRootSpan()', function () {
 
     it('should start the rootSpan', function () {
-      const tracer = new Tracer();
+      let tracer = new Tracer();
       tracer.start();
-      const root = tracer.startRootSpan(options, callback);
+      let rootSpan = tracer.startRootSpan(options, callback);
 
-      assert.ok(root.started);
-    });
-
-    it('should set the new span root as currentRootSpan', function () {
-      const tracer = new Tracer();
-      tracer.start();
-      const root = tracer.startRootSpan(options, callback);
-
-      assert.equal(tracer.currentRootSpan.id, root.id);
+      assert.ok(rootSpan.started);
     });
   });
 
   describe('end()', function () {
     it('should end current trace', function () {
-      const tracer = new Tracer();
-      const trace = tracer.startRootSpan(options, callback);
-      trace.end();
-      assert.ok(trace.ended);
+      let tracer = new Tracer();
+      let rootSpan = tracer.startRootSpan(options, callback);
+      rootSpan.end();
+      assert.ok(rootSpan.ended);
     });
   });
 
   describe('clearCurrentRootSpan()', function () {
     it('should set the current root span to null', function () {
-      const tracer = new Tracer();
-      const trace = tracer.startRootSpan(options, callback);
+      let tracer = new Tracer();
+      let rootSpan = tracer.startRootSpan(options, callback);
       tracer.clearCurrentTrace();
 
       assert.ok(tracer.currentRootSpan == null);
@@ -89,19 +78,16 @@ describe('Tracer', function () {
 
   describe('startSpan()', function () {
     it('should return a Span instance', function () {
-      const tracer = new Tracer();
-      const trace = tracer.startRootSpan(options, callback);
-      trace.start();
-      const span = tracer.startSpan("spanName", "spanType");
-      console.log(span);
+      let tracer = new Tracer();
+      let rootSpan = tracer.startRootSpan(options, callback);
+      let span = tracer.startSpan("spanName", "spanType");
       assert.ok(span instanceof Span);
     });
 
     it('should start a span', function () {
-      const tracer = new Tracer();
-      const trace = tracer.startRootSpan(options, callback);
-      trace.start();
-      const span = tracer.startSpan("spanName", "spanType");
+      let tracer = new Tracer();
+      let rootSpan = tracer.startRootSpan(options, callback);
+      let span = tracer.startSpan("spanName", "spanType");
       assert.ok(span.started);
     });
   });
