@@ -20,72 +20,72 @@ import { debug, randomSpanId } from '../../internal/util'
 const minNumber = 1e-4;
 const maxNumber = 0xffffffffffffffff;
 
-export class Sampler{
-     traceId:       string;
-     spanId:        string;
-     isRemote:      boolean;
-     idUpperBound:  number;
+export class Sampler {
+    traceId: string;
+    spanId: string;
+    isRemote: boolean;
+    idUpperBound: number;
 
-     /**
-      * 
-      * @param traceId 
-      * @param spanId 
-      * @param isRemote 
-      */
-     constructor(traceId?:string, spanId?:string, isRemote?:boolean){
-         debug('Samplre constructor')
-         if(traceId){ 
-             this.traceId   = traceId;
-         }
-         if(spanId){
-            this.spanId    = spanId;
-         }
-        this.isRemote  = isRemote || false;
+    /**
+     * 
+     * @param traceId 
+     * @param spanId 
+     * @param isRemote 
+     */
+    constructor(traceId?: string, spanId?: string, isRemote?: boolean) {
+        debug('Samplre constructor')
+        if (traceId) {
+            this.traceId = traceId;
+        }
+        if (spanId) {
+            this.spanId = spanId;
+        }
+        this.isRemote = isRemote || false;
 
-     }
+    }
 
-     public always(): Sampler{
-         this.idUpperBound = maxNumber;
-         return this;
-     }
+    public always(): Sampler {
+        this.idUpperBound = maxNumber;
+        return this;
+    }
 
-     public never(): Sampler{
-         this.idUpperBound = minNumber;
-         return this;
-     }
+    public never(): Sampler {
+        this.idUpperBound = minNumber;
+        return this;
+    }
 
-     public probability(probability:number): Sampler{
-        if(probability < minNumber){
+    public probability(probability: number): Sampler {
+        if (probability < minNumber) {
             return this.never();
 
-        } else if (probability > maxNumber){
+        } else if (probability > maxNumber) {
             return this.always();
 
         }
 
         this.idUpperBound = probability * maxNumber;
         return this;
-     }
+    }
 
-     public continue (traceId:string):boolean{
+    public continue(traceId: string): boolean {
         debug('Samplre continue')
         let lower_bytes = traceId.substring(16)
         let lower_long: number
-        debug('SAMPLER CONTINUE lower_bytes :',lower_bytes)
+        debug('SAMPLER CONTINUE lower_bytes :', lower_bytes)
 
         lower_long = parseInt(lower_bytes, 16);
 
-        debug('SAMPLER CONTINUE lower_long :',lower_long)
-        debug('SAMPLER CONTINUE this.idUpperBound :',this.idUpperBound)
-        debug('SAMPLER CONTINUE diff :',lower_long - this.idUpperBound)
+        debug('SAMPLER CONTINUE lower_long :', lower_long)
+        debug('SAMPLER CONTINUE this.idUpperBound :', this.idUpperBound)
+        debug('SAMPLER CONTINUE diff :', lower_long - this.idUpperBound)
 
-        if(lower_long <= this.idUpperBound){
+        if (lower_long <= this.idUpperBound) {
             debug('trace sampler TRUE')
             return true
-        }else{
+        } else {
             debug('trace sampler FALSE')
             return false;
         }
-     }
+    }
 
- }
+}
