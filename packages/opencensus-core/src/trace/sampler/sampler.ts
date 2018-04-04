@@ -20,42 +20,51 @@ import { debug, randomSpanId } from '../../internal/util'
 const minNumber = 1e-4;
 const maxNumber = 0xffffffffffffffff;
 
-export class Sampler {
-    traceId: string;
-    spanId: string;
-    isRemote: boolean;
-    idUpperBound: number;
+/**
+ * Class Sampler
+ */
+export class Sampler{
+     traceId:               string;
+     private idUpperBound:  number;
+
+     /**
+      * @param traceId Used for probability calculation
+      * @param spanId todo: integration with propagation class
+      * @param isRemote todo: integration with propagation class
+      */
+     constructor(traceId?:string, spanId?:string, isRemote?:boolean){
+         if(traceId){ 
+             this.traceId   = traceId;
+         }
+     }
 
     /**
-     * 
-     * @param traceId 
-     * @param spanId 
-     * @param isRemote 
+     * @description Set idUpperBound with maxNumber
+     * @returns a Sampler object
      */
-    constructor(traceId?: string, spanId?: string, isRemote?: boolean) {
-        debug('Samplre constructor')
-        if (traceId) {
-            this.traceId = traceId;
-        }
-        if (spanId) {
-            this.spanId = spanId;
-        }
-        this.isRemote = isRemote || false;
+     public always(): Sampler{
+         this.idUpperBound = maxNumber;
+         return this;
+     }
 
-    }
+    /**
+     * @description Set idUpperBound with minNumber
+     * @returns a Sampler object
+     */
+     public never(): Sampler{
+         this.idUpperBound = minNumber;
+         return this;
+     }
 
-    public always(): Sampler {
-        this.idUpperBound = maxNumber;
-        return this;
-    }
-
-    public never(): Sampler {
-        this.idUpperBound = minNumber;
-        return this;
-    }
-
-    public probability(probability: number): Sampler {
-        if (probability < minNumber) {
+    /**
+     * @description Set idUpperBound with the probability. If probability 
+     * parameter is bigger then 1 set always. If probability parameter less 
+     * than 0, set never.
+     * @param probability probability between 0 and 1 
+     * @returns a Sampler object
+     */
+     public probability(probability:number): Sampler{
+        if(probability < minNumber){
             return this.never();
 
         } else if (probability > maxNumber) {
@@ -65,25 +74,20 @@ export class Sampler {
 
         this.idUpperBound = probability * maxNumber;
         return this;
-    }
+     }
+     
+    /**
+     * @description 
+     * @param traceId 
+     * @returns a boolean
+     */
+     public shouldSample (traceId:string):boolean{
+        const lower_bytes = traceId.substring(16)
+        const lower_long = parseInt(lower_bytes, 16);
 
-    public continue(traceId: string): boolean {
-        debug('Samplre continue')
-        let lower_bytes = traceId.substring(16)
-        let lower_long: number
-        debug('SAMPLER CONTINUE lower_bytes :', lower_bytes)
-
-        lower_long = parseInt(lower_bytes, 16);
-
-        debug('SAMPLER CONTINUE lower_long :', lower_long)
-        debug('SAMPLER CONTINUE this.idUpperBound :', this.idUpperBound)
-        debug('SAMPLER CONTINUE diff :', lower_long - this.idUpperBound)
-
-        if (lower_long <= this.idUpperBound) {
-            debug('trace sampler TRUE')
+        if(lower_long <= this.idUpperBound){
             return true
-        } else {
-            debug('trace sampler FALSE')
+        }else{
             return false;
         }
     }
