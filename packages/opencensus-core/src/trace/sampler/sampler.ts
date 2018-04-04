@@ -25,8 +25,6 @@ const maxNumber = 0xffffffffffffffff;
  */
 export class Sampler{
      traceId:               string;
-     spanId:                string;
-     isRemote:              boolean;
      private idUpperBound:  number;
 
      /**
@@ -38,12 +36,8 @@ export class Sampler{
          if(traceId){ 
              this.traceId   = traceId;
          }
-         if(spanId){
-            this.spanId    = spanId;
-         }
-        this.isRemote  = isRemote || false;
-
      }
+
     /**
      * @description Set idUpperBound with maxNumber
      * @returns a Sampler object
@@ -52,6 +46,7 @@ export class Sampler{
          this.idUpperBound = maxNumber;
          return this;
      }
+
     /**
      * @description Set idUpperBound with minNumber
      * @returns a Sampler object
@@ -60,6 +55,7 @@ export class Sampler{
          this.idUpperBound = minNumber;
          return this;
      }
+
     /**
      * @description Set idUpperBound with the probability. If probability 
      * parameter is bigger then 1 set always. If probability parameter less 
@@ -79,6 +75,7 @@ export class Sampler{
         this.idUpperBound = probability * maxNumber;
         return this;
      }
+     
     /**
      * @description 
      * @param traceId 
