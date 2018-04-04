@@ -189,8 +189,8 @@ export abstract class SpanBaseModel {
     public end(): void {
         if (!this.started) {
             debug('calling %s.end() on un-started %s %o',
-                this._className, this._className,
-                { id: this.id, name: this.name, type: this.type })
+            this._className, this._className,
+            { id: this.id, name: this.name, type: this.type })
             return
         }
         if (this.ended) {
