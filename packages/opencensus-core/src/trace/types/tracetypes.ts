@@ -160,11 +160,11 @@ export abstract class SpanBaseModel {
     }
 
     public get traceContext(): TraceContext {
-        return {
+        return <TraceContext>{
             traceId: this.traceId.toString(),
             spanId: this.id.toString(),
-            options: 1  // always traced
-        };
+            parentSpanId: this.getParentSpanId
+        }
     }
 
     //TODO: maybe key and values must be truncate
