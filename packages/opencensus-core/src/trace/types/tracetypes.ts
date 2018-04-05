@@ -37,15 +37,15 @@ export interface TraceOptions {
 }
 
 export interface OnEndSpanEventListener {
-    onEndSpan(span: SpanBaseModel): void; 
+    onEndSpan(span: SpanBaseModel): void;
 }
 
 export interface SpanData {
-    labels: {[key: string]: string};
+    labels: { [key: string]: string };
     name: string;
     spanId: string;
     parentSpanId?: string;
-  }
+}
 
 
 export abstract class SpanBaseModel {
@@ -141,20 +141,20 @@ export abstract class SpanBaseModel {
     }
 
     public get startTime(): Date {
-        if(this.clock){
+        if (this.clock) {
             return this.clock.startTime;
         }
-        
+
     }
 
     public get endTime(): Date {
-        if(this.clock){
+        if (this.clock) {
             return this.clock.endTime;
         }
     }
 
     public get duration(): number {
-        if(this.clock){
+        if (this.clock) {
             return this.clock.duration;
         }
     }
@@ -177,12 +177,12 @@ export abstract class SpanBaseModel {
         this.annotations[key] = value;
     }
 
-    public get sampler(){
+    public get sampler() {
         debug('tracetypes get sampler()')
         return this._sampler;
     }
 
-    public set sampler(sampler:Sampler){
+    public set sampler(sampler: Sampler) {
         debug('tracetypes set sempler(sampler)')
         this._sampler = sampler;
     }
@@ -203,14 +203,12 @@ export abstract class SpanBaseModel {
             debug('calling %s.end() on un-started %s %o',
             this._className, this._className,
             { id: this.id, name: this.name, type: this.type })
-            this._started = false;
-            this._ended = true;
-            // this.clock.end();
             return
-        } else if (this.ended) {
+        }
+        if (this.ended) {
             debug('calling %s.end() on already ended %s %o',
-            this._className, this._className,
-            { id: this.id, name: this.name, type: this.type })
+                this._className, this._className,
+                { id: this.id, name: this.name, type: this.type })
             return
         }
         this._started = false;

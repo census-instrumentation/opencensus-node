@@ -85,7 +85,7 @@ export class Tracer implements OnEndSpanEventListener {
                 options.sampler.always();
             }
             newRoot.sampler = options.sampler;
-            if (newRoot.sampler.continue(newRoot.traceId)) {
+            if (newRoot.sampler.shouldSample(newRoot.traceId)) {
                 newRoot.start();
                 return fn(newRoot);
             }
