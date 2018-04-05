@@ -25,7 +25,8 @@ export interface MapObjects { [propName: string]: any; }
 export interface TraceContext {
         traceId: string,
         spanId: string,
-        options?: number
+        options?: number,
+        sampleDecision?: boolean
 }
 
 export interface TraceOptions {
