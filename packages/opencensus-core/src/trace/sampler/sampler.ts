@@ -23,38 +23,38 @@ const maxNumber = 0xffffffffffffffff;
 /**
  * Class Sampler
  */
-export class Sampler{
-     traceId:               string;
-     private idUpperBound:  number;
+export class Sampler {
+    traceId: string;
+    private idUpperBound: number;
 
-     /**
-      * @param traceId Used for probability calculation
-      * @param spanId todo: integration with propagation class
-      * @param isRemote todo: integration with propagation class
-      */
-     constructor(traceId?:string, spanId?:string, isRemote?:boolean){
-         if(traceId){ 
-             this.traceId   = traceId;
-         }
-     }
+    /**
+     * @param traceId Used for probability calculation
+     * @param spanId todo: integration with propagation class
+     * @param isRemote todo: integration with propagation class
+     */
+    constructor(traceId?: string, spanId?: string, isRemote?: boolean) {
+        if (traceId) {
+            this.traceId = traceId;
+        }
+    }
 
     /**
      * @description Set idUpperBound with maxNumber
      * @returns a Sampler object
      */
-     public always(): Sampler{
-         this.idUpperBound = maxNumber;
-         return this;
-     }
+    public always(): Sampler {
+        this.idUpperBound = maxNumber;
+        return this;
+    }
 
     /**
      * @description Set idUpperBound with minNumber
      * @returns a Sampler object
      */
-     public never(): Sampler{
-         this.idUpperBound = minNumber;
-         return this;
-     }
+    public never(): Sampler {
+        this.idUpperBound = minNumber;
+        return this;
+    }
 
     /**
      * @description Set idUpperBound with the probability. If probability 
@@ -63,8 +63,8 @@ export class Sampler{
      * @param probability probability between 0 and 1 
      * @returns a Sampler object
      */
-     public probability(probability:number): Sampler{
-        if(probability < minNumber){
+    public probability(probability: number): Sampler {
+        if (probability < minNumber) {
             return this.never();
 
         } else if (probability > maxNumber) {
@@ -74,20 +74,20 @@ export class Sampler{
 
         this.idUpperBound = probability * maxNumber;
         return this;
-     }
-     
+    }
+
     /**
      * @description 
      * @param traceId 
      * @returns a boolean
      */
-     public shouldSample (traceId:string):boolean{
+    public shouldSample(traceId: string): boolean {
         const lower_bytes = traceId.substring(16)
         const lower_long = parseInt(lower_bytes, 16);
 
-        if(lower_long <= this.idUpperBound){
+        if (lower_long <= this.idUpperBound) {
             return true
-        }else{
+        } else {
             return false;
         }
     }

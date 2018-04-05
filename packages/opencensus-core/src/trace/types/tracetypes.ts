@@ -178,12 +178,10 @@ export abstract class SpanBaseModel {
     }
 
     public get sampler() {
-        debug('tracetypes get sampler()')
         return this._sampler;
     }
 
     public set sampler(sampler: Sampler) {
-        debug('tracetypes set sempler(sampler)')
         this._sampler = sampler;
     }
 
