@@ -23,15 +23,17 @@ export interface MapLabels { [propName: string]: string; }
 export interface MapObjects { [propName: string]: any; }
 
 export interface TraceContext {
-    traceId: string,
-    spanId: string,
-    options?: number
+        traceId: string,
+        spanId: string,
+        options?: number,
+        sampleDecision?: boolean
 }
 
 export interface TraceOptions {
-    name: string;
-    traceContext?: TraceContext;
-    sampler?: Sampler;
+    name:string;
+    traceContext?:TraceContext;
+    sampler?:Sampler;
+    type?:string;
 }
 
 export interface OnEndSpanEventListener {
@@ -53,6 +55,7 @@ export abstract class SpanBaseModel {
     private clock: Clock;
     //--Tra----
     private _remoteParent: string;
+    private _parentSpanId: string;
     private _name: string;
     private _started: boolean;
     private _ended: boolean;
@@ -74,6 +77,7 @@ export abstract class SpanBaseModel {
         this.clock = null;
         this._truncated = false;
         this._ended = false;
+        this._parentSpanId = ''
         this.setId(randomSpanId());
     }
 
@@ -104,6 +108,14 @@ export abstract class SpanBaseModel {
         this._name = name;
     }
 
+    public setParentSpanId(parentSpanId: string) {
+        this._parentSpanId = parentSpanId;
+    }
+
+    public getParentSpanId() {
+        return this._parentSpanId
+    }
+
     public get type(): string {
         return this._type;
     }
@@ -112,7 +124,7 @@ export abstract class SpanBaseModel {
         this._type = type;
     }
 
-    public set remoteParente(remoteParent: string) {
+    public set remoteParent(remoteParent: string) {
         this._remoteParent = remoteParent;
     }
 
@@ -148,11 +160,11 @@ export abstract class SpanBaseModel {
     }
 
     public get traceContext(): TraceContext {
-        return {
+        return <TraceContext>{
             traceId: this.traceId.toString(),
             spanId: this.id.toString(),
-            options: 1  // always traced
-        };
+            parentSpanId: this.getParentSpanId
+        }
     }
 
     //TODO: maybe key and values must be truncate
@@ -166,12 +178,10 @@ export abstract class SpanBaseModel {
     }
 
     public get sampler() {
-        debug('tracetypes get sampler()')
         return this._sampler;
     }
 
     public set sampler(sampler: Sampler) {
-        debug('tracetypes set sempler(sampler)')
         this._sampler = sampler;
     }
 

@@ -20,16 +20,16 @@ import { Span } from './span'
 import { debug } from '../../internal/util'
 import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
 import { StackdriverOptions } from '../../exporters/stackdriver/options'
-import { TraceContext, TraceOptions, OnEndSpanEventListener } from '../types/tracetypes';
-import {  TracerConfig, defaultConfig } from '../tracing';
 import { Sampler } from '../config/sampler'
+import { TraceContext, TraceOptions, OnEndSpanEventListener, SpanBaseModel } from '../types/tracetypes';
+import { TracerConfig, defaultConfig } from '../tracing';
 
 export type Func<T> = (...args: any[]) => T;
 
 
 export class Tracer implements OnEndSpanEventListener {
 
-    readonly PLUGINS = ['http', 'https', 'mongodb-core', 'express'];
+    readonly PLUGINS = ['http', 'https', 'mongodb-core'];
 
     //public buffer: Buffer;
     private _active: boolean;
@@ -37,7 +37,7 @@ export class Tracer implements OnEndSpanEventListener {
     private config: TracerConfig;
 
     //TODO: simple solution - to be rewied in future
-    private eventListeners: OnEndSpanEventListener[] = [];   
+    private eventListeners: OnEndSpanEventListener[] = [];
     //TODO: temp solution 
     private endedTraces: RootSpan[] = [];
 
@@ -76,12 +76,16 @@ export class Tracer implements OnEndSpanEventListener {
         return this.contextManager.runAndReturn((root) => {
             let newRoot = new RootSpan(this, options);
             this.setCurrentRootSpan(newRoot);
-            if(options.sampler == null){
+            if (!options) {
+                options = <TraceOptions>{}
+            }
+            if (!options.sampler) {
                 options.sampler = new Sampler(newRoot.traceId);
+                //options.sampler.probability(0.5);
                 options.sampler.always();
             }
             newRoot.sampler = options.sampler;
-            if(newRoot.sampler.shouldSample(newRoot.traceId)){
+            if (newRoot.sampler.shouldSample(newRoot.traceId)) {
                 newRoot.start();
                 return fn(newRoot);
             }
@@ -90,27 +94,25 @@ export class Tracer implements OnEndSpanEventListener {
     }
 
 
-    public onEndSpan(root:RootSpan): void {
+    public onEndSpan(root: RootSpan): void {
         if (!root) {
             return debug('cannot end trace - no active trace found')
         }
-        if(this.currentRootSpan != root) {
-             debug('currentRootSpan != root on notifyEnd. Need more investigation.') 
+        if (this.currentRootSpan != root) {
+            debug('currentRootSpan != root on notifyEnd. Need more investigation.')
         }
         this.notifyEndSpan(root);
         //this.clearCurrentTrace();
     }
 
-    
-    public registerEndSpanListener(listener: OnEndSpanEventListener) {
-        this.eventListeners.push(listener);
-        //this.buffer.registerExporter(exporter)
+    public registerEndSpanListener(listner: OnEndSpanEventListener) {
+        this.eventListeners.push(listner);
     }
 
     private notifyEndSpan(root: RootSpan) {
         if (this.active) {
-            debug ('starting to notify listeners the end of rootspans')
-            if(this.eventListeners&&this.eventListeners.length >0) {
+            debug('starting to notify listeners the end of rootspans')
+            if (this.eventListeners && this.eventListeners.length > 0) {
                 this.eventListeners.forEach((listener) => listener.onEndSpan(root))
             }
         } else {
@@ -122,12 +124,12 @@ export class Tracer implements OnEndSpanEventListener {
         this.setCurrentRootSpan(null);
     }
 
-    public startSpan(name: string, type: string): Span {
+    public startSpan(name?: string, type?: string, parentSpanId?: string): Span {
         let newSpan: Span = null;
         if (!this.currentRootSpan) {
-            debug('no current trace found - cannot start a new span');
-        } else{
-            newSpan = this.currentRootSpan.startSpan(name, type);
+            debug('no current trace found - must start a new root span first');
+        } else {
+            newSpan = this.currentRootSpan.startSpan(name, type, parentSpanId);
         }
         return newSpan;
     }

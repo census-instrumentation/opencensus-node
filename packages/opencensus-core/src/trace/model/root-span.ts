@@ -28,11 +28,14 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
     private _traceId: string;
 
     //TODO - improve root name setup
-    constructor(tracer: Tracer, context?: TraceOptions ) {
+    constructor(tracer: Tracer, context?: TraceOptions) {
         super()
         this.tracer = tracer;
-        this._traceId = context&&context.traceContext&&context.traceContext.traceId?context.traceContext.traceId:(uuid.v4().split('-').join(''));
-        this.name = context&&context.name?context.name:'undefined';
+        this._traceId = context && context.traceContext && context.traceContext.traceId ? context.traceContext.traceId : (uuid.v4().split('-').join(''));
+        this.name = context && context.name ? context.name : 'undefined';
+        if (context && context.traceContext) {
+            this.setParentSpanId(context.traceContext.spanId || '')
+        }
         this._spans = [];
     }
 
@@ -46,7 +49,7 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
     public start() {
         super.start()
-        debug('starting %s  %o', this._className, { traceId: this.traceId, id: this.id })
+        debug('starting %s  %o', this._className, { traceId: this.traceId, id: this.id, parentSpanId: this.getParentSpanId() })
     }
 
     public end() {
@@ -60,21 +63,23 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
 
         debug('ending %s  %o',
             this._className,
-            {   id: this.id,
+            {
+                id: this.id,
                 traceId: this.traceId,
                 name: this.name,
                 startTime: this.startTime,
                 endTime: this.endTime,
-                duration: this.duration })
-        
+                duration: this.duration
+            })
+
         this.tracer.onEndSpan(this)
     }
 
     public onEndSpan(span: Span) {
-        debug('ended span notified  %o', {id: span.id, name: span.name})
+        debug('%s notified ending by %o', { id: span.id, name: span.name })
     }
 
-    public startSpan(name: string, type: string) {
+    public startSpan(name: string, type: string, parentSpanId?: string) {
         if (!this.started) {
             debug('calling %s.startSpan() on un-started %s %o',
                 this._className, this._className,
@@ -88,12 +93,12 @@ export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
             return
         }
         let newSpan = new Span(this);
-        newSpan.name = name
-        newSpan.type = type
+        if (name) { newSpan.name = name }
+        if (type) { newSpan.type = type }
+        if (type) { newSpan.setParentSpanId(parentSpanId || '') }
         newSpan.start();
         this._spans.push(newSpan);
         return newSpan;
     }
-
 }
 
