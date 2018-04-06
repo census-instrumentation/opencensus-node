@@ -15,7 +15,7 @@
  */
 
 var fs = require('fs');
-var tracing = require('opencensus-nodejs').addStackdriver('project-id').start();
+var tracing = require('opencensus-nodejs').addStackdriver('your-project-id').start();
 
 var http = require('http');
 http.createServer(function (req, res) {

@@ -19,7 +19,7 @@ var http = require('http');
 var fs = require('fs');
 
 // Register trace exporters to export the collected data.
-var tracing = require('opencensus-nodejs').addStackdriver('project-id').start();
+var tracing = require('opencensus-nodejs').addStackdriver('your-project-id').start();
 var tracer = tracing.Tracer;
 
 var options = {
