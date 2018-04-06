@@ -41,7 +41,11 @@ ___
 cd examples/automatic_tracing
 ```
 
-2. **TODO Create a node_modules folder or npm install <folder> command?**
+2. Create a folder named `node_modules` and make a symlink inside of it, running the following command:
+```
+cd node_modules
+ln -s <opencensus-node-dir>/build/src opencensus-nodejs
+```
 
 
 ### Using Stackdriver Exporter
