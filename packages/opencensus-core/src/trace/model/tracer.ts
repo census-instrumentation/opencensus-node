@@ -18,11 +18,9 @@ import * as cls from '../../internal/cls'
 import { RootSpan } from './rootspan'
 import { Span } from './span'
 import { debug } from '../../internal/util'
-import { Stackdriver } from '../../exporters/stackdriver/stackdriver'
-import { StackdriverOptions } from '../../exporters/stackdriver/options'
 import { Sampler } from '../config/sampler'
-import { TraceContext, TraceOptions, OnEndSpanEventListener, SpanBaseModel } from '../types/tracetypes';
-import { TracerConfig, defaultConfig } from '../tracing';
+import { TraceContext, TraceOptions, OnEndSpanEventListener, SpanBaseModel, TracerConfig, defaultConfig } from '../types/tracetypes';
+
 
 export type Func<T> = (...args: any[]) => T;
 

@@ -22,6 +22,15 @@ import { Sampler } from '../config/sampler'
 export interface MapLabels { [propName: string]: string; }
 export interface MapObjects { [propName: string]: any; }
 
+export interface TracerConfig {
+    sampleRate?: number;
+    ignoreUrls?: Array<string | RegExp>;
+}
+
+export const defaultConfig: TracerConfig = {
+    sampleRate: 1.0
+}
+
 export interface TraceContext {
         traceId: string,
         spanId: string,
@@ -46,7 +55,6 @@ export interface SpanData {
     spanId: string;
     parentSpanId?: string;
 }
-
 
 export abstract class SpanBaseModel {
 

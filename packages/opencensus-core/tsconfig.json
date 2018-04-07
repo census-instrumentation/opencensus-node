@@ -17,10 +17,7 @@
     "node_modules"
   ],
   "include": [
-    "src/*.ts",
-    "src/trace/*.ts",
-    "src/trace/plugins/*.ts",    
-    "src/internal/*.ts"
+    "src/**/*.ts"
   ]
 
 }

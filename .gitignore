@@ -30,4 +30,12 @@ npm-debug.log
 .nyc_output/
 build/
 
+#backup files
+*--
+*_backup
+
+#log files
+*.log
+
+
 

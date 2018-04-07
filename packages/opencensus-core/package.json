@@ -6,6 +6,7 @@
   "types": "build/src/index.d.js",
   "repository": "census-instrumentation/opencensus-node",
   "scripts": {
+    "build": "node_modules/.bin/tsc --declaration",
     "test": "npm run script run-unit-tests",
     "compile-all": "npm run script compile-auto",
     "compile-strict": "npm run script compile-auto-strict",
@@ -24,6 +25,17 @@
   "license": "Apache-2.0",
   "engines": {
     "node": ">=6.00"
+  },
+  "files": [
+    "build/src/**/*.js",
+    "build/src/**/*.d.ts",
+    "doc",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@types/continuation-local-storage": "^3.2.1",
@@ -47,7 +59,6 @@
     "continuation-local-storage": "^3.2.1",
     "debug": "^3.1.0",
     "end-of-stream": "^1.4.1",
-    "npm": "^5.7.1",
     "require-in-the-middle": "^2.2.1",
     "semver": "^5.5.0",
     "shimmer": "^1.2.0",
