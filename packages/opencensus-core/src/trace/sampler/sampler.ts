@@ -21,7 +21,7 @@ const MIN_NUMBER = 1e-4;
 const MAX_NUMBER = 0xffffffffffffffff;
 
 /**
- * Class Sampler
+ * This class represent the probability of a tracer.
  */
 export class Sampler {
   traceId: string;
@@ -39,7 +39,7 @@ export class Sampler {
   }
 
   /**
-   * Set idUpperBound with MAX_NUMBER
+   * Set idUpperBound with MAX_NUMBER that is equivalent the probability be 1
    * @returns a Sampler object
    */
   always(): Sampler {
@@ -48,7 +48,7 @@ export class Sampler {
   }
 
   /**
-   * Set idUpperBound with MIN_NUMBER
+   * Set idUpperBound with MIN_NUMBER that is equivalent the probability be 0
    * @returns a Sampler object
    */
   never(): Sampler {
@@ -76,9 +76,10 @@ export class Sampler {
   }
 
   /**
-   *
-   * @param traceId
-   * @returns a boolean
+   * Checks if trace belong the sample.
+   * @param traceId Used to check the probability
+   * @returns a boolean. True if the traceId is in probability
+   * False if the traceId is not in probability. 
    */
   shouldSample(traceId: string): boolean {
     const LOWER_BYTES = traceId.substring(16);
