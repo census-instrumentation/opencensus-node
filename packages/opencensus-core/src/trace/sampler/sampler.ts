@@ -14,82 +14,81 @@
  * limitations under the License.
  */
 
-import { debug, randomSpanId } from '../../internal/util'
+import {debug, randomSpanId} from '../../internal/util';
 
 
-const minNumber = 1e-4;
-const maxNumber = 0xffffffffffffffff;
+const MIN_NUMBER = 1e-4;
+const MAX_NUMBER = 0xffffffffffffffff;
 
 /**
  * Class Sampler
  */
 export class Sampler {
-    traceId: string;
-    private idUpperBound: number;
+  traceId: string;
+  private idUpperBound: number;
 
-    /**
-     * @param traceId Used for probability calculation
-     * @param spanId todo: integration with propagation class
-     * @param isRemote todo: integration with propagation class
-     */
-    constructor(traceId?: string, spanId?: string, isRemote?: boolean) {
-        if (traceId) {
-            this.traceId = traceId;
-        }
+  /**
+   * @param traceId Used for probability calculation
+   * @param spanId todo: integration with propagation class
+   * @param isRemote todo: integration with propagation class
+   */
+  constructor(traceId?: string, spanId?: string, isRemote?: boolean) {
+    if (traceId) {
+      this.traceId = traceId;
+    }
+  }
+
+  /**
+   * Set idUpperBound with MAX_NUMBER
+   * @returns a Sampler object
+   */
+  always(): Sampler {
+    this.idUpperBound = MAX_NUMBER;
+    return this;
+  }
+
+  /**
+   * Set idUpperBound with MIN_NUMBER
+   * @returns a Sampler object
+   */
+  never(): Sampler {
+    this.idUpperBound = MIN_NUMBER;
+    return this;
+  }
+
+  /**
+   * Set idUpperBound with the probability. If probability
+   * parameter is bigger then 1 set always. If probability parameter less
+   * than 0, set never.
+   * @param probability probability between 0 and 1
+   * @returns a Sampler object
+   */
+  probability(probability: number): Sampler {
+    if (probability < MIN_NUMBER) {
+      return this.never();
+
+    } else if (probability > MAX_NUMBER) {
+      return this.always();
     }
 
-    /**
-     * @description Set idUpperBound with maxNumber
-     * @returns a Sampler object
-     */
-    public always(): Sampler {
-        this.idUpperBound = maxNumber;
-        return this;
+    this.idUpperBound = probability * MAX_NUMBER;
+    return this;
+  }
+
+  /**
+   *
+   * @param traceId
+   * @returns a boolean
+   */
+  shouldSample(traceId: string): boolean {
+    const LOWER_BYTES = traceId.substring(16);
+    // tslint:disable-next-line:ban Needed to parse hexadecimal.
+    const LOWER_LONG = parseInt(LOWER_BYTES, 16);
+
+    if (LOWER_LONG <= this.idUpperBound) {
+      return true;
+    } else {
+      return false;
     }
-
-    /**
-     * @description Set idUpperBound with minNumber
-     * @returns a Sampler object
-     */
-    public never(): Sampler {
-        this.idUpperBound = minNumber;
-        return this;
-    }
-
-    /**
-     * @description Set idUpperBound with the probability. If probability 
-     * parameter is bigger then 1 set always. If probability parameter less 
-     * than 0, set never.
-     * @param probability probability between 0 and 1 
-     * @returns a Sampler object
-     */
-    public probability(probability: number): Sampler {
-        if (probability < minNumber) {
-            return this.never();
-
-        } else if (probability > maxNumber) {
-            return this.always();
-
-        }
-
-        this.idUpperBound = probability * maxNumber;
-        return this;
-    }
-
-    /**
-     * @description 
-     * @param traceId 
-     * @returns a boolean
-     */
-    public shouldSample(traceId: string): boolean {
-        const lower_bytes = traceId.substring(16)
-        const lower_long = parseInt(lower_bytes, 16);
-
-        if (lower_long <= this.idUpperBound) {
-            return true
-        } else {
-            return false;
-        }
-    }
-
+  }
 }
