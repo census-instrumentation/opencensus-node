@@ -13,7 +13,11 @@
     "compile": "npm run script compile-auto compile-auto-strict",
     "clean": "rimraf build/*",
     "fix": "gts fix",
-    "script": "ts-node -P ./scripts ./scripts"
+    "script": "ts-node -P ./scripts ./scripts",
+    "check": "gts check",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "keywords": [
     "opencensus",
@@ -46,13 +50,13 @@
     "@types/semver": "^5.5.0",
     "@types/shimmer": "^1.0.1",
     "@types/uuid": "^3.4.3",
-    "gts": "^0.5.1",
+    "gts": "^0.5.4",
     "ncp": "^2.0.0",
     "google-cloud": "^0.57.0",
     "googleapis": "27.0.0",
     "mocha": "^5.0.4",
     "ts-node": "^4.0.0",
-    "typescript": "^2.7.2"
+    "typescript": "~2.6.1"
   },
   "dependencies": {
     "async_hooks": "^1.0.0",
