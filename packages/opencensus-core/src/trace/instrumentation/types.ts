@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 
-export interface Plugin <T> {
-    applyPatch(module: any, tracer: T, version: string): void; 
+/**
+ * Interface Plugin to apply patch.
+ */
+export interface Plugin<T> {
+  applyPatch(module: {}, tracer: T, version: string): void;
 }
+/**
+ * This class represent the base to patch plugin
+ */
+export abstract class BasePlugin<T> {
+  module: {};
+  moduleName: string;
+  tracer: T;
+  version: string;
 
-export abstract class BasePlugin <T>  {
-
-    public module: any;
-    public moduleName: string;
-    public tracer: T;
-    public version: string;
-
-    constructor (moduleName: string) {
-        this.moduleName = moduleName;
-    }
-
-    setPluginContext(http: any, tracer: T, version: string) {
-        this.module = http;
-        this.tracer = tracer;
-        this.version = version;     
-    }
-
+  constructor(moduleName: string) {
+    this.moduleName = moduleName;
+  }
+  /**
+   * Set modified plugin to the context.
+   * @param http object module to set on context
+   * @param tracer tracer relating to context
+   * @param version module version description
+   */
+  setPluginContext(http: {}, tracer: T, version: string) {
+    this.module = http;
+    this.tracer = tracer;
+    this.version = version;
+  }
 }

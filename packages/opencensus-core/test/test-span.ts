@@ -14,83 +14,86 @@
  * limitations under the License.
  */
 
-import { Span } from '../src/trace/model/span';
-import { RootSpan } from '../src/trace/model/rootspan';
-import { SpanBaseModel } from '../src/trace/types/tracetypes';
-import { Tracer } from '../src/trace/model/tracer';
+import * as assert from 'assert';
 
+import {RootSpan} from '../src/trace/model/rootspan';
+import {Span} from '../src/trace/model/span';
+import {Tracer} from '../src/trace/model/tracer';
+import {SpanBaseModel} from '../src/trace/types/tracetypes';
 
-var assert = require('assert');
+let tracer = new Tracer();
 
-let tracer = new Tracer()
+describe('Span', function() {
+  /**
+   * Should create, start and end a rootspan
+   */
+  describe('startSpan()', function() {
+    it('should create an span', function() {
+      const rootSpan = new RootSpan(tracer);
+      assert.ok(rootSpan instanceof SpanBaseModel);
 
-describe('Span', function () {
-
-describe('startSpan()', function () {
-
-    it('should create an span', function () {
-        const rootSpan = new RootSpan(tracer);
-        assert.ok(rootSpan instanceof SpanBaseModel);
-
-        rootSpan.start();
-        const span = rootSpan.startSpan('spanName', 'typeSpan');
-        assert.ok(span instanceof Span);
-        assert.ok(span.id);
+      rootSpan.start();
+      const span = rootSpan.startSpan('spanName', 'typeSpan');
+      assert.ok(span instanceof Span);
+      assert.ok(span.id);
     });
 
-    it('should start a span', function () {
-        const rootSpan = new RootSpan(tracer);
-        rootSpan.start();
-        const span = rootSpan.startSpan('spanName', 'typeSpan');
-        span.start();
-        assert.ok(span.started);
+    it('should start a span', function() {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+      const span = rootSpan.startSpan('spanName', 'typeSpan');
+      span.start();
+      assert.ok(span.started);
     });
 
-    it('should end a span', function () {
-        const rootSpan = new RootSpan(tracer);
-        rootSpan.start();
-        const span = rootSpan.startSpan('spanName', 'typeSpan');
-        span.start();
-        span.end();
-        assert.ok(span.ended);
+    it('should end a span', function() {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+      const span = rootSpan.startSpan('spanName', 'typeSpan');
+      span.start();
+      span.end();
+      assert.ok(span.ended);
     });
-});
+  });
 
-describe('Span checking after creation', function () {
+  /**
+   * Should not start span after it ended
+   */
+  describe('Span checking after creation', function() {
+    it('should not start span after it ended', function() {
+      const root = new RootSpan(tracer);
+      root.start();
+      const span = root.startSpan('spanName', 'typeSpan');
+      span.start();
+      span.end();
 
-    it('should not start span after it ended', function () {
-        const root = new RootSpan(tracer);
-        root.start();
-        const span = root.startSpan('spanName', 'typeSpan');
-        span.start();
-        span.end();
-
-        span.start();
-        assert.equal(span.ended, true);
+      span.start();
+      assert.equal(span.ended, true);
     });
-});
+  });
 
-describe('Span data', function () {
+  /**
+   * Should an unique ID for spans
+   */
+  describe('Span data', function() {
+    it('should create an unique numeric span ID strings', function() {
+      const root = new RootSpan(tracer);
+      root.start();
 
-    it('should create an unique numeric span ID strings', function () {
-        const root = new RootSpan(tracer);
-        root.start();
-
-        var numberOfSpansToCheck = 5;
-        for (var i = 0; i < numberOfSpansToCheck; i++) {
-            var span = root.startSpan('spanName' + i, 'typeSpan' + i);
-            var spanId = span.id;
-            assert.ok(typeof spanId === 'string');
-            assert.ok(spanId.match(/\d+/));
-            assert.ok(Number(spanId) > 0);
-            assert.strictEqual(Number(spanId).toString(), spanId);
-        }
+      var numberOfSpansToCheck = 5;
+      for (var i = 0; i < numberOfSpansToCheck; i++) {
+        var span = root.startSpan('spanName' + i, 'typeSpan' + i);
+        var spanId = span.id;
+        assert.ok(typeof spanId === 'string');
+        assert.ok(spanId.match(/\d+/));
+        assert.ok(Number(spanId) > 0);
+        assert.strictEqual(Number(spanId).toString(), spanId);
+      }
     });
 
     // TODO
-    it('should truncate namespace', function () {
-        this.skip();
+    it('should truncate namespace', function() {
+      this.skip();
     });
-});
-
+  });
 });
