@@ -15,67 +15,58 @@
  */
 
 export class Clock {
-    private _ended: boolean;
-    private _startTime: Date;
-    private _hrtime: [number, number];
-    private diff: [number,number];
+  private endedLocal: boolean;
+  private startTimeLocal: Date;
+  private hrtimeLocal: [number, number];
+  private diff: [number, number];
 
-    constructor() {
-        this._ended = false
-        this._startTime = new Date()
-        this._hrtime = process.hrtime()
-        this.diff = null
+  constructor() {
+    this.endedLocal = false;
+    this.startTimeLocal = new Date();
+    this.hrtimeLocal = process.hrtime();
+    this.diff = null;
+  }
+
+  end(): void {
+    if (this.endedLocal) {
+      return;
     }
+    this.diff = process.hrtime(this.hrtimeLocal);
+    this.endedLocal = true;
+  }
 
-    public end(): void {
-        if (this._ended){
-            return
-        }
-        this.diff = process.hrtime(this._hrtime)
-        this._ended = true
-      }
-      
-    public get duration(): number {
-        if (!this._ended){
-             return null
-        }
-        var ns = this.diff[0] * 1e9 + this.diff[1]
-        return ns / 1e6
-      }
-      
-     public  offset(timer: Clock): number {
-        var a = timer.hrtime
-        var b = this.hrtime
-        var ns = (b[0] - a[0]) * 1e9 + (b[1] - a[1])
-        return ns / 1e6
+  get duration(): number {
+    if (!this.endedLocal) {
+      return null;
     }
+    const ns = this.diff[0] * 1e9 + this.diff[1];
+    return ns / 1e6;
+  }
 
-    public get hrtime() : [number, number] {
-          return this._hrtime;
+  offset(timer: Clock): number {
+    const a = timer.hrtime;
+    const b = this.hrtime;
+    const ns = (b[0] - a[0]) * 1e9 + (b[1] - a[1]);
+    return ns / 1e6;
+  }
+
+  get hrtime(): [number, number] {
+    return this.hrtimeLocal;
+  }
+
+  get startTime(): Date {
+    return this.startTimeLocal;
+  }
+
+  get endTime(): Date {
+    let result: Date = null;
+    if (this.ended) {
+      result = new Date(this.startTime.getTime() + this.duration);
     }
-      
-    public get startTime(): Date {
-          return this._startTime;
-    }
- 
-    public get endTime(): Date {
-        let result: Date = null;
-        if(this.ended) {
-            result= new Date(this.startTime.getTime() + this.duration);
-        } 
-        return result;
-    }     
+    return result;
+  }
 
-    public get ended(): boolean {
-         return this._ended;
-     }
-
+  get ended(): boolean {
+    return this.endedLocal;
+  }
 }
-
-
-
-
-
-
-
-
