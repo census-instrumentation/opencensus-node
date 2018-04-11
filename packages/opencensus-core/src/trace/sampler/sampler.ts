@@ -24,7 +24,7 @@ const MAX_NUMBER = 0xffffffffffffffff;
  * This class represent the probability of a tracer.
  */
 export class Sampler {
-  traceId: string;
+  private traceId: string;
   private idUpperBound: number;
 
   /**
