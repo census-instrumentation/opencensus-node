@@ -14,68 +14,66 @@
  * limitations under the License.
  */
 
-import * as cls from '../../internal/cls'
-import { RootSpan } from './rootspan'
-import { Span } from './span'
-import { debug } from '../../internal/util'
-import { Sampler } from '../config/sampler'
-import { TraceContext, TraceOptions, OnEndSpanEventListener, SpanBaseModel, TracerConfig, defaultConfig } from '../types/tracetypes';
-
+import * as cls from '../../internal/cls';
+import { RootSpanImpl } from './rootspan';
+import { SpanImpl } from './span';
+import { debug } from '../../internal/util';
+import { Sampler } from '../config/sampler';
+import { TraceOptions, TracerConfig, defaultConfig, Tracer, OnEndSpanEventListener } from '../types';
 
 export type Func<T> = (...args: any[]) => T;
 
-
-export class Tracer implements OnEndSpanEventListener {
+export class TracerImpl implements Tracer {
 
     readonly PLUGINS = ['http', 'https', 'mongodb-core'];
 
     //public buffer: Buffer;
-    private _active: boolean;
+    private activeLocal: boolean;
     private contextManager: cls.Namespace;
     private config: TracerConfig;
 
     //TODO: simple solution - to be rewied in future
-    private eventListeners: OnEndSpanEventListener[] = [];
+    private eventListenersLocal: OnEndSpanEventListener[] = [];
     //TODO: temp solution 
-    private endedTraces: RootSpan[] = [];
+    private endedTraces: RootSpanImpl[] = [];
 
     constructor() {
-        this._active = false;
+        this.activeLocal = false;
         this.contextManager = cls.createNamespace();
     }
 
-    public get currentRootSpan(): RootSpan {
+    get currentRootSpan(): RootSpanImpl {
         return this.contextManager.get('rootspan');
     }
 
-    private setCurrentRootSpan(root: RootSpan) {
+    set currentRootSpan(root: RootSpanImpl) {
         this.contextManager.set('rootspan', root);
     }
 
-    public start(config?: TracerConfig): Tracer {
-        this._active = true;
+    start(config?: TracerConfig): Tracer {
+        this.activeLocal = true;
         this.config = config || defaultConfig;
         return this;
     }
 
-    public getEventListeners(): OnEndSpanEventListener[] {
-        return this.eventListeners;
+    get eventListeners(): OnEndSpanEventListener[] {
+        return this.eventListenersLocal;
     }
 
-    public stop() {
-        this._active = false;
+    stop() {
+        this.activeLocal = false;
     }
 
-    public get active(): boolean {
-        return this._active;
+    get active(): boolean {
+        return this.activeLocal;
     }
 
-    public startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
+    startRootSpan<T>(options: TraceOptions, fn: (root: RootSpanImpl) => T): T {
         return this.contextManager.runAndReturn((root) => {
-            let newRoot = new RootSpan(this, options);
-            this.setCurrentRootSpan(newRoot);
+            const newRoot = new RootSpanImpl(this, options);
+            this.currentRootSpan = newRoot;
             if (!options) {
-                options = <TraceOptions>{}
+                options = {} as TraceOptions;
             }
             if (!options.sampler) {
                 options.sampler = new Sampler(newRoot.traceId);
@@ -91,39 +89,38 @@ export class Tracer implements OnEndSpanEventListener {
         });
     }
 
-
-    public onEndSpan(root: RootSpan): void {
+    onEndSpan(root: RootSpanImpl): void {
         if (!root) {
-            return debug('cannot end trace - no active trace found')
+            return debug('cannot end trace - no active trace found');
         }
-        if (this.currentRootSpan != root) {
-            debug('currentRootSpan != root on notifyEnd. Need more investigation.')
+        if (this.currentRootSpan !== root) {
+            debug('currentRootSpan != root on notifyEnd. Need more investigation.');
         }
         this.notifyEndSpan(root);
         //this.clearCurrentTrace();
     }
 
-    public registerEndSpanListener(listner: OnEndSpanEventListener) {
-        this.eventListeners.push(listner);
+    registerEndSpanListener(listner: OnEndSpanEventListener) {
+        this.eventListenersLocal.push(listner);
     }
 
-    private notifyEndSpan(root: RootSpan) {
+    private notifyEndSpan(root: RootSpanImpl) {
         if (this.active) {
-            debug('starting to notify listeners the end of rootspans')
-            if (this.eventListeners && this.eventListeners.length > 0) {
-                this.eventListeners.forEach((listener) => listener.onEndSpan(root))
+            debug('starting to notify listeners the end of rootspans');
+            if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
+                this.eventListenersLocal.forEach((listener) => listener.onEndSpan(root));
             }
         } else {
-            debug('this tracer is inactivate cant notify endspan')
+            debug('this tracer is inactivate cant notify endspan');
         }
     }
 
-    public clearCurrentTrace() {
-        this.setCurrentRootSpan(null);
+    clearCurrentTrace() {
+        this.currentRootSpan = null;
     }
 
-    public startSpan(name?: string, type?: string, parentSpanId?: string): Span {
-        let newSpan: Span = null;
+    startSpan(name?: string, type?: string, parentSpanId?: string): SpanImpl {
+        let newSpan: SpanImpl = null;
         if (!this.currentRootSpan) {
             debug('no current trace found - must start a new root span first');
         } else {
@@ -132,7 +129,7 @@ export class Tracer implements OnEndSpanEventListener {
         return newSpan;
     }
 
-    public wrap<T>(fn: Func<T>): Func<T> {
+    wrap<T>(fn: Func<T>): Func<T> {
         if (!this.active) {
             return fn;
         }
@@ -142,7 +139,7 @@ export class Tracer implements OnEndSpanEventListener {
         return namespace.bind<T>(fn);
     }
 
-    public wrapEmitter(emitter: NodeJS.EventEmitter): void {
+    wrapEmitter(emitter: NodeJS.EventEmitter): void {
         if (!this.active) {
             return;
         }
@@ -151,7 +148,6 @@ export class Tracer implements OnEndSpanEventListener {
         const namespace = this.contextManager as cls.Namespace;
         namespace.bindEmitter(emitter);
     }
-
 }
 
 

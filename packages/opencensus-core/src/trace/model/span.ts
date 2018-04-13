@@ -16,20 +16,22 @@
 
 import {Clock} from '../../internal/clock';
 import {debug, randomSpanId} from '../../internal/util';
-import {SpanBaseModel, TraceContext} from '../types/tracetypes';
-import {RootSpan} from './rootspan';
+import {Span, TraceContext} from '../types';
+
+import {RootSpanImpl} from './rootspan';
+import {SpanBaseModel} from './spanbasemodel';
 
 /**
  * This class represent a span.
  */
-export class Span extends SpanBaseModel {
-  private root: RootSpan;
+export class SpanImpl extends SpanBaseModel implements Span {
+  private root: RootSpanImpl;
 
   /**
    * Constructs a new Span instance.
    * @param root
    */
-  constructor(root: RootSpan) {
+  constructor(root: RootSpanImpl) {
     super();
     this.root = root;
   }

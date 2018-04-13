@@ -18,108 +18,90 @@ import * as uuid from 'uuid';
 
 import {Clock} from '../../internal/clock';
 import {debug} from '../../internal/util';
-import {OnEndSpanEventListener, SpanBaseModel, TraceContext, TraceOptions} from '../types/tracetypes';
-import {Span} from './span';
-import {Tracer} from './tracer';
+import {OnEndSpanEventListener, RootSpan, TraceContext, TraceOptions} from '../types';
+
+import {SpanImpl} from './span';
+import {SpanBaseModel} from './spanbasemodel';
+import {TracerImpl} from './tracer';
 
 /** Defines a root span */
-export class RootSpan extends SpanBaseModel implements OnEndSpanEventListener {
-  private tracer: Tracer;
-  readonly traceId: string;
-  private spansLocal: Span[] = [];
+export class RootSpanImpl extends SpanBaseModel implements RootSpan {
+  private tracer: TracerImpl;
+  private spansLocal: SpanImpl[];
+  private traceIdLocal: string;
 
-  /**
-   * Constructs a new RootSpan instance.
-   * @param tracer
-   * @param context
-   */
-  constructor(tracer: Tracer, context?: TraceOptions) {
+  // TODO - improve root name setup
+  constructor(tracer: TracerImpl, context?: TraceOptions) {
     super();
     this.tracer = tracer;
-    this.traceId =
+    this.traceIdLocal =
         context && context.traceContext && context.traceContext.traceId ?
         context.traceContext.traceId :
         (uuid.v4().split('-').join(''));
-    // TODO - improve root name setup
     this.name = context && context.name ? context.name : 'undefined';
     if (context && context.traceContext) {
-      this.setParentSpanId(context.traceContext.spanId || '');
+      this.parentSpanId = context.traceContext.spanId || '';
     }
+    this.spansLocal = [];
   }
 
-  /** Returns a list of the trace's spans. */
   get spans() {
     return this.spansLocal;
   }
 
-  /** Starts the root span. */
-  start() {
-    super.start();
-    debug('starting %s  %o', this._className, {
-      traceId: this.traceId,
-      id: this.id,
-      parentSpanId: this.getParentSpanId()
-    });
+  get traceId() {
+    return this.traceIdLocal;
   }
 
-  /** Ends the root span. */
+  start() {
+    super.start();
+    debug(
+        'starting %s  %o', this.className,
+        {traceId: this.traceId, id: this.id, parentSpanId: this.parentSpanId});
+  }
+
   end() {
     super.end();
 
     // TODO - Define logic for list of spans
-    this.spansLocal.map(span => {
+    for (const span of this.spansLocal) {
       if (span.ended || !span.started) return;
       span.truncate();
-    });
-
-    debug('ending %s  %o', this._className, {
-      id: this.id,
-      traceId: this.traceId,
-      name: this.name,
-      startTime: this.startTime,
-      endTime: this.endTime,
-      duration: this.duration
-    });
+    }
 
     this.tracer.onEndSpan(this);
   }
 
-  /**
-   * Happens when a span is ended.
-   * @param span
-   */
-  onEndSpan(span: Span) {
-    debug('%s notified ending by %o', {id: span.id, name: span.name});
+  onEndSpan(span: SpanImpl) {
+    debug('ending span  %o', {
+      id: span.id,
+      traceId: span.traceId,
+      name: span.name,
+      startTime: span.startTime,
+      endTime: span.endTime,
+      duration: span.duration
+    });
   }
 
-  /**
-   * Starts a span inside the respective trace.
-   * @param name Span's name
-   * @param type Spans's type
-   * @param parentSpanId Span's parent ID
-   */
   startSpan(name: string, type: string, parentSpanId?: string) {
     if (!this.started) {
       debug(
-          'calling %s.startSpan() on un-started %s %o', this._className,
-          this._className, {id: this.id, name: this.name, type: this.type});
+          'calling %s.startSpan() on un-started %s %o', this.className,
+          this.className, {id: this.id, name: this.name, type: this.type});
       return;
     }
     if (this.ended) {
       debug(
-          'calling %s.startSpan() on ended %s %o', this._className,
-          this._className, {id: this.id, name: this.name, type: this.type});
+          'calling %s.startSpan() on ended %s %o', this.className,
+          this.className, {id: this.id, name: this.name, type: this.type});
       return;
     }
-    const newSpan = new Span(this);
+    const newSpan = new SpanImpl(this);
     if (name) {
       newSpan.name = name;
     }
     if (type) {
       newSpan.type = type;
-    }
-    if (type) {
-      newSpan.setParentSpanId(parentSpanId || '');
     }
     newSpan.start();
     this.spansLocal.push(newSpan);

@@ -14,244 +14,155 @@
  * limitations under the License.
  */
 
-import { Clock } from '../../internal/clock'
-import { debug, randomSpanId } from '../../internal/util'
-import { Sampler } from '../config/sampler'
+import { Sampler } from './config/sampler';
+import { SpanBaseModel } from './model/spanbasemodel';
 
+/** Default type for functions */
+export type Func<T> = (...args: any[]) => T;
 
+/** Maps a label to a string. Used in spans' attributes. */
 export interface MapLabels { [propName: string]: string; }
-export interface MapObjects { [propName: string]: any; }
 
+/** Maps a label to a string, number or boolean. Used in spans' annotations. */
+export interface MapObjects { [propName: string]: string|number|boolean; }
+
+/** Defines tracer configuration parameters */
 export interface TracerConfig {
-    sampleRate?: number;
-    ignoreUrls?: Array<string | RegExp>;
+  /** Determines the samplin rate. Ranges from 0.0 to 1.0 */
+  sampleRate?: number;
+  /** Determines the ignored (or blacklisted) URLs */
+  ignoreUrls?: Array<string|RegExp>;
 }
 
+/** Defines a default tracer configuration */
 export const defaultConfig: TracerConfig = {
-    sampleRate: 1.0
-}
+  sampleRate: 1.0
+};
 
+/** Defines the trace context */
 export interface TraceContext {
-        traceId: string,
-        spanId: string,
-        options?: number,
-        sampleDecision?: boolean
+  /** Trace ID */
+  traceId: string;
+  /** Span ID */
+  spanId: string;
+  /** Options */
+  options?: number;
+  /** Sample decision */
+  sampleDecision?: boolean;
 }
 
+/** Defines the trace options */
 export interface TraceOptions {
-    name:string;
-    traceContext?:TraceContext;
-    sampler?:Sampler;
-    type?:string;
+  /** Root span name */
+  name: string;
+  /** Trace context */
+  traceContext?: TraceContext;
+  /** Sampler */
+  sampler?: Sampler;
+  /** Span type */
+  type?: string;
 }
 
+/** Defines an end span event listener */
 export interface OnEndSpanEventListener {
-    onEndSpan(span: SpanBaseModel): void;
+  /** Happens when a span is ended */
+  onEndSpan(span: SpanBaseModel): void;
 }
 
+/** Defines the span data */
 export interface SpanData {
-    labels: { [key: string]: string };
-    name: string;
-    spanId: string;
-    parentSpanId?: string;
+  /** A collection of labels associated with the span */
+  labels: {[key: string]: string};
+  /** The resource name of the span */
+  name: string;
+  /** The Span ID of this span */
+  spanId: string;
+  /** The span ID of this span's parent. If it's a root span, must be empty. */
+  parentSpanId?: string;
 }
 
-export abstract class SpanBaseModel {
+/** Interface for RootSpan */
+export interface RootSpan {
+    /** Get the span list from RootSpan instance */
+    readonly spans: Span[];
 
-    protected _className: string;
-    private _id: string;
-    private clock: Clock;
-    //--Tra----
-    private _remoteParent: string;
-    private _parentSpanId: string;
-    private _name: string;
-    private _started: boolean;
-    private _ended: boolean;
-    private _type: string;
-    private _status: number;
-    private attributes: MapLabels = {};
-    private annotations: MapObjects = {};
-    //messageEvents
-    //links
-    //TODO truncated 
-    private _truncated: boolean;
-    private _sampler: Sampler;
+    /** Start the RootSpan instance */
+    start(): void;
+    /** End the RootSpan instance */
+    end(): void;
+    /** Start a new Span instance in the RootSpan instance */
+    startSpan(name: string, type: string, parentSpanId?: string): Span;
+}
 
-    constructor() {
-        this._className = this.constructor.name;
-        this._name = null;
-        this._type = null;
-        this._started = false;
-        this.clock = null;
-        this._truncated = false;
-        this._ended = false;
-        this._parentSpanId = ''
-        this.setId(randomSpanId());
-    }
+/** Interface for Span */
+export interface Span {
+    /** Gets the traceId from span instance */
+    readonly traceId: string;
+    /** Gets the parentSpanId from span instance */
+    readonly parentSpanId: string;
+    /** Gets the traceContext from span instance */
+    readonly traceContext: TraceContext;
 
+    /** Starts a span instance. */
+    start(): void;
+    /** Ends a span. */
+    end(): void;
+}
 
-    public get id(): string {
-        return this._id;
-    }
+/** Interface for Tracer */
+export interface Tracer {
+    /** Get and set the currentRootSpan to tracer instance */
+    currentRootSpan: RootSpan;
+    /** Get the eventListeners from tracer instance */
+    readonly eventListeners: OnEndSpanEventListener[];
+    /** Get the active status from tracer instance */
+    readonly active: boolean;
 
-    protected setId(id: string) {
-        this._id = id;
-    }
-
-    abstract get traceId(): string;
-
-    public get name() {
-        return this._name;
-    }
-
-    public get started(): boolean {
-        return this._started;
-    }
-
-    public get ended(): boolean {
-        return this._ended;
-    }
-
-    public set name(name: string) {
-        this._name = name;
-    }
-
-    public setParentSpanId(parentSpanId: string) {
-        this._parentSpanId = parentSpanId;
-    }
-
-    public getParentSpanId() {
-        return this._parentSpanId
-    }
-
-    public get type(): string {
-        return this._type;
-    }
-
-    public set type(type: string) {
-        this._type = type;
-    }
-
-    public set remoteParent(remoteParent: string) {
-        this._remoteParent = remoteParent;
-    }
-
-    public get remoteSpanId(): string {
-        return this._remoteParent;
-    }
-
-    public get status(): number {
-        return this._status;
-    }
-
-    public set status(status: number) {
-        this._status = status;
-    }
-
-    public get startTime(): Date {
-        if (this.clock) {
-            return this.clock.startTime;
-        }
-
-    }
-
-    public get endTime(): Date {
-        if (this.clock) {
-            return this.clock.endTime;
-        }
-    }
-
-    public get duration(): number {
-        if (this.clock) {
-            return this.clock.duration;
-        }
-    }
-
-    public get traceContext(): TraceContext {
-        return <TraceContext>{
-            traceId: this.traceId.toString(),
-            spanId: this.id.toString(),
-            parentSpanId: this.getParentSpanId
-        }
-    }
-
-    //TODO: maybe key and values must be truncate
-    public addAtribute(key: string, value: string) {
-        this.attributes[key] = value;
-    }
-
-    //TODO: maybe keys and values must be truncate
-    public addAnotation(key: string, value: {}) {
-        this.annotations[key] = value;
-    }
-
-    public get sampler() {
-        return this._sampler;
-    }
-
-    public set sampler(sampler: Sampler) {
-        this._sampler = sampler;
-    }
-
-    public start() {
-        if (this.started) {
-            debug('calling %s.start() on already started %s %o',
-                this._className, this._className,
-                { id: this.id, name: this.name, type: this.type })
-            return
-        }
-        this.clock = new Clock();
-        this._started = true;
-    }
-
-    public end(): void {
-        if (!this.started) {
-            debug('calling %s.end() on un-started %s %o',
-            this._className, this._className,
-            { id: this.id, name: this.name, type: this.type })
-            return
-        }
-        if (this.ended) {
-            debug('calling %s.end() on already ended %s %o',
-                this._className, this._className,
-                { id: this.id, name: this.name, type: this.type })
-            return
-        }
-        this._started = false;
-        this._ended = true;
-        this.clock.end();
-    }
-
-
-    //TODO: review
-    public truncate() {
-        if (!this.started) {
-            debug('calling truncate non-started %s - ignoring %o',
-                this._className,
-                {
-                    id: this.id,
-                    name: this.name,
-                    type: this.type
-                })
-            return
-        } else if (this.ended) {
-            debug('calling truncate already ended %s - ignoring %o',
-                this._className,
-                {
-                    id: this.id,
-                    name: this.name,
-                    type: this.type
-                })
-            return
-        }
-        this._truncated = true
-        this.end()
-        debug('truncating %s  %o',
-            this._className,
-            {
-                id: this.id,
-                name: this.name
-            })
-    }
-
+    /**
+     * Start a tracer instance
+     * @param config Configuration for tracer instace
+     * @returns A tracer instance started
+     */
+    start(config?: TracerConfig): Tracer;   
+    /** Stop the tracer instance */ 
+    stop(): void;
+    /**
+     * Start a new RootSpan to currentRootSpan
+     * @param options Options for tracer instance
+     * @param fn Callback function
+     * @returns The callback return
+     */
+    startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T;
+    /**
+     * Event called on the span end
+     * @param root The RootSpan that was ended
+     */
+    onEndSpan(root: RootSpan): void;
+    /**
+     * Register a OnEndSpanEventListener on the tracer instance
+     * @param listner An OnEndSpanEventListener instance
+     */
+    registerEndSpanListener(listner: OnEndSpanEventListener): void;
+    /** Clear the currentRootSpan from tracer instance */
+    clearCurrentTrace(): void;
+    /**
+     * Start a new Span instance to the currentRootSpan
+     * @param name Span name
+     * @param type Span type
+     * @param parentSpanId Parent SpanId
+     * @returns The new Span instance started
+     */
+    startSpan(name?: string, type?: string, parentSpanId?: string): Span;
+    /**
+     * Monkeypatch to contextManager
+     * @param fn Function that will wrap in contextManager
+     * @returns The contextManager class wrapped
+     */
+    wrap<T>(fn: Func<T>): Func<T>;
+    /**
+     * Monkeypatch to contextManager emitter
+     * @param emitter Function that will wrap in contextManager emitter
+     * @returns The contextManager emitter wrapped
+     */
+    wrapEmitter(emitter: NodeJS.EventEmitter): void;
 }
