@@ -17,8 +17,8 @@
 import * as uuidv4 from 'uuid/v4';
 
 import {debug} from '../internal/util';
-import {RootSpan} from '../trace/model/rootspan';
-import {OnEndSpanEventListener} from '../trace/types/tracetypes';
+import {RootSpan} from '../trace/types';
+import {OnEndSpanEventListener} from '../trace/types';
 
 import {Exporter} from './exporter';
 import {ExporterOptions} from './exporterOptions';

@@ -19,9 +19,9 @@ import { RootSpanImpl } from './rootspan';
 import { SpanImpl } from './span';
 import { debug } from '../../internal/util';
 import { Sampler } from '../config/sampler';
-import { TraceOptions, TracerConfig, defaultConfig, Tracer, OnEndSpanEventListener } from '../types';
+import { TraceOptions, TracerConfig, defaultConfig, Tracer, OnEndSpanEventListener, Func } from '../types';
 
-export type Func<T> = (...args: any[]) => T;
+//ßexport type Func<T> = (...args: any[]) => T;
 
 export class TracerImpl implements Tracer {
 

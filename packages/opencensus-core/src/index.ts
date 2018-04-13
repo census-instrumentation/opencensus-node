@@ -21,9 +21,9 @@ export * from './exporters/exporterOptions';
 export * from './internal/clock';
 export * from './internal/util';
 export * from './trace/config/sampler';
-export * from './trace/instrumentation/plugingtypes';
+export * from './trace/instrumentation/types';
 export * from './trace/model/rootspan';
 export * from './trace/model/span';
 export * from './trace/model/tracer';
-export * from './trace/types/tracetypes';
+export * from './trace/types';
 

@@ -15,7 +15,6 @@
  */
 
 import { Sampler } from './config/sampler';
-import { SpanBaseModel } from './model/spanbasemodel';
 
 /** Default type for functions */
 export type Func<T> = (...args: any[]) => T;
@@ -63,11 +62,6 @@ export interface TraceOptions {
   type?: string;
 }
 
-/** Defines an end span event listener */
-export interface OnEndSpanEventListener {
-  /** Happens when a span is ended */
-  onEndSpan(span: SpanBaseModel): void;
-}
 
 /** Defines the span data */
 export interface SpanData {
@@ -81,32 +75,83 @@ export interface SpanData {
   parentSpanId?: string;
 }
 
-/** Interface for RootSpan */
-export interface RootSpan {
-    /** Get the span list from RootSpan instance */
-    readonly spans: Span[];
-
-    /** Start the RootSpan instance */
-    start(): void;
-    /** End the RootSpan instance */
-    end(): void;
-    /** Start a new Span instance in the RootSpan instance */
-    startSpan(name: string, type: string, parentSpanId?: string): Span;
-}
 
 /** Interface for Span */
 export interface Span {
-    /** Gets the traceId from span instance */
+  
+    /** The Span ID of this span */
+    readonly id: string;
+    remoteParent: string;
+    /** The span ID of this span's parent. If it's a root span, must be empty */
+    parentSpanId: string;
+    /** The resource name of the span */
+    name: string;
+    /** Type of span. Used to specify additional relationships between spans */
+    type: string;
+    /** A final status for this span */
+    status: number;
+    /** A sampler that will decide if the span will be sampled or not */
+    sampler: Sampler;
+    /** Constructs a new SpanBaseModel instance. */
     readonly traceId: string;
-    /** Gets the parentSpanId from span instance */
-    readonly parentSpanId: string;
-    /** Gets the traceContext from span instance */
+    /** Indicates if span was started. */
+    readonly started: boolean;
+    /** Indicates if span was ended. */
+    readonly ended: boolean;
+    /**
+     * Gives a timestap that indicates the span's start time in RFC3339 UTC
+     * "Zulu" format.
+     */
+    readonly startTime: Date;
+    /**
+     * Gives a timestap that indicates the span's end time in RFC3339 UTC
+     * "Zulu" format.
+     */
+    readonly endTime: Date;
+    /**
+     * Gives a timestap that indicates the span's duration in RFC3339 UTC
+     * "Zulu" format.
+     */
+    readonly duration: number;
+    /** Gives the TraceContext of the span. */
     readonly traceContext: TraceContext;
-
-    /** Starts a span instance. */
+    /**
+     * Adds an atribute to the span.
+     * @param key Describes the value added.
+     * @param value The result of an operation.
+     */
+    addAtribute(key: string, value: string): void;
+    /**
+     * Adds an annotation to the span.
+     * @param key Describes the value added.
+     * @param value The result of an operation.
+     */
+    addAnotation(key: string, value: string | number | boolean): void;
+    /** Starts a span. */
     start(): void;
     /** Ends a span. */
     end(): void;
+    /** Forces to end a span. */
+    truncate(): void;
+}
+
+/** Interface for RootSpan */
+export interface RootSpan extends Span {
+  /** Get the span list from RootSpan instance */
+  readonly spans: Span[];
+
+  /** Start the RootSpan instance */
+  start(): void;
+  /** End the RootSpan instance */
+  end(): void;
+  /** Start a new Span instance in the RootSpan instance */
+  startSpan(name: string, type: string, parentSpanId?: string): Span;
+}
+
+/** Defines an end span event listener */
+export interface OnEndSpanEventListener {
+  /** Happens when a span is ended */
+  onEndSpan(span: Span): void;
 }
 
 /** Interface for Tracer */

@@ -15,8 +15,8 @@
  */
 
 
-import {RootSpan} from '../trace/model/rootspan';
-import {OnEndSpanEventListener} from '../trace/types/tracetypes';
+import {RootSpan} from '../trace/types';
+import {OnEndSpanEventListener} from '../trace/types';
 import {ExporterOptions} from './exporterOptions';
 
 export interface Exporter { publish(rootSpans: RootSpan[]); }

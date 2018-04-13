@@ -1,12 +1,12 @@
 import { Clock } from '../../internal/clock';
 import { debug, randomSpanId } from '../../internal/util';
 import { Sampler } from '../config/sampler';
-import { TraceContext } from '../types';
+import { TraceContext, Span } from '../types';
 
 export interface MapLabels { [propName: string]: string; }
 export interface MapObjects { [propName: string]: any; }
 
-export abstract class SpanBaseModel {
+export abstract class SpanBaseModel implements Span {
     protected className: string;
     /** The clock used to mesure the beginning and ending of a span */
     private clock: Clock = null;
