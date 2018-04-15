@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import {Clock} from '../../internal/clock';
 import {debug, randomSpanId} from '../../internal/util';
-import {Span, TraceContext} from '../types';
+import {Span, TraceContext, RootSpan} from './types';
 
 import {RootSpanImpl} from './rootspan';
 import {SpanBaseModel} from './spanbasemodel';
@@ -25,13 +24,13 @@ import {SpanBaseModel} from './spanbasemodel';
  * This class represent a span.
  */
 export class SpanImpl extends SpanBaseModel implements Span {
-  private root: RootSpanImpl;
+  private root: RootSpan;
 
   /**
    * Constructs a new Span instance.
    * @param root
    */
-  constructor(root: RootSpanImpl) {
+  constructor(root: RootSpan) {
     super();
     this.root = root;
   }
@@ -39,11 +38,6 @@ export class SpanImpl extends SpanBaseModel implements Span {
   /** Gets trace id of rootspan. */
   get traceId(): string {
     return this.root.traceId;
-  }
-
-  /** Gets trace id of rootspan. */
-  get parentSpanId(): string {
-    return this.root.id;
   }
 
   /** Gets trace context of rootspan. */

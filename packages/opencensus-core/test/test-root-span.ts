@@ -15,13 +15,13 @@
  */
 
 import * as assert from 'assert';
+import * as mocha from 'mocha';
 
-import {RootSpan} from '../src/trace/model/rootspan';
-import {Span} from '../src/trace/model/span';
-import {Tracer} from '../src/trace/model/tracer';
-import {SpanBaseModel} from '../src/trace/types/tracetypes';
-
-let tracer = new Tracer();
+import {Span,RootSpan,Tracer} from '../src/trace/model/types';
+import {SpanImpl} from '../src/trace/model/span';
+import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {TracerImpl} from '../src/trace/model/tracer';
+let tracer = new TracerImpl();
 
 describe('RootSpan', function() {
   /**
@@ -29,8 +29,8 @@ describe('RootSpan', function() {
    */
   describe('new RootSpan()', function() {
     it('should create a RootSpan instance', function() {
-      let root = new RootSpan(tracer);
-      assert.ok(root instanceof SpanBaseModel);
+      let root = new RootSpanImpl(tracer);
+      assert.ok(root instanceof SpanImpl);
     });
   });
 
@@ -39,7 +39,7 @@ describe('RootSpan', function() {
    */
   describe('start()', function() {
     it('should start a RootSpan instance', function() {
-      let root = new RootSpan(tracer);
+      let root = new RootSpanImpl(tracer);
       root.start();
       assert.ok(root.started);
     });
@@ -52,13 +52,13 @@ describe('RootSpan', function() {
     let root, span;
 
     before(function() {
-      root = new RootSpan(tracer);
+      root = new RootSpanImpl(tracer);
       root.start();
       span = root.startSpan('spanName', 'spanType');
     });
 
     it('should check span instance type', function() {
-      assert.ok(span instanceof Span);
+      assert.ok(span instanceof SpanImpl);
     });
 
     it('should check if a new span was started', function() {
@@ -71,7 +71,7 @@ describe('RootSpan', function() {
    */
   describe('end()', function() {
     it('should end the trace', function() {
-      let root = new RootSpan(tracer);
+      let root = new RootSpanImpl(tracer);
       root.start();
       root.end();
       assert.ok(root.ended);
@@ -83,7 +83,7 @@ describe('RootSpan', function() {
    */
   describe('end() before trace started', function() {
     it('should not end trace', function() {
-      let root = new RootSpan(tracer);
+      let root = new RootSpanImpl(tracer);
       root.end();
       assert.ok(!root.ended);
     });
@@ -94,7 +94,7 @@ describe('RootSpan', function() {
    */
   describe('startSpan() before trace started', function() {
     it('should not create span', function() {
-      let root = new RootSpan(tracer);
+      let root = new RootSpanImpl(tracer);
       let span = root.startSpan('spanName', 'spanType');
       assert.ok(span == null);
     });
@@ -105,7 +105,7 @@ describe('RootSpan', function() {
    */
   describe('startSpan() after trace ended', function() {
     it('should not create span', function() {
-      let root = new RootSpan(tracer);
+      let root = new RootSpanImpl(tracer);
       root.start();
       root.end();
       let span = root.startSpan('spanName', 'spanType');

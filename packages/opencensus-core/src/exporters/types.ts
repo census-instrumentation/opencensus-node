@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+
+import {RootSpan} from '../trace/model/types';
+
+export interface Exporter { publish(rootSpans: RootSpan[]); }
+
 /**
  * TODO: Interface to exporters options
  */

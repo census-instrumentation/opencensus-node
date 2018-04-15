@@ -6,7 +6,10 @@
   "types": "build/src/index.d.js",
   "repository": "census-instrumentation/opencensus-node",
   "scripts": {
-    "postinstall": "scripts/update_lerna_modules_links.sh"
+    "postinstall": "npm run bootstrap;npm run build;",
+    "build" : "node_modules/.bin/lerna run build",
+    "bootstrap": "node_modules/.bin/lerna bootstrap",
+    "bump": "node_modules/.bin/lerna publish"
   },
   "keywords": [
     "opencensus",

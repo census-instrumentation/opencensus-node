@@ -3,17 +3,15 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
-    "target": "es2015",
+    "target": "es6",
     "allowUnreachableCode": true,
     "noUnusedParameters": false,
     "noImplicitAny": false,
     "noImplicitThis": false,
     "noEmitOnError": false
   },
-  "include": [
-    "src/*.ts",
-    "src/plugins/*.ts",
-    "test/*.ts",
-    "test/plugins/*.ts"
-  ]
+"include": [
+  "src/**/*.ts",
+  "test/**/*.ts"
+ ]
 }

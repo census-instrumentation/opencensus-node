@@ -17,11 +17,11 @@
 import * as uuidv4 from 'uuid/v4';
 
 import {debug} from '../internal/util';
-import {RootSpan} from '../trace/types';
-import {OnEndSpanEventListener} from '../trace/types';
+import {RootSpan} from '../trace/model/types';
+import {OnEndSpanEventListener} from '../trace/model/types';
 
-import {Exporter} from './exporter';
-import {ExporterOptions} from './exporterOptions';
+import {Exporter} from './types';
+import {ExporterOptions} from './types';
 
 // TODO: Implement default size based on application size
 const DEFAULT_BUFFER_SIZE = 3;

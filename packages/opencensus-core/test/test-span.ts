@@ -15,13 +15,14 @@
  */
 
 import * as assert from 'assert';
+import * as mocha from 'mocha';
 
-import {RootSpan} from '../src/trace/model/rootspan';
-import {Span} from '../src/trace/model/span';
-import {Tracer} from '../src/trace/model/tracer';
-import {SpanBaseModel} from '../src/trace/types/tracetypes';
+import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {SpanImpl} from '../src/trace/model/span';
+import {TracerImpl} from '../src/trace/model/tracer';
+import {Span} from '../src/trace/model/types';
 
-let tracer = new Tracer();
+let tracer = new TracerImpl();
 
 describe('Span', function() {
   /**
@@ -29,17 +30,17 @@ describe('Span', function() {
    */
   describe('startSpan()', function() {
     it('should create an span', function() {
-      const rootSpan = new RootSpan(tracer);
-      assert.ok(rootSpan instanceof SpanBaseModel);
+      const rootSpan = new RootSpanImpl(tracer);
+      assert.ok(rootSpan instanceof SpanImpl);
 
       rootSpan.start();
       const span = rootSpan.startSpan('spanName', 'typeSpan');
-      assert.ok(span instanceof Span);
+      assert.ok(span instanceof SpanImpl);
       assert.ok(span.id);
     });
 
     it('should start a span', function() {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
       const span = rootSpan.startSpan('spanName', 'typeSpan');
       span.start();
@@ -47,7 +48,7 @@ describe('Span', function() {
     });
 
     it('should end a span', function() {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
       const span = rootSpan.startSpan('spanName', 'typeSpan');
       span.start();
@@ -61,7 +62,7 @@ describe('Span', function() {
    */
   describe('Span checking after creation', function() {
     it('should not start span after it ended', function() {
-      const root = new RootSpan(tracer);
+      const root = new RootSpanImpl(tracer);
       root.start();
       const span = root.startSpan('spanName', 'typeSpan');
       span.start();
@@ -77,7 +78,7 @@ describe('Span', function() {
    */
   describe('Span data', function() {
     it('should create an unique numeric span ID strings', function() {
-      const root = new RootSpan(tracer);
+      const root = new RootSpanImpl(tracer);
       root.start();
 
       var numberOfSpansToCheck = 5;

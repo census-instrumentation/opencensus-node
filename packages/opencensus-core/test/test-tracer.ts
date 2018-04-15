@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-import { Tracer } from '../src/trace/model/tracer';
-import { RootSpan } from '../src/trace/model/rootspan';
-import { Span } from '../src/trace/model/span';
-import { Exporter } from '../src/exporters/exporter';
+import * as assert from 'assert';
+import * as mocha from 'mocha';
 
-let assert = require('assert');
+import {Span,RootSpan,Tracer} from '../src/trace/model/types';
+import { Exporter } from '../src/exporters/types';
+import { TracerImpl } from '../src/trace/model/tracer';
+import { RootSpanImpl } from '../src/trace/model/rootspan';
+import { SpanImpl } from '../src/trace/model/span';
+
 
 describe('Tracer', function () {
   const options = { name: "test" };
@@ -27,20 +30,20 @@ describe('Tracer', function () {
 
   describe('new Tracer()', function () {
     it('should create a Tracer instance', function () {
-      let tracer = new Tracer();
-      assert.ok(tracer instanceof Tracer);
+      let tracer = new TracerImpl();
+      assert.ok(tracer instanceof TracerImpl);
     });
   });
 
   describe('start()', function () {
     it('should return a tracer instance', function () {
-      let tracer = new Tracer();
+      let tracer = new TracerImpl();
       let tracerStarted = tracer.start();
-      assert.ok(tracerStarted instanceof Tracer);
+      assert.ok(tracerStarted instanceof TracerImpl);
     });
 
     it('the trace was started', function () {
-      let tracer = new Tracer();
+      let tracer = new TracerImpl();
       let tracerStarted = tracer.start();
       assert.ok(tracerStarted.active);
     });
@@ -49,7 +52,7 @@ describe('Tracer', function () {
   describe('startRootSpan()', function () {
 
     it('should start the rootSpan', function () {
-      let tracer = new Tracer();
+      let tracer = new TracerImpl();
       tracer.start();
       let rootSpan = tracer.startRootSpan(options, callback);
 
@@ -59,7 +62,7 @@ describe('Tracer', function () {
 
   describe('end()', function () {
     it('should end current trace', function () {
-      let tracer = new Tracer();
+      let tracer = new TracerImpl();
       let rootSpan = tracer.startRootSpan(options, callback);
       rootSpan.end();
       assert.ok(rootSpan.ended);
@@ -68,7 +71,7 @@ describe('Tracer', function () {
 
   describe('clearCurrentRootSpan()', function () {
     it('should set the current root span to null', function () {
-      let tracer = new Tracer();
+      let tracer = new TracerImpl();
       let rootSpan = tracer.startRootSpan(options, callback);
       tracer.clearCurrentTrace();
 
@@ -78,14 +81,14 @@ describe('Tracer', function () {
 
   describe('startSpan()', function () {
     it('should return a Span instance', function () {
-      let tracer = new Tracer();
+      let tracer = new TracerImpl();
       let rootSpan = tracer.startRootSpan(options, callback);
       let span = tracer.startSpan("spanName", "spanType");
-      assert.ok(span instanceof Span);
+      assert.ok(span instanceof SpanImpl);
     });
 
     it('should start a span', function () {
-      let tracer = new Tracer();
+      let tracer = new TracerImpl();
       let rootSpan = tracer.startRootSpan(options, callback);
       let span = tracer.startSpan("spanName", "spanType");
       assert.ok(span.started);

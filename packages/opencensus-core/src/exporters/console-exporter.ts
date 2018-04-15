@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
+import { RootSpan } from '../trace/model/types';
+import { Exporter, ExporterOptions } from '../exporters/types';
 
-import {RootSpan} from '../trace/types';
-import {OnEndSpanEventListener} from '../trace/types';
-import {ExporterOptions} from './exporterOptions';
-
-export interface Exporter { publish(rootSpans: RootSpan[]); }
 
 /** Do not send span data */
 export class NoopExporter implements Exporter {
-  publish(rootSpans: RootSpan[]) {}
+  publish(rootSpans: RootSpan[]) { }
 }
 
 /** Format and sends span data to the console. */

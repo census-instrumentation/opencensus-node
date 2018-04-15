@@ -18,7 +18,7 @@ import * as uuid from 'uuid';
 
 import {Clock} from '../../internal/clock';
 import {debug} from '../../internal/util';
-import {OnEndSpanEventListener, RootSpan, TraceContext, TraceOptions} from '../types';
+import {OnEndSpanEventListener, RootSpan, TraceContext, TraceOptions, Span, Tracer} from './types';
 
 import {SpanImpl} from './span';
 import {SpanBaseModel} from './spanbasemodel';
@@ -26,12 +26,12 @@ import {TracerImpl} from './tracer';
 
 /** Defines a root span */
 export class RootSpanImpl extends SpanBaseModel implements RootSpan {
-  private tracer: TracerImpl;
-  private spansLocal: SpanImpl[];
+  private tracer: Tracer;
+  private spansLocal: Span[];
   private traceIdLocal: string;
 
   // TODO - improve root name setup
-  constructor(tracer: TracerImpl, context?: TraceOptions) {
+  constructor(tracer: Tracer, context?: TraceOptions) {
     super();
     this.tracer = tracer;
     this.traceIdLocal =
@@ -72,7 +72,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
     this.tracer.onEndSpan(this);
   }
 
-  onEndSpan(span: SpanImpl) {
+  onEndSpan(span: Span) {
     debug('ending span  %o', {
       id: span.id,
       traceId: span.traceId,

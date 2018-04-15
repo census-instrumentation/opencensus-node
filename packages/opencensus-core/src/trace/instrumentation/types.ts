@@ -14,33 +14,12 @@
  * limitations under the License.
  */
 
+import {Tracer} from "../model/types";
+
 /**
  * Interface Plugin to apply patch.
  */
-export interface Plugin<T> {
-  applyPatch(module: {}, tracer: T, version: string): void;
-}
-/**
- * This class represent the base to patch plugin
- */
-export abstract class BasePlugin<T> {
-  module: {};
-  moduleName: string;
-  tracer: T;
-  version: string;
-
-  constructor(moduleName: string) {
-    this.moduleName = moduleName;
-  }
-  /**
-   * Set modified plugin to the context.
-   * @param http object module to set on context
-   * @param tracer tracer relating to context
-   * @param version module version description
-   */
-  setPluginContext(http: {}, tracer: T, version: string) {
-    this.module = http;
-    this.tracer = tracer;
-    this.version = version;
-  }
+export interface Plugin {
+  applyPatch(module: {}, tracer: Tracer, version: string): any;
+  applyUnpatch(): void;
 }

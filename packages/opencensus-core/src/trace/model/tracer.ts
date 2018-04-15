@@ -15,17 +15,17 @@
  */
 
 import * as cls from '../../internal/cls';
-import { RootSpanImpl } from './rootspan';
-import { SpanImpl } from './span';
-import { debug } from '../../internal/util';
-import { Sampler } from '../config/sampler';
-import { TraceOptions, TracerConfig, defaultConfig, Tracer, OnEndSpanEventListener, Func } from '../types';
+import {debug} from '../../internal/util';
+import {RootSpan, Span} from './types';
+import {TraceOptions, TracerConfig, defaultConfig, Tracer} from './types';
+import {OnEndSpanEventListener, Func } from './types';
+import {Sampler} from '../config/types';
+import {SpanImpl} from './span';
+import {SamplerImpl} from '../config/sampler'
+import {RootSpanImpl} from './rootspan';
 
-//ßexport type Func<T> = (...args: any[]) => T;
 
 export class TracerImpl implements Tracer {
-
-    readonly PLUGINS = ['http', 'https', 'mongodb-core'];
 
     //public buffer: Buffer;
     private activeLocal: boolean;
@@ -35,18 +35,18 @@ export class TracerImpl implements Tracer {
     //TODO: simple solution - to be rewied in future
     private eventListenersLocal: OnEndSpanEventListener[] = [];
     //TODO: temp solution 
-    private endedTraces: RootSpanImpl[] = [];
+    private endedTraces: RootSpan[] = [];
 
     constructor() {
         this.activeLocal = false;
         this.contextManager = cls.createNamespace();
     }
 
-    get currentRootSpan(): RootSpanImpl {
+    get currentRootSpan(): RootSpan {
         return this.contextManager.get('rootspan');
     }
 
-    set currentRootSpan(root: RootSpanImpl) {
+    set currentRootSpan(root: RootSpan) {
         this.contextManager.set('rootspan', root);
     }
 
@@ -68,15 +68,15 @@ export class TracerImpl implements Tracer {
         return this.activeLocal;
     }
 
-    startRootSpan<T>(options: TraceOptions, fn: (root: RootSpanImpl) => T): T {
+    startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
         return this.contextManager.runAndReturn((root) => {
-            const newRoot = new RootSpanImpl(this, options);
+            const newRoot = new RootSpanImpl (this, options);
             this.currentRootSpan = newRoot;
             if (!options) {
                 options = {} as TraceOptions;
             }
             if (!options.sampler) {
-                options.sampler = new Sampler(newRoot.traceId);
+                options.sampler = new SamplerImpl(newRoot.traceId);
                 //options.sampler.probability(0.5);
                 options.sampler.always();
             }
@@ -89,7 +89,7 @@ export class TracerImpl implements Tracer {
         });
     }
 
-    onEndSpan(root: RootSpanImpl): void {
+    onEndSpan(root: RootSpan): void {
         if (!root) {
             return debug('cannot end trace - no active trace found');
         }
@@ -104,7 +104,7 @@ export class TracerImpl implements Tracer {
         this.eventListenersLocal.push(listner);
     }
 
-    private notifyEndSpan(root: RootSpanImpl) {
+    private notifyEndSpan(root: RootSpan) {
         if (this.active) {
             debug('starting to notify listeners the end of rootspans');
             if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
@@ -119,8 +119,8 @@ export class TracerImpl implements Tracer {
         this.currentRootSpan = null;
     }
 
-    startSpan(name?: string, type?: string, parentSpanId?: string): SpanImpl {
-        let newSpan: SpanImpl = null;
+    startSpan(name?: string, type?: string, parentSpanId?: string): Span {
+        let newSpan: Span = null;
         if (!this.currentRootSpan) {
             debug('no current trace found - must start a new root span first');
         } else {

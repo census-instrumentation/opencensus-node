@@ -1,4 +1,3 @@
-
 /**
  * Copyright 2018 Google Inc. All Rights Reserved.
  *
@@ -15,15 +14,28 @@
  * limitations under the License.
  */
 
-export * from './exporters/buffer';
-export * from './exporters/exporter';
-export * from './exporters/exporterOptions';
-export * from './internal/clock';
-export * from './internal/util';
-export * from './trace/config/sampler';
+
+// opencensus core api interfaces 
+export * from './trace/types';
+export * from './trace/model/types';
+export * from './trace/config/types';
 export * from './trace/instrumentation/types';
+export * from './exporters/types';
+
+// domain models impls
 export * from './trace/model/rootspan';
 export * from './trace/model/span';
 export * from './trace/model/tracer';
-export * from './trace/types';
 
+// sampler impl
+export * from './trace/config/sampler';
+
+// base instrumetation class
+export * from './trace/instrumentation/baseplugin';
+
+// console exporter and buffer impls 
+export * from './exporters/buffer';
+export * from './exporters/consolelog-exporter';
+
+// util
+export * from './internal/util';

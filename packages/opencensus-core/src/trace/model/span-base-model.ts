@@ -1,10 +1,24 @@
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { Clock } from '../../internal/clock';
 import { debug, randomSpanId } from '../../internal/util';
-import { Sampler } from '../config/sampler';
-import { TraceContext, Span } from '../types';
+import { Sampler } from '../config/types';
+import { TraceContext, Span, MapLabels, MapObjects } from './types';
 
-export interface MapLabels { [propName: string]: string; }
-export interface MapObjects { [propName: string]: any; }
 
 export abstract class SpanBaseModel implements Span {
     protected className: string;
@@ -22,9 +36,10 @@ export abstract class SpanBaseModel implements Span {
     private truncated = false;
     /** The Span ID of this span */
     readonly id: string;
+
     remoteParent: string;
     /** The span ID of this span's parent. If it's a root span, must be empty */
-    parentSpanId = '';
+    parentSpanId: string = null;
     /** The resource name of the span */
     name: string = null;
     /** Type of span. Used to specify additional relationships between spans */
