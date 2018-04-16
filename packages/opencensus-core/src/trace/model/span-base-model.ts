@@ -72,7 +72,12 @@ export abstract class SpanBaseModel implements Span {
      * "Zulu" format.
      */
     get startTime(): Date {
-      if (this.clock) return this.clock.startTime;
+      if (!this.clock) {
+        debug("calling startTime() on null clock");
+        return null;
+      }
+      
+      return this.clock.startTime;
     }
   
     /**
@@ -80,7 +85,12 @@ export abstract class SpanBaseModel implements Span {
      * "Zulu" format.
      */
     get endTime(): Date {
-      if (this.clock) return this.clock.endTime;
+      if (!this.clock) {
+        debug("calling endTime() on null clock");
+        return null;
+      }
+
+      return this.clock.endTime;
     }
   
     /**
@@ -88,7 +98,12 @@ export abstract class SpanBaseModel implements Span {
      * "Zulu" format.
      */
     get duration(): number {
-      if (this.clock) return this.clock.duration;
+      if (!this.clock) {
+        debug("calling duration() on null clock");
+        return null;
+      }
+
+      return this.clock.duration;
     }
   
     /** Gives the TraceContext of the span. */
