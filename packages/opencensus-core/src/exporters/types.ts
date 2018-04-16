@@ -15,13 +15,16 @@
  */
 
 
-import {RootSpan} from '../trace/model/types';
+import {OnEndSpanEventListener, RootSpan} from '../trace/model/types';
 
-export interface Exporter { publish(rootSpans: RootSpan[]); }
+export interface Exporter extends OnEndSpanEventListener {
+  publish(rootSpans: RootSpan[]);
+}
 
 /**
  * TODO: Interface to exporters options
  */
 export interface ExporterOptions {
-    
+  bufferSize?: number;
+  bufferTimeout?: number;
 }

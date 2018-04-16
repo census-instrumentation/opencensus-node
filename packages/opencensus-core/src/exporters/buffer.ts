@@ -30,25 +30,22 @@ const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
 /**
  * Controls the sending of traces to exporters
  */
-export class Buffer implements OnEndSpanEventListener {
-  private exporters: Exporter[];
+export class Buffer {
+  private exporter: Exporter;
   private bufferSize: number;
   /** Trace queue of a buffer */
-  private queue: RootSpan[];
+  private queue: RootSpan[] = [];
   /** Max time for a buffer can wait before being sent */
   private bufferTimeout: number;
   /** Manage when the buffer timeout needs to be reseted */
-  private resetTimeout: boolean;
+  private resetTimeout: boolean = false;
   /** Indicates when the buffer timeout is running */
-  private bufferTimeoutInProgress: boolean;
+  private bufferTimeoutInProgress: boolean = false;
 
-  constructor(bufferSize?: number, bufferTimeout?: number) {
-    this.queue = [];
+  constructor(exporter: Exporter, bufferSize?: number, bufferTimeout?: number) {
     this.bufferSize = bufferSize || DEFAULT_BUFFER_SIZE;
     this.bufferTimeout = bufferTimeout || DEFAULT_BUFFER_TIMEOUT;
-    this.exporters = [];
-    this.resetTimeout = false;
-    this.bufferTimeoutInProgress = false;
+    this.exporter = exporter;
     return this;
   }
 
@@ -58,24 +55,6 @@ export class Buffer implements OnEndSpanEventListener {
    */
   setBufferSize(bufferSize: number) {
     this.bufferSize = bufferSize;
-    return this;
-  }
-
-  /**
-   * Add an exporter in exports array
-   * @param exporter Exporter to be registered
-   */
-  registerExporter(exporter: Exporter) {
-    this.exporters.push(exporter);
-    return this;
-  }
-
-  /**
-   * Event called when a span ends
-   * @param span Ended span
-   */
-  onEndSpan(span) {
-    this.addToBuffer(span);
     return this;
   }
 
@@ -128,10 +107,7 @@ export class Buffer implements OnEndSpanEventListener {
 
   /** Send the trace queue to all exporters */
   private flush() {
-    for (const exporter of this.exporters) {
-      exporter.publish(this.queue);
-    }
-
+    this.exporter.publish(this.queue);
     this.queue = [];
     return this;
   }

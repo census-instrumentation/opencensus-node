@@ -14,17 +14,30 @@
  * limitations under the License.
  */
 
-import { RootSpan } from '../trace/model/types';
-import { Exporter, ExporterOptions } from '../exporters/types';
+import {Exporter, ExporterOptions} from '../exporters/types';
+import {RootSpan} from '../trace/model/types';
+
+import {Buffer} from './buffer';
 
 
 /** Do not send span data */
 export class NoopExporter implements Exporter {
-  publish(rootSpans: RootSpan[]) { }
+  onEndSpan(root: RootSpan) {}
+  publish(rootSpans: RootSpan[]) {}
 }
 
 /** Format and sends span data to the console. */
 export class ConsoleLogExporter implements Exporter {
+  private buffer: Buffer;
+
+  constructor(options: ExporterOptions) {
+    this.buffer = new Buffer(this, options.bufferSize, options.bufferTimeout);
+  }
+
+  onEndSpan(root: RootSpan) {
+    this.buffer.addToBuffer(root);
+  }
+
   /**
    * Sends the spans information to the console.
    * @param rootSpans
