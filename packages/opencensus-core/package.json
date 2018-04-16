@@ -8,7 +8,13 @@
   "scripts": {
     "build": "node_modules/.bin/tsc --declaration",
     "test": "nyc --reporter=html --reporter=text mocha 'build/test/**/*.js'",
-    "clean": "rimraf build/*"
+    "clean": "rimraf build/*",
+    "check": "gts check",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "keywords": [
     "opencensus",
@@ -40,11 +46,11 @@
     "@types/semver": "^5.5.0",
     "@types/shimmer": "^1.0.1",
     "@types/uuid": "^3.4.3",
-    "gts": "^0.5.1",
+    "gts": "^0.5.4",
     "mocha": "^5.0.4",
     "ncp": "^2.0.0",
     "ts-node": "^4.0.0",
-    "typescript": "^2.7.2",
+    "typescript": "~2.6.1",
     "nyc": "11.6.0"
   },
   "dependencies": {
