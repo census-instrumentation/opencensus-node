@@ -26,75 +26,88 @@ let tracer = new TracerImpl();
 
 describe('Span', function() {
   /**
-   * Should create, start and end a rootspan
+   * Should create a span
    */
-  describe('startSpan()', function() {
-    it('should create an span', function() {
+  describe('new Span()', function() {
+    it('should create a Span instance', function() {
       const rootSpan = new RootSpanImpl(tracer);
-      assert.ok(rootSpan instanceof SpanImpl);
-
-      rootSpan.start();
-      const span = rootSpan.startSpan('spanName', 'typeSpan');
+      const span = new SpanImpl(rootSpan);
       assert.ok(span instanceof SpanImpl);
-      assert.ok(span.id);
     });
+  });
 
-    it('should start a span', function() {
+  /**
+   * Should return the Trace ID
+   */
+  describe('get traceId()', function() {
+    it('should return the trace id', function() {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      const span = rootSpan.startSpan('spanName', 'typeSpan');
+      const span = new SpanImpl(rootSpan);
+      assert.equal(span.traceId, rootSpan.traceId);
+    });
+  });
+
+  /**
+   * Should the trace context of span
+   */
+  describe('get traceContext()', function() {
+    it('should the trace context of span', function() {
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      
+      const span = new SpanImpl(rootSpan);
+      const context = span.traceContext;
+
+      assert.equal(context.traceId, rootSpan.traceId);
+      assert.equal(context.spanId, span.id);
+      assert.equal(context.options, 1);
+    });
+  });
+
+  /**
+   * Should start a span instance
+   */
+  describe('start()', function() {
+    it('should start a span instance', function() {
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      
+      const span = new SpanImpl(rootSpan);
       span.start();
+
       assert.ok(span.started);
     });
+  });
 
-    it('should end a span', function() {
+  /**
+   * Should end a span instance
+   */
+  describe('end()', function() {
+    it('should end a span instance', function() {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      const span = rootSpan.startSpan('spanName', 'typeSpan');
+      
+      const span = new SpanImpl(rootSpan);
       span.start();
       span.end();
+
       assert.ok(span.ended);
     });
   });
 
   /**
-   * Should not start span after it ended
+   * Should not end a span instance
    */
-  describe('Span checking after creation', function() {
-    it('should not start span after it ended', function() {
-      const root = new RootSpanImpl(tracer);
-      root.start();
-      const span = root.startSpan('spanName', 'typeSpan');
-      span.start();
+  describe('end() before start the span', function() {
+    it('should not end a span instance', function() {
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      
+      const span = new SpanImpl(rootSpan);
       span.end();
 
-      span.start();
-      assert.equal(span.ended, true);
-    });
-  });
-
-  /**
-   * Should an unique ID for spans
-   */
-  describe('Span data', function() {
-    it('should create an unique numeric span ID strings', function() {
-      const root = new RootSpanImpl(tracer);
-      root.start();
-
-      var numberOfSpansToCheck = 5;
-      for (var i = 0; i < numberOfSpansToCheck; i++) {
-        var span = root.startSpan('spanName' + i, 'typeSpan' + i);
-        var spanId = span.id;
-        assert.ok(typeof spanId === 'string');
-        assert.ok(spanId.match(/\d+/));
-        assert.ok(Number(spanId) > 0);
-        assert.strictEqual(Number(spanId).toString(), spanId);
-      }
-    });
-
-    // TODO
-    it('should truncate namespace', function() {
-      this.skip();
+      assert.ok(!span.ended);
     });
   });
 });

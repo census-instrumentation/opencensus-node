@@ -35,12 +35,12 @@ export class SpanImpl extends SpanBaseModel implements Span {
     this.root = root;
   }
 
-  /** Gets trace id of rootspan. */
+  /** Gets trace id of span. */
   get traceId(): string {
     return this.root.traceId;
   }
 
-  /** Gets trace context of rootspan. */
+  /** Gets trace context of span. */
   get traceContext(): TraceContext {
     return {
       traceId: this.traceId.toString(),
@@ -64,6 +64,11 @@ export class SpanImpl extends SpanBaseModel implements Span {
 
   /** Ends the span. */
   end(): void {
+    if (!this.started) {
+      debug("calling end() on un-started span");
+      return;
+    }
+    
     super.end();
     this.notifyEnd();
     debug('ending span  %o', {
