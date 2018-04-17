@@ -17,7 +17,8 @@
 import { Clock } from '../../internal/clock';
 import { debug, randomSpanId } from '../../internal/util';
 import { Sampler } from '../config/types';
-import { TraceContext, Span, MapLabels, MapObjects } from './types';
+import { TraceContext, Span, Annotation, Attributes,
+    Link, MessageEvent } from './types';
 
 
 export abstract class SpanBaseModel implements Span {
@@ -28,16 +29,20 @@ export abstract class SpanBaseModel implements Span {
     private startedLocal = false;
     /** Indicates if this span was ended */
     private endedLocal = false;
-    /** A set of attributes, each in the format [KEY]:[VALUE] */
-    private attributes: MapLabels = {};
-    /** A set of attributes on the annotation describing an event */
-    private annotations: MapObjects = {};
     /** Indicates if this span was forced to end */
     private truncated = false;
     /** The Span ID of this span */
     readonly id: string;
-
-    remoteParent: string;
+    /** A set of attributes, each in the format [KEY]:[VALUE] */
+    attributes: Attributes = {};
+    /** A text annotation with a set of attributes. */
+    annotations: Annotation[] = [];
+    /** An event describing a message sent/received between Spans. */
+    messageEvents: MessageEvent[] = [];
+    /** Pointers from the current span to another span */
+    links: Link[] = [];
+    /** If the parent span is in another process. */
+    remoteParent: boolean;
     /** The span ID of this span's parent. If it's a root span, must be empty */
     parentSpanId: string = null;
     /** The resource name of the span */
@@ -56,7 +61,8 @@ export abstract class SpanBaseModel implements Span {
     }
   
     abstract get traceId(): string;
-  
+
+      
     /** Indicates if span was started. */
     get started(): boolean {
       return this.startedLocal;
@@ -120,19 +126,52 @@ export abstract class SpanBaseModel implements Span {
      * @param key Describes the value added.
      * @param value The result of an operation.
      */
-    addAtribute(key: string, value: string) {
-      // TODO: maybe key and values must be truncate
+    addAtribute(key: string, value: string | number | boolean) {
       this.attributes[key] = value;
     }
   
     /**
      * Adds an annotation to the span.
-     * @param key Describes the value added.
-     * @param value The result of an operation.
+     * @param description Describes the event.
+     * @param timestamp A timestamp that maks the event.
+     * @param attributes A set of attributes on the annotation.
      */
-    addAnotation(key: string, value: string|number|boolean) {
-      // TODO: maybe keys and values must be truncate
-      this.annotations[key] = value;
+    addAnnotation(description: string, timestamp: number,
+        attributes?: Attributes) {
+      this.annotations.push({
+        description: description,
+        timestamp: timestamp,
+        attributes: attributes,
+      } as Annotation)
+    }
+
+    /**
+     * Adds a link to the span.
+     * @param traceId The trace ID for a trace within a project.
+     * @param spanId The span ID for a span within a trace.
+     * @param type The relationship of the current span relative to the linked.
+     * @param attributes A set of attributes on the link.
+     */
+    addLink(traceId: string, spanId: string, type: string,
+        attributes?: Attributes) {
+      this.links.push({
+        traceId: traceId,
+        SpanId: spanId,
+        type: type,
+        attributes: attributes
+      } as Link)
+    }
+
+    /**
+     * Adds a message event to the span.
+     * @param type The type of message event.
+     * @param id An identifier for the message event.
+     */
+    addMessageEvent(type: string, id: string) {
+      this.messageEvents.push({
+        type: type,
+        id: id,
+      } as MessageEvent)
     }
   
     /** Starts a span. */

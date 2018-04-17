@@ -19,11 +19,41 @@ import { Sampler } from '../config/types';
 /** Default type for functions */
 export type Func<T> = (...args: any[]) => T;
 
-/** Maps a label to a string. Used in spans' attributes. */
-export interface MapLabels { [propName: string]: string; }
+/** Maps a label to a string, number or boolean. */
+export interface Attributes { [attributeKey: string]: string|number|boolean; }
 
-/** Maps a label to a string, number or boolean. Used in spans' annotations. */
-export interface MapObjects { [propName: string]: string|number|boolean; }
+/** A text annotation with a set of attributes. */
+export interface Annotation {
+  /** A user-supplied message describing the event. */
+  description: string,
+  /** A timestamp that maks the event. */
+  timestamp: number,
+  /** A set of attributes on the annotation. */
+  attributes: Attributes
+}
+
+/** An event describing a message sent/received between Spans. */
+export interface MessageEvent {
+  /** Indicates whether the message was sent or received. */
+  type: string,
+  /** An identifier for the MessageEvent's message. */
+  id: string,
+}
+
+/**
+ * A pointer from the current span to another span in the same trace or in a
+ * different trace.
+ */
+export interface Link {
+  /** The trace ID for a trace within a project. */
+  traceId: string,
+  /** The span ID for a span within a trace. */
+  SpanId: string,
+  /** The relationship of the current span relative to the linked. */
+  type: string,
+  /** A set of attributes on the link. */
+  attributes: Attributes
+}
 
 /** Defines tracer configuration parameters */
 export interface TracerConfig {
@@ -76,7 +106,8 @@ export interface Span  {
   
     /** The Span ID of this span */
     readonly id: string;
-    remoteParent: string;
+    /** If the parent span is in another process. */
+    remoteParent: boolean;
     /** The span ID of this span's parent. If it's a root span, must be empty */
     parentSpanId: string;
     /** The resource name of the span */
@@ -85,6 +116,14 @@ export interface Span  {
     type: string;
     /** A final status for this span */
     status: number;
+    /** A set of attributes, each in the format [KEY]:[VALUE] */
+    attributes: Attributes;
+    /** A text annotation with a set of attributes. */
+    annotations: Annotation[];
+    /** An event describing a message sent/received between Spans. */
+    messageEvents: MessageEvent[];
+    /** Pointers from the current span to another span */
+    links: Link[];
     /** A sampler that will decide if the span will be sampled or not */
     sampler: Sampler;
     /** Constructs a new SpanBaseModel instance. */
@@ -118,10 +157,27 @@ export interface Span  {
     addAtribute(key: string, value: string): void;
     /**
      * Adds an annotation to the span.
-     * @param key Describes the value added.
-     * @param value The result of an operation.
+     * @param description Describes the event.
+     * @param timestamp A timestamp that maks the event.
+     * @param attributes A set of attributes on the annotation.
      */
-    addAnotation(key: string, value: string | number | boolean): void;
+    addAnnotation(description: string, timestamp: number,
+        attributes?: Attributes): void;
+    /**
+     * Adds a link to the span.
+     * @param traceId The trace ID for a trace within a project.
+     * @param spanId The span ID for a span within a trace.
+     * @param type The relationship of the current span relative to the linked.
+     * @param attributes A set of attributes on the link.
+     */
+    addLink(traceId: string, spanId: string, type: string,
+      attributes?: Attributes): void;
+    /**
+     * Adds a message event to the span.
+     * @param type The type of message event.
+     * @param id An identifier for the message event.
+     */
+    addMessageEvent(type: string, id: string): void;
     /** Starts a span. */
     start(): void;
     /** Ends a span. */

@@ -20,7 +20,8 @@ import * as mocha from 'mocha';
 import {RootSpanImpl} from '../src/trace/model/rootspan';
 import {SpanImpl} from '../src/trace/model/span';
 import {TracerImpl} from '../src/trace/model/tracer';
-import {Span} from '../src/trace/model/types';
+import {Span, Attributes, Annotation, Link, MessageEvent}
+    from '../src/trace/model/types';
 
 const tracer = new TracerImpl();
 
@@ -110,4 +111,98 @@ describe('Span', () => {
       assert.ok(!span.ended);
     });
   });
+
+  /**
+   * Should add an attrinbutes
+   */
+  describe('addAtribute()', function() {
+    it('should add an attribute', function() {
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      
+      const span = new SpanImpl(rootSpan);
+      span.start();
+
+      ['String', 'Number', 'Boolean'].map(attType => {
+        span.addAtribute('testKey'+attType, 'testValue'+attType) 
+        assert.equal(span.attributes['testKey'+attType], 'testValue'+attType);
+      })
+    });
+  });
+
+  /**
+   * Should add an annotation
+   */
+  describe('addAnnotation()', function() {
+    it('should add an annotation', function() {
+
+      function instanceOfAnnotation(object: any): object is Annotation {
+        return 'description' in object
+            && 'timestamp' in object
+            && 'attributes' in object
+      }
+
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      
+      const span = new SpanImpl(rootSpan);
+      span.start();
+
+      span.addAnnotation('description test', Date.now(), {} as Attributes);
+      
+      assert.ok(span.annotations.length > 0)
+      assert.ok(instanceOfAnnotation(span.annotations[0]))
+    });
+  });
+
+  /**
+   * Should add a Link.
+   */
+  describe('addLink()', function() {
+    it('should add a Link', function() {
+
+      function instanceOfLink(object: any): object is Link {
+        return 'traceId' in object
+            && 'SpanId' in object
+            && 'type' in object
+      }
+
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      
+      const span = new SpanImpl(rootSpan);
+      span.start();
+
+      const LINK_TYPE = 'PARENT_LINKED_SPAN'
+      span.addLink(span.traceId, rootSpan.id, LINK_TYPE)
+      
+      assert.ok(span.links.length > 0)
+      assert.ok(instanceOfLink(span.links[0]))
+    });
+  });
+
+  /**
+   * Should add a Message Event.
+   */
+  describe('addMessageEvent()', function() {
+    it('should add a Message Event', function() {
+
+      function instanceOfLink(object: any): object is Link {
+        return 'type' in object
+            && 'id' in object
+      }
+
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      
+      const span = new SpanImpl(rootSpan);
+      span.start();
+
+      span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id')
+      
+      assert.ok(span.messageEvents.length > 0)
+      assert.ok(instanceOfLink(span.messageEvents[0]))
+    });
+  });
+
 });
