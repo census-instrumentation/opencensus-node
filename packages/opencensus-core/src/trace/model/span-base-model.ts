@@ -137,10 +137,10 @@ export abstract class SpanBaseModel implements Span {
     addAnnotation(description: string, timestamp: number,
         attributes?: Attributes) {
       this.annotations.push({
-        description: description,
-        timestamp: timestamp,
-        attributes: attributes,
-      } as Annotation)
+        'description': description,
+        'timestamp': timestamp,
+        'attributes': attributes,
+      } as Annotation);
     }
 
     /**
@@ -153,11 +153,11 @@ export abstract class SpanBaseModel implements Span {
     addLink(traceId: string, spanId: string, type: string,
         attributes?: Attributes) {
       this.links.push({
-        traceId: traceId,
-        SpanId: spanId,
-        type: type,
-        attributes: attributes
-      } as Link)
+        'traceId': traceId,
+        'spanId': spanId,
+        'type': type,
+        'attributes': attributes
+      } as Link);
     }
 
     /**
@@ -167,9 +167,9 @@ export abstract class SpanBaseModel implements Span {
      */
     addMessageEvent(type: string, id: string) {
       this.messageEvents.push({
-        type: type,
-        id: id,
-      } as MessageEvent)
+        'type': type,
+        'id': id,
+      } as MessageEvent);
     }
   
     /** Starts a span. */

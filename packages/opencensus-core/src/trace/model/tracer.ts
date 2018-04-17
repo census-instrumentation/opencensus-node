@@ -22,7 +22,7 @@ import {OnEndSpanEventListener, Func } from './types';
 import {Sampler, TracerConfig} from '../config/types';
 import {Config} from '../config/types';
 import {SpanImpl} from './span';
-import {SamplerImpl} from '../config/sampler'
+import {SamplerImpl} from '../config/sampler';
 import {RootSpanImpl} from './rootspan';
 
 
@@ -38,9 +38,6 @@ export class TracerImpl implements Tracer {
     private eventListenersLocal: OnEndSpanEventListener[] = [];
     //TODO: temp solution 
     private endedTraces: RootSpan[] = [];
-      
- 
-    samplingRate: number;
 
     constructor() {
         this.activeLocal = false;
@@ -79,14 +76,13 @@ export class TracerImpl implements Tracer {
             let newRoot = null;
             if(this.active) {
                 newRoot = new RootSpanImpl (this, options);
-                this.currentRootSpan = newRoot;
-
                 if (this.sampler.shouldSample(newRoot.traceId)) {
                     newRoot.start();
+                    this.currentRootSpan = newRoot;
                     return fn(newRoot);
                 }
             } else {
-                debug("Tracer is inactive, can't start new RootSpan")
+                debug("Tracer is inactive, can't start new RootSpan");
             }
             return fn(newRoot);
         });

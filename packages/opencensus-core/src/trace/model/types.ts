@@ -17,6 +17,7 @@
 import { Sampler, Config, TracerConfig } from '../config/types';
 
 /** Default type for functions */
+// tslint:disable:no-any
 export type Func<T> = (...args: any[]) => T;
 
 /** Maps a label to a string, number or boolean. */
@@ -25,19 +26,19 @@ export interface Attributes { [attributeKey: string]: string|number|boolean; }
 /** A text annotation with a set of attributes. */
 export interface Annotation {
   /** A user-supplied message describing the event. */
-  description: string,
+  description: string;
   /** A timestamp that maks the event. */
-  timestamp: number,
+  timestamp: number;
   /** A set of attributes on the annotation. */
-  attributes: Attributes
+  attributes: Attributes;
 }
 
 /** An event describing a message sent/received between Spans. */
 export interface MessageEvent {
   /** Indicates whether the message was sent or received. */
-  type: string,
+  type: string;
   /** An identifier for the MessageEvent's message. */
-  id: string,
+  id: string;
 }
 
 /**
@@ -46,13 +47,13 @@ export interface MessageEvent {
  */
 export interface Link {
   /** The trace ID for a trace within a project. */
-  traceId: string,
+  traceId: string;
   /** The span ID for a span within a trace. */
-  SpanId: string,
+  spanId: string;
   /** The relationship of the current span relative to the linked. */
-  type: string,
+  type: string;
   /** A set of attributes on the link. */
-  attributes: Attributes
+  attributes: Attributes;
 }
 
 

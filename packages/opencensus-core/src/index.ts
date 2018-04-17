@@ -15,7 +15,7 @@
  */
 
 
-// opencensus core api interfaces 
+// opencensus core api interfaces
 export * from './trace/types';
 export * from './trace/model/types';
 export * from './trace/config/types';
@@ -33,7 +33,7 @@ export * from './trace/config/sampler';
 // base instrumetation class
 export * from './trace/instrumentation/baseplugin';
 
-// console exporter and buffer impls 
+// console exporter and buffer impls
 export * from './exporters/buffer';
 export * from './exporters/consolelog-exporter';
 

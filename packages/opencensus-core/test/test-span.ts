@@ -20,8 +20,7 @@ import * as mocha from 'mocha';
 import {RootSpanImpl} from '../src/trace/model/rootspan';
 import {SpanImpl} from '../src/trace/model/span';
 import {TracerImpl} from '../src/trace/model/tracer';
-import {Span, Attributes, Annotation, Link, MessageEvent}
-    from '../src/trace/model/types';
+import {Annotation, Attributes, Link, MessageEvent, Span} from '../src/trace/model/types';
 
 const tracer = new TracerImpl();
 
@@ -115,94 +114,90 @@ describe('Span', () => {
   /**
    * Should add an attrinbutes
    */
-  describe('addAtribute()', function() {
-    it('should add an attribute', function() {
+  describe('addAtribute()', () => {
+    it('should add an attribute', () => {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       span.start();
 
       ['String', 'Number', 'Boolean'].map(attType => {
-        span.addAtribute('testKey'+attType, 'testValue'+attType) 
-        assert.equal(span.attributes['testKey'+attType], 'testValue'+attType);
-      })
+        span.addAtribute('testKey' + attType, 'testValue' + attType);
+        assert.equal(
+            span.attributes['testKey' + attType], 'testValue' + attType);
+      });
     });
   });
 
   /**
    * Should add an annotation
    */
-  describe('addAnnotation()', function() {
-    it('should add an annotation', function() {
-
+  describe('addAnnotation()', () => {
+    it('should add an annotation', () => {
+      // tslint:disable:no-any
       function instanceOfAnnotation(object: any): object is Annotation {
-        return 'description' in object
-            && 'timestamp' in object
-            && 'attributes' in object
+        return 'description' in object && 'timestamp' in object &&
+            'attributes' in object;
       }
 
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       span.start();
 
       span.addAnnotation('description test', Date.now(), {} as Attributes);
-      
-      assert.ok(span.annotations.length > 0)
-      assert.ok(instanceOfAnnotation(span.annotations[0]))
+
+      assert.ok(span.annotations.length > 0);
+      assert.ok(instanceOfAnnotation(span.annotations[0]));
     });
   });
 
   /**
    * Should add a Link.
    */
-  describe('addLink()', function() {
-    it('should add a Link', function() {
-
+  describe('addLink()', () => {
+    it('should add a Link', () => {
+      // tslint:disable:no-any
       function instanceOfLink(object: any): object is Link {
-        return 'traceId' in object
-            && 'SpanId' in object
-            && 'type' in object
+        return 'traceId' in object && 'spanId' in object && 'type' in object;
       }
 
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       span.start();
 
-      const LINK_TYPE = 'PARENT_LINKED_SPAN'
-      span.addLink(span.traceId, rootSpan.id, LINK_TYPE)
-      
-      assert.ok(span.links.length > 0)
-      assert.ok(instanceOfLink(span.links[0]))
+      const LINK_TYPE = 'PARENT_LINKED_SPAN';
+      span.addLink(span.traceId, rootSpan.id, LINK_TYPE);
+
+      assert.ok(span.links.length > 0);
+      assert.ok(instanceOfLink(span.links[0]));
     });
   });
 
   /**
    * Should add a Message Event.
    */
-  describe('addMessageEvent()', function() {
-    it('should add a Message Event', function() {
-
+  describe('addMessageEvent()', () => {
+    it('should add a Message Event', () => {
+      // tslint:disable:no-any
       function instanceOfLink(object: any): object is Link {
-        return 'type' in object
-            && 'id' in object
+        return 'type' in object && 'id' in object;
       }
 
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       span.start();
 
-      span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id')
-      
-      assert.ok(span.messageEvents.length > 0)
-      assert.ok(instanceOfLink(span.messageEvents[0]))
+      span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
+
+      assert.ok(span.messageEvents.length > 0);
+      assert.ok(instanceOfLink(span.messageEvents[0]));
     });
   });
-
 });

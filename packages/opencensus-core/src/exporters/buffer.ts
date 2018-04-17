@@ -35,9 +35,9 @@ export class Buffer {
   /** Max time for a buffer can wait before being sent */
   private bufferTimeout: number;
   /** Manage when the buffer timeout needs to be reseted */
-  private resetTimeout: boolean = false;
+  private resetTimeout = false;
   /** Indicates when the buffer timeout is running */
-  private bufferTimeoutInProgress: boolean = false;
+  private bufferTimeoutInProgress = false;
 
   constructor(exporter: Exporter, config: BufferConfig) {
     this.exporter = exporter;

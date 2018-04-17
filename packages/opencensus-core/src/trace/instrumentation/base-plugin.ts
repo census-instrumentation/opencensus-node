@@ -20,6 +20,7 @@ import {Tracer} from '../model/types';
  * This class represent the base to patch plugin
  */
 export abstract class BasePlugin {
+  // tslint:disable:no-any
   exporter: any;
   moduleName: string;
   tracer: Tracer;
@@ -34,14 +35,15 @@ export abstract class BasePlugin {
    * @param tracer tracer relating to context
    * @param version module version description
    */
+  // tslint:disable:no-any
   protected setPluginContext(exporter: any, tracer: Tracer, version: string) {
     this.exporter = exporter;
     this.tracer = tracer;
     this.version = version;
   }
 
-  protected wrap(nodule, name, wrapper ) {
-      shimmer.wrap(nodule, name, wrapper )
+  protected wrap(nodule, name, wrapper) {
+      shimmer.wrap(nodule, name, wrapper);
   }
 
   protected unwrap(nodule, name) {

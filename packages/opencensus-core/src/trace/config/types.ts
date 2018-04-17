@@ -42,7 +42,7 @@ export interface Sampler {
  */
 export interface BufferConfig {
   bufferSize?: number;
-  bufferTimeout?: number
+  bufferTimeout?: number;
 }
 
 /** Defines tracer configuration parameters */

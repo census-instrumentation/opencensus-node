@@ -27,6 +27,10 @@ const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
 const tracer = new TracerImpl();
 
+const defaultBufferConfig = {
+  bufferSize: DEFAULT_BUFFER_SIZE,
+  bufferTimeout: DEFAULT_BUFFER_TIMEOUT
+};
 
 describe('Buffer', () => {
   /**
@@ -35,8 +39,7 @@ describe('Buffer', () => {
    */
   describe('new Buffer()', () => {
     it('should create a Buffer instance', () => {
-      const buffer =
-          new Buffer(exporter, DEFAULT_BUFFER_SIZE, DEFAULT_BUFFER_TIMEOUT);
+      const buffer = new Buffer(exporter, defaultBufferConfig);
       assert.ok(buffer instanceof Buffer);
     });
   });
@@ -46,7 +49,7 @@ describe('Buffer', () => {
    */
   describe('setBufferSize', () => {
     it('should return the Buffer instance', () => {
-      const buffer = new Buffer(exporter);
+      const buffer = new Buffer(exporter, defaultBufferConfig);
       const bufferResize = buffer.setBufferSize(DEFAULT_BUFFER_SIZE);
       assert.ok(bufferResize instanceof Buffer);
     });
@@ -57,7 +60,7 @@ describe('Buffer', () => {
    */
   describe('addToBuffer', () => {
     it('should return the Buffer instance', () => {
-      const buffer = new Buffer(exporter);
+      const buffer = new Buffer(exporter, defaultBufferConfig);
       const rootSpan = new RootSpanImpl(tracer);
       const bufferAdd = buffer.addToBuffer(rootSpan);
       assert.ok(bufferAdd instanceof Buffer);
@@ -69,7 +72,7 @@ describe('Buffer', () => {
    */
   describe('addToBuffer force flush ', () => {
     it('should return the Buffer instance', () => {
-      const buffer = new Buffer(exporter);
+      const buffer = new Buffer(exporter, defaultBufferConfig);
       const bufferResize = buffer.setBufferSize(0);
       const rootSpan = new RootSpanImpl(tracer);
       const bufferAdd = bufferResize.addToBuffer(rootSpan);
@@ -82,7 +85,8 @@ describe('Buffer', () => {
    */
   describe('addToBuffer force flush by timeout ', () => {
     it('should return the Buffer instance', () => {
-      const buffer = new Buffer(exporter, DEFAULT_BUFFER_SIZE, 0);
+      const buffer = new Buffer(
+          exporter, {bufferSize: DEFAULT_BUFFER_SIZE, bufferTimeout: 0});
       const rootSpan = new RootSpanImpl(tracer);
       let bufferAdd = buffer.addToBuffer(rootSpan);
       bufferAdd = buffer.addToBuffer(rootSpan);
