@@ -16,15 +16,10 @@
 
 
 import {OnEndSpanEventListener, RootSpan} from '../trace/model/types';
+import { BufferConfig } from '../trace/config/types';
 
 export interface Exporter extends OnEndSpanEventListener {
   publish(rootSpans: RootSpan[]);
 }
 
-/**
- * TODO: Interface to exporters options
- */
-export interface ExporterOptions {
-  bufferSize?: number;
-  bufferTimeout?: number;
-}
+export type  ExporterConfig = BufferConfig;

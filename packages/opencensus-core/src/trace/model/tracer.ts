@@ -17,9 +17,10 @@
 import * as cls from '../../internal/cls';
 import {debug} from '../../internal/util';
 import {RootSpan, Span} from './types';
-import {TraceOptions, TracerConfig, defaultConfig, Tracer} from './types';
+import {TraceOptions, Tracer} from './types';
 import {OnEndSpanEventListener, Func } from './types';
-import {Sampler} from '../config/types';
+import {Sampler, TracerConfig} from '../config/types';
+import {Config} from '../config/types';
 import {SpanImpl} from './span';
 import {SamplerImpl} from '../config/sampler'
 import {RootSpanImpl} from './rootspan';
@@ -31,12 +32,14 @@ export class TracerImpl implements Tracer {
     private activeLocal: boolean;
     private contextManager: cls.Namespace;
     private config: TracerConfig;
+    sampler: Sampler;
 
     //TODO: simple solution - to be rewied in future
     private eventListenersLocal: OnEndSpanEventListener[] = [];
     //TODO: temp solution 
     private endedTraces: RootSpan[] = [];
-
+      
+ 
     samplingRate: number;
 
     constructor() {
@@ -52,9 +55,10 @@ export class TracerImpl implements Tracer {
         this.contextManager.set('rootspan', root);
     }
 
-    start(config?: TracerConfig): Tracer {
+    start(config: TracerConfig): Tracer {
         this.activeLocal = true;
-        this.config = config || defaultConfig;
+        this.config = config;
+        this.sampler = new SamplerImpl().probability(config.samplingRate);
         return this;
     }
 
@@ -72,22 +76,19 @@ export class TracerImpl implements Tracer {
 
     startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
         return this.contextManager.runAndReturn((root) => {
-            const newRoot = new RootSpanImpl (this, options);
-            this.currentRootSpan = newRoot;
-            if (!options) {
-                options = {} as TraceOptions;
+            let newRoot = null;
+            if(this.active) {
+                newRoot = new RootSpanImpl (this, options);
+                this.currentRootSpan = newRoot;
+
+                if (this.sampler.shouldSample(newRoot.traceId)) {
+                    newRoot.start();
+                    return fn(newRoot);
+                }
+            } else {
+                debug("Tracer is inactive, can't start new RootSpan")
             }
-            // if (!options.sampler) {
-            //     options.sampler = new SamplerImpl(newRoot.traceId);
-            //     options.sampler.always();
-            // }
-            // newRoot.sampler = options.sampler;
-            newRoot.sampler = new SamplerImpl().probability(this.samplingRate);
-            if (newRoot.sampler.shouldSample(newRoot.traceId)) {
-                newRoot.start();
-                return fn(newRoot);
-            }
-            return fn(null);
+            return fn(newRoot);
         });
     }
 

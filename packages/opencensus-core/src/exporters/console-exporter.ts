@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterOptions} from '../exporters/types';
+import {Exporter, ExporterConfig} from '../exporters/types';
 import {RootSpan} from '../trace/model/types';
-
 import {Buffer} from './buffer';
+
 
 
 /** Do not send span data */
@@ -30,8 +30,8 @@ export class NoopExporter implements Exporter {
 export class ConsoleLogExporter implements Exporter {
   private buffer: Buffer;
 
-  constructor(options: ExporterOptions) {
-    this.buffer = new Buffer(this, options.bufferSize, options.bufferTimeout);
+  constructor(config: ExporterConfig) {
+    this.buffer = new Buffer(this, config);
   }
 
   onEndSpan(root: RootSpan) {

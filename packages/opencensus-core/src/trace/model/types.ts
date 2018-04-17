@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Sampler } from '../config/types';
+import { Sampler, Config, TracerConfig } from '../config/types';
 
 /** Default type for functions */
 export type Func<T> = (...args: any[]) => T;
@@ -55,18 +55,6 @@ export interface Link {
   attributes: Attributes
 }
 
-/** Defines tracer configuration parameters */
-export interface TracerConfig {
-  /** Determines the samplin rate. Ranges from 0.0 to 1.0 */
-  sampleRate?: number;
-  /** Determines the ignored (or blacklisted) URLs */
-  ignoreUrls?: Array<string|RegExp>;
-}
-
-/** Defines a default tracer configuration */
-export const defaultConfig: TracerConfig = {
-  sampleRate: 1.0
-};
 
 /** Defines the trace options */
 export interface TraceOptions {
@@ -74,8 +62,6 @@ export interface TraceOptions {
   name: string;
   /** Trace context */
   traceContext?: TraceContext;
-  /** Sampler */
-  sampler?: Sampler;
   /** Span type */
   type?: string;
 }
@@ -124,8 +110,6 @@ export interface Span  {
     messageEvents: MessageEvent[];
     /** Pointers from the current span to another span */
     links: Link[];
-    /** A sampler that will decide if the span will be sampled or not */
-    sampler: Sampler;
     /** Constructs a new SpanBaseModel instance. */
     readonly traceId: string;
     /** Indicates if span was started. */
@@ -202,10 +186,12 @@ export interface RootSpan extends Span, OnEndSpanEventListener {
 
 /** Interface for Tracer */
 export interface Tracer  {
+  
     /** Get and set the currentRootSpan to tracer instance */
     currentRootSpan: RootSpan;
-    
-    samplingRate: number;
+
+    /** A sampler that will decide if the span will be sampled or not */
+    sampler: Sampler;    
     
     /** Get the eventListeners from tracer instance */
     readonly eventListeners: OnEndSpanEventListener[];
@@ -217,7 +203,7 @@ export interface Tracer  {
      * @param config Configuration for tracer instace
      * @returns A tracer instance started
      */
-    start(config?: TracerConfig): Tracer;
+    start(config: TracerConfig): Tracer;
 
     /** Stop the tracer instance */ 
     stop(): void;

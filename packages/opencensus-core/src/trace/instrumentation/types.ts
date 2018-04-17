@@ -23,3 +23,5 @@ export interface Plugin {
   applyPatch(module: {}, tracer: Tracer, version: string): any;
   applyUnpatch(): void;
 }
+
+export type PluginNames = {[pluginName: string]: string;};

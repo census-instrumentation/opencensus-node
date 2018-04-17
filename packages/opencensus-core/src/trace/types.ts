@@ -17,15 +17,15 @@
 import {Tracer} from './model/types';
 import {Sampler} from './config/types';
 import {Exporter} from '../exporters/types';
+import {Config} from './config/types';
 
 
 export interface Tracing {
   readonly tracer: Tracer;
   // readonly sampler: Sampler;
   readonly exporter: Exporter;
-  start(opstion?:OptionsTracing): Tracing;
+  start(config?:Config): Tracing;
   stop(): void;
+  registerExporter(exporter: Exporter): Tracing;
 }
-export interface OptionsTracing {
-  samplingRate ?: number;
-}
+

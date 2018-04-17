@@ -51,8 +51,6 @@ export abstract class SpanBaseModel implements Span {
     type: string = null;
     /** A final status for this span */
     status: number;
-    /** A sampler that will decide if the span will be sampled or not */
-    sampler: Sampler;
   
     /** Constructs a new SpanBaseModel instance. */
     constructor() {

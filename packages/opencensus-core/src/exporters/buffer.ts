@@ -21,11 +21,8 @@ import {RootSpan} from '../trace/model/types';
 import {OnEndSpanEventListener} from '../trace/model/types';
 
 import {Exporter} from './types';
-import {ExporterOptions} from './types';
+import {Config, BufferConfig} from '../trace/config/types';
 
-// TODO: Implement default size based on application size
-const DEFAULT_BUFFER_SIZE = 3;
-const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
 
 /**
  * Controls the sending of traces to exporters
@@ -42,10 +39,10 @@ export class Buffer {
   /** Indicates when the buffer timeout is running */
   private bufferTimeoutInProgress: boolean = false;
 
-  constructor(exporter: Exporter, bufferSize?: number, bufferTimeout?: number) {
-    this.bufferSize = bufferSize || DEFAULT_BUFFER_SIZE;
-    this.bufferTimeout = bufferTimeout || DEFAULT_BUFFER_TIMEOUT;
+  constructor(exporter: Exporter, config: BufferConfig) {
     this.exporter = exporter;
+    this.bufferSize = config.bufferSize;
+    this.bufferTimeout = config.bufferTimeout;
     return this;
   }
 

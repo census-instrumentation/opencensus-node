@@ -18,10 +18,15 @@ import * as assert from 'assert';
 import * as mocha from 'mocha';
 
 import {Span,RootSpan,Tracer} from '../src/trace/model/types';
-import { Exporter } from '../src/exporters/types';
-import { TracerImpl } from '../src/trace/model/tracer';
-import { RootSpanImpl } from '../src/trace/model/rootspan';
-import { SpanImpl } from '../src/trace/model/span';
+import {Exporter} from '../src/exporters/types';
+import {TracerImpl} from '../src/trace/model/tracer';
+import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {SpanImpl} from '../src/trace/model/span';
+import {TracerConfig} from '../src/trace/config/types';
+
+ const defaultConfig: TracerConfig = {
+  samplingRate: 1
+}
 
 
 describe('Tracer', function () {
@@ -38,13 +43,13 @@ describe('Tracer', function () {
   describe('start()', function () {
     it('should return a tracer instance', function () {
       let tracer = new TracerImpl();
-      let tracerStarted = tracer.start();
+      let tracerStarted = tracer.start(defaultConfig);
       assert.ok(tracerStarted instanceof TracerImpl);
     });
 
     it('the trace was started', function () {
       let tracer = new TracerImpl();
-      let tracerStarted = tracer.start();
+      let tracerStarted = tracer.start(defaultConfig);
       assert.ok(tracerStarted.active);
     });
   });
@@ -53,7 +58,7 @@ describe('Tracer', function () {
 
     it('should start the rootSpan', function () {
       let tracer = new TracerImpl();
-      tracer.start();
+      tracer.start(defaultConfig);
       let rootSpan = tracer.startRootSpan(options, callback);
 
       assert.ok(rootSpan.started);
