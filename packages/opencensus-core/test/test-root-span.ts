@@ -17,61 +17,124 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import {Span,RootSpan,Tracer} from '../src/trace/model/types';
-import {SpanImpl} from '../src/trace/model/span';
 import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {SpanImpl} from '../src/trace/model/span';
 import {TracerImpl} from '../src/trace/model/tracer';
-let tracer = new TracerImpl();
+import {RootSpan, Span, TraceOptions, Tracer} from '../src/trace/model/types';
 
-describe('RootSpan', function() {
+const tracer = new TracerImpl();
+
+describe('RootSpan', () => {
   /**
    * Should create a RootSpan instance
    */
-  describe('new RootSpan()', function() {
-    it('should create a RootSpan instance', function() {
-      let root = new RootSpanImpl(tracer);
-      assert.ok(root instanceof SpanImpl);
+  describe('new RootSpan()', () => {
+    it('should create a RootSpan instance', () => {
+      const root = new RootSpanImpl(tracer);
+      assert.ok(root instanceof RootSpanImpl);
+    });
+  });
+
+  /**
+   * Should create a RootSpan instance with options
+   */
+  describe('new RootSpan() with options', () => {
+    it('should create a RootSpan instance with options', () => {
+      const trace = new RootSpanImpl(tracer);
+      const options = {name: 'test', traceContext: trace.traceContext} as
+          TraceOptions;
+      const root = new RootSpanImpl(tracer, options);
+      assert.ok(root instanceof RootSpanImpl);
+    });
+  });
+
+  /**
+   * Should get span list from rootspan instance
+   */
+  describe('get spans()', () => {
+    it('should get span list from rootspan instance', () => {
+      const root = new RootSpanImpl(tracer);
+      root.start();
+      const span = root.startSpan('spanName', 'spanType');
+
+      for (const span of root.spans) {
+        assert.ok(span instanceof SpanImpl);
+      }
+    });
+  });
+
+  /**
+   * Should get trace id from rootspan instance
+   */
+  describe('new traceId()', () => {
+    it('should get trace id from rootspan instance', () => {
+      const root = new RootSpanImpl(tracer);
+      assert.equal(root.traceId, root.traceContext.traceId);
     });
   });
 
   /**
    * Should create and start a RootSpan instance
    */
-  describe('start()', function() {
-    it('should start a RootSpan instance', function() {
-      let root = new RootSpanImpl(tracer);
+  describe('start()', () => {
+    it('should start a RootSpan instance', () => {
+      const root = new RootSpanImpl(tracer);
       root.start();
       assert.ok(root.started);
     });
   });
 
   /**
-   * Should check type and a span was started
+   * Should create and start a new span instance
    */
-  describe('startSpan()', function() {
+  describe('startSpan()', () => {
     let root, span;
 
-    before(function() {
+    before(() => {
       root = new RootSpanImpl(tracer);
       root.start();
       span = root.startSpan('spanName', 'spanType');
     });
 
-    it('should check span instance type', function() {
+    it('should create span instance', () => {
       assert.ok(span instanceof SpanImpl);
     });
 
-    it('should check if a new span was started', function() {
+    it('should start a span instance', () => {
       assert.ok(span.started);
     });
   });
 
   /**
-   * Should start and end a rootspan properly
+   * Should not start a span from a not started rootspan
    */
-  describe('end()', function() {
-    it('should end the trace', function() {
-      let root = new RootSpanImpl(tracer);
+  describe('startSpan() before start rootspan', () => {
+    it('should not create span', () => {
+      const root = new RootSpanImpl(tracer);
+      const span = root.startSpan('spanName', 'spanType');
+      assert.ok(span == null);
+    });
+  });
+
+  /**
+   * Should not create a span from a ended rootspan
+   */
+  describe('startSpan() after rootspan ended', () => {
+    it('should not create span', () => {
+      const root = new RootSpanImpl(tracer);
+      root.start();
+      root.end();
+      const span = root.startSpan('spanName', 'spanType');
+      assert.ok(span == null);
+    });
+  });
+
+  /**
+   * Should end a rootspan instance
+   */
+  describe('end()', () => {
+    it('should end the rootspan instance', () => {
+      const root = new RootSpanImpl(tracer);
       root.start();
       root.end();
       assert.ok(root.ended);
@@ -81,35 +144,27 @@ describe('RootSpan', function() {
   /**
    * Should not end a rootspan which was not started
    */
-  describe('end() before trace started', function() {
-    it('should not end trace', function() {
-      let root = new RootSpanImpl(tracer);
+  describe('end() before start rootspan', () => {
+    it('should not end rootspan', () => {
+      const root = new RootSpanImpl(tracer);
       root.end();
       assert.ok(!root.ended);
     });
   });
 
   /**
-   * Should not start a span from a not started rootspan
+   * Should end all spans inside rootspan
    */
-  describe('startSpan() before trace started', function() {
-    it('should not create span', function() {
-      let root = new RootSpanImpl(tracer);
-      let span = root.startSpan('spanName', 'spanType');
-      assert.ok(span == null);
-    });
-  });
-
-  /**
-   * Should not create a span from a ended rootspan
-   */
-  describe('startSpan() after trace ended', function() {
-    it('should not create span', function() {
-      let root = new RootSpanImpl(tracer);
+  describe('end() before end all spans', () => {
+    it('should end all spans inside rootspan', () => {
+      const root = new RootSpanImpl(tracer);
       root.start();
+      const span = root.startSpan('spanName', 'spanType');
       root.end();
-      let span = root.startSpan('spanName', 'spanType');
-      assert.ok(span == null);
+
+      for (const span of root.spans) {
+        assert.ok(span.ended);
+      }
     });
   });
 });

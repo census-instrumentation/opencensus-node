@@ -69,8 +69,9 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
 
     // TODO - Define logic for list of spans
     for (const span of this.spansLocal) {
-      if (span.ended || !span.started) return;
-      span.truncate();
+      if (!span.ended && span.started) {
+        span.truncate();
+      }
     }
 
     this.tracer.onEndSpan(this);
@@ -98,18 +99,18 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
    * @param parentSpanId Span parent ID
    */
   startSpan(name: string, type: string, parentSpanId?: string) {
-    if (!this.started) {
-      debug(
-          'calling %s.startSpan() on un-started %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.type});
-      return;
-    }
     if (this.ended) {
       debug(
           'calling %s.startSpan() on ended %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
       return;
     }
+    if (!this.started) {
+      debug(
+          'calling %s.startSpan() on un-started %s %o', this.className,
+          this.className, {id: this.id, name: this.name, type: this.type});
+      return;
+    }    
     const newSpan = new SpanImpl(this);
     if (name) {
       newSpan.name = name;

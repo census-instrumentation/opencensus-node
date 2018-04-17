@@ -7,7 +7,7 @@
   "repository": "census-instrumentation/opencensus-node",
   "scripts": {
     "build": "node_modules/.bin/tsc --declaration",
-    "test": "nyc --reporter=html --reporter=text mocha 'build/test/**/*.js'",
+    "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha 'build/test/**/*.js'",
     "clean": "rimraf build/*",
     "check": "gts check",
     "compile": "tsc -p .",

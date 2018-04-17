@@ -37,5 +37,6 @@ build/
 #log files
 *.log
 
-
+#istanbul files
+coverage/
 
