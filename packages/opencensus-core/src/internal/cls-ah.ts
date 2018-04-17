@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import * as asyncHook from 'async_hooks'
-import {Context, Func, Namespace as CLSNamespace} from 'continuation-local-storage'
-import {EventEmitter} from 'events'
-import * as shimmer from 'shimmer'
+import * as asyncHook from 'async_hooks';
+import {Context, Func, Namespace as CLSNamespace} from 'continuation-local-storage';
+import {EventEmitter} from 'events';
+import * as shimmer from 'shimmer';
 
 const wrappedSymbol = Symbol('context_wrapped');
 let contexts: {[asyncId: number]: Context;} = {};

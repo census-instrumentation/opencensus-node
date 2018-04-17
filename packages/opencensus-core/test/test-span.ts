@@ -22,14 +22,14 @@ import {SpanImpl} from '../src/trace/model/span';
 import {TracerImpl} from '../src/trace/model/tracer';
 import {Span} from '../src/trace/model/types';
 
-let tracer = new TracerImpl();
+const tracer = new TracerImpl();
 
-describe('Span', function() {
+describe('Span', () => {
   /**
    * Should create a span
    */
-  describe('new Span()', function() {
-    it('should create a Span instance', function() {
+  describe('new Span()', () => {
+    it('should create a Span instance', () => {
       const rootSpan = new RootSpanImpl(tracer);
       const span = new SpanImpl(rootSpan);
       assert.ok(span instanceof SpanImpl);
@@ -39,8 +39,8 @@ describe('Span', function() {
   /**
    * Should return the Trace ID
    */
-  describe('get traceId()', function() {
-    it('should return the trace id', function() {
+  describe('get traceId()', () => {
+    it('should return the trace id', () => {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
       const span = new SpanImpl(rootSpan);
@@ -51,11 +51,11 @@ describe('Span', function() {
   /**
    * Should the trace context of span
    */
-  describe('get traceContext()', function() {
-    it('should the trace context of span', function() {
+  describe('get traceContext()', () => {
+    it('should the trace context of span', () => {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       const context = span.traceContext;
 
@@ -68,11 +68,11 @@ describe('Span', function() {
   /**
    * Should start a span instance
    */
-  describe('start()', function() {
-    it('should start a span instance', function() {
+  describe('start()', () => {
+    it('should start a span instance', () => {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       span.start();
 
@@ -83,11 +83,11 @@ describe('Span', function() {
   /**
    * Should end a span instance
    */
-  describe('end()', function() {
-    it('should end a span instance', function() {
+  describe('end()', () => {
+    it('should end a span instance', () => {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       span.start();
       span.end();
@@ -99,11 +99,11 @@ describe('Span', function() {
   /**
    * Should not end a span instance
    */
-  describe('end() before start the span', function() {
-    it('should not end a span instance', function() {
+  describe('end() before start the span', () => {
+    it('should not end a span instance', () => {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
-      
+
       const span = new SpanImpl(rootSpan);
       span.end();
 

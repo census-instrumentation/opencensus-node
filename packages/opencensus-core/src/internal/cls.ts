@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-import * as CLS from 'continuation-local-storage'
-import * as semver from 'semver'
-import { debug } from './util'
+import * as CLS from 'continuation-local-storage';
+import * as semver from 'semver';
+
+import * as cls_ah from './cls-ah';
+import {debug} from './util';
 
 export type Namespace = CLS.Namespace;
 export type Func<T> = CLS.Func<T>;
 
-const useAsyncHooks: boolean = semver.satisfies(process.version, '>=8') ;//&&
-   // !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
+const useAsyncHooks: boolean = semver.satisfies(
+    process.version, '>=8');  //&&
+                              // !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
 
-debug('useAsyncHooks = %s',useAsyncHooks);
+debug('useAsyncHooks = %s', useAsyncHooks);
 
 const cls: typeof CLS =
-    useAsyncHooks ? require('./cls-ah') : require('continuation-local-storage');
+    useAsyncHooks ? cls_ah : CLS;
 
 
 const TRACE_NAMESPACE = 'opencensus.io';
@@ -51,5 +54,3 @@ export function destroyNamespace(): void {
 export function getNamespace(): CLS.Namespace {
   return cls.getNamespace(TRACE_NAMESPACE);
 }
-
-

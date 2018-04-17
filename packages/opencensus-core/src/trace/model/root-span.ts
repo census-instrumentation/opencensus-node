@@ -18,11 +18,11 @@ import * as uuid from 'uuid';
 
 import {Clock} from '../../internal/clock';
 import {debug} from '../../internal/util';
-import {OnEndSpanEventListener, RootSpan, TraceContext, TraceOptions, Span, Tracer} from './types';
 
 import {SpanImpl} from './span';
 import {SpanBaseModel} from './spanbasemodel';
 import {TracerImpl} from './tracer';
+import {OnEndSpanEventListener, RootSpan, Span, TraceContext, TraceOptions, Tracer} from './types';
 
 /** Defines a root span */
 export class RootSpanImpl extends SpanBaseModel implements RootSpan {
@@ -45,14 +45,17 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
     this.spansLocal = [];
   }
 
-  get spans() {
+  /** Get span list from rootspan instance */
+  get spans(): Span[] {
     return this.spansLocal;
   }
 
-  get traceId() {
+  /** Get trace id from rootspan instance */
+  get traceId(): string {
     return this.traceIdLocal;
   }
 
+  /** Start a rootspan instance */
   start() {
     super.start();
     debug(
@@ -60,6 +63,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
         {traceId: this.traceId, id: this.id, parentSpanId: this.parentSpanId});
   }
 
+  /** End a rootspan instance */
   end() {
     super.end();
 
@@ -72,6 +76,10 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
     this.tracer.onEndSpan(this);
   }
 
+  /**
+   * Event called when a span ended
+   * @param span Span ended
+   */
   onEndSpan(span: Span) {
     debug('ending span  %o', {
       id: span.id,
@@ -83,6 +91,12 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
     });
   }
 
+  /**
+   * Start a new span linked with the rootspan
+   * @param name Span name
+   * @param type Span type
+   * @param parentSpanId Span parent ID
+   */
   startSpan(name: string, type: string, parentSpanId?: string) {
     if (!this.started) {
       debug(
