@@ -148,6 +148,9 @@ export interface RootSpan extends Span, OnEndSpanEventListener {
 export interface Tracer  {
     /** Get and set the currentRootSpan to tracer instance */
     currentRootSpan: RootSpan;
+    
+    samplingRate: number;
+    
     /** Get the eventListeners from tracer instance */
     readonly eventListeners: OnEndSpanEventListener[];
     /** Get the active status from tracer instance */

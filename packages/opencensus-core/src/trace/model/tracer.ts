@@ -37,6 +37,8 @@ export class TracerImpl implements Tracer {
     //TODO: temp solution 
     private endedTraces: RootSpan[] = [];
 
+    samplingRate: number;
+
     constructor() {
         this.activeLocal = false;
         this.contextManager = cls.createNamespace();
@@ -75,12 +77,12 @@ export class TracerImpl implements Tracer {
             if (!options) {
                 options = {} as TraceOptions;
             }
-            if (!options.sampler) {
-                options.sampler = new SamplerImpl(newRoot.traceId);
-                //options.sampler.probability(0.5);
-                options.sampler.always();
-            }
-            newRoot.sampler = options.sampler;
+            // if (!options.sampler) {
+            //     options.sampler = new SamplerImpl(newRoot.traceId);
+            //     options.sampler.always();
+            // }
+            // newRoot.sampler = options.sampler;
+            newRoot.sampler = new SamplerImpl().probability(this.samplingRate);
             if (newRoot.sampler.shouldSample(newRoot.traceId)) {
                 newRoot.start();
                 return fn(newRoot);

@@ -64,14 +64,14 @@ export class SamplerImpl {
    * @param probability probability between 0 and 1
    * @returns a Sampler object
    */
-  probability(probability: number): Sampler {
-    if (probability < MIN_NUMBER) {
-      return this.never();
-
-    } else if (probability > MAX_NUMBER) {
+  probability(probability?: number): Sampler {
+    if(!probability || probability > MAX_NUMBER) {
       return this.always();
     }
+    else if (probability < MIN_NUMBER) {
+      return this.never();
 
+    }
     this.idUpperBound = probability * MAX_NUMBER;
     return this;
   }
@@ -93,4 +93,18 @@ export class SamplerImpl {
       return false;
     }
   }
+
+  // setRate(samplerRate?:number){
+  //   if(samplerRate){
+  //     if(samplerRate <= MIN_NUMBER){
+  //       this.never();
+  //     }else if(samplerRate >= MAX_NUMBER){
+  //       this.always();
+  //     }else{
+  //       this.probability(samplerRate);
+  //     }
+  //   }else{
+  //     this.always();
+  //   }
+  // }
 }

@@ -19,10 +19,13 @@ import {Sampler} from './config/types';
 import {Exporter} from '../exporters/types';
 
 
-export interface  Tracing {
+export interface Tracing {
   readonly tracer: Tracer;
-  readonly sampler: Sampler;
+  // readonly sampler: Sampler;
   readonly exporter: Exporter;
-  start(): Tracing;
+  start(opstion?:OptionsTracing): Tracing;
   stop(): void;
+}
+export interface OptionsTracing {
+  samplingRate ?: number;
 }
