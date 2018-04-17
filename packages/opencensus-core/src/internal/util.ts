@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import * as crypto from 'crypto'
-import * as Debug from "debug"
+import * as crypto from 'crypto';
+import * as Debug from 'debug';
 
-export  const debug = Debug("opencensus");
+export const debug = Debug('opencensus');
 
 
-//TODO: rethink this snippet aproach
-//--- Code snippet from Stackdriver Trace Agent 
+// TODO: rethink this snippet aproach
+//--- Code snippet from Stackdriver Trace Agent
 // Use 6 bytes of randomness only as JS numbers are doubles not 64-bit ints.
 const SPAN_ID_RANDOM_BYTES = 6;
 
@@ -35,6 +35,6 @@ const spanRandomBuffer = randomFillSync ?
     () => randomBytes(SPAN_ID_RANDOM_BYTES);
 
 export function randomSpanId() {
-    // tslint:disable-next-line:ban Needed to parse hexadecimal.
-    return parseInt(spanRandomBuffer().toString('hex'), 16).toString();
-}  
+  // tslint:disable-next-line:ban Needed to parse hexadecimal.
+  return parseInt(spanRandomBuffer().toString('hex'), 16).toString();
+}
