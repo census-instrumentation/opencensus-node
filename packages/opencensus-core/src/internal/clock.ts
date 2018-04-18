@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
+/** Defines a Clock. */
 export class Clock {
-  private endedLocal: boolean;
+  /** Indicates if the clock is endend. */
+  private endedLocal = false;
+  /** Indicates the clock's start time. */
   private startTimeLocal: Date;
+  /** The time in high resolution in a [seconds, nanoseconds]. */
   private hrtimeLocal: [number, number];
-  private diff: [number, number];
+  /** The duration between start and end of the clock. */
+  private diff: [number, number] = null;
 
+  /** Constructs a new SamplerImpl instance. */
   constructor() {
-    this.endedLocal = false;
     this.startTimeLocal = new Date();
     this.hrtimeLocal = process.hrtime();
-    this.diff = null;
   }
 
+  /** Ends the clock. */
   end(): void {
     if (this.endedLocal) {
       return;
@@ -35,6 +40,7 @@ export class Clock {
     this.endedLocal = true;
   }
 
+  /** Gets the duration of the clock. */
   get duration(): number {
     if (!this.endedLocal) {
       return null;
@@ -43,6 +49,10 @@ export class Clock {
     return ns / 1e6;
   }
 
+  /**
+   * Compares clock with another one.
+   * @param timer A clock object to compare.
+   */
   offset(timer: Clock): number {
     const a = timer.hrtime;
     const b = this.hrtime;
@@ -50,14 +60,20 @@ export class Clock {
     return ns / 1e6;
   }
 
+  /** Gets the time in high definition. */
   get hrtime(): [number, number] {
     return this.hrtimeLocal;
   }
 
+  /** Starts the clock. */
   get startTime(): Date {
     return this.startTimeLocal;
   }
 
+  /**
+   * Gets the time so far.
+   * @returns A Date object with the current duration.
+   */
   get endTime(): Date {
     let result: Date = null;
     if (this.ended) {
@@ -66,6 +82,7 @@ export class Clock {
     return result;
   }
 
+  /** Indicates if the clock was ended. */
   get ended(): boolean {
     return this.endedLocal;
   }

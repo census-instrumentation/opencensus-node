@@ -26,11 +26,18 @@ import {OnEndSpanEventListener, RootSpan, Span, TraceContext, TraceOptions, Trac
 
 /** Defines a root span */
 export class RootSpanImpl extends SpanBaseModel implements RootSpan {
+  /** A tracer object */
   private tracer: Tracer;
+  /** A list of child spans. */
   private spansLocal: Span[];
+  /** It's trace ID. */
   private traceIdLocal: string;
 
-  // TODO - improve root name setup
+  /**
+   * Constructs a new RootSpanImpl instance.
+   * @param tracer A tracer object.
+   * @param context A trace options object to build the root span.
+   */
   constructor(tracer: Tracer, context?: TraceOptions) {
     super();
     this.tracer = tracer;
@@ -45,17 +52,17 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
     this.spansLocal = [];
   }
 
-  /** Get span list from rootspan instance */
+  /** Gets span list from rootspan instance. */
   get spans(): Span[] {
     return this.spansLocal;
   }
 
-  /** Get trace id from rootspan instance */
+  /** Gets trace id from rootspan instance. */
   get traceId(): string {
     return this.traceIdLocal;
   }
 
-  /** Start a rootspan instance */
+  /** Starts a rootspan instance. */
   start() {
     super.start();
     debug(
@@ -63,7 +70,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
         {traceId: this.traceId, id: this.id, parentSpanId: this.parentSpanId});
   }
 
-  /** End a rootspan instance */
+  /** Ends a rootspan instance. */
   end() {
     super.end();
 
@@ -78,8 +85,8 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
   }
 
   /**
-   * Event called when a span ended
-   * @param span Span ended
+   * Event called when a span is ended.
+   * @param span Span ended.
    */
   onEndSpan(span: Span) {
     debug('ending span  %o', {
@@ -93,10 +100,10 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
   }
 
   /**
-   * Start a new span linked with the rootspan
-   * @param name Span name
-   * @param type Span type
-   * @param parentSpanId Span parent ID
+   * Starts a new child span in the root span.
+   * @param name Span name.
+   * @param type Span type.
+   * @param parentSpanId Span parent ID.
    */
   startSpan(name: string, type: string, parentSpanId?: string) {
     if (this.ended) {

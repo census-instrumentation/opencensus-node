@@ -24,11 +24,11 @@ import {Exporter} from './types';
 import {Config, BufferConfig} from '../trace/config/types';
 
 
-/**
- * Controls the sending of traces to exporters
- */
+/** Controls the sending of traces to exporters. */
 export class Buffer {
+  /** The service to send the collected spans. */
   private exporter: Exporter;
+  /** Maximum size of a buffer. */
   private bufferSize: number;
   /** Trace queue of a buffer */
   private queue: RootSpan[] = [];
@@ -39,6 +39,11 @@ export class Buffer {
   /** Indicates when the buffer timeout is running */
   private bufferTimeoutInProgress = false;
 
+  /**
+   * Constructs a new Buffer instance.
+   * @param exporter The service to send the collected spans.
+   * @param config A buffer configuration object to create a buffer.
+   */
   constructor(exporter: Exporter, config: BufferConfig) {
     this.exporter = exporter;
     this.bufferSize = config.bufferSize;
@@ -47,8 +52,8 @@ export class Buffer {
   }
 
   /**
-   * Set the buffer size value
-   * @param bufferSize The new buffer size
+   * Set the buffer size value.
+   * @param bufferSize The new buffer size.
    */
   setBufferSize(bufferSize: number) {
     this.bufferSize = bufferSize;
@@ -56,8 +61,8 @@ export class Buffer {
   }
 
   /**
-   * Add a trace (rootSpan) in the buffer
-   * @param trace RootSpan to be added in the buffer
+   * Add a trace (rootSpan) in the buffer.
+   * @param trace RootSpan to be added in the buffer.
    */
   addToBuffer(trace: RootSpan) {
     this.queue.push(trace);

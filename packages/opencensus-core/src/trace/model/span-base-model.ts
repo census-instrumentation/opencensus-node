@@ -20,7 +20,7 @@ import { Sampler } from '../config/types';
 import { TraceContext, Span, Annotation, Attributes,
     Link, MessageEvent } from './types';
 
-
+/** Defines a base model for spans. */
 export abstract class SpanBaseModel implements Span {
     protected className: string;
     /** The clock used to mesure the beginning and ending of a span */
@@ -37,7 +37,7 @@ export abstract class SpanBaseModel implements Span {
     attributes: Attributes = {};
     /** A text annotation with a set of attributes. */
     annotations: Annotation[] = [];
-    /** An event describing a message sent/received between Spans. */
+    /** An event describing a message sent/received between Spans */
     messageEvents: MessageEvent[] = [];
     /** Pointers from the current span to another span */
     links: Link[] = [];
@@ -58,9 +58,9 @@ export abstract class SpanBaseModel implements Span {
       this.id = randomSpanId();
     }
   
+    /** Gets the trace ID. */
     abstract get traceId(): string;
 
-      
     /** Indicates if span was started. */
     get started(): boolean {
       return this.startedLocal;
@@ -172,7 +172,7 @@ export abstract class SpanBaseModel implements Span {
       } as MessageEvent);
     }
   
-    /** Starts a span. */
+    /** Starts the span. */
     start() {
       if (this.started) {
         debug(
@@ -184,7 +184,7 @@ export abstract class SpanBaseModel implements Span {
       this.startedLocal = true;
     }
   
-    /** Ends a span. */
+    /** Ends the span. */
     end(): void {
       if (!this.started) {
         debug(
@@ -204,7 +204,7 @@ export abstract class SpanBaseModel implements Span {
     }
   
   
-    /** Forces to end a span. */
+    /** Forces the span to end. */
     truncate() {
       // TODO: review
       if (!this.started) {

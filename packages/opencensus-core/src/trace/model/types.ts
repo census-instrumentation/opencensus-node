@@ -90,56 +90,73 @@ export interface OnEndSpanEventListener {
 
 /** Interface for Span */
 export interface Span  {
-  
     /** The Span ID of this span */
     readonly id: string;
+
     /** If the parent span is in another process. */
     remoteParent: boolean;
+
     /** The span ID of this span's parent. If it's a root span, must be empty */
     parentSpanId: string;
+
     /** The resource name of the span */
     name: string;
+
     /** Type of span. Used to specify additional relationships between spans */
     type: string;
+
     /** A final status for this span */
     status: number;
+
     /** A set of attributes, each in the format [KEY]:[VALUE] */
     attributes: Attributes;
+
     /** A text annotation with a set of attributes. */
     annotations: Annotation[];
+
     /** An event describing a message sent/received between Spans. */
     messageEvents: MessageEvent[];
+
     /** Pointers from the current span to another span */
     links: Link[];
+
     /** Constructs a new SpanBaseModel instance. */
     readonly traceId: string;
+
     /** Indicates if span was started. */
     readonly started: boolean;
+
     /** Indicates if span was ended. */
     readonly ended: boolean;
+
     /**
      * Gives a timestap that indicates the span's start time in RFC3339 UTC
      * "Zulu" format.
      */
     readonly startTime: Date;
+
     /**
      * Gives a timestap that indicates the span's end time in RFC3339 UTC
      * "Zulu" format.
      */
     readonly endTime: Date;
+
     /**
      * Gives a timestap that indicates the span's duration in RFC3339 UTC
      * "Zulu" format.
      */
     readonly duration: number;
+
     /** Gives the TraceContext of the span. */
     readonly traceContext: TraceContext;
+
     /**
      * Adds an atribute to the span.
      * @param key Describes the value added.
      * @param value The result of an operation.
      */
     addAtribute(key: string, value: string): void;
+
     /**
      * Adds an annotation to the span.
      * @param description Describes the event.
@@ -148,6 +165,7 @@ export interface Span  {
      */
     addAnnotation(description: string, timestamp: number,
         attributes?: Attributes): void;
+    
     /**
      * Adds a link to the span.
      * @param traceId The trace ID for a trace within a project.
@@ -157,16 +175,20 @@ export interface Span  {
      */
     addLink(traceId: string, spanId: string, type: string,
       attributes?: Attributes): void;
+    
     /**
      * Adds a message event to the span.
      * @param type The type of message event.
      * @param id An identifier for the message event.
      */
     addMessageEvent(type: string, id: string): void;
+    
     /** Starts a span. */
     start(): void;
+    
     /** Ends a span. */
     end(): void;
+    
     /** Forces to end a span. */
     truncate(): void;
 }
@@ -176,39 +198,41 @@ export interface RootSpan extends Span, OnEndSpanEventListener {
   /** Get the span list from RootSpan instance */
   readonly spans: Span[];
 
-  /** Start the RootSpan instance */
+  /** Starts the RootSpan instance */
   start(): void;
-  /** End the RootSpan instance */
+  
+  /** Ends the RootSpan instance */
   end(): void;
-  /** Start a new Span instance in the RootSpan instance */
+  
+  /** Starts a new Span instance in the RootSpan instance */
   startSpan(name: string, type: string, parentSpanId?: string): Span;
 }
 
 
 /** Interface for Tracer */
 export interface Tracer  {
-  
     /** Get and set the currentRootSpan to tracer instance */
     currentRootSpan: RootSpan;
-
+    
     /** A sampler that will decide if the span will be sampled or not */
     sampler: Sampler;    
     
     /** Get the eventListeners from tracer instance */
     readonly eventListeners: OnEndSpanEventListener[];
+    
     /** Get the active status from tracer instance */
     readonly active: boolean;
-
+    
     /**
      * Start a tracer instance
      * @param config Configuration for tracer instace
      * @returns A tracer instance started
      */
     start(config: TracerConfig): Tracer;
-
+    
     /** Stop the tracer instance */ 
     stop(): void;
-
+    
     /**
      * Start a new RootSpan to currentRootSpan
      * @param options Options for tracer instance
@@ -247,6 +271,7 @@ export interface Tracer  {
      * @returns The contextManager class wrapped
      */
     wrap<T>(fn: Func<T>): Func<T>;
+    
     /**
      * Wrapper to contextManager emitter
      * @param emitter Function that will wrap in contextManager emitter

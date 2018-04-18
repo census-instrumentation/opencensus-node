@@ -19,7 +19,6 @@ import {RootSpan} from '../trace/model/types';
 import {Buffer} from './buffer';
 
 
-
 /** Do not send span data */
 export class NoopExporter implements Exporter {
   onEndSpan(root: RootSpan) {}
@@ -28,12 +27,22 @@ export class NoopExporter implements Exporter {
 
 /** Format and sends span data to the console. */
 export class ConsoleLogExporter implements Exporter {
+  /** Buffer object to store the spans. */
   private buffer: Buffer;
 
+  /**
+   * Constructs a new ConsoleLogExporter instance.
+   * @param config Exporter configuration object to create a console log
+   * exporter.
+   */
   constructor(config: ExporterConfig) {
     this.buffer = new Buffer(this, config);
   }
 
+  /**
+   * Event called when a span is ended.
+   * @param root Ended span.
+   */
   onEndSpan(root: RootSpan) {
     this.buffer.addToBuffer(root);
   }

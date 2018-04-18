@@ -17,18 +17,16 @@
 import {debug, randomSpanId} from '../../internal/util';
 import {Sampler} from './types'
 
-
 const MIN_NUMBER = 1e-4;
 const MAX_NUMBER = 0xffffffffffffffff;
 
-/**
- * This class represent the probability of a tracer.
- */
+/** This class represent the probability of a tracer. */
 export class SamplerImpl {
   private traceId: string;
   private idUpperBound: number;
 
   /**
+   * Constructs a new SamplerImpl instance.
    * @param traceId Used for probability calculation
   */
   constructor(traceId?: string) {
@@ -38,7 +36,7 @@ export class SamplerImpl {
   }
 
   /**
-   * Set idUpperBound with MAX_NUMBER that is equivalent the probability be 1
+   * Sets idUpperBound with MAX_NUMBER that is equivalent the probability be 1
    * @returns a Sampler object
    */
   always(): Sampler {
@@ -47,7 +45,7 @@ export class SamplerImpl {
   }
 
   /**
-   * Set idUpperBound with MIN_NUMBER that is equivalent the probability be 0
+   * Sets idUpperBound with MIN_NUMBER that is equivalent the probability be 0
    * @returns a Sampler object
    */
   never(): Sampler {
@@ -56,7 +54,7 @@ export class SamplerImpl {
   }
 
   /**
-   * Set idUpperBound with the probability. If probability
+   * Sets idUpperBound with the probability. If probability
    * parameter is bigger then 1 set always. If probability parameter less
    * than 0, set never.
    * @param probability probability between 0 and 1

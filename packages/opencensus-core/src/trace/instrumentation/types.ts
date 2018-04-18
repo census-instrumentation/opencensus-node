@@ -16,9 +16,7 @@
 
 import {Tracer} from "../model/types";
 
-/**
- * Interface Plugin to apply patch.
- */
+/** Interface Plugin to apply patch. */
 export interface Plugin {
   // tslint:disable:no-any
   applyPatch(module: {}, tracer: Tracer, version: string): any;

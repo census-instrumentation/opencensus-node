@@ -16,18 +16,15 @@
 
 import {debug, randomSpanId} from '../../internal/util';
 import {Span, TraceContext, RootSpan} from './types';
-
 import {RootSpanImpl} from './rootspan';
 import {SpanBaseModel} from './spanbasemodel';
 
-/**
- * This class represent a span.
- */
+/** Defines a Span. */
 export class SpanImpl extends SpanBaseModel implements Span {
   private root: RootSpan;
 
   /**
-   * Constructs a new Span instance.
+   * Constructs a new SpanImpl instance.
    * @param root
    */
   constructor(root: RootSpan) {

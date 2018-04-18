@@ -19,42 +19,29 @@ import {Sampler} from './config/types';
 import {Exporter} from '../exporters/types';
 import {Config} from './config/types';
 
-//TODO: Improve JSDoc
-
-/**
- *  Main interface for tracing. Holds instances for {@link Tracer} and
- *  {@link Exporter}.
- *
- */
+/** Main interface for tracing. */
 export interface Tracing {
   
-  /**
-   * Returns the {@link Tracer} object responsible for managing a trace.
-   * @return the {@link Tracer} implementation.
-   */
+  /** Object responsible for managing a trace. */
   readonly tracer: Tracer;
 
-  /**
-   * Returns the {@link Exportert} 
-   * @return the {@link ExportComponent} implementation.
-   */
+  /** Service to send collected traces to. */
   readonly exporter: Exporter;
 
   /**
-   * Enable tracing process.
-   * @param userConfig Configuration provided by a client
+   * Enables the tracing process.
+   * @param userConfig A configuration object.
+   * @returns The tracing object.
    */
-  start(userConfig?:Config): Tracing;
+  start(userConfig?: Config): Tracing;
 
-  /**
-   * Stop tracing.
-   * 
-   */
+  /** Stops tracing. */
   stop(): void;
 
   /**
    * Registers an exporter to send the collected traces to.
    * @param exporter The exporter to send the traces to.
+   * @returns The tracing object.
    */
   registerExporter(exporter: Exporter): Tracing;
 }

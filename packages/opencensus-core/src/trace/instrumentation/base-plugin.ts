@@ -16,21 +16,28 @@
 import * as shimmer from 'shimmer';
 import {Tracer} from '../model/types';
 
-/**
- * This class represent the base to patch plugin
- */
+/** This class represent the base to patch plugin. */
 export abstract class BasePlugin {
+  /** The service to send the collected traces */
   // tslint:disable:no-any
   exporter: any;
+  /** The module name */
   moduleName: string;
+  /** A tracer object. */
   tracer: Tracer;
+  /** The module version. */
   version: string;
 
+  /**
+   * Constructs a new BasePlugin instance.
+   * @param moduleName The module name.
+   */
   constructor(moduleName: string) {
     this.moduleName = moduleName;
   }
+
   /**
-   * Set modified plugin to the context.
+   * Sets modified plugin to the context.
    * @param exporter object module to set on context
    * @param tracer tracer relating to context
    * @param version module version description
@@ -42,21 +49,42 @@ export abstract class BasePlugin {
     this.version = version;
   }
 
+  /**
+   * Wraps a function.
+   * @param nodule The module.
+   * @param name The function name.
+   * @param wrapper The wrapper.
+   */
   protected wrap(nodule, name, wrapper) {
       shimmer.wrap(nodule, name, wrapper);
   }
 
+  /**
+   * Unwraps a function.
+   * @param nodule The module.
+   * @param name The function name.
+   */
   protected unwrap(nodule, name) {
       shimmer.unwrap(nodule, name);
   }
 
+  /**
+   * Wraps one or more funcitons.
+   * @param nodule The module.
+   * @param names A list of function names.
+   * @param wrapper The wrapper.
+   */
   protected massWrap(nodule,names, wrapper) {
      shimmer.massWrap(nodule, names, wrapper);
   } 
 
+  /**
+   * Unwraps one or more functions.
+   * @param nodule The module.
+   * @param names The list of function names.
+   */
   protected massUnwrap(nodule,names) {
     shimmer.massUnwrap(nodule, names);
   } 
- 
  
 }
