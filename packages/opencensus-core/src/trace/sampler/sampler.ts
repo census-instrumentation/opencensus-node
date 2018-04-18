@@ -30,10 +30,8 @@ export class SamplerImpl {
 
   /**
    * @param traceId Used for probability calculation
-   * @param spanId todo: integration with propagation class
-   * @param isRemote todo: integration with propagation class
-   */
-  constructor(traceId?: string, spanId?: string, isRemote?: boolean) {
+  */
+  constructor(traceId?: string) {
     if (traceId) {
       this.traceId = traceId;
     }
@@ -65,7 +63,7 @@ export class SamplerImpl {
    * @returns a Sampler object
    */
   probability(probability?: number): Sampler {
-    if(!probability || probability > MAX_NUMBER) {
+    if (probability == null || probability > MAX_NUMBER) {
       return this.always();
     }
     else if (probability < MIN_NUMBER) {
@@ -94,17 +92,4 @@ export class SamplerImpl {
     }
   }
 
-  // setRate(samplerRate?:number){
-  //   if(samplerRate){
-  //     if(samplerRate <= MIN_NUMBER){
-  //       this.never();
-  //     }else if(samplerRate >= MAX_NUMBER){
-  //       this.always();
-  //     }else{
-  //       this.probability(samplerRate);
-  //     }
-  //   }else{
-  //     this.always();
-  //   }
-  // }
 }
