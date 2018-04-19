@@ -15,15 +15,29 @@
  */
 
 import {Logger, LoggerOptions} from './types';
+
 let logDriver = require('log-driver');
 
 
-export class ConsoleLogger implements Logger {
+ class ConsoleLogger implements Logger {
 
   private logger:any; 
+  static LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
 
   constructor(options?: LoggerOptions|string) {
-    this.logger = logDriver(options);
+    let opt: LoggerOptions = {};
+    if (typeof options === "string") {
+      opt = {
+        level: options
+      }
+    } else {
+      opt = options || {};
+    }
+
+    this.logger = logDriver({
+      levels:  ConsoleLogger.LEVELS,
+      level: opt.level || 'error'
+    });
   }
 
   error(message: any, ...args: any[]): void {
@@ -47,3 +61,14 @@ export class ConsoleLogger implements Logger {
   }
 }
 
+let defaultLogger = null;
+
+let logger  = function(options?: LoggerOptions|string){
+  defaultLogger = new ConsoleLogger(options);
+  logger['logger'] = defaultLogger;
+  return defaultLogger;
+};
+
+logger();
+
+export = logger;

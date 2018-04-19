@@ -26,8 +26,6 @@ export interface Logger {
 
 export interface LoggerOptions {
   level?: string;
-  levels?: string[];
   tag?: string;
 }
 
- export let logger: {(options?: LoggerOptions|string): Logger; LEVELS: string[];};
