@@ -16,11 +16,12 @@
 
 import {Logger, LoggerOptions} from './types';
 
-let logDriver = require('log-driver');
+const logDriver = require('log-driver');
 
 
  class ConsoleLogger implements Logger {
 
+  // tslint:disable:no-any
   private logger:any; 
   static LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
 
@@ -29,7 +30,7 @@ let logDriver = require('log-driver');
     if (typeof options === "string") {
       opt = {
         level: options
-      }
+      };
     } else {
       opt = options || {};
     }
@@ -40,22 +41,27 @@ let logDriver = require('log-driver');
     });
   }
 
+  // tslint:disable:no-any
   error(message: any, ...args: any[]): void {
     this.logger.error(arguments);
   }
 
+  // tslint:disable:no-any
   warn(message: any, ...args: any[]): void {
     this.logger.warn(arguments);
   }
 
+  // tslint:disable:no-any
   info(message: any, ...args: any[]): void {
     this.logger.info(arguments);
   }
 
+  // tslint:disable:no-any
   debug (message: any, ...args: any[]): void {
     this.logger.debug(arguments);
   }
 
+  // tslint:disable:no-any
   silly (message: any, ...args: any[]): void {
     this.logger.silly(arguments);
   }
@@ -63,7 +69,7 @@ let logDriver = require('log-driver');
 
 let defaultLogger = null;
 
-let logger  = function(options?: LoggerOptions|string){
+const logger  = (options?: LoggerOptions|string) => {
   defaultLogger = new ConsoleLogger(options);
   logger['logger'] = defaultLogger;
   return defaultLogger;

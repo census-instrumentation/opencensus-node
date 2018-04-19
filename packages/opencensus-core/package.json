@@ -57,6 +57,7 @@
     "async_hooks": "^1.0.0",
     "continuation-local-storage": "^3.2.1",
     "debug": "^3.1.0",
+    "intercept-stdout": "^0.1.2",
     "log-driver": "^1.2.7",
     "semver": "^5.5.0",
     "shimmer": "^1.2.0",
