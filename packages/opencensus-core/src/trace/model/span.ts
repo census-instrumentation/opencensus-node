@@ -15,9 +15,10 @@
  */
 
 import {debug, randomSpanId} from '../../internal/util';
-import {Span, TraceContext, RootSpan} from './types';
+
 import {RootSpanImpl} from './rootspan';
 import {SpanBaseModel} from './spanbasemodel';
+import {RootSpan, Span, TraceContext} from './types';
 
 /** Defines a Span. */
 export class SpanImpl extends SpanBaseModel implements Span {
@@ -61,11 +62,6 @@ export class SpanImpl extends SpanBaseModel implements Span {
 
   /** Ends the span. */
   end(): void {
-    if (!this.started) {
-      debug("calling end() on un-started span");
-      return;
-    }
-    
     super.end();
     this.notifyEnd();
     debug('ending span  %o', {

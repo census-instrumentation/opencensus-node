@@ -66,6 +66,28 @@ describe('Span', () => {
   });
 
   /**
+   * startTime, endTime and durantion proprieties called before start() - no
+   * clock instance created
+   */
+  describe('get time properties before start()', () => {
+    let span;
+    before(() => {
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      span = new SpanImpl(rootSpan);
+    });
+    it('should get startTime() return null', () => {
+      assert.equal(span.startTime, null);
+    });
+    it('should get endTime() return null', () => {
+      assert.equal(span.endTime, null);
+    });
+    it('should get duration() return null', () => {
+      assert.equal(span.duration, null);
+    });
+  });
+
+  /**
    * Should start a span instance
    */
   describe('start()', () => {
@@ -77,6 +99,22 @@ describe('Span', () => {
       span.start();
 
       assert.ok(span.started);
+    });
+  });
+
+  /**
+   * Should not change the initial startTime
+   */
+  describe('start() an already started span', () => {
+    it('should not change the initial startTime', () => {
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      const span = new SpanImpl(rootSpan);
+      span.start();
+      const initialStartTime = span.startTime;
+      span.start();
+
+      assert.equal(span.startTime, initialStartTime);
     });
   });
 
@@ -99,7 +137,7 @@ describe('Span', () => {
   /**
    * Should not end a span instance
    */
-  describe('end() before start the span', () => {
+  describe('end() before start()', () => {
     it('should not end a span instance', () => {
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.start();
@@ -108,6 +146,23 @@ describe('Span', () => {
       span.end();
 
       assert.ok(!span.ended);
+    });
+  });
+
+  /**
+   * Should not change the endTime
+   */
+  describe('end() an already ended span', () => {
+    it('should not change the endTime', () => {
+      const rootSpan = new RootSpanImpl(tracer);
+      rootSpan.start();
+      const span = new SpanImpl(rootSpan);
+      span.start();
+      span.end();
+      const initialEndTime = span.endTime;
+      span.end();
+
+      assert.equal(span.endTime.getTime(), initialEndTime.getTime());
     });
   });
 

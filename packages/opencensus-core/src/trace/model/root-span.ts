@@ -117,7 +117,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
           'calling %s.startSpan() on un-started %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
       return;
-    }    
+    }
     const newSpan = new SpanImpl(this);
     if (name) {
       newSpan.name = name;
