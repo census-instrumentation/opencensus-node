@@ -16,9 +16,7 @@
 
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
-import * as mocha from 'mocha';
 
-import {Exporter} from '../src/exporters/types';
 import {TracerConfig} from '../src/trace/config/types';
 import {RootSpanImpl} from '../src/trace/model/rootspan';
 import {SpanImpl} from '../src/trace/model/span';
