@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
- // tslint:disable:no-any
+// tslint:disable:no-any
 export type LogFunction = (message: any, ...args: any[]) => void;
 
+/** Defines an logger interface. */
 export interface Logger {
   error: LogFunction;
   warn: LogFunction;
@@ -25,8 +26,8 @@ export interface Logger {
   silly: LogFunction;
 }
 
+/** Defines an logger options interface. */
 export interface LoggerOptions {
   level?: string;
   tag?: string;
 }
-

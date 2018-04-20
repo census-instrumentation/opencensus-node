@@ -22,44 +22,42 @@ const LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
 let consoleTxt = '';
 
 
-
-
 describe('ConsoleLogger', () => {
   const intercept = require('intercept-stdout');
   const unhookIntercept = intercept((txt) => {
     consoleTxt = txt;
     return txt;
   });
+
+/** Should create a new ConsoleLogger */
   describe('new ConsoleLogger()', () => {
-    it('should levels from consoleLogger equals default levels', () => {
+    it('should consoleLogger with default levels', () => {
       const consoleLogger = logger();
       assert.equal(LEVELS.length, consoleLogger.logger.levels.length);
     });
 
-    it('should level from consoleLogger equal error', () => {
+    it('should consoleLogger with error', () => {
       const consoleLogger = logger(LEVELS[0]);
       assert.strictEqual(LEVELS[0], consoleLogger.logger.level);
     });
   });
 
-  /**
-   * 
-   */
+  /** Should logger only error log */
   describe('error logger', () => {
     const consoleLogger = logger(LEVELS[0]);
 
-    it('should logger error in console', () => {
+    it('should logger error', () => {
       consoleTxt = '';
-      consoleLogger.error('error test logger in console');
+      consoleLogger.error('error test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('error');
 
       assert.ok(validateString >= 0);
     });
 
-    it('should not logger warn in console', () => {
+    it('should not logger warn', () => {
       consoleTxt = '';
-      consoleLogger.warn('warn test logger in console');
+      consoleLogger.warn('warn test logger');
       unhookIntercept();
 
       const validateString = consoleTxt.indexOf('warn');
@@ -67,9 +65,9 @@ describe('ConsoleLogger', () => {
       assert.equal(validateString, -1);
     });
 
-    it('should not logger info in console', () => {
+    it('should not logger info', () => {
       consoleTxt = '';
-      consoleLogger.info('info test logger in console');
+      consoleLogger.info('info test logger');
       unhookIntercept();
 
       const validateString = consoleTxt.indexOf('info');
@@ -77,30 +75,31 @@ describe('ConsoleLogger', () => {
       assert.equal(validateString, -1);
     });
 
-    it('should not logger debug in console', () => {
+    it('should not logger debug', () => {
       consoleTxt = '';
-      consoleLogger.debug('debug test logger in console');
+      consoleLogger.debug('debug test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('debug');
 
       assert.equal(validateString, -1);
     });
 
-    it('should not logger silly in console', () => {
+    it('should not logger silly', () => {
       consoleTxt = '';
-      consoleLogger.silly('silly test logger in console');
+      consoleLogger.silly('silly test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('silly');
 
       assert.equal(validateString, -1);
     });
   });
-
+  
+  /** Should logger error, warn and info log */
    describe('info logger', () => {
      
     const consoleLogger = logger(LEVELS[2]);
 
-    it('should logger error in console', () => {
+    it('should logger error', () => {
       const intercept = require('intercept-stdout');
       const unhookIntercept = intercept((txt) => {
         consoleTxt = txt;
@@ -108,14 +107,14 @@ describe('ConsoleLogger', () => {
       });
   
       consoleTxt = '';
-      consoleLogger.error('error test logger in console');
+      consoleLogger.error('error test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('error');
 
       assert.ok(validateString >= 0);
     });
 
-    it('should not logger warn in console', () => {
+    it('should not logger warn', () => {
       const intercept = require('intercept-stdout');
       const unhookIntercept = intercept((txt) => {
         consoleTxt = txt;
@@ -123,14 +122,14 @@ describe('ConsoleLogger', () => {
       });
   
       consoleTxt = '';
-      consoleLogger.warn('warn test logger in console');
+      consoleLogger.warn('warn test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('warn');
 
       assert.ok(validateString >= 0);
     });
 
-    it('should logger info in console', () => {
+    it('should logger info', () => {
       const intercept = require('intercept-stdout');
       const unhookIntercept = intercept((txt) => {
         consoleTxt = txt;
@@ -138,14 +137,14 @@ describe('ConsoleLogger', () => {
       });
   
       consoleTxt = '';
-      consoleLogger.info('info test logger in console');
+      consoleLogger.info('info test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('info');
 
       assert.ok(validateString >= 0);
     });
 
-    it('should not logger debug in console', () => {
+    it('should not logger debug', () => {
       const intercept = require('intercept-stdout');
       const unhookIntercept = intercept((txt) => {
         consoleTxt = txt;
@@ -153,14 +152,14 @@ describe('ConsoleLogger', () => {
       });
   
       consoleTxt = '';
-      consoleLogger.debug('debug test logger in console');
+      consoleLogger.debug('debug test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('debug');
 
       assert.equal(validateString, -1);
     });
 
-    it('should not logger silly in console', () => {
+    it('should not logger silly', () => {
       const intercept = require('intercept-stdout');
       const unhookIntercept = intercept((txt) => {
         consoleTxt = txt;
@@ -168,7 +167,7 @@ describe('ConsoleLogger', () => {
       });
   
       consoleTxt = '';
-      consoleLogger.silly('silly test logger in console');
+      consoleLogger.silly('silly test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('silly');
 
