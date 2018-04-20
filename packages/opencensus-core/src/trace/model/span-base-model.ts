@@ -19,6 +19,7 @@ import {debug, randomSpanId} from '../../internal/util';
 import {Sampler} from '../config/types';
 
 import {Annotation, Attributes, Link, MessageEvent, Span, TraceContext} from './types';
+import {Logger} from '../../common/types';
 
 /** Defines a base model for spans. */
 export abstract class SpanBaseModel implements Span {
@@ -33,6 +34,8 @@ export abstract class SpanBaseModel implements Span {
   private truncated = false;
   /** The Span ID of this span */
   readonly id: string;
+  /** An object to log information to */
+  logger: Logger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
   attributes: Attributes = {};
   /** A text annotation with a set of attributes. */
@@ -78,7 +81,7 @@ export abstract class SpanBaseModel implements Span {
    */
   get startTime(): Date {
     if (!this.clock) {
-      debug('calling startTime() on null clock');
+      this.logger.debug('calling startTime() on null clock');
       return null;
     }
 
@@ -91,7 +94,7 @@ export abstract class SpanBaseModel implements Span {
    */
   get endTime(): Date {
     if (!this.clock) {
-      debug('calling endTime() on null clock');
+      this.logger.debug('calling endTime() on null clock');
       return null;
     }
 
@@ -104,7 +107,7 @@ export abstract class SpanBaseModel implements Span {
    */
   get duration(): number {
     if (!this.clock) {
-      debug('calling duration() on null clock');
+      this.logger.debug('calling duration() on null clock');
       return null;
     }
 
@@ -176,7 +179,7 @@ export abstract class SpanBaseModel implements Span {
   /** Starts the span. */
   start() {
     if (this.started) {
-      debug(
+      this.logger.debug(
           'calling %s.start() on already started %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
       return;
@@ -188,13 +191,13 @@ export abstract class SpanBaseModel implements Span {
   /** Ends the span. */
   end(): void {
     if (this.ended) {
-      debug(
+      this.logger.debug(
           'calling %s.end() on already ended %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
       return;
     }
     if (!this.started) {
-      debug(
+      this.logger.debug(
           'calling %s.end() on un-started %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
       return;
@@ -210,6 +213,7 @@ export abstract class SpanBaseModel implements Span {
     // TODO: review
     this.truncated = true;
     this.end();
-    debug('truncating %s  %o', this.className, {id: this.id, name: this.name});
+    this.logger.debug(
+      'truncating %s  %o', this.className, {id: this.id, name: this.name});
   }
 }

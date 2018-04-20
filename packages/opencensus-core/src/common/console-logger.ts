@@ -24,7 +24,7 @@ const logDriver = require('log-driver');
  */
 class ConsoleLogger implements Logger {
   // tslint:disable:no-any
-  private logger: any;
+  private logger: any; 
   static LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
 
   /**
@@ -39,8 +39,10 @@ class ConsoleLogger implements Logger {
       opt = options || {};
     }
 
-    this.logger =
-        logDriver({levels: ConsoleLogger.LEVELS, level: opt.level || 'error'});
+    this.logger = logDriver({
+      levels:  ConsoleLogger.LEVELS,
+      level: opt.level || 'silly'
+    });
   }
 
   /**

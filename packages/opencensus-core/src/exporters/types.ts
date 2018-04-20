@@ -17,9 +17,12 @@
 
 import {OnEndSpanEventListener, RootSpan} from '../trace/model/types';
 import {BufferConfig} from '../trace/config/types';
+import {Logger} from '../common/types'
 
 /** Defines an exporter interface. */
 export interface Exporter extends OnEndSpanEventListener {
+  /** An object to log information to */
+  logger: Logger
   
   /**
    * Sends a list of root spans to the service.

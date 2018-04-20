@@ -1,5 +1,6 @@
 import {Exporter} from '../../exporters/types';
 import {PluginNames} from '../instrumentation/types';
+import {Logger} from '../../common/types';
 
 /** This interface represent the probability of a tracer. */
 export interface Sampler {
@@ -37,6 +38,7 @@ export interface Sampler {
 export interface BufferConfig {
   bufferSize?: number;
   bufferTimeout?: number;
+  logger?: Logger;
 }
 
 /** Defines tracer configuration parameters */
@@ -45,6 +47,8 @@ export interface TracerConfig {
   samplingRate?: number;
   /** Determines the ignored (or blacklisted) URLs */
   ignoreUrls?: Array<string|RegExp>;
+  /** A logger object to show infos */
+  logger?: Logger;
 }
 
 /** Available configuration options. */
@@ -53,6 +57,7 @@ export interface TracingConfig {
   maximumLabelValueSize?: number;
   plugins?: PluginNames;
   exporter?: Exporter;
+  logger?: Logger;
 }
 
 export type Config = TracingConfig&TracerConfig&BufferConfig;

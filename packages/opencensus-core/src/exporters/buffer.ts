@@ -19,9 +19,11 @@ import * as uuidv4 from 'uuid/v4';
 import {debug} from '../internal/util';
 import {RootSpan} from '../trace/model/types';
 import {OnEndSpanEventListener} from '../trace/model/types';
-
+import {Logger} from '../common/types';
 import {Exporter} from './types';
 import {Config, BufferConfig} from '../trace/config/types';
+
+import * as logger from '../common/consolelogger';
 
 
 /** Controls the sending of traces to exporters. */
@@ -38,6 +40,8 @@ export class Buffer {
   private resetTimeout = false;
   /** Indicates when the buffer timeout is running */
   private bufferTimeoutInProgress = false;
+  /** An object to log information to */
+  logger: Logger;
 
   /**
    * Constructs a new Buffer instance.
@@ -46,6 +50,7 @@ export class Buffer {
    */
   constructor(exporter: Exporter, config: BufferConfig) {
     this.exporter = exporter;
+    this.logger = config.logger || logger();
     this.bufferSize = config.bufferSize;
     this.bufferTimeout = config.bufferTimeout;
     return this;
@@ -66,7 +71,7 @@ export class Buffer {
    */
   addToBuffer(trace: RootSpan) {
     this.queue.push(trace);
-    debug('BUFFER: added new trace');
+    this.logger.debug('BUFFER: added new trace');
 
     if (this.queue.length > this.bufferSize) {
       this.flush();
@@ -83,13 +88,13 @@ export class Buffer {
 
   /** Reset the buffer timeout */
   private resetBufferTimeout() {
-    debug('BUFFER: reset timeout');
+    this.logger.debug('BUFFER: reset timeout');
     this.resetTimeout = true;
   }
 
   /** Start the buffer timeout, when finished calls flush method */
   private setBufferTimeout() {
-    debug('BUFFER: set timerout');
+    this.logger.debug('BUFFER: set timerout');
     this.bufferTimeoutInProgress = true;
 
     setTimeout(() => {

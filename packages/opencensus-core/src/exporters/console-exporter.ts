@@ -17,10 +17,12 @@
 import {Exporter, ExporterConfig} from '../exporters/types';
 import {RootSpan} from '../trace/model/types';
 import {Buffer} from './buffer';
+import {Logger} from '../common/types';
 
 
 /** Do not send span data */
 export class NoopExporter implements Exporter {
+  logger: Logger
   onEndSpan(root: RootSpan) {}
   publish(rootSpans: RootSpan[]) {}
 }
@@ -29,6 +31,7 @@ export class NoopExporter implements Exporter {
 export class ConsoleLogExporter implements Exporter {
   /** Buffer object to store the spans. */
   private buffer: Buffer;
+  logger: Logger;
 
   /**
    * Constructs a new ConsoleLogExporter instance.
@@ -37,6 +40,7 @@ export class ConsoleLogExporter implements Exporter {
    */
   constructor(config: ExporterConfig) {
     this.buffer = new Buffer(this, config);
+    this.logger = config.logger;
   }
 
   /**

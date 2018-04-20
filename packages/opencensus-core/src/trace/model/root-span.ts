@@ -24,6 +24,8 @@ import {SpanBaseModel} from './spanbasemodel';
 import {TracerImpl} from './tracer';
 import {OnEndSpanEventListener, RootSpan, Span, TraceContext, TraceOptions, Tracer} from './types';
 
+import * as logger from '../../common/consolelogger';
+
 /** Defines a root span */
 export class RootSpanImpl extends SpanBaseModel implements RootSpan {
   /** A tracer object */
@@ -50,6 +52,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
       this.parentSpanId = context.traceContext.spanId || '';
     }
     this.spansLocal = [];
+    this.logger = tracer.logger || logger();
   }
 
   /** Gets span list from rootspan instance. */
@@ -65,7 +68,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
   /** Starts a rootspan instance. */
   start() {
     super.start();
-    debug(
+    this.logger.debug(
         'starting %s  %o', this.className,
         {traceId: this.traceId, id: this.id, parentSpanId: this.parentSpanId});
   }
@@ -89,7 +92,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
    * @param span Span ended.
    */
   onEndSpan(span: Span) {
-    debug('ending span  %o', {
+    this.logger.debug('ending span  %o', {
       id: span.id,
       traceId: span.traceId,
       name: span.name,
@@ -107,13 +110,13 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
    */
   startSpan(name: string, type: string, parentSpanId?: string) {
     if (this.ended) {
-      debug(
+      this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
       return;
     }
     if (!this.started) {
-      debug(
+      this.logger.debug(
           'calling %s.startSpan() on un-started %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
       return;

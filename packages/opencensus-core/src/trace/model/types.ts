@@ -15,6 +15,7 @@
  */
 
 import {Config, Sampler, TracerConfig} from '../config/types';
+import {Logger} from '../../common/types'
 
 
 /** Default type for functions */
@@ -101,6 +102,9 @@ export interface Span {
 
   /** Type of span. Used to specify additional relationships between spans */
   type: string;
+
+  /** An object to log information to */
+  logger: Logger;
 
   /** A final status for this span */
   status: number;
@@ -214,6 +218,9 @@ export interface Tracer {
 
   /** A sampler that will decide if the span will be sampled or not */
   sampler: Sampler;
+
+  /** A configuration for starting the tracer */
+  logger: Logger;
 
   /** Get the eventListeners from tracer instance */
   readonly eventListeners: OnEndSpanEventListener[];

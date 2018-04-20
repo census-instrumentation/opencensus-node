@@ -20,6 +20,8 @@ import {RootSpanImpl} from './rootspan';
 import {SpanBaseModel} from './spanbasemodel';
 import {RootSpan, Span, TraceContext} from './types';
 
+import * as logger from '../../common/consolelogger';
+
 /** Defines a Span. */
 export class SpanImpl extends SpanBaseModel implements Span {
   private root: RootSpan;
@@ -31,6 +33,7 @@ export class SpanImpl extends SpanBaseModel implements Span {
   constructor(root: RootSpan) {
     super();
     this.root = root;
+    this.logger = this.root.logger || logger();
   }
 
   /** Gets trace id of span. */
@@ -50,7 +53,7 @@ export class SpanImpl extends SpanBaseModel implements Span {
   /** Starts the span instance. */
   start() {
     super.start();
-    debug(
+    this.logger.debug(
         'starting span  %o',
         {traceId: this.traceId, spanId: this.id, name: this.name});
   }
@@ -64,7 +67,7 @@ export class SpanImpl extends SpanBaseModel implements Span {
   end(): void {
     super.end();
     this.notifyEnd();
-    debug('ending span  %o', {
+    this.logger.debug('ending span  %o', {
       spanId: this.id,
       traceId: this.traceId,
       name: this.name,
