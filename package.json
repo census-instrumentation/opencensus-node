@@ -1,14 +1,12 @@
 {
-  "name": "@opencensus/opencensus-core",
+  "name": "@opencensus/opencensus-base",
   "version": "0.0.1",
   "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.js",
   "repository": "census-instrumentation/opencensus-node",
   "scripts": {
-    "build": "node_modules/.bin/tsc --declaration",
-    "test": "npm run script run-unit-tests",
-    "clean": "rimraf build/*"
+    "postinstall": "scripts/update_lerna_modules_links.sh"
   },
   "keywords": [
     "opencensus",
@@ -33,23 +31,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/continuation-local-storage": "^3.2.1",
-    "@types/debug": "0.0.30",
-    "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.7",
-    "@types/semver": "^5.5.0",
-    "@types/uuid": "^3.4.3",
-    "gts": "^0.5.1",
-    "mocha": "^5.0.4",
-    "ncp": "^2.0.0",
-    "ts-node": "^4.0.0",
+    "lerna": "^2.10.1",
     "typescript": "^2.7.2"
-  },
-  "dependencies": {
-    "async_hooks": "^1.0.0",
-    "continuation-local-storage": "^3.2.1",
-    "debug": "^3.1.0",
-    "semver": "^5.5.0",
-    "uuid": "^3.2.1"
   }
 }
