@@ -16,15 +16,15 @@
 
 import * as assert from 'assert';
 import * as mocha from 'mocha';
-import * as logger from '../src/common/consolelogger';
 
-import {Logger} from '../src/common/types'
-import {RootSpanImpl} from '../src/trace/model/rootspan'
-import {TracerImpl} from '../src/trace/model/tracer';
-import {TracerConfig, BufferConfig} from '../src/trace/config/types';
-import {TraceOptions} from '../src/trace/model/types';
+import * as logger from '../src/common/consolelogger';
+import {Logger} from '../src/common/types';
 import {Buffer} from '../src/exporters/buffer';
-import {ConsoleLogExporter} from '../src/exporters/consolelog-exporter'
+import {ConsoleExporter} from '../src/exporters/consolelog-exporter';
+import {BufferConfig, TracerConfig} from '../src/trace/config/types';
+import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {TracerImpl} from '../src/trace/model/tracer';
+import {TraceOptions} from '../src/trace/model/types';
 
 const LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
 let consoleTxt = '';
@@ -36,7 +36,7 @@ describe('ConsoleLogger', () => {
     return txt;
   });
 
-/** Should create a new ConsoleLogger */
+  /** Should create a new ConsoleLogger */
   describe('new ConsoleLogger()', () => {
     it('should consoleLogger with default levels', () => {
       const consoleLogger = logger();
@@ -100,10 +100,9 @@ describe('ConsoleLogger', () => {
       assert.equal(validateString, -1);
     });
   });
-  
+
   /** Should logger error, warn and info log */
-   describe('info logger', () => {
-     
+  describe('info logger', () => {
     const consoleLogger = logger(LEVELS[2]);
 
     it('should logger error', () => {
@@ -112,7 +111,7 @@ describe('ConsoleLogger', () => {
         consoleTxt = txt;
         return txt;
       });
-  
+
       consoleTxt = '';
       consoleLogger.error('error test logger');
       unhookIntercept();
@@ -127,7 +126,7 @@ describe('ConsoleLogger', () => {
         consoleTxt = txt;
         return txt;
       });
-  
+
       consoleTxt = '';
       consoleLogger.warn('warn test logger');
       unhookIntercept();
@@ -142,7 +141,7 @@ describe('ConsoleLogger', () => {
         consoleTxt = txt;
         return txt;
       });
-  
+
       consoleTxt = '';
       consoleLogger.info('info test logger');
       unhookIntercept();
@@ -157,7 +156,7 @@ describe('ConsoleLogger', () => {
         consoleTxt = txt;
         return txt;
       });
-  
+
       consoleTxt = '';
       consoleLogger.debug('debug test logger');
       unhookIntercept();
@@ -172,7 +171,7 @@ describe('ConsoleLogger', () => {
         consoleTxt = txt;
         return txt;
       });
-  
+
       consoleTxt = '';
       consoleLogger.silly('silly test logger');
       unhookIntercept();
@@ -185,13 +184,10 @@ describe('ConsoleLogger', () => {
   describe('Model classes has a logger', () => {
     // tslint:disable:no-any
     function instanceOfLogger(object: any): object is Logger {
-      return 'error' in object
-      && 'warn' in object
-      && 'info' in object
-      && 'debug' in object
-      && 'silly' in object;
+      return 'error' in object && 'warn' in object && 'info' in object &&
+          'debug' in object && 'silly' in object;
     }
-    
+
     const consoleLogger = logger('debug');
 
     const tracer = new TracerImpl();
@@ -204,23 +200,22 @@ describe('ConsoleLogger', () => {
     it('checks if RootSpanImpl and SpanImpl has a logger', () => {
       tracer.startRootSpan({name: 'rootSpanTest'} as TraceOptions, (root) => {
         assert.ok(instanceOfLogger(root.logger));
-        
-        let span = tracer.startSpan('spanTest')
+
+        const span = tracer.startSpan('spanTest');
         assert.ok(instanceOfLogger(span.logger));
       });
     });
-    
-    let exporterConfig = {logger: consoleLogger};
-    let exporter = new ConsoleLogExporter(exporterConfig);
-    
+
+    const exporterConfig = {logger: consoleLogger};
+    const exporter = new ConsoleExporter(exporterConfig);
+
     it('checks if exporter has a logger', () => {
       assert.ok(instanceOfLogger(exporter.logger));
     });
 
     it('checks if buffer has a logger', () => {
-      let buffer = new Buffer(exporter, exporterConfig)
+      const buffer = new Buffer(exporter, exporterConfig);
       assert.ok(instanceOfLogger(buffer.logger));
     });
   });
-  
 });

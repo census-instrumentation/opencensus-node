@@ -18,7 +18,7 @@ import * as assert from 'assert';
 import * as mocha from 'mocha';
 
 import {Buffer} from '../src/exporters/buffer';
-import {ConsoleLogExporter, NoopExporter} from '../src/exporters/consolelog-exporter';
+import {ConsoleExporter, NoopExporter} from '../src/exporters/consolelog-exporter';
 import {RootSpanImpl} from '../src/trace/model/rootspan';
 import {TracerImpl} from '../src/trace/model/tracer';
 import {RootSpan} from '../src/trace/model/types';
@@ -60,7 +60,7 @@ describe('ConsoleLogExporter', () => {
   /** Should end a span */
   describe('onEndSpan()', () => {
     it('should end a span', () => {
-      const exporter = new ConsoleLogExporter(defaultBufferConfig);
+      const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpanImpl(tracer);
       exporter.onEndSpan(rootSpan);
       assert.ok(true);
@@ -70,7 +70,7 @@ describe('ConsoleLogExporter', () => {
   /** Should publish the rootspan in queue */
   describe('publish()', () => {
     it('should publish the rootspans in queue', () => {
-      const exporter = new ConsoleLogExporter(defaultBufferConfig);
+      const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpanImpl(tracer);
       rootSpan.startSpan('name', 'type', rootSpan.traceId);
       const queue: RootSpan[] = [];

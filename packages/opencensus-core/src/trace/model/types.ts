@@ -15,7 +15,7 @@
  */
 
 import {Config, Sampler, TracerConfig} from '../config/types';
-import {Logger} from '../../common/types'
+import {Logger} from '../../common/types';
 
 
 /** Default type for functions */

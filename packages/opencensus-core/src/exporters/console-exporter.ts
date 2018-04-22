@@ -22,13 +22,13 @@ import {Logger} from '../common/types';
 
 /** Do not send span data */
 export class NoopExporter implements Exporter {
-  logger: Logger
+  logger: Logger;
   onEndSpan(root: RootSpan) {}
   publish(rootSpans: RootSpan[]) {}
 }
 
 /** Format and sends span data to the console. */
-export class ConsoleLogExporter implements Exporter {
+export class ConsoleExporter implements Exporter {
   /** Buffer object to store the spans. */
   private buffer: Buffer;
   logger: Logger;
