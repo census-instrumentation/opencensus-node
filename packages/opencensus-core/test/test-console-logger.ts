@@ -17,12 +17,12 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import * as logger from '../src/common/consolelogger';
+import * as logger from '../src/common/console-logger';
 import {Logger} from '../src/common/types';
 import {Buffer} from '../src/exporters/buffer';
-import {ConsoleExporter} from '../src/exporters/consolelog-exporter';
+import {ConsoleExporter} from '../src/exporters/console-exporter';
 import {BufferConfig, TracerConfig} from '../src/trace/config/types';
-import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {RootSpanImpl} from '../src/trace/model/root-span';
 import {TracerImpl} from '../src/trace/model/tracer';
 import {TraceOptions} from '../src/trace/model/types';
 

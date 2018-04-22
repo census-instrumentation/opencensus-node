@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Config, Sampler, TracerConfig} from '../config/types';
+import {Config, TracerConfig} from '../config/types';
+import {Sampler} from '../sampler/types';
 import {Logger} from '../../common/types';
 
 
@@ -156,7 +157,7 @@ export interface Span {
    * @param key Describes the value added.
    * @param value The result of an operation.
    */
-  addAtribute(key: string, value: string): void;
+  addAttribute(key: string, value: string): void;
 
   /**
    * Adds an annotation to the span.
@@ -254,9 +255,9 @@ export interface Tracer {
 
   /**
    * Register a OnEndSpanEventListener on the tracer instance
-   * @param listner An OnEndSpanEventListener instance
+   * @param listener An OnEndSpanEventListener instance
    */
-  registerEndSpanListener(listner: OnEndSpanEventListener): void;
+  registerEndSpanListener(listener: OnEndSpanEventListener): void;
 
   /** Clear the currentRootSpan from tracer instance */
   clearCurrentTrace(): void;

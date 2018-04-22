@@ -15,7 +15,7 @@
  */
 
 import {Tracer} from './model/types';
-import {Sampler} from './config/types';
+import {Sampler} from './sampler/types';
 import {Exporter} from '../exporters/types';
 import {Config} from './config/types';
 

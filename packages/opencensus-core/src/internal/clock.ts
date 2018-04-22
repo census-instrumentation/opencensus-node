@@ -49,21 +49,6 @@ export class Clock {
     return ns / 1e6;
   }
 
-  /**
-   * Compares clock with another one.
-   * @param timer A clock object to compare.
-   */
-  offset(timer: Clock): number {
-    const a = timer.hrtime;
-    const b = this.hrtime;
-    const ns = (b[0] - a[0]) * 1e9 + (b[1] - a[1]);
-    return ns / 1e6;
-  }
-
-  /** Gets the time in high definition. */
-  get hrtime(): [number, number] {
-    return this.hrtimeLocal;
-  }
 
   /** Starts the clock. */
   get startTime(): Date {

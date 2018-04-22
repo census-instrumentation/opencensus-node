@@ -18,8 +18,8 @@ import * as assert from 'assert';
 import * as mocha from 'mocha';
 
 import {Buffer} from '../src/exporters/buffer';
-import {NoopExporter} from '../src/exporters/consolelog-exporter';
-import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {NoopExporter} from '../src/exporters/console-exporter';
+import {RootSpanImpl} from '../src/trace/model/root-span';
 import {TracerImpl} from '../src/trace/model/tracer';
 
 const exporter = new NoopExporter();

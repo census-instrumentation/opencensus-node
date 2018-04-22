@@ -16,18 +16,20 @@
 
 import * as cls from '../../internal/cls';
 import {debug} from '../../internal/util';
-import {SamplerImpl} from '../config/sampler';
-import {Sampler, TracerConfig} from '../config/types';
+import {SamplerImpl} from '../sampler/sampler';
+import {TracerConfig} from '../config/types';
+import {Sampler} from '../sampler/types';
+
 import {Config} from '../config/types';
 
-import {RootSpanImpl} from './rootspan';
+import {RootSpanImpl} from './root-span';
 import {SpanImpl} from './span';
 import {RootSpan, Span} from './types';
 import {TraceOptions, Tracer} from './types';
 import {Func, OnEndSpanEventListener} from './types';
 import {Logger} from '../../common/types';
 
-import * as logger from '../../common/consolelogger';
+import * as logger from '../../common/console-logger';
 
 /**
  * This class represent a tracer.
@@ -181,7 +183,7 @@ export class TracerImpl implements Tracer {
     }
 
     // This is safe because isActive checks the value of this.namespace.
-    const namespace = this.contextManager as cls.Namespace;
+    const namespace = this.contextManager;
     return namespace.bind<T>(fn);
   }
 
@@ -195,7 +197,7 @@ export class TracerImpl implements Tracer {
     }
 
     // This is safe because isActive checks the value of this.namespace.
-    const namespace = this.contextManager as cls.Namespace;
+    const namespace = this.contextManager;
     namespace.bindEmitter(emitter);
   }
 }

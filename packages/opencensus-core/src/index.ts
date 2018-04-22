@@ -19,24 +19,25 @@
 export * from './trace/types';
 export * from './trace/model/types';
 export * from './trace/config/types';
+export * from './trace/sampler/types';
 export * from './trace/instrumentation/types';
 export * from './exporters/types';
 export * from './common/types';
 
 // domain models impls
-export * from './trace/model/rootspan';
+export * from './trace/model/root-span';
 export * from './trace/model/span';
 export * from './trace/model/tracer';
 
 // sampler impl
-export * from './trace/config/sampler';
+export * from './trace/sampler/sampler';
 
 // base instrumetation class
-export * from './trace/instrumentation/baseplugin';
+export * from './trace/instrumentation/base-plugin';
 
 // console exporter and buffer impls
 export * from './exporters/buffer';
-export * from './exporters/consolelog-exporter';
+export * from './exporters/console-exporter';
 
 // util
 export * from './internal/util';

@@ -16,11 +16,11 @@
 
 import {debug, randomSpanId} from '../../internal/util';
 
-import {RootSpanImpl} from './rootspan';
-import {SpanBaseModel} from './spanbasemodel';
+import {RootSpanImpl} from './root-span';
+import {SpanBaseModel} from './span-base-model';
 import {RootSpan, Span, TraceContext} from './types';
 
-import * as logger from '../../common/consolelogger';
+import * as logger from '../../common/console-logger';
 
 /** Defines a Span. */
 export class SpanImpl extends SpanBaseModel implements Span {

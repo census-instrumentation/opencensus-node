@@ -17,9 +17,9 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import {SamplerImpl} from '../src/trace/config/sampler';
-import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {RootSpanImpl} from '../src/trace/model/root-span';
 import {TracerImpl} from '../src/trace/model/tracer';
+import {SamplerImpl} from '../src/trace/sampler/sampler';
 
 const tracer = new TracerImpl();
 
@@ -40,7 +40,7 @@ describe('Sampler', () => {
   describe('new Sampler(traceId)', () => {
     it('should create a Sampler instance', () => {
       const root = new RootSpanImpl(tracer);
-      const sampler = new SamplerImpl(root.traceId);
+      const sampler = new SamplerImpl();
       assert.ok(sampler instanceof SamplerImpl);
     });
   });

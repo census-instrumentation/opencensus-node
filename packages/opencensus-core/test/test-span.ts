@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {RootSpanImpl} from '../src/trace/model/root-span';
 import {SpanImpl} from '../src/trace/model/span';
 import {TracerImpl} from '../src/trace/model/tracer';
 import {Annotation, Attributes, Link, MessageEvent, Span} from '../src/trace/model/types';
@@ -178,7 +178,7 @@ describe('Span', () => {
       span.start();
 
       ['String', 'Number', 'Boolean'].map(attType => {
-        span.addAtribute('testKey' + attType, 'testValue' + attType);
+        span.addAttribute('testKey' + attType, 'testValue' + attType);
         assert.equal(
             span.attributes['testKey' + attType], 'testValue' + attType);
       });

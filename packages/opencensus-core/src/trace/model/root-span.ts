@@ -20,11 +20,11 @@ import {Clock} from '../../internal/clock';
 import {debug} from '../../internal/util';
 
 import {SpanImpl} from './span';
-import {SpanBaseModel} from './spanbasemodel';
+import {SpanBaseModel} from './span-base-model';
 import {TracerImpl} from './tracer';
 import {OnEndSpanEventListener, RootSpan, Span, TraceContext, TraceOptions, Tracer} from './types';
 
-import * as logger from '../../common/consolelogger';
+import * as logger from '../../common/console-logger';
 
 /** Defines a root span */
 export class RootSpanImpl extends SpanBaseModel implements RootSpan {

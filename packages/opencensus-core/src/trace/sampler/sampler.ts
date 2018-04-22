@@ -21,19 +21,13 @@ const MIN_NUMBER = 1e-4;
 const MAX_NUMBER = 0xffffffffffffffff;
 
 /** This class represent the probability of a tracer. */
-export class SamplerImpl {
-  private traceId: string;
+export class SamplerImpl implements Sampler {
   private idUpperBound: number;
 
   /**
    * Constructs a new SamplerImpl instance.
-   * @param traceId Used for probability calculation
    */
-  constructor(traceId?: string) {
-    if (traceId) {
-      this.traceId = traceId;
-    }
-  }
+  constructor() {}
 
   /**
    * Sets idUpperBound with MAX_NUMBER that is equivalent the probability be 1
@@ -77,7 +71,7 @@ export class SamplerImpl {
    * False if the traceId is not in probability.
    */
   shouldSample(traceId: string): boolean {
-    const LOWER_BYTES = traceId.substring(16);
+    const LOWER_BYTES = traceId?traceId.substring(16):'0';
     // tslint:disable-next-line:ban Needed to parse hexadecimal.
     const LOWER_LONG = parseInt(LOWER_BYTES, 16);
 

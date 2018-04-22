@@ -23,7 +23,7 @@ import {Logger} from '../common/types';
 import {Exporter} from './types';
 import {Config, BufferConfig} from '../trace/config/types';
 
-import * as logger from '../common/consolelogger';
+import * as logger from '../common/console-logger';
 
 
 /** Controls the sending of traces to exporters. */

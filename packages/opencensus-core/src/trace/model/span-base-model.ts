@@ -16,7 +16,7 @@
 
 import {Clock} from '../../internal/clock';
 import {debug, randomSpanId} from '../../internal/util';
-import {Sampler} from '../config/types';
+import {Sampler} from '../sampler/types';
 
 import {Annotation, Attributes, Link, MessageEvent, Span, TraceContext} from './types';
 import {Logger} from '../../common/types';
@@ -128,7 +128,7 @@ export abstract class SpanBaseModel implements Span {
    * @param key Describes the value added.
    * @param value The result of an operation.
    */
-  addAtribute(key: string, value: string|number|boolean) {
+  addAttribute(key: string, value: string|number|boolean) {
     this.attributes[key] = value;
   }
 

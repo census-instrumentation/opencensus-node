@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 import * as shimmer from 'shimmer';
+import {Plugin} from './types';
 import {Tracer} from '../model/types';
 
 /** This class represent the base to patch plugin. */
-export abstract class BasePlugin {
+export abstract class BasePlugin implements Plugin {
   /** The service to send the collected traces */
   // tslint:disable:no-any
-  exporter: any;
+  protected exporter: any;
   /** The module name */
-  moduleName: string;
+  protected moduleName: string;
   /** A tracer object. */
-  tracer: Tracer;
+  protected tracer: Tracer;
   /** The module version. */
-  version: string;
+  protected version: string;
 
   /**
    * Constructs a new BasePlugin instance.
@@ -87,4 +88,11 @@ export abstract class BasePlugin {
     shimmer.massUnwrap(nodule, names);
   } 
  
+  // tslint:disable:no-any
+  applyPatch(exporter: any, tracer: Tracer, version: string): any{
+    this.setPluginContext(exporter, tracer, version); 
+  }
+
+  abstract applyUnpatch(): void;
+
 }

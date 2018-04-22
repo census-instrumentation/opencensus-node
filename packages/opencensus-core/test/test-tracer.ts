@@ -18,7 +18,7 @@ import * as assert from 'assert';
 import {EventEmitter} from 'events';
 
 import {TracerConfig} from '../src/trace/config/types';
-import {RootSpanImpl} from '../src/trace/model/rootspan';
+import {RootSpanImpl} from '../src/trace/model/root-span';
 import {SpanImpl} from '../src/trace/model/span';
 import {TracerImpl} from '../src/trace/model/tracer';
 import {OnEndSpanEventListener, RootSpan, Span, Tracer} from '../src/trace/model/types';
