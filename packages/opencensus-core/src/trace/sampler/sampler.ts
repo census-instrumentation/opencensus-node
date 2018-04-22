@@ -15,7 +15,7 @@
  */
 
 import {debug, randomSpanId} from '../../internal/util';
-import {Sampler} from './types'
+import {Sampler} from './types';
 
 const MIN_NUMBER = 1e-4;
 const MAX_NUMBER = 0xffffffffffffffff;
@@ -28,7 +28,7 @@ export class SamplerImpl {
   /**
    * Constructs a new SamplerImpl instance.
    * @param traceId Used for probability calculation
-  */
+   */
   constructor(traceId?: string) {
     if (traceId) {
       this.traceId = traceId;
@@ -63,10 +63,8 @@ export class SamplerImpl {
   probability(probability?: number): Sampler {
     if (probability == null || probability > MAX_NUMBER) {
       return this.always();
-    }
-    else if (probability < MIN_NUMBER) {
+    } else if (probability < MIN_NUMBER) {
       return this.never();
-
     }
     this.idUpperBound = probability * MAX_NUMBER;
     return this;
@@ -76,7 +74,7 @@ export class SamplerImpl {
    * Checks if trace belong the sample.
    * @param traceId Used to check the probability
    * @returns a boolean. True if the traceId is in probability
-   * False if the traceId is not in probability. 
+   * False if the traceId is not in probability.
    */
   shouldSample(traceId: string): boolean {
     const LOWER_BYTES = traceId.substring(16);
@@ -89,5 +87,4 @@ export class SamplerImpl {
       return false;
     }
   }
-
 }
