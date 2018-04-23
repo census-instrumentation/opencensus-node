@@ -1,0 +1,56 @@
+{
+  "name": "@opencensus/opencensus-instrumentation-http",
+  "version": "0.0.1",
+  "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.js",
+  "repository": "census-instrumentation/opencensus-node",
+  "scripts": {
+    "build": "node_modules/.bin/tsc --declaration",
+    "test": "npm run script run-unit-tests",
+    "clean": "rimraf build/*"
+  },
+  "keywords": [
+    "opencensus",
+    "nodejs",
+    "tracing",
+    "profiling"
+  ],
+  "author": "Google Inc.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.00"
+  },
+  "files": [
+    "build/src/**/*.js",
+    "build/src/**/*.d.ts",
+    "doc",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/end-of-stream": "^1.4.0",
+    "@types/mocha": "^2.2.48",
+    "@types/node": "^9.4.7",
+    "@types/semver": "^5.5.0",
+    "@types/shimmer": "^1.0.1",
+    "@types/uuid": "^3.4.3",
+    "gts": "^0.5.1",
+    "mocha": "^5.0.4",
+    "ncp": "^2.0.0",
+    "ts-node": "^4.0.0",
+    "typescript": "^2.7.2"
+  },
+  "dependencies": {
+    "@opencensus/opencensus-core": "^0.0.1",
+    "@opencensus/opencensus-propagation-b3": "^0.0.1",
+    "end-of-stream": "^1.4.1",
+    "semver": "^5.5.0",
+    "shimmer": "^1.2.0",
+    "uuid": "^3.2.1"
+  }
+}
