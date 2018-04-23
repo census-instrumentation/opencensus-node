@@ -1,0 +1,57 @@
+{
+  "name": "@opencensus/opencensus-nodejs",
+  "version": "0.0.1",
+  "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.js",
+  "repository": "census-instrumentation/opencensus-node",
+  "scripts": {
+    "build": "node_modules/.bin/tsc --declaration",
+    "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha 'build/test/**/*.js'",
+    "clean": "rimraf build/*",
+    "check": "gts check",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "keywords": [
+    "opencensus",
+    "nodejs",
+    "tracing",
+    "profiling"
+  ],
+  "author": "Google Inc.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.00"
+  },
+  "files": [
+    "build/src/**/*.js",
+    "build/src/**/*.d.ts",
+    "doc",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/extend": "^3.0.0",
+    "@types/mocha": "^2.2.48",
+    "@types/node": "^9.4.7",
+    "gts": "^0.5.4",
+    "mocha": "^5.0.4",
+    "ncp": "^2.0.0",
+    "ts-node": "^4.0.0",
+    "typescript": "~2.6.1",
+    "nyc": "11.6.0"
+  },
+  "dependencies": {
+    "@opencensus/opencensus-core": "^0.0.1",
+    "extend": "^3.0.1",
+    "require-in-the-middle": "^2.2.1"
+  }
+}
