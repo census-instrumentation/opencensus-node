@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-import {ConsoleExporter, Exporter, Tracer, TracerImpl, Tracing} from '@opencensus/opencensus-core';
-import * as assert from 'assert';
+import {ConsoleExporter} from '@opencensus/opencensus-core';
+import {Exporter} from '@opencensus/opencensus-core';
+import {Tracer} from '@opencensus/opencensus-core';
+import {TracerImpl} from '@opencensus/opencensus-core';
+import {Tracing} from '@opencensus/opencensus-core';
+import {Logger} from '@opencensus/opencensus-core';
+import {Config, TracingConfig} from '@opencensus/opencensus-core';
+import {NoopExporter} from '@opencensus/opencensus-core';
+
+import * as logger from '@opencensus/opencensus-core';
 
 import {TracingImpl} from '../src/trace/tracing';
+import * as assert from 'assert';
 
+
+const NOOP_EXPORTER = new NoopExporter();
 describe('Tracing', () => {
   /** Should create a Tracing instance */
   describe('new Tracing()', () => {
@@ -39,16 +50,30 @@ describe('Tracing', () => {
   /** Should return a started tracing instance */
   describe('start()', () => {
     let tracingStarted: Tracing;
-    before(() => {
-      const tracing = new TracingImpl();
-      tracingStarted = tracing.start();
-    });
+    const tracing = new TracingImpl();
+    // tslint:disable:no-any
+    function instanceOfLogger(object: any): object is Logger {
+      return 'debug' in object;
+    }
+
     it('should return a tracing instance', () => {
+      tracingStarted = tracing.start();
       assert.ok(tracingStarted instanceof TracingImpl);
     });
 
     it('the tracing was started', () => {
+      tracingStarted = tracing.start();
       assert.ok(tracingStarted.tracer.active);
+    });    
+    it('should tracing.tracer instance with logger', () =>{
+      
+      tracingStarted = tracing.start({logger:logger.logger('debug')});
+      assert.ok(instanceOfLogger(tracingStarted.tracer.logger));
+    });
+    it('should tracing.tracer instance with exporter', () =>{
+      
+      tracingStarted = tracing.start({exporter: NOOP_EXPORTER});
+      assert.equal(tracingStarted.exporter, NOOP_EXPORTER);
     });
   });
 
