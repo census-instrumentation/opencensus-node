@@ -32,8 +32,6 @@ export class Buffer {
   private exporter: Exporter;
   /** Maximum size of a buffer. */
   private bufferSize: number;
-  /** Trace queue of a buffer */
-  private queue: RootSpan[] = [];
   /** Max time for a buffer can wait before being sent */
   private bufferTimeout: number;
   /** Manage when the buffer timeout needs to be reseted */
@@ -42,6 +40,8 @@ export class Buffer {
   private bufferTimeoutInProgress = false;
   /** An object to log information to */
   logger: Logger;
+  /** Trace queue of a buffer */
+  queue: RootSpan[] = [];
 
   /**
    * Constructs a new Buffer instance.
