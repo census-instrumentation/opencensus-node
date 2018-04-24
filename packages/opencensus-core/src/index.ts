@@ -28,6 +28,7 @@ export * from './common/types';
 export * from './trace/model/root-span';
 export * from './trace/model/span';
 export * from './trace/model/tracer';
+export * from './common/console-logger';
 
 // sampler impl
 export * from './trace/sampler/sampler';

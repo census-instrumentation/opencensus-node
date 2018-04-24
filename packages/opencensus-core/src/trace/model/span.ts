@@ -33,7 +33,7 @@ export class SpanImpl extends SpanBaseModel implements Span {
   constructor(root: RootSpan) {
     super();
     this.root = root;
-    this.logger = this.root.logger || logger();
+    this.logger = this.root.logger || logger.logger();
   }
 
   /** Gets trace id of span. */

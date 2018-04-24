@@ -110,4 +110,4 @@ const logger = (options?: LoggerOptions|string) => {
 
 logger();
 
-export = logger;
+export{logger};

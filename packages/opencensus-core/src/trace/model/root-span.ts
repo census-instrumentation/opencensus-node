@@ -52,7 +52,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
       this.parentSpanId = context.traceContext.spanId || '';
     }
     this.spansLocal = [];
-    this.logger = tracer.logger || logger();
+    this.logger = tracer.logger || logger.logger();
   }
 
   /** Gets span list from rootspan instance. */

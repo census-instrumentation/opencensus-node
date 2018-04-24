@@ -17,7 +17,9 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
+// import * as logger from '../src/common/console-logger';
 import * as logger from '../src/common/console-logger';
+
 import {Logger} from '../src/common/types';
 import {Buffer} from '../src/exporters/buffer';
 import {ConsoleExporter} from '../src/exporters/console-exporter';
@@ -39,19 +41,19 @@ describe('ConsoleLogger', () => {
   /** Should create a new ConsoleLogger */
   describe('new ConsoleLogger()', () => {
     it('should consoleLogger with default levels', () => {
-      const consoleLogger = logger();
+      const consoleLogger = logger.logger();
       assert.equal(LEVELS.length, consoleLogger.logger.levels.length);
     });
 
     it('should consoleLogger with error', () => {
-      const consoleLogger = logger(LEVELS[0]);
+      const consoleLogger = logger.logger(LEVELS[0]);
       assert.strictEqual(LEVELS[0], consoleLogger.logger.level);
     });
   });
 
   /** Should logger only error log */
   describe('error logger', () => {
-    const consoleLogger = logger(LEVELS[0]);
+    const consoleLogger = logger.logger(LEVELS[0]);
 
     it('should logger error', () => {
       consoleTxt = '';
@@ -103,7 +105,7 @@ describe('ConsoleLogger', () => {
 
   /** Should logger error, warn and info log */
   describe('info logger', () => {
-    const consoleLogger = logger(LEVELS[2]);
+    const consoleLogger = logger.logger(LEVELS[2]);
 
     it('should logger error', () => {
       const intercept = require('intercept-stdout');
@@ -188,7 +190,7 @@ describe('ConsoleLogger', () => {
           'debug' in object && 'silly' in object;
     }
 
-    const consoleLogger = logger('debug');
+    const consoleLogger = logger.logger('debug');
 
     const tracer = new TracerImpl();
     tracer.start({logger: consoleLogger});

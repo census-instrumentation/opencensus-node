@@ -48,7 +48,7 @@ export class TracerImpl implements Tracer {
   /** A sampler used to make sample decisions */
   sampler: Sampler;
   /** A configuration for starting the tracer */
-  logger: Logger = logger();
+  logger: Logger = logger.logger();
 
   /** Constructs a new TraceImpl instance. */
   constructor() {
@@ -74,7 +74,7 @@ export class TracerImpl implements Tracer {
   start(config: TracerConfig): Tracer {
     this.activeLocal = true;
     this.config = config;
-    this.logger = this.config.logger || logger();
+    this.logger = this.config.logger || logger.logger();
     this.sampler = new SamplerImpl().probability(config.samplingRate);
     return this;
   }

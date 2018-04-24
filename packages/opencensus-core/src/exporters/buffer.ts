@@ -50,7 +50,7 @@ export class Buffer {
    */
   constructor(exporter: Exporter, config: BufferConfig) {
     this.exporter = exporter;
-    this.logger = config.logger || logger();
+    this.logger = config.logger || logger.logger();
     this.bufferSize = config.bufferSize;
     this.bufferTimeout = config.bufferTimeout;
     return this;
