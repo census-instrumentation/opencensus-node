@@ -23,12 +23,12 @@ import {Sampler} from '@opencensus/opencensus-core';
 import {Logger} from '@opencensus/opencensus-core';
 import {ConsoleExporter, Exporter, NoopExporter} from '@opencensus/opencensus-core';
 import {Config} from '@opencensus/opencensus-core';
-import * as extend from 'extend';
+import * as logger from '@opencensus/opencensus-core';
 
 import {defaultConfig} from './config/config';
 import {CONSTANTS} from './constants';
 import {PluginLoader} from './instrumentation/plugingloader';
-
+import * as extend from 'extend';
 
 /** Implements a Tracing. */
 export class TracingImpl implements Tracing {
@@ -69,13 +69,15 @@ export class TracingImpl implements Tracing {
     this.config = extend(
         true, {}, defaultConfig, {plugins: this.defaultPlugins}, userConfig);
     // TODO: Instance logger if no logger was passed
-    this.logger = this.config.logger;
+    this.logger = this.config.logger || logger.logger();
     debug('config: %o', this.config);
     this.pluginLoader.loadPlugins(this.config.plugins);
 
     if (!this.config.exporter) {
       const exporter = new ConsoleExporter(this.config);
       this.registerExporter(exporter);
+    }else{
+      this.registerExporter(this.config.exporter);
     }
     this.active = true;
     this.tracerLocal.start(this.config);
