@@ -16,14 +16,14 @@
 
 import {debug, randomSpanId} from '../../internal/util';
 
-import {RootSpanImpl} from './root-span';
+import {RootSpan} from './root-span';
 import {SpanBaseModel} from './span-base-model';
-import {RootSpan, Span, TraceContext} from './types';
 
 import * as logger from '../../common/console-logger';
+import * as types from './types';
 
 /** Defines a Span. */
-export class SpanImpl extends SpanBaseModel implements Span {
+export class Span extends SpanBaseModel implements types.Span {
   private root: RootSpan;
 
   /**
@@ -42,7 +42,7 @@ export class SpanImpl extends SpanBaseModel implements Span {
   }
 
   /** Gets trace context of span. */
-  get traceContext(): TraceContext {
+  get traceContext(): types.TraceContext {
     return {
       traceId: this.traceId.toString(),
       spanId: this.id.toString(),

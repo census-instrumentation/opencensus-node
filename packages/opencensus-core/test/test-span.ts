@@ -17,12 +17,12 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import {RootSpanImpl} from '../src/trace/model/root-span';
-import {SpanImpl} from '../src/trace/model/span';
-import {TracerImpl} from '../src/trace/model/tracer';
-import {Annotation, Attributes, Link, MessageEvent, Span} from '../src/trace/model/types';
+import {RootSpan} from '../src/trace/model/root-span';
+import {Span} from '../src/trace/model/span';
+import {Tracer} from '../src/trace/model/tracer';
+import {Annotation, Attributes, Link, MessageEvent} from '../src/trace/model/types';
 
-const tracer = new TracerImpl();
+const tracer = new Tracer();
 
 describe('Span', () => {
   /**
@@ -30,9 +30,9 @@ describe('Span', () => {
    */
   describe('new Span()', () => {
     it('should create a Span instance', () => {
-      const rootSpan = new RootSpanImpl(tracer);
-      const span = new SpanImpl(rootSpan);
-      assert.ok(span instanceof SpanImpl);
+      const rootSpan = new RootSpan(tracer);
+      const span = new Span(rootSpan);
+      assert.ok(span instanceof Span);
     });
   });
 
@@ -41,9 +41,9 @@ describe('Span', () => {
    */
   describe('get traceId()', () => {
     it('should return the trace id', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       assert.equal(span.traceId, rootSpan.traceId);
     });
   });
@@ -53,10 +53,10 @@ describe('Span', () => {
    */
   describe('get traceContext()', () => {
     it('should the trace context of span', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       const context = span.traceContext;
 
       assert.equal(context.traceId, rootSpan.traceId);
@@ -72,9 +72,9 @@ describe('Span', () => {
   describe('get time properties before start()', () => {
     let span;
     before(() => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
-      span = new SpanImpl(rootSpan);
+      span = new Span(rootSpan);
     });
     it('should get startTime() return null', () => {
       assert.equal(span.startTime, null);
@@ -92,10 +92,10 @@ describe('Span', () => {
    */
   describe('start()', () => {
     it('should start a span instance', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
 
       assert.ok(span.started);
@@ -107,9 +107,9 @@ describe('Span', () => {
    */
   describe('start() an already started span', () => {
     it('should not change the initial startTime', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
       const initialStartTime = span.startTime;
       span.start();
@@ -123,10 +123,10 @@ describe('Span', () => {
    */
   describe('end()', () => {
     it('should end a span instance', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
       span.end();
 
@@ -139,10 +139,10 @@ describe('Span', () => {
    */
   describe('end() before start()', () => {
     it('should not end a span instance', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.end();
 
       assert.ok(!span.ended);
@@ -154,9 +154,9 @@ describe('Span', () => {
    */
   describe('end() an already ended span', () => {
     it('should not change the endTime', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
       span.end();
       const initialEndTime = span.endTime;
@@ -171,10 +171,10 @@ describe('Span', () => {
    */
   describe('addAtribute()', () => {
     it('should add an attribute', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
 
       ['String', 'Number', 'Boolean'].map(attType => {
@@ -196,10 +196,10 @@ describe('Span', () => {
             'attributes' in object;
       }
 
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
 
       span.addAnnotation('description test', Date.now(), {} as Attributes);
@@ -219,10 +219,10 @@ describe('Span', () => {
         return 'traceId' in object && 'spanId' in object && 'type' in object;
       }
 
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
 
       const LINK_TYPE = 'PARENT_LINKED_SPAN';
@@ -243,10 +243,10 @@ describe('Span', () => {
         return 'type' in object && 'id' in object;
       }
 
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
 
       span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');

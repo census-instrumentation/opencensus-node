@@ -15,13 +15,13 @@
  */
 
 import {debug, randomSpanId} from '../../internal/util';
-import {Sampler} from './types';
+import * as types from './types';
 
 const MIN_NUMBER = 1e-4;
 const MAX_NUMBER = 0xffffffffffffffff;
 
 /** This class represent the probability of a tracer. */
-export class SamplerImpl implements Sampler {
+export class Sampler implements types.Sampler {
   private idUpperBound: number;
 
   /**

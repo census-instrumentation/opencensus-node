@@ -21,4 +21,3 @@ export * from './trace/sampler/types';
 export * from './trace/instrumentation/types';
 export * from './exporters/types';
 export * from './common/types';
-

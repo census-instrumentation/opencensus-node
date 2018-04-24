@@ -24,8 +24,8 @@ import {Logger} from '../src/common/types';
 import {Buffer} from '../src/exporters/buffer';
 import {ConsoleExporter} from '../src/exporters/console-exporter';
 import {BufferConfig, TracerConfig} from '../src/trace/config/types';
-import {RootSpanImpl} from '../src/trace/model/root-span';
-import {TracerImpl} from '../src/trace/model/tracer';
+import {RootSpan} from '../src/trace/model/root-span';
+import {Tracer} from '../src/trace/model/tracer';
 import {TraceOptions} from '../src/trace/model/types';
 
 const LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
@@ -192,7 +192,7 @@ describe('ConsoleLogger', () => {
 
     const consoleLogger = logger.logger('debug');
 
-    const tracer = new TracerImpl();
+    const tracer = new Tracer();
     tracer.start({logger: consoleLogger});
 
     it('checks if Tracer has a logger', () => {

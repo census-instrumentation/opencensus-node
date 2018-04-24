@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
+import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 import {debug, randomSpanId} from '../../internal/util';
-import {Sampler} from '../sampler/types';
-
-import {Annotation, Attributes, Link, MessageEvent, Span, TraceContext} from './types';
-import {Logger} from '../../common/types';
+import * as types from './types';
 
 /** Defines a base model for spans. */
-export abstract class SpanBaseModel implements Span {
+export abstract class SpanBaseModel implements types.Span {
   protected className: string;
   /** The clock used to mesure the beginning and ending of a span */
   private clock: Clock = null;
@@ -37,13 +35,13 @@ export abstract class SpanBaseModel implements Span {
   /** An object to log information to */
   logger: Logger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
-  attributes: Attributes = {};
+  attributes: types.Attributes = {};
   /** A text annotation with a set of attributes. */
-  annotations: Annotation[] = [];
+  annotations: types.Annotation[] = [];
   /** An event describing a message sent/received between Spans */
-  messageEvents: MessageEvent[] = [];
+  messageEvents: types.MessageEvent[] = [];
   /** Pointers from the current span to another span */
-  links: Link[] = [];
+  links: types.Link[] = [];
   /** If the parent span is in another process. */
   remoteParent: boolean;
   /** The span ID of this span's parent. If it's a root span, must be empty */
@@ -115,12 +113,12 @@ export abstract class SpanBaseModel implements Span {
   }
 
   /** Gives the TraceContext of the span. */
-  get traceContext(): TraceContext {
+  get traceContext(): types.TraceContext {
     return {
       traceId: this.traceId.toString(),
       spanId: this.id.toString(),
       parentSpanId: this.parentSpanId
-    } as TraceContext;
+    } as types.TraceContext;
   }
 
   /**
@@ -139,12 +137,12 @@ export abstract class SpanBaseModel implements Span {
    * @param attributes A set of attributes on the annotation.
    */
   addAnnotation(
-      description: string, timestamp: number, attributes?: Attributes) {
+      description: string, timestamp: number, attributes?: types.Attributes) {
     this.annotations.push({
       'description': description,
       'timestamp': timestamp,
       'attributes': attributes,
-    } as Annotation);
+    } as types.Annotation);
   }
 
   /**
@@ -155,13 +153,13 @@ export abstract class SpanBaseModel implements Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: string, attributes?: Attributes) {
+      traceId: string, spanId: string, type: string, attributes?: types.Attributes) {
     this.links.push({
       'traceId': traceId,
       'spanId': spanId,
       'type': type,
       'attributes': attributes
-    } as Link);
+    } as types.Link);
   }
 
   /**
@@ -173,7 +171,7 @@ export abstract class SpanBaseModel implements Span {
     this.messageEvents.push({
       'type': type,
       'id': id,
-    } as MessageEvent);
+    } as types.MessageEvent);
   }
 
   /** Starts the span. */

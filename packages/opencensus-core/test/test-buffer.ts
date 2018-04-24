@@ -19,13 +19,13 @@ import * as mocha from 'mocha';
 
 import {Buffer} from '../src/exporters/buffer';
 import {NoopExporter} from '../src/exporters/console-exporter';
-import {RootSpanImpl} from '../src/trace/model/root-span';
-import {TracerImpl} from '../src/trace/model/tracer';
+import {RootSpan} from '../src/trace/model/root-span';
+import {Tracer} from '../src/trace/model/tracer';
 
 const exporter = new NoopExporter();
 const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
-const tracer = new TracerImpl();
+const tracer = new Tracer();
 
 const defaultBufferConfig = {
   bufferSize: DEFAULT_BUFFER_SIZE,
@@ -61,7 +61,7 @@ describe('Buffer', () => {
   describe('addToBuffer', () => {
     it('should return the Buffer instance', () => {
       const buffer = new Buffer(exporter, defaultBufferConfig);
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       const bufferAdd = buffer.addToBuffer(rootSpan);
       assert.ok(bufferAdd instanceof Buffer);
     });
@@ -74,7 +74,7 @@ describe('Buffer', () => {
     it('should return the Buffer instance', () => {
       const buffer = new Buffer(exporter, defaultBufferConfig);
       const bufferResize = buffer.setBufferSize(0);
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       const bufferAdd = bufferResize.addToBuffer(rootSpan);
       assert.ok(bufferAdd instanceof Buffer);
     });
@@ -87,7 +87,7 @@ describe('Buffer', () => {
     it('should return the Buffer instance', () => {
       const buffer = new Buffer(
           exporter, {bufferSize: DEFAULT_BUFFER_SIZE, bufferTimeout: 0});
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       let bufferAdd = buffer.addToBuffer(rootSpan);
       bufferAdd = buffer.addToBuffer(rootSpan);
       assert.ok(bufferAdd instanceof Buffer);

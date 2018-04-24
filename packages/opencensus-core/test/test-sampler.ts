@@ -17,11 +17,11 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import {RootSpanImpl} from '../src/trace/model/root-span';
-import {TracerImpl} from '../src/trace/model/tracer';
-import {SamplerImpl} from '../src/trace/sampler/sampler';
+import {RootSpan} from '../src/trace/model/root-span';
+import {Tracer} from '../src/trace/model/tracer';
+import {Sampler} from '../src/trace/sampler/sampler';
 
-const tracer = new TracerImpl();
+const tracer = new Tracer();
 
 describe('Sampler', () => {
   /**
@@ -29,8 +29,8 @@ describe('Sampler', () => {
    */
   describe('new Sampler()', () => {
     it('should create a Sampler instance', () => {
-      const sampler = new SamplerImpl();
-      assert.ok(sampler instanceof SamplerImpl);
+      const sampler = new Sampler();
+      assert.ok(sampler instanceof Sampler);
     });
   });
 
@@ -39,9 +39,9 @@ describe('Sampler', () => {
    */
   describe('new Sampler(traceId)', () => {
     it('should create a Sampler instance', () => {
-      const root = new RootSpanImpl(tracer);
-      const sampler = new SamplerImpl();
-      assert.ok(sampler instanceof SamplerImpl);
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler();
+      assert.ok(sampler instanceof Sampler);
     });
   });
 
@@ -50,9 +50,9 @@ describe('Sampler', () => {
    */
   describe('always()', () => {
     it('should return a sampler instance', () => {
-      const sampler = new SamplerImpl();
+      const sampler = new Sampler();
       const samplerAlways = sampler.always();
-      assert.ok(samplerAlways instanceof SamplerImpl);
+      assert.ok(samplerAlways instanceof Sampler);
     });
   });
 
@@ -61,9 +61,9 @@ describe('Sampler', () => {
    */
   describe('never()', () => {
     it('should return a sampler instance', () => {
-      const sampler = new SamplerImpl();
+      const sampler = new Sampler();
       const samplerNever = sampler.never();
-      assert.ok(samplerNever instanceof SamplerImpl);
+      assert.ok(samplerNever instanceof Sampler);
     });
   });
 
@@ -73,9 +73,9 @@ describe('Sampler', () => {
   describe('probability()', () => {
     it('should return a sampler instance', () => {
       const PROBABILITY = 0.5;
-      const sampler = new SamplerImpl();
+      const sampler = new Sampler();
       const samplerProbability = sampler.probability(PROBABILITY);
-      assert.ok(samplerProbability instanceof SamplerImpl);
+      assert.ok(samplerProbability instanceof Sampler);
     });
   });
 
@@ -84,8 +84,8 @@ describe('Sampler', () => {
    */
   describe('shouldSample() always', () => {
     it('should return true', () => {
-      const root = new RootSpanImpl(tracer);
-      const sampler = new SamplerImpl();
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler();
       sampler.always();
       const samplerShouldSampler = sampler.shouldSample(root.traceId);
       assert.ok(samplerShouldSampler);
@@ -96,8 +96,8 @@ describe('Sampler', () => {
    */
   describe('shouldSample() never', () => {
     it('should return false', () => {
-      const root = new RootSpanImpl(tracer);
-      const sampler = new SamplerImpl();
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler();
       sampler.never();
       const samplerShouldSampler = sampler.shouldSample(root.traceId);
       assert.ok(!samplerShouldSampler);

@@ -19,15 +19,15 @@ import * as uuid from 'uuid';
 import {Clock} from '../../internal/clock';
 import {debug} from '../../internal/util';
 
-import {SpanImpl} from './span';
+import {Span} from './span';
 import {SpanBaseModel} from './span-base-model';
-import {TracerImpl} from './tracer';
-import {OnEndSpanEventListener, RootSpan, Span, TraceContext, TraceOptions, Tracer} from './types';
+import {Tracer} from './tracer';
 
 import * as logger from '../../common/console-logger';
+import * as types from './types';
 
 /** Defines a root span */
-export class RootSpanImpl extends SpanBaseModel implements RootSpan {
+export class RootSpan extends SpanBaseModel implements types.RootSpan {
   /** A tracer object */
   private tracer: Tracer;
   /** A list of child spans. */
@@ -40,7 +40,7 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
    * @param tracer A tracer object.
    * @param context A trace options object to build the root span.
    */
-  constructor(tracer: Tracer, context?: TraceOptions) {
+  constructor(tracer: Tracer, context?: types.TraceOptions) {
     super();
     this.tracer = tracer;
     this.traceIdLocal =
@@ -113,15 +113,15 @@ export class RootSpanImpl extends SpanBaseModel implements RootSpan {
       this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
-      return;
+      return null;
     }
     if (!this.started) {
       this.logger.debug(
           'calling %s.startSpan() on un-started %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.type});
-      return;
+      return null;
     }
-    const newSpan = new SpanImpl(this);
+    const newSpan = new Span(this);
     if (name) {
       newSpan.name = name;
     }

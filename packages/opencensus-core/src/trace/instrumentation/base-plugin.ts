@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import * as shimmer from 'shimmer';
-import {Plugin} from './types';
+import * as types from './types';
 import {Tracer} from '../model/types';
 
 /** This class represent the base to patch plugin. */
-export abstract class BasePlugin implements Plugin {
+export abstract class BasePlugin implements types.Plugin {
+
   /** The service to send the collected traces */
   // tslint:disable:no-any
   protected exporter: any;

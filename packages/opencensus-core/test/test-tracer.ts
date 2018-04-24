@@ -18,10 +18,10 @@ import * as assert from 'assert';
 import {EventEmitter} from 'events';
 
 import {TracerConfig} from '../src/trace/config/types';
-import {RootSpanImpl} from '../src/trace/model/root-span';
-import {SpanImpl} from '../src/trace/model/span';
-import {TracerImpl} from '../src/trace/model/tracer';
-import {OnEndSpanEventListener, RootSpan, Span, Tracer} from '../src/trace/model/types';
+import {RootSpan} from '../src/trace/model/root-span';
+import {Span} from '../src/trace/model/span';
+import {Tracer} from '../src/trace/model/tracer';
+import {OnEndSpanEventListener} from '../src/trace/model/types';
 
 class OnEndSpanClass implements OnEndSpanEventListener {
   /** Counter for test use */
@@ -42,8 +42,8 @@ describe('Tracer', () => {
   /** Should create a Tracer instance */
   describe('new Tracer()', () => {
     it('should create a Tracer instance', () => {
-      const tracer = new TracerImpl();
-      assert.ok(tracer instanceof TracerImpl);
+      const tracer = new Tracer();
+      assert.ok(tracer instanceof Tracer);
     });
   });
 
@@ -51,12 +51,12 @@ describe('Tracer', () => {
   describe('get/set currentRootSpan()', () => {
     let tracer, rootSpan;
     before(() => {
-      tracer = new TracerImpl();
-      rootSpan = new RootSpanImpl(tracer);
+      tracer = new Tracer();
+      rootSpan = new RootSpan(tracer);
       tracer.currentRootSpan = rootSpan;
     });
     it('should get the current RootSpan from tracer instance', () => {
-      assert.ok(tracer.currentRootSpan instanceof RootSpanImpl);
+      assert.ok(tracer.currentRootSpan instanceof RootSpan);
     });
     it('should set the current RootSpan from tracer instance', () => {
       assert.equal(tracer.currentRootSpan, rootSpan);
@@ -67,11 +67,11 @@ describe('Tracer', () => {
   describe('start()', () => {
     let tracerStarted;
     before(() => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracerStarted = tracer.start(defaultConfig);
     });
     it('should return a tracer instance', () => {
-      assert.ok(tracerStarted instanceof TracerImpl);
+      assert.ok(tracerStarted instanceof Tracer);
     });
 
     it('the trace was started', () => {
@@ -83,7 +83,7 @@ describe('Tracer', () => {
   describe('registerEndSpanListener() / get eventListeners()', () => {
     let tracer, onEndSpan;
     before(() => {
-      tracer = new TracerImpl();
+      tracer = new Tracer();
       onEndSpan = new OnEndSpanClass();
       tracer.registerEndSpanListener(onEndSpan);
     });
@@ -103,7 +103,7 @@ describe('Tracer', () => {
   /** Should stop the trace instance */
   describe('stop()', () => {
     it('should stop the trace instance', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       tracer.stop();
       assert.ok(!tracer.active);
@@ -114,7 +114,7 @@ describe('Tracer', () => {
   describe('get active()', () => {
     let tracer: Tracer;
     before(() => {
-      tracer = new TracerImpl();
+      tracer = new Tracer();
     });
     it('should check if the trace instance is started', () => {
       tracer.start(defaultConfig);
@@ -130,14 +130,14 @@ describe('Tracer', () => {
   describe('startRootSpan()', () => {
     let rootSpanLocal;
     before(() => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(null, (rootSpan) => {
         rootSpanLocal = rootSpan;
       });
     });
     it('should create a new RootSpan instance', () => {
-      assert.ok(rootSpanLocal instanceof RootSpanImpl);
+      assert.ok(rootSpanLocal instanceof RootSpan);
     });
     it('should start the rootSpan', () => {
       assert.ok(rootSpanLocal.started);
@@ -148,14 +148,14 @@ describe('Tracer', () => {
   describe('startRootSpan() with options', () => {
     let rootSpanLocal;
     before(() => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
         rootSpanLocal = rootSpan;
       });
     });
     it('should create a new RootSpan instance', () => {
-      assert.ok(rootSpanLocal instanceof RootSpanImpl);
+      assert.ok(rootSpanLocal instanceof RootSpan);
     });
     it('should start the rootSpan', () => {
       assert.ok(rootSpanLocal.started);
@@ -165,7 +165,7 @@ describe('Tracer', () => {
   /** Should not start the new RootSpan instance */
   describe('startRootSpan() with sampler never', () => {
     it('should not start the new RootSpan instance', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       const config = {samplingRate: 0} as TracerConfig;
       tracer.start(config);
       tracer.startRootSpan(options, (rootSpan) => {
@@ -177,7 +177,7 @@ describe('Tracer', () => {
   /** Should not create the new RootSpan instance */
   describe('startRootSpan() before start()', () => {
     it('should not create the new RootSpan instance', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.startRootSpan(options, (rootSpan) => {
         assert.equal(rootSpan, null);
       });
@@ -187,7 +187,7 @@ describe('Tracer', () => {
   /** Should set the current root span to null */
   describe('clearCurrentRootSpan()', () => {
     it('should set the current root span to null', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
         tracer.clearCurrentTrace();
@@ -200,14 +200,14 @@ describe('Tracer', () => {
   describe('startSpan()', () => {
     let span;
     before(() => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
         span = tracer.startSpan('spanName', 'spanType');
       });
     });
     it('should create a Span instance', () => {
-      assert.ok(span instanceof SpanImpl);
+      assert.ok(span instanceof Span);
     });
     it('should start a span', () => {
       assert.ok(span.started);
@@ -217,7 +217,7 @@ describe('Tracer', () => {
   /** Should not create a Span instance */
   describe('startSpan() before startRootSpan()', () => {
     it('should not create a Span instance', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       const span = tracer.startSpan('spanName', 'spanType');
       assert.equal(span, null);
@@ -227,7 +227,7 @@ describe('Tracer', () => {
   /** Should run eventListeners when the rootSpan ends */
   describe('onEndSpan()', () => {
     it('should run eventListeners when the rootSpan ends', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       const eventListener = new OnEndSpanClass();
       tracer.registerEndSpanListener(eventListener);
       tracer.start(defaultConfig);
@@ -243,25 +243,25 @@ describe('Tracer', () => {
   /** Testing void functions */
   describe('void functions', () => {
     it('wrap()', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       assert.ok(tracer.wrap(() => {}) instanceof Function);
     });
 
     it('wrap() before start()', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       assert.ok(tracer.wrap(() => {}) instanceof Function);
     });
 
     it('wrapEmitter()', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       tracer.start(defaultConfig);
       assert.strictEqual(
           typeof tracer.wrapEmitter(new EventEmitter()), 'undefined');
     });
 
     it('wrapEmitter() before start()', () => {
-      const tracer = new TracerImpl();
+      const tracer = new Tracer();
       assert.strictEqual(
           typeof tracer.wrapEmitter(new EventEmitter()), 'undefined');
     });

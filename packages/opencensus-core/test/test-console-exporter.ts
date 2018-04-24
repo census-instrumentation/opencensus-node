@@ -19,11 +19,10 @@ import * as mocha from 'mocha';
 
 import {Buffer} from '../src/exporters/buffer';
 import {ConsoleExporter, NoopExporter} from '../src/exporters/console-exporter';
-import {RootSpanImpl} from '../src/trace/model/root-span';
-import {TracerImpl} from '../src/trace/model/tracer';
-import {RootSpan} from '../src/trace/model/types';
+import {RootSpan} from '../src/trace/model/root-span';
+import {Tracer} from '../src/trace/model/tracer';
 
-const tracer = new TracerImpl();
+const tracer = new Tracer();
 const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
 const defaultBufferConfig = {
@@ -36,7 +35,7 @@ describe('NoopExporter', () => {
   describe('onEndSpan()', () => {
     it('should do anything', () => {
       const exporter = new NoopExporter();
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       exporter.onEndSpan(rootSpan);
       assert.ok(true);
     });
@@ -46,7 +45,7 @@ describe('NoopExporter', () => {
   describe('publish()', () => {
     it('should do anything', () => {
       const exporter = new NoopExporter();
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       const queue: RootSpan[] = [];
       queue.push(rootSpan);
 
@@ -61,7 +60,7 @@ describe('ConsoleLogExporter', () => {
   describe('onEndSpan()', () => {
     it('should end a span', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       exporter.onEndSpan(rootSpan);
       assert.ok(true);
     });
@@ -71,7 +70,7 @@ describe('ConsoleLogExporter', () => {
   describe('publish()', () => {
     it('should publish the rootspans in queue', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.startSpan('name', 'type', rootSpan.traceId);
       const queue: RootSpan[] = [];
       queue.push(rootSpan);

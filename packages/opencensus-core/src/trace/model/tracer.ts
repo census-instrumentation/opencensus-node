@@ -16,25 +16,24 @@
 
 import * as cls from '../../internal/cls';
 import {debug} from '../../internal/util';
-import {SamplerImpl} from '../sampler/sampler';
+import {Sampler} from '../sampler/sampler';
 import {TracerConfig} from '../config/types';
-import {Sampler} from '../sampler/types';
 
 import {Config} from '../config/types';
 
-import {RootSpanImpl} from './root-span';
-import {SpanImpl} from './span';
-import {RootSpan, Span} from './types';
-import {TraceOptions, Tracer} from './types';
+import {RootSpan} from './root-span';
+import {Span} from './span';
+import {TraceOptions} from './types';
 import {Func, OnEndSpanEventListener} from './types';
 import {Logger} from '../../common/types';
+import * as types from './types';
 
 import * as logger from '../../common/console-logger';
 
 /**
  * This class represent a tracer.
  */
-export class TracerImpl implements Tracer {
+export class Tracer implements types.Tracer {
   /** Indicates if the tracer is active */
   private activeLocal: boolean;
   /** TODO */
@@ -75,7 +74,7 @@ export class TracerImpl implements Tracer {
     this.activeLocal = true;
     this.config = config;
     this.logger = this.config.logger || logger.logger();
-    this.sampler = new SamplerImpl().probability(config.samplingRate);
+    this.sampler = new Sampler().probability(config.samplingRate);
     return this;
   }
 
@@ -103,7 +102,7 @@ export class TracerImpl implements Tracer {
     return this.contextManager.runAndReturn((root) => {
       let newRoot = null;
       if (this.active) {
-        newRoot = new RootSpanImpl(this, options);
+        newRoot = new RootSpan(this, options);
         if (this.sampler.shouldSample(newRoot.traceId)) {
           newRoot.start();
           this.currentRootSpan = newRoot;

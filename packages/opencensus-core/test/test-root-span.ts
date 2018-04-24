@@ -17,12 +17,12 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import {RootSpanImpl} from '../src/trace/model/root-span';
-import {SpanImpl} from '../src/trace/model/span';
-import {TracerImpl} from '../src/trace/model/tracer';
-import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span, TraceOptions, Tracer} from '../src/trace/model/types';
+import {RootSpan} from '../src/trace/model/root-span';
+import {Span} from '../src/trace/model/span';
+import {Tracer} from '../src/trace/model/tracer';
+import {Annotation, Attributes, Link, MessageEvent, TraceOptions} from '../src/trace/model/types';
 
-const tracer = new TracerImpl();
+const tracer = new Tracer();
 
 describe('RootSpan', () => {
   /**
@@ -30,8 +30,8 @@ describe('RootSpan', () => {
    */
   describe('new RootSpan()', () => {
     it('should create a RootSpan instance', () => {
-      const root = new RootSpanImpl(tracer);
-      assert.ok(root instanceof RootSpanImpl);
+      const root = new RootSpan(tracer);
+      assert.ok(root instanceof RootSpan);
     });
   });
 
@@ -40,11 +40,11 @@ describe('RootSpan', () => {
    */
   describe('new RootSpan() with options', () => {
     it('should create a RootSpan instance with options', () => {
-      const trace = new RootSpanImpl(tracer);
+      const trace = new RootSpan(tracer);
       const options = {name: 'test', traceContext: trace.traceContext} as
           TraceOptions;
-      const root = new RootSpanImpl(tracer, options);
-      assert.ok(root instanceof RootSpanImpl);
+      const root = new RootSpan(tracer, options);
+      assert.ok(root instanceof RootSpan);
     });
   });
 
@@ -53,12 +53,12 @@ describe('RootSpan', () => {
    */
   describe('get spans()', () => {
     it('should get span list from rootspan instance', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       root.start();
       const span = root.startSpan('spanName', 'spanType');
 
       for (const span of root.spans) {
-        assert.ok(span instanceof SpanImpl);
+        assert.ok(span instanceof Span);
       }
     });
   });
@@ -68,7 +68,7 @@ describe('RootSpan', () => {
    */
   describe('new traceId()', () => {
     it('should get trace id from rootspan instance', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       assert.equal(root.traceId, root.traceContext.traceId);
     });
   });
@@ -78,7 +78,7 @@ describe('RootSpan', () => {
    */
   describe('start()', () => {
     it('should start a RootSpan instance', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       root.start();
       assert.ok(root.started);
     });
@@ -91,13 +91,13 @@ describe('RootSpan', () => {
     let root, span;
 
     before(() => {
-      root = new RootSpanImpl(tracer);
+      root = new RootSpan(tracer);
       root.start();
       span = root.startSpan('spanName', 'spanType');
     });
 
     it('should create span instance', () => {
-      assert.ok(span instanceof SpanImpl);
+      assert.ok(span instanceof Span);
     });
 
     it('should start a span instance', () => {
@@ -110,7 +110,7 @@ describe('RootSpan', () => {
    */
   describe('startSpan() before start rootspan', () => {
     it('should not create span', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       const span = root.startSpan('spanName', 'spanType');
       assert.ok(span == null);
     });
@@ -121,7 +121,7 @@ describe('RootSpan', () => {
    */
   describe('startSpan() after rootspan ended', () => {
     it('should not create span', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       root.start();
       root.end();
       const span = root.startSpan('spanName', 'spanType');
@@ -134,7 +134,7 @@ describe('RootSpan', () => {
    */
   describe('end()', () => {
     it('should end the rootspan instance', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       root.start();
       root.end();
       assert.ok(root.ended);
@@ -146,7 +146,7 @@ describe('RootSpan', () => {
    */
   describe('end() before start rootspan', () => {
     it('should not end rootspan', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       root.end();
       assert.ok(!root.ended);
     });
@@ -157,7 +157,7 @@ describe('RootSpan', () => {
    */
   describe('end() before end all spans', () => {
     it('should end all spans inside rootspan', () => {
-      const root = new RootSpanImpl(tracer);
+      const root = new RootSpan(tracer);
       root.start();
       const span = root.startSpan('spanName', 'spanType');
       root.end();
@@ -174,7 +174,7 @@ describe('RootSpan', () => {
    */
   describe('addAtribute()', () => {
     it('should add an attribute', () => {
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
       ['String', 'Number', 'Boolean'].map(attType => {
@@ -196,7 +196,7 @@ describe('RootSpan', () => {
             'attributes' in object;
       }
 
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
       rootSpan.addAnnotation('description test', Date.now(), {} as Attributes);
@@ -216,10 +216,10 @@ describe('RootSpan', () => {
         return 'traceId' in object && 'spanId' in object && 'type' in object;
       }
 
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      const span = new SpanImpl(rootSpan);
+      const span = new Span(rootSpan);
       span.start();
 
       const LINK_TYPE = 'CHILD_LINKED_SPAN';
@@ -240,7 +240,7 @@ describe('RootSpan', () => {
         return 'type' in object && 'id' in object;
       }
 
-      const rootSpan = new RootSpanImpl(tracer);
+      const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
       rootSpan.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');

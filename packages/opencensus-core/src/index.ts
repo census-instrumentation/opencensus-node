@@ -24,15 +24,6 @@ export * from './trace/instrumentation/types';
 export * from './exporters/types';
 export * from './common/types';
 
-// domain models impls
-export * from './trace/model/root-span';
-export * from './trace/model/span';
-export * from './trace/model/tracer';
-export * from './common/console-logger';
-
-// sampler impl
-export * from './trace/sampler/sampler';
-
 // base instrumetation class
 export * from './trace/instrumentation/base-plugin';
 
@@ -42,3 +33,6 @@ export * from './exporters/console-exporter';
 
 // util
 export * from './internal/util';
+
+import * as types from './index-types';
+export {types};
