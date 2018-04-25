@@ -266,16 +266,23 @@ export interface Tracer extends OnEndSpanEventListener {
   startSpan(name?: string, type?: string, parentSpanId?: string): Span;
 
   /**
-   * Wraper to contextManager
-   * @param fn Function that will wrap in contextManager
-   * @returns The contextManager class wrapped
+   * Binds the trace context to the given function.
+   * This is necessary in order to create child spans correctly in functions
+   * that are called asynchronously (for example, in a network response
+   * handler).
+   * @param fn A function to which to bind the trace context.
    */
   wrap<T>(fn: Func<T>): Func<T>;
 
   /**
-   * Wrapper to contextManager emitter
-   * @param emitter Function that will wrap in contextManager emitter
-   * @returns The contextManager emitter wrapped
+   * Binds the trace context to the given event emitter.
+   * This is necessary in order to create child spans correctly in event
+   * handlers.
+   * @param emitter An event emitter whose handlers should have
+   * the trace context binded to them.
    */
   wrapEmitter(emitter: NodeJS.EventEmitter): void;
 }
+
+
+

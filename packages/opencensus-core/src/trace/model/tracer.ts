@@ -169,8 +169,11 @@ export class Tracer implements types.Tracer {
   }
 
   /**
-   * Wraps a function.
-   * @param fn Function to wrap.
+   * Binds the trace context to the given function.
+   * This is necessary in order to create child spans correctly in functions
+   * that are called asynchronously (for example, in a network response
+   * handler).
+   * @param fn A function to which to bind the trace context.
    */
   wrap<T>(fn: types.Func<T>): types.Func<T> {
     if (!this.active) {
@@ -183,8 +186,11 @@ export class Tracer implements types.Tracer {
   }
 
   /**
-   * The wrap emitter.
-   * @param emitter The emitter.
+   * Binds the trace context to the given event emitter.
+   * This is necessary in order to create child spans correctly in event
+   * handlers.
+   * @param emitter An event emitter whose handlers should have
+   * the trace context binded to them.
    */
   wrapEmitter(emitter: NodeJS.EventEmitter): void {
     if (!this.active) {
