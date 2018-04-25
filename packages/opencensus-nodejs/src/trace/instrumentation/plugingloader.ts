@@ -14,29 +14,32 @@
  * limitations under the License.
  */
 
-import {Tracer} from '@opencensus/opencensus-core';
-import {Plugin} from '@opencensus/opencensus-core';
-import {PluginNames} from '@opencensus/opencensus-core';
-import {debug} from '@opencensus/opencensus-core';
+import {types} from  '@opencensus/opencensus-core';
+import {classes} from '@opencensus/opencensus-core';
+import {logger} from '@opencensus/opencensus-core';
+
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
 
-import {CONSTANTS} from '../constants';
+import {Constants} from '../constants';
 
 /** Defines a plugin loader. */
 export class PluginLoader {
   /** The tracer */
-  private tracer: Tracer;
+  private tracer: types.Tracer;
   /** A list of plugins. */
-  private plugins: Plugin[] = [];
+  private plugins: types.Plugin[] = [];
+  /** logger */
+  private logger: types.Logger;
 
   /**
    * Constructs a new PluginLoader instance.
    * @param tracer The tracer.
    */
-  constructor(tracer: Tracer) {
+  constructor(logger: types.Logger, tracer: types.Tracer) {
     this.tracer = tracer;
+    this.logger = logger;
   }
 
   /**
@@ -45,7 +48,7 @@ export class PluginLoader {
    * @returns The default name for that package.
    */
   private static defaultPackageName(moduleName): string {
-    return `${CONSTANTS.SCOPE}/${CONSTANTS.PLUGIN_PACKAGE_NAME_PREFIX}-${
+    return `${Constants.SCOPE}/${Constants.PLUGIN_PACKAGE_NAME_PREFIX}-${
         moduleName}`;
   }
 
@@ -55,7 +58,7 @@ export class PluginLoader {
    * @param modulesToPatch A list of modules to patch.
    * @returns Plugin names.
    */
-  static defaultPluginsFromArray(modulesToPatch: string[]): PluginNames {
+  static defaultPluginsFromArray(modulesToPatch: string[]): types.PluginNames {
     const plugins = modulesToPatch.reduce((plugins, moduleName) => {
       plugins[moduleName] = PluginLoader.defaultPackageName(moduleName);
       return plugins;
@@ -87,7 +90,7 @@ export class PluginLoader {
       try {
         version = JSON.parse(fs.readFileSync(pkgJson).toString()).version;
       } catch (e) {
-        debug('could not get version of %s module: %s', name, e.message);
+        this.logger.error('could not get version of %s module: %s', name, e.message);
       }
     } else {
       version = process.versions.node;
@@ -100,7 +103,7 @@ export class PluginLoader {
    * Loads plugins.
    * @param pluginList A list of plugins.
    */
-  loadPlugins(pluginList: PluginNames) {
+  loadPlugins(pluginList: types.PluginNames) {
     const self = this;
 
     hook(Object.keys(pluginList), (exports, name, basedir) => {
@@ -108,11 +111,11 @@ export class PluginLoader {
       if (!version) {
         return exports;
       } else {
-        debug('applying patch to %s@%s module', name, version);
-        debug('using package %s to patch %s', pluginList[name], name);
+        self.logger.debug('applying patch to %s@%s module', name, version);
+        self.logger.debug('using package %s to patch %s', pluginList[name], name);
         const pluginImportPath =
             self.getPlugingImportPath(pluginList[name], name);
-        const plugin: Plugin = require(pluginImportPath);
+        const plugin: types.Plugin = require(pluginImportPath);
         self.plugins.push(plugin);
         return plugin.applyPatch(exports, self.tracer, version);
       }

@@ -13,50 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {PluginNames, RootSpan, SamplerImpl, TracerImpl} from '@opencensus/opencensus-core';
-import {Span} from '@opencensus/opencensus-core';
-import {debug} from '@opencensus/opencensus-core';
-import {Tracer} from '@opencensus/opencensus-core';
-import {Tracing} from '@opencensus/opencensus-core';
-import {Sampler} from '@opencensus/opencensus-core';
-import {Logger} from '@opencensus/opencensus-core';
-import {ConsoleExporter, Exporter, NoopExporter} from '@opencensus/opencensus-core';
-import {Config} from '@opencensus/opencensus-core';
-import * as logger from '@opencensus/opencensus-core';
+import * as extend from 'extend';
+import {types} from  '@opencensus/opencensus-core';
+import {classes} from '@opencensus/opencensus-core';
+import {logger} from '@opencensus/opencensus-core';
 
 import {defaultConfig} from './config/config';
-import {CONSTANTS} from './constants';
+import {Constants} from './constants';
 import {PluginLoader} from './instrumentation/plugingloader';
-import * as extend from 'extend';
+
 
 /** Implements a Tracing. */
-export class TracingImpl implements Tracing {
+export class Tracing implements types.Tracing {
   /** Indicates if the tracing is active */
   private active: boolean;
   /** A tracer object */
-  private tracerLocal: Tracer;
+  private tracerLocal: types.Tracer;
   /** A plugin loader object */
   private pluginLoader: PluginLoader;
   /** Plugin names */
-  private defaultPlugins: PluginNames;
+  private defaultPlugins: types.PluginNames;
   /** A configuration object to start the tracing */
-  private config: Config;
+  private config: types.Config;
   /** An object to log information to */
-  private logger: Logger;
+  private logger: types.Logger;
   /** Singleton instance */
-  private static sgltnInstance: Tracing;
+  private static sgltnInstance: types.Tracing;
 
   /** Constructs a new TracingImpl instance. */
   constructor() {
-    this.tracerLocal = new TracerImpl();
-    this.pluginLoader = new PluginLoader(this.tracerLocal);
+    this.tracerLocal = new classes.Tracer();
     this.defaultPlugins = PluginLoader.defaultPluginsFromArray(
-        CONSTANTS.DEFAULT_INSTRUMENTATION_MODULES);
+        Constants.DEFAULT_INSTRUMENTATION_MODULES);
   }
 
   /** Gets the trancing instance. */
-  static get instance() {
+  static get instance(): types.Tracing {
     return this.sgltnInstance || (this.sgltnInstance = new this());
   }
 
@@ -65,16 +57,17 @@ export class TracingImpl implements Tracing {
    * @param userConfig A configuration object to start the tracing.
    * @returns The started tracing.
    */
-  start(userConfig?: Config): Tracing {
+  start(userConfig?: types.Config): types.Tracing {
     this.config = extend(
         true, {}, defaultConfig, {plugins: this.defaultPlugins}, userConfig);
     // TODO: Instance logger if no logger was passed
     this.logger = this.config.logger || logger.logger();
-    debug('config: %o', this.config);
+    this.logger.debug('config: %o', this.config);
+    this.pluginLoader = new PluginLoader(this.logger, this.tracerLocal);
     this.pluginLoader.loadPlugins(this.config.plugins);
 
     if (!this.config.exporter) {
-      const exporter = new ConsoleExporter(this.config);
+      const exporter = new classes.ConsoleExporter(this.config);
       this.registerExporter(exporter);
     }else{
       this.registerExporter(this.config.exporter);
@@ -91,12 +84,12 @@ export class TracingImpl implements Tracing {
   }
 
   /** Gets the tracer. */
-  get tracer(): Tracer {
+  get tracer(): types.Tracer {
     return this.tracerLocal;
   }
 
   /** Gets the exporter. */
-  get exporter(): Exporter {
+  get exporter(): types.Exporter {
     return this.config.exporter;
   }
 
@@ -104,7 +97,7 @@ export class TracingImpl implements Tracing {
    * Registers an exporter to send the collected traces to.
    * @param exporter THe exporter to send the traces to.
    */
-  registerExporter(exporter: Exporter): Tracing {
+  registerExporter(exporter: types.Exporter): types.Tracing {
     this.config.exporter = exporter;
     this.tracer.registerEndSpanListener(exporter);
     return this;
