@@ -11,7 +11,6 @@ Note: This code was tested on the following Node versions:
 
 
 ## Useful links
-- To know more about Zipkin, visit: <https://zipkin.io/>
 - For more information on OpenCensus, visit: <https://opencensus.io/>
 - To checkout the OpenCensus for Node.js, visit: <https://github.com/census-instrumentation/opencensus-node>
 - For help or feedback on this project, join us on [gitter](https://gitter.im/census-instrumentation/Lobby)
