@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import {CONSTANTS} from '../constants';
+import {Constants} from '../constants';
 
 /** Defines a default configuration. */
 export const defaultConfig = {
   logLevel: 1,
   maximumLabelValueSize: 150,
   plugins: {},
-  bufferSize: CONSTANTS.DEFAULT_BUFFER_SIZE,
-  bufferTimeout: CONSTANTS.DEFAULT_BUFFER_TIMEOUT,
+  bufferSize: Constants.DEFAULT_BUFFER_SIZE,
+  bufferTimeout: Constants.DEFAULT_BUFFER_TIMEOUT,
   samplingRate: 1,
   exporter: null,
   logger: null

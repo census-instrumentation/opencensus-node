@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-import {PluginNames, TracerImpl} from '@opencensus/opencensus-core';
+import {classes} from '@opencensus/opencensus-core';
+import {logger} from '@opencensus/opencensus-core';
+
+const log = logger.logger();
+
 import * as assert from 'assert';
 import {isArray} from 'util';
 
-import {CONSTANTS} from '../src/trace/constants';
+import {Constants} from '../src/trace/constants';
 import {PluginLoader} from '../src/trace/instrumentation/plugingloader';
-import {TracingImpl} from '../src/trace/tracing';
+import {Tracing} from '../src/trace/tracing';
 
 describe('PluginLoader', () => {
   /** Should create a Tracing instance */
   describe('new PluginLoader()', () => {
     it('should create a PluginLoader instance', () => {
-      const tracer = new TracerImpl();
-      const pluginLoader = new PluginLoader(tracer);
+      const tracer = new classes.Tracer();
+      const pluginLoader = new PluginLoader(log, tracer);
       assert.ok(pluginLoader instanceof PluginLoader);
     });
   });
@@ -36,7 +40,7 @@ describe('PluginLoader', () => {
   describe('static defaultPluginsFromArray()', () => {
     it('should get the plugins to use', () => {
       const plugins = PluginLoader.defaultPluginsFromArray(
-          CONSTANTS.DEFAULT_INSTRUMENTATION_MODULES);
+          Constants.DEFAULT_INSTRUMENTATION_MODULES);
       assert.ok(plugins['http']);
       assert.ok(plugins['https']);
       assert.ok(plugins['mongodb-core']);
@@ -47,9 +51,9 @@ describe('PluginLoader', () => {
   describe('loadPlugins()', () => {
     it('should load the plugins', () => {
       const plugins = PluginLoader.defaultPluginsFromArray(
-          CONSTANTS.DEFAULT_INSTRUMENTATION_MODULES);
-      const tracer = new TracerImpl();
-      const pluginLoader = new PluginLoader(tracer);
+          Constants.DEFAULT_INSTRUMENTATION_MODULES);
+      const tracer = new classes.Tracer();
+      const pluginLoader = new PluginLoader(log, tracer);
 
       assert.equal(pluginLoader.loadPlugins(plugins), null);
     });
@@ -59,9 +63,9 @@ describe('PluginLoader', () => {
   describe('unloadPlugins()', () => {
     it('should unload the plugins', () => {
       const plugins = PluginLoader.defaultPluginsFromArray(
-          CONSTANTS.DEFAULT_INSTRUMENTATION_MODULES);
-      const tracer = new TracerImpl();
-      const pluginLoader = new PluginLoader(tracer);
+          Constants.DEFAULT_INSTRUMENTATION_MODULES);
+      const tracer = new classes.Tracer();
+      const pluginLoader = new PluginLoader(log, tracer);
       pluginLoader.loadPlugins(plugins);
 
       assert.equal(pluginLoader.unloadPlugins(), null);

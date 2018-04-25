@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Tracing} from '@opencensus/opencensus-core';
+import {types}  from '@opencensus/opencensus-core';
+import {Tracing} from './trace/tracing';
 
-import {TracingImpl} from './trace/tracing';
+const tracing: types.Tracing = Tracing.instance;
 
-const tracing: Tracing = TracingImpl.instance;
+export { tracing };
 
-export = tracing;

@@ -14,51 +14,44 @@
  * limitations under the License.
  */
 
-import {ConsoleExporter} from '@opencensus/opencensus-core';
-import {Exporter} from '@opencensus/opencensus-core';
-import {Tracer} from '@opencensus/opencensus-core';
-import {TracerImpl} from '@opencensus/opencensus-core';
-import {Tracing} from '@opencensus/opencensus-core';
-import {Logger} from '@opencensus/opencensus-core';
-import {Config, TracingConfig} from '@opencensus/opencensus-core';
-import {NoopExporter} from '@opencensus/opencensus-core';
+import {types} from '@opencensus/opencensus-core'; 
+import {classes} from '@opencensus/opencensus-core';
+import {logger} from '@opencensus/opencensus-core';
 
-import * as logger from '@opencensus/opencensus-core';
-
-import {TracingImpl} from '../src/trace/tracing';
+import {Tracing} from '../src/trace/tracing';
 import * as assert from 'assert';
 
 
-const NOOP_EXPORTER = new NoopExporter();
+const NOOP_EXPORTER = new classes.NoopExporter();
 describe('Tracing', () => {
   /** Should create a Tracing instance */
   describe('new Tracing()', () => {
     it('should create a Tracer instance', () => {
-      const tracing = new TracingImpl();
-      assert.ok(tracing instanceof TracingImpl);
+      const tracing = new Tracing();
+      assert.ok(tracing instanceof Tracing);
     });
   });
 
   /** Should get the singleton trancing instance. */
   describe('static get instance()', () => {
     it('should get the singleton trancing instance', () => {
-      const tracing = TracingImpl.instance;
-      assert.ok(tracing instanceof TracingImpl);
+      const tracing = Tracing.instance;
+      assert.ok(tracing instanceof Tracing);
     });
   });
 
   /** Should return a started tracing instance */
   describe('start()', () => {
-    let tracingStarted: Tracing;
-    const tracing = new TracingImpl();
+    let tracingStarted: types.Tracing;
+    const tracing = new Tracing();
     // tslint:disable:no-any
-    function instanceOfLogger(object: any): object is Logger {
+    function instanceOfLogger(object: any): object is types.Logger {
       return 'debug' in object;
     }
 
     it('should return a tracing instance', () => {
       tracingStarted = tracing.start();
-      assert.ok(tracingStarted instanceof TracingImpl);
+      assert.ok(tracingStarted instanceof Tracing);
     });
 
     it('the tracing was started', () => {
@@ -80,7 +73,7 @@ describe('Tracing', () => {
   /** Should stop the tracing instance */
   describe('stop()', () => {
     it('should stop the tracing instance', () => {
-      const tracing = new TracingImpl();
+      const tracing = new Tracing();
       tracing.start();
       tracing.stop();
       assert.ok(!tracing.tracer.active);
@@ -90,27 +83,27 @@ describe('Tracing', () => {
   /** Should get the tracer instance */
   describe('get tracer()', () => {
     it('should get the tracer instance', () => {
-      const tracing = new TracingImpl();
+      const tracing = new Tracing();
       tracing.start();
       const tracer = tracing.tracer;
-      assert.ok(tracer instanceof TracerImpl);
+      assert.ok(tracer instanceof classes.Tracer);
     });
   });
 
   /** Should get the exporter instance */
   describe('get exporter()', () => {
     it('should get the exporter instance', () => {
-      const tracing = new TracingImpl();
+      const tracing = new Tracing();
       tracing.start();
       const exporter = tracing.exporter;
-      assert.ok(exporter instanceof ConsoleExporter);
+      assert.ok(exporter instanceof classes.ConsoleExporter);
     });
   });
 
   /** Should get the exporter instance */
   describe('registerExporter()', () => {
     it('should register the exporter on tracer', () => {
-      const tracing = new TracingImpl();
+      const tracing = new Tracing();
       tracing.start();
       const exporter = tracing.exporter;
       tracing.registerExporter(exporter);
