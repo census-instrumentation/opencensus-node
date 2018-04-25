@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core'; 
+import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
+import * as assert from 'assert';
 
 import {Tracing} from '../src/trace/tracing';
-import * as assert from 'assert';
 
 
 const NOOP_EXPORTER = new classes.NoopExporter();
@@ -57,14 +57,12 @@ describe('Tracing', () => {
     it('the tracing was started', () => {
       tracingStarted = tracing.start();
       assert.ok(tracingStarted.tracer.active);
-    });    
-    it('should tracing.tracer instance with logger', () =>{
-      
-      tracingStarted = tracing.start({logger:logger.logger('debug')});
+    });
+    it('should tracing.tracer instance with logger', () => {
+      tracingStarted = tracing.start({logger: logger.logger('debug')});
       assert.ok(instanceOfLogger(tracingStarted.tracer.logger));
     });
-    it('should tracing.tracer instance with exporter', () =>{
-      
+    it('should tracing.tracer instance with exporter', () => {
       tracingStarted = tracing.start({exporter: NOOP_EXPORTER});
       assert.equal(tracingStarted.exporter, NOOP_EXPORTER);
     });
