@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {debug, randomSpanId} from '../../internal/util';
+import {randomSpanId} from '../../internal/util';
 import * as types from './types';
 
 const MIN_NUMBER = 1e-4;

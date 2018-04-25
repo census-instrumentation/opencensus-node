@@ -18,7 +18,6 @@ import * as CLS from 'continuation-local-storage';
 import * as semver from 'semver';
 
 import * as cls_ah from './cls-ah';
-import {debug} from './util';
 
 export type Namespace = CLS.Namespace;
 export type Func<T> = CLS.Func<T>;
@@ -27,6 +26,8 @@ const useAsyncHooks: boolean = semver.satisfies(
     process.version, '>=8');  //&&
                               // !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
 
+import * as Debug from 'debug';
+const debug = Debug('opencensus');
 debug('useAsyncHooks = %s', useAsyncHooks);
 
 const cls: typeof CLS =

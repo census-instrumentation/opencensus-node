@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-import {debug, randomSpanId} from '../../internal/util';
+import * as types from './types';
+import * as logger from '../../common/console-logger';
 
-import {RootSpan} from './root-span';
 import {SpanBaseModel} from './span-base-model';
 
-import * as logger from '../../common/console-logger';
-import * as types from './types';
 
 /** Defines a Span. */
 export class Span extends SpanBaseModel implements types.Span {
-  private root: RootSpan;
+
+  private root: types.RootSpan;
 
   /**
    * Constructs a new SpanImpl instance.
    * @param root
    */
-  constructor(root: RootSpan) {
+  constructor(root: types.RootSpan) {
     super();
     this.root = root;
     this.logger = this.root.logger || logger.logger();
@@ -58,15 +57,11 @@ export class Span extends SpanBaseModel implements types.Span {
         {traceId: this.traceId, spanId: this.id, name: this.name});
   }
 
-  /** Notifies an end operation on span instance. */
-  private notifyEnd() {
-    this.root.onEndSpan(this);
-  }
+
 
   /** Ends the span. */
   end(): void {
     super.end();
-    this.notifyEnd();
     this.logger.debug('ending span  %o', {
       spanId: this.id,
       traceId: this.traceId,

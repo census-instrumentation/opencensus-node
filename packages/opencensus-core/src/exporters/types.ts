@@ -15,20 +15,20 @@
  */
 
 
-import {OnEndSpanEventListener, RootSpan} from '../trace/model/types';
-import {BufferConfig} from '../trace/config/types';
-import {Logger} from '../common/types';
+import * as modelTypes from '../trace/model/types';
+import * as configTypes from '../trace/config/types';
+import * as loggerTypes from '../common/types';
 
 /** Defines an exporter interface. */
-export interface Exporter extends OnEndSpanEventListener {
+export interface Exporter extends modelTypes.OnEndSpanEventListener {
   /** An object to log information to */
-  logger: Logger;
+  logger: loggerTypes.Logger;
   
   /**
    * Sends a list of root spans to the service.
    * @param rootSpans A list of root spans to publish.
    */
-  publish(rootSpans: RootSpan[]);
+  publish(rootSpans: modelTypes.RootSpan[]);
 }
 
-export type  ExporterConfig = BufferConfig;
+export type  ExporterConfig = configTypes.BufferConfig;

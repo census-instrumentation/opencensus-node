@@ -15,9 +15,6 @@
  */
 
 import * as crypto from 'crypto';
-import * as Debug from 'debug';
-
-export const debug = Debug('opencensus');
 
 
 // TODO: rethink this snippet aproach

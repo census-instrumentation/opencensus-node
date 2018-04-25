@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-import {Tracer} from './model/types';
-import {Sampler} from './sampler/types';
-import {Exporter} from '../exporters/types';
-import {Config} from './config/types';
+import * as modelTypes from './model/types';
+import * as samplerTypes from './sampler/types';
+import * as configTypes from './config/types';
+import * as exportersTypes from '../exporters/types';
 
 /** Main interface for tracing. */
 export interface Tracing {
   
   /** Object responsible for managing a trace. */
-  readonly tracer: Tracer;
+  readonly tracer: modelTypes.Tracer;
 
   /** Service to send collected traces to. */
-  readonly exporter: Exporter;
+  readonly exporter: exportersTypes.Exporter;
 
   /**
    * Enables the tracing process.
    * @param userConfig A configuration object.
    * @returns The tracing object.
    */
-  start(userConfig?: Config): Tracing;
+  start(userConfig?: configTypes.Config): Tracing;
 
   /** Stops tracing. */
   stop(): void;
@@ -43,6 +43,6 @@ export interface Tracing {
    * @param exporter The exporter to send the traces to.
    * @returns The tracing object.
    */
-  registerExporter(exporter: Exporter): Tracing;
+  registerExporter(exporter: exportersTypes.Exporter): Tracing;
 }
 

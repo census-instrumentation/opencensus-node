@@ -15,7 +15,7 @@
  */
 import * as shimmer from 'shimmer';
 import * as types from './types';
-import {Tracer} from '../model/types';
+import * as modelTypes from '../model/types';
 
 /** This class represent the base to patch plugin. */
 export abstract class BasePlugin implements types.Plugin {
@@ -26,7 +26,7 @@ export abstract class BasePlugin implements types.Plugin {
   /** The module name */
   protected moduleName: string;
   /** A tracer object. */
-  protected tracer: Tracer;
+  protected tracer: modelTypes.Tracer;
   /** The module version. */
   protected version: string;
 
@@ -45,7 +45,7 @@ export abstract class BasePlugin implements types.Plugin {
    * @param version module version description
    */
   // tslint:disable:no-any
-  protected setPluginContext(exporter: any, tracer: Tracer, version: string) {
+  protected setPluginContext(exporter: any, tracer: modelTypes.Tracer, version: string) {
     this.exporter = exporter;
     this.tracer = tracer;
     this.version = version;
@@ -90,7 +90,7 @@ export abstract class BasePlugin implements types.Plugin {
   } 
  
   // tslint:disable:no-any
-  applyPatch(exporter: any, tracer: Tracer, version: string): any{
+  applyPatch(exporter: any, tracer: modelTypes.Tracer, version: string): any{
     this.setPluginContext(exporter, tracer, version); 
   }
 

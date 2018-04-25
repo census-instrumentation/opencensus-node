@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Logger, LoggerOptions} from './types';
+import * as types from './types';
 
 const logDriver = require('log-driver');
 
@@ -22,7 +22,7 @@ const logDriver = require('log-driver');
 /**
  * This class represente a console-logger
  */
-class ConsoleLogger implements Logger {
+class ConsoleLogger implements types.Logger {
   // tslint:disable:no-any
   private logger: any; 
   static LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
@@ -31,8 +31,8 @@ class ConsoleLogger implements Logger {
    * Constructs a new ConsoleLogger instance
    * @param options A logger configuration object.
    */
-  constructor(options?: LoggerOptions|string) {
-    let opt: LoggerOptions = {};
+  constructor(options?: types.LoggerOptions|string) {
+    let opt: types.LoggerOptions = {};
     if (typeof options === 'string') {
       opt = {level: options};
     } else {
@@ -102,7 +102,7 @@ let defaultLogger = null;
  *  Function logger exported to others classes.
  * @param options A logger options or strig to logger in console
  */
-const logger = (options?: LoggerOptions|string) => {
+const logger = (options?: types.LoggerOptions|string) => {
   defaultLogger = new ConsoleLogger(options);
   logger['logger'] = defaultLogger;
   return defaultLogger;

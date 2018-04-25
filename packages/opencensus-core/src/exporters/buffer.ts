@@ -15,21 +15,17 @@
  */
 
 import * as uuidv4 from 'uuid/v4';
-
-import {debug} from '../internal/util';
-import {RootSpan} from '../trace/model/types';
-import {OnEndSpanEventListener} from '../trace/model/types';
-import {Logger} from '../common/types';
-import {Exporter} from './types';
-import {Config, BufferConfig} from '../trace/config/types';
-
+import * as types from './types';
+import * as modelTypes from '../trace/model/types';
+import * as configTypes from '../trace/config/types';
+import * as loggerTypes from '../common/types';
 import * as logger from '../common/console-logger';
 
 
 /** Controls the sending of traces to exporters. */
 export class Buffer {
   /** The service to send the collected spans. */
-  private exporter: Exporter;
+  private exporter: types.Exporter;
   /** Maximum size of a buffer. */
   private bufferSize: number;
   /** Max time for a buffer can wait before being sent */
@@ -39,16 +35,16 @@ export class Buffer {
   /** Indicates when the buffer timeout is running */
   private bufferTimeoutInProgress = false;
   /** An object to log information to */
-  logger: Logger;
+  logger: loggerTypes.Logger;
   /** Trace queue of a buffer */
-  queue: RootSpan[] = [];
+  queue: modelTypes.RootSpan[] = [];
 
   /**
    * Constructs a new Buffer instance.
    * @param exporter The service to send the collected spans.
    * @param config A buffer configuration object to create a buffer.
    */
-  constructor(exporter: Exporter, config: BufferConfig) {
+  constructor(exporter: types.Exporter, config: configTypes.BufferConfig) {
     this.exporter = exporter;
     this.logger = config.logger || logger.logger();
     this.bufferSize = config.bufferSize;
@@ -69,7 +65,7 @@ export class Buffer {
    * Add a trace (rootSpan) in the buffer.
    * @param trace RootSpan to be added in the buffer.
    */
-  addToBuffer(trace: RootSpan) {
+  addToBuffer(trace: modelTypes.RootSpan) {
     this.queue.push(trace);
     this.logger.debug('BUFFER: added new trace');
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {Config, TracerConfig} from '../config/types';
-import {Sampler} from '../sampler/types';
-import {Logger} from '../../common/types';
+import * as configTypes from '../config/types';
+import * as samplerTypes from '../sampler/types';
+import * as loggerTypes from '../../common/types';
 
 
 /** Default type for functions */
@@ -84,7 +84,7 @@ export interface TraceContext {
 /** Defines an end span event listener */
 export interface OnEndSpanEventListener {
   /** Happens when a span is ended */
-  onEndSpan(span: Span): void;
+  onEndSpan(span: RootSpan): void;
 }
 
 /** Interface for Span */
@@ -105,7 +105,7 @@ export interface Span {
   type: string;
 
   /** An object to log information to */
-  logger: Logger;
+  logger: loggerTypes.Logger;
 
   /** A final status for this span */
   status: number;
@@ -197,7 +197,7 @@ export interface Span {
 }
 
 /** Interface for RootSpan */
-export interface RootSpan extends Span, OnEndSpanEventListener {
+export interface RootSpan extends Span {
   /** Get the span list from RootSpan instance */
   readonly spans: Span[];
 
@@ -213,15 +213,15 @@ export interface RootSpan extends Span, OnEndSpanEventListener {
 
 
 /** Interface for Tracer */
-export interface Tracer {
+export interface Tracer extends OnEndSpanEventListener {
   /** Get and set the currentRootSpan to tracer instance */
   currentRootSpan: RootSpan;
 
   /** A sampler that will decide if the span will be sampled or not */
-  sampler: Sampler;
+  sampler: samplerTypes.Sampler;
 
   /** A configuration for starting the tracer */
-  logger: Logger;
+  logger: loggerTypes.Logger;
 
   /** Get the eventListeners from tracer instance */
   readonly eventListeners: OnEndSpanEventListener[];
@@ -234,7 +234,7 @@ export interface Tracer {
    * @param config Configuration for tracer instace
    * @returns A tracer instance started
    */
-  start(config: TracerConfig): Tracer;
+  start(config: configTypes.TracerConfig): Tracer;
 
   /** Stop the tracer instance */
   stop(): void;
@@ -246,12 +246,6 @@ export interface Tracer {
    * @returns The callback return
    */
   startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T;
-
-  /**
-   * Event called on the span end
-   * @param root The RootSpan that was ended
-   */
-  onEndSpan(root: RootSpan): void;
 
   /**
    * Register a OnEndSpanEventListener on the tracer instance

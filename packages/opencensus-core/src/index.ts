@@ -15,24 +15,8 @@
  */
 
 
-// opencensus core api interfaces
-export * from './trace/types';
-export * from './trace/model/types';
-export * from './trace/config/types';
-export * from './trace/sampler/types';
-export * from './trace/instrumentation/types';
-export * from './exporters/types';
-export * from './common/types';
-
-// base instrumetation class
-export * from './trace/instrumentation/base-plugin';
-
-// console exporter and buffer impls
-export * from './exporters/buffer';
-export * from './exporters/console-exporter';
-
-// util
-export * from './internal/util';
-
+import * as logger from './common/console-logger';
+import * as classes from './index-classes';
 import * as types from './index-types';
-export {types};
+
+export {classes, logger, types};

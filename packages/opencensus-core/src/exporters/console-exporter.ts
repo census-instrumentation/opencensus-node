@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterConfig} from '../exporters/types';
-import {RootSpan} from '../trace/model/types';
-import {Buffer} from './buffer';
-import {Logger} from '../common/types';
+import * as types from './types';
+import * as modelTypes from '../trace/model/types';
+import * as loggerTypes from '../common/types';
 
+import {Buffer} from './buffer';
 
 /** Do not send span data */
-export class NoopExporter implements Exporter {
-  logger: Logger;
-  onEndSpan(root: RootSpan) {}
-  publish(rootSpans: RootSpan[]) {}
+export class NoopExporter implements types.Exporter {
+  logger: loggerTypes.Logger;
+  onEndSpan(root: modelTypes.RootSpan) {}
+  publish(rootSpans: modelTypes.RootSpan[]) {}
 }
 
 /** Format and sends span data to the console. */
-export class ConsoleExporter implements Exporter {
+export class ConsoleExporter implements types.Exporter {
   /** Buffer object to store the spans. */
   private buffer: Buffer;
-  logger: Logger;
+  logger: loggerTypes.Logger;
 
   /**
    * Constructs a new ConsoleLogExporter instance.
    * @param config Exporter configuration object to create a console log
    * exporter.
    */
-  constructor(config: ExporterConfig) {
+  constructor(config: types.ExporterConfig) {
     this.buffer = new Buffer(this, config);
     this.logger = config.logger;
   }
@@ -47,7 +47,7 @@ export class ConsoleExporter implements Exporter {
    * Event called when a span is ended.
    * @param root Ended span.
    */
-  onEndSpan(root: RootSpan) {
+  onEndSpan(root: modelTypes.RootSpan) {
     this.buffer.addToBuffer(root);
   }
 
@@ -55,7 +55,7 @@ export class ConsoleExporter implements Exporter {
    * Sends the spans information to the console.
    * @param rootSpans
    */
-  publish(rootSpans: RootSpan[]) {
+  publish(rootSpans: modelTypes.RootSpan[]) {
     rootSpans.map((root) => {
       const ROOT_STR: string = (`
                 RootSpan: {traceId: ${root.traceId}, 

@@ -27,7 +27,7 @@ class OnEndSpanClass implements OnEndSpanEventListener {
   /** Counter for test use */
   testCount = 0;
   /** Happens when a span is ended */
-  onEndSpan(span: Span): void {
+  onEndSpan(span: RootSpan): void {
     this.testCount++;
   }
 }

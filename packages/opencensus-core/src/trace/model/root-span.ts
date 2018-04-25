@@ -15,23 +15,20 @@
  */
 
 import * as uuid from 'uuid';
-
-import {Clock} from '../../internal/clock';
-import {debug} from '../../internal/util';
-
-import {Span} from './span';
-import {SpanBaseModel} from './span-base-model';
-import {Tracer} from './tracer';
-
-import * as logger from '../../common/console-logger';
 import * as types from './types';
+import * as logger from '../../common/console-logger';
+
+import {SpanBaseModel} from './span-base-model';
+import {Clock} from '../../internal/clock';
+import {Span} from './span';
+
 
 /** Defines a root span */
 export class RootSpan extends SpanBaseModel implements types.RootSpan {
   /** A tracer object */
-  private tracer: Tracer;
+  private tracer: types.Tracer;
   /** A list of child spans. */
-  private spansLocal: Span[];
+  private spansLocal: types.Span[];
   /** It's trace ID. */
   private traceIdLocal: string;
 
@@ -40,7 +37,7 @@ export class RootSpan extends SpanBaseModel implements types.RootSpan {
    * @param tracer A tracer object.
    * @param context A trace options object to build the root span.
    */
-  constructor(tracer: Tracer, context?: types.TraceOptions) {
+  constructor(tracer: types.Tracer, context?: types.TraceOptions) {
     super();
     this.tracer = tracer;
     this.traceIdLocal =
@@ -56,7 +53,7 @@ export class RootSpan extends SpanBaseModel implements types.RootSpan {
   }
 
   /** Gets span list from rootspan instance. */
-  get spans(): Span[] {
+  get spans(): types.Span[] {
     return this.spansLocal;
   }
 
@@ -87,20 +84,6 @@ export class RootSpan extends SpanBaseModel implements types.RootSpan {
     this.tracer.onEndSpan(this);
   }
 
-  /**
-   * Event called when a span is ended.
-   * @param span Span ended.
-   */
-  onEndSpan(span: Span) {
-    this.logger.debug('ending span  %o', {
-      id: span.id,
-      traceId: span.traceId,
-      name: span.name,
-      startTime: span.startTime,
-      endTime: span.endTime,
-      duration: span.duration
-    });
-  }
 
   /**
    * Starts a new child span in the root span.

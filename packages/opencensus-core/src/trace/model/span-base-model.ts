@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import * as types from './types';
 
 import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
-import {debug, randomSpanId} from '../../internal/util';
-import * as types from './types';
+import {randomSpanId} from '../../internal/util';
+
 
 /** Defines a base model for spans. */
 export abstract class SpanBaseModel implements types.Span {

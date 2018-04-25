@@ -15,20 +15,16 @@
  */
 
 import * as cls from '../../internal/cls';
-import {debug} from '../../internal/util';
-import {Sampler} from '../sampler/sampler';
-import {TracerConfig} from '../config/types';
-
-import {Config} from '../config/types';
+import * as types from './types';
+import * as samplerTypes from '../sampler/types';
+import * as configTypes from '../config/types';
+import * as loggerTypes from '../../common/types';
+import * as logger from '../../common/console-logger';
 
 import {RootSpan} from './root-span';
 import {Span} from './span';
-import {TraceOptions} from './types';
-import {Func, OnEndSpanEventListener} from './types';
-import {Logger} from '../../common/types';
-import * as types from './types';
+import {Sampler} from '../sampler/sampler';
 
-import * as logger from '../../common/console-logger';
 
 /**
  * This class represent a tracer.
@@ -39,15 +35,15 @@ export class Tracer implements types.Tracer {
   /** TODO */
   private contextManager: cls.Namespace;
   /** A configuration for starting the tracer */
-  private config: TracerConfig;
+  private config: configTypes.TracerConfig;
   /** A list of end span event listeners */
-  private eventListenersLocal: OnEndSpanEventListener[] = [];
+  private eventListenersLocal: types.OnEndSpanEventListener[] = [];
   /** A list of ended root spans */
-  private endedTraces: RootSpan[] = [];
+  private endedTraces: types.RootSpan[] = [];
   /** A sampler used to make sample decisions */
-  sampler: Sampler;
+  sampler:  samplerTypes.Sampler;
   /** A configuration for starting the tracer */
-  logger: Logger = logger.logger();
+  logger: loggerTypes.Logger = logger.logger();
 
   /** Constructs a new TraceImpl instance. */
   constructor() {
@@ -57,12 +53,12 @@ export class Tracer implements types.Tracer {
   }
 
   /** Gets the current root span. */
-  get currentRootSpan(): RootSpan {
+  get currentRootSpan(): types.RootSpan {
     return this.contextManager.get('rootspan');
   }
 
   /** Sets the current root span. */
-  set currentRootSpan(root: RootSpan) {
+  set currentRootSpan(root: types.RootSpan) {
     this.contextManager.set('rootspan', root);
   }
 
@@ -70,7 +66,7 @@ export class Tracer implements types.Tracer {
    * Starts a tracer.
    * @param config A tracer configuration object to start a tracer.
    */
-  start(config: TracerConfig): Tracer {
+  start(config: configTypes.TracerConfig): types.Tracer {
     this.activeLocal = true;
     this.config = config;
     this.logger = this.config.logger || logger.logger();
@@ -79,7 +75,7 @@ export class Tracer implements types.Tracer {
   }
 
   /** Gets the list of event listners. */
-  get eventListeners(): OnEndSpanEventListener[] {
+  get eventListeners(): types.OnEndSpanEventListener[] {
     return this.eventListenersLocal;
   }
 
@@ -98,7 +94,7 @@ export class Tracer implements types.Tracer {
    * @param options A TraceOptions object to start a root span.
    * @param fn A callback function to run after starting a root span.
    */
-  startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T {
+  startRootSpan<T>(options: types.TraceOptions, fn: (root: types.RootSpan) => T): T {
     return this.contextManager.runAndReturn((root) => {
       let newRoot = null;
       if (this.active) {
@@ -119,7 +115,7 @@ export class Tracer implements types.Tracer {
    * Is called when a span is ended.
    * @param root The ended span.
    */
-  onEndSpan(root: RootSpan): void {
+  onEndSpan(root: types.RootSpan): void {
     if (!root) {
       return this.logger.debug('cannot end trace - no active trace found');
     }
@@ -134,11 +130,11 @@ export class Tracer implements types.Tracer {
    * Registers an end span event listener.
    * @param listener The listener to register.
    */
-  registerEndSpanListener(listner: OnEndSpanEventListener) {
+  registerEndSpanListener(listner: types.OnEndSpanEventListener) {
     this.eventListenersLocal.push(listner);
   }
 
-  private notifyEndSpan(root: RootSpan) {
+  private notifyEndSpan(root: types.RootSpan) {
     if (this.active) {
       this.logger.debug('starting to notify listeners the end of rootspans');
       if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
@@ -162,8 +158,8 @@ export class Tracer implements types.Tracer {
    * @param type The span type.
    * @param parentSpanId The parent span ID.
    */
-  startSpan(name?: string, type?: string, parentSpanId?: string): Span {
-    let newSpan: Span = null;
+  startSpan(name?: string, type?: string, parentSpanId?: string): types.Span {
+    let newSpan: types.Span = null;
     if (!this.currentRootSpan) {
       this.logger.debug('no current trace found - must start a new root span first');
     } else {
@@ -176,7 +172,7 @@ export class Tracer implements types.Tracer {
    * Wraps a function.
    * @param fn Function to wrap.
    */
-  wrap<T>(fn: Func<T>): Func<T> {
+  wrap<T>(fn: types.Func<T>): types.Func<T> {
     if (!this.active) {
       return fn;
     }

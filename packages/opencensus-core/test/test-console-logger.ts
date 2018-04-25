@@ -17,7 +17,6 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-// import * as logger from '../src/common/console-logger';
 import * as logger from '../src/common/console-logger';
 
 import {Logger} from '../src/common/types';
