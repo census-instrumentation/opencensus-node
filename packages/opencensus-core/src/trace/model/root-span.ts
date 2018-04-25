@@ -18,13 +18,13 @@ import * as uuid from 'uuid';
 import * as types from './types';
 import * as logger from '../../common/console-logger';
 
-import {SpanBaseModel} from './span-base-model';
+import {SpanBase} from './span-base';
 import {Clock} from '../../internal/clock';
 import {Span} from './span';
 
 
 /** Defines a root span */
-export class RootSpan extends SpanBaseModel implements types.RootSpan {
+export class RootSpan extends SpanBase implements types.RootSpan {
   /** A tracer object */
   private tracer: types.Tracer;
   /** A list of child spans. */

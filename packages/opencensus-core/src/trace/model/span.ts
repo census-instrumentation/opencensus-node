@@ -17,11 +17,11 @@
 import * as types from './types';
 import * as logger from '../../common/console-logger';
 
-import {SpanBaseModel} from './span-base-model';
+import {SpanBase} from './span-base';
 
 
 /** Defines a Span. */
-export class Span extends SpanBaseModel implements types.Span {
+export class Span extends SpanBase implements types.Span {
 
   private root: types.RootSpan;
 

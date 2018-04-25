@@ -21,7 +21,7 @@ import {randomSpanId} from '../../internal/util';
 
 
 /** Defines a base model for spans. */
-export abstract class SpanBaseModel implements types.Span {
+export abstract class SpanBase implements types.Span {
   protected className: string;
   /** The clock used to mesure the beginning and ending of a span */
   private clock: Clock = null;
