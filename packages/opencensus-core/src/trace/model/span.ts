@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import * as types from './types';
 import * as logger from '../../common/console-logger';
 
 import {SpanBase} from './span-base';
+import * as types from './types';
 
 
 /** Defines a Span. */
 export class Span extends SpanBase implements types.Span {
-
   private root: types.RootSpan;
 
   /**
@@ -41,7 +40,7 @@ export class Span extends SpanBase implements types.Span {
   }
 
   /** Gets trace context of span. */
-  get traceContext(): types.TraceContext {
+  get spanContext(): types.SpanContext {
     return {
       traceId: this.traceId.toString(),
       spanId: this.id.toString(),

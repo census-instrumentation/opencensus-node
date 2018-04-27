@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-/** Defines a Clock. */
+
+/**
+ * The Clock class is used to record the duration and endTime for spans.
+ */
 export class Clock {
   /** Indicates if the clock is endend. */
   private endedLocal = false;

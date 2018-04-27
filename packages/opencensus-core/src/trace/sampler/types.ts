@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
+import {Logger} from '../../common/types';
 import {Exporter} from '../../exporters/types';
 import {PluginNames} from '../instrumentation/types';
-import {Logger} from '../../common/types';
 
 /** This interface represent the probability of a tracer. */
 export interface Sampler {
+  /**
+   * A Sampler description name
+   */
+  description: string;
   /**
    * Sets idUpperBound with MAX_NUMBER that is equivalent the probability be 1.
    * @returns a Sampler object.

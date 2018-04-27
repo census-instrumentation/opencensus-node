@@ -15,15 +15,15 @@
  */
 
 import * as uuidv4 from 'uuid/v4';
-import * as types from './types';
-import * as modelTypes from '../trace/model/types';
-import * as configTypes from '../trace/config/types';
-import * as loggerTypes from '../common/types';
 import * as logger from '../common/console-logger';
+import * as loggerTypes from '../common/types';
+import * as configTypes from '../trace/config/types';
+import * as modelTypes from '../trace/model/types';
+import * as types from './types';
 
 
 /** Controls the sending of traces to exporters. */
-export class Buffer {
+export class ExporterBuffer {
   /** The service to send the collected spans. */
   private exporter: types.Exporter;
   /** Maximum size of a buffer. */
@@ -35,9 +35,9 @@ export class Buffer {
   /** Indicates when the buffer timeout is running */
   private bufferTimeoutInProgress = false;
   /** An object to log information to */
-  logger: loggerTypes.Logger;
+  private logger: loggerTypes.Logger;
   /** Trace queue of a buffer */
-  queue: modelTypes.RootSpan[] = [];
+  private queue: modelTypes.RootSpan[] = [];
 
   /**
    * Constructs a new Buffer instance.
@@ -61,13 +61,20 @@ export class Buffer {
     return this;
   }
 
+  getBufferSize(): number {
+    return this.bufferSize;
+  }
+
+  getQueue(): modelTypes.RootSpan[] {
+    return this.queue;
+  }
   /**
-   * Add a trace (rootSpan) in the buffer.
-   * @param trace RootSpan to be added in the buffer.
+   * Add a rootSpan in the buffer.
+   * @param root RootSpan to be added in the buffer.
    */
-  addToBuffer(trace: modelTypes.RootSpan) {
-    this.queue.push(trace);
-    this.logger.debug('BUFFER: added new trace');
+  addToBuffer(root: modelTypes.RootSpan) {
+    this.queue.push(root);
+    this.logger.debug('ExporterBuffer: added new rootspan');
 
     if (this.queue.length > this.bufferSize) {
       this.flush();
@@ -84,13 +91,13 @@ export class Buffer {
 
   /** Reset the buffer timeout */
   private resetBufferTimeout() {
-    this.logger.debug('BUFFER: reset timeout');
+    this.logger.debug('ExporterBuffer: reset timeout');
     this.resetTimeout = true;
   }
 
   /** Start the buffer timeout, when finished calls flush method */
   private setBufferTimeout() {
-    this.logger.debug('BUFFER: set timerout');
+    this.logger.debug('ExporterBuffer: set timeout');
     this.bufferTimeoutInProgress = true;
 
     setTimeout(() => {

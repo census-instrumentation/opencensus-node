@@ -22,6 +22,10 @@ import {Span} from '../src/trace/model/span';
 import {Tracer} from '../src/trace/model/tracer';
 import {Annotation, Attributes, Link, MessageEvent} from '../src/trace/model/types';
 
+
+// TODO: we should evaluate a way to merge similar test cases between span and
+// rootspan
+
 const tracer = new Tracer();
 
 describe('Span', () => {
@@ -49,15 +53,15 @@ describe('Span', () => {
   });
 
   /**
-   * Should the trace context of span
+   * Should the span context of span
    */
-  describe('get traceContext()', () => {
-    it('should the trace context of span', () => {
+  describe('get spanContext', () => {
+    it('should the span context of span', () => {
       const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
       const span = new Span(rootSpan);
-      const context = span.traceContext;
+      const context = span.spanContext;
 
       assert.equal(context.traceId, rootSpan.traceId);
       assert.equal(context.spanId, span.id);
@@ -77,13 +81,13 @@ describe('Span', () => {
       span = new Span(rootSpan);
     });
     it('should get startTime() return null', () => {
-      assert.equal(span.startTime, null);
+      assert.strictEqual(span.startTime, null);
     });
     it('should get endTime() return null', () => {
-      assert.equal(span.endTime, null);
+      assert.strictEqual(span.endTime, null);
     });
     it('should get duration() return null', () => {
-      assert.equal(span.duration, null);
+      assert.strictEqual(span.duration, null);
     });
   });
 

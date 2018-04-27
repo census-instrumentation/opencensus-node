@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
+import * as util from 'util';
+
 import * as types from './types';
 
 const logDriver = require('log-driver');
 
 
 /**
- * This class represente a console-logger
+ * This class implements a console logger.
  */
-class ConsoleLogger implements types.Logger {
+export class ConsoleLogger implements types.Logger {
   // tslint:disable:no-any
-  private logger: any; 
-  static LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
+  private logger: any;
+  static LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
+  level: string;
 
   /**
    * Constructs a new ConsoleLogger instance
@@ -38,11 +41,9 @@ class ConsoleLogger implements types.Logger {
     } else {
       opt = options || {};
     }
-
-    this.logger = logDriver({
-      levels:  ConsoleLogger.LEVELS,
-      level: opt.level || 'silly'
-    });
+    this.level = opt.level;
+    this.logger =
+        logDriver({levels: ConsoleLogger.LEVELS, level: opt.level || 'silent'});
   }
 
   /**
@@ -52,7 +53,7 @@ class ConsoleLogger implements types.Logger {
    */
   // tslint:disable:no-any
   error(message: any, ...args: any[]): void {
-    this.logger.error(arguments);
+    this.logger.error(util.format(message, ...args));
   }
 
   /**
@@ -62,7 +63,7 @@ class ConsoleLogger implements types.Logger {
    */
   // tslint:disable:no-any
   warn(message: any, ...args: any[]): void {
-    this.logger.warn(arguments);
+    this.logger.warn(util.format(message, ...args));
   }
 
   /**
@@ -72,7 +73,7 @@ class ConsoleLogger implements types.Logger {
    */
   // tslint:disable:no-any
   info(message: any, ...args: any[]): void {
-    this.logger.info(arguments);
+    this.logger.info(util.format(message, ...args));
   }
 
   /**
@@ -82,7 +83,7 @@ class ConsoleLogger implements types.Logger {
    */
   // tslint:disable:no-any
   debug(message: any, ...args: any[]): void {
-    this.logger.debug(arguments);
+    this.logger.debug(util.format(message, ...args));
   }
 
   /**
@@ -92,22 +93,31 @@ class ConsoleLogger implements types.Logger {
    */
   // tslint:disable:no-any
   silly(message: any, ...args: any[]): void {
-    this.logger.silly(arguments);
+    this.logger.silly(util.format(message, ...args));
   }
 }
 
-let defaultLogger = null;
 
 /**
  *  Function logger exported to others classes.
  * @param options A logger options or strig to logger in console
  */
-const logger = (options?: types.LoggerOptions|string) => {
-  defaultLogger = new ConsoleLogger(options);
-  logger['logger'] = defaultLogger;
-  return defaultLogger;
+const logger = (options?: types.LoggerOptions|string|number) => {
+  let opt: types.LoggerOptions|string;
+  if (typeof options === 'number') {
+    if (options < 0) {
+      options = 0;
+    } else if (options > ConsoleLogger.LEVELS.length) {
+      options = ConsoleLogger.LEVELS.length - 1;
+    }
+    opt = {level: ConsoleLogger.LEVELS[options]};
+  } else {
+    opt = options;
+  }
+
+  const aLogger = new ConsoleLogger(opt);
+  logger['logger'] = aLogger;
+  return aLogger;
 };
 
-logger();
-
-export{logger};
+export {logger};

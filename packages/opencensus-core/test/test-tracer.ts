@@ -16,11 +16,14 @@
 
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
+import * as uuid from 'uuid';
 
+import {randomSpanId} from '../src/internal/util';
 import {TracerConfig} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {Tracer} from '../src/trace/model/tracer';
+import * as types from '../src/trace/model/types';
 import {OnEndSpanEventListener} from '../src/trace/model/types';
 
 class OnEndSpanClass implements OnEndSpanEventListener {
@@ -33,7 +36,7 @@ class OnEndSpanClass implements OnEndSpanEventListener {
 }
 
 const defaultConfig: TracerConfig = {
-  samplingRate: 1
+  samplingRate: 1.0  // always sampler
 };
 
 describe('Tracer', () => {
@@ -59,7 +62,7 @@ describe('Tracer', () => {
       assert.ok(tracer.currentRootSpan instanceof RootSpan);
     });
     it('should set the current RootSpan from tracer instance', () => {
-      assert.equal(tracer.currentRootSpan, rootSpan);
+      assert.strictEqual(tracer.currentRootSpan, rootSpan);
     });
   });
 
@@ -68,6 +71,7 @@ describe('Tracer', () => {
     let tracerStarted;
     before(() => {
       const tracer = new Tracer();
+      assert.strictEqual(tracer.active, false);
       tracerStarted = tracer.start(defaultConfig);
     });
     it('should return a tracer instance', () => {
@@ -75,7 +79,7 @@ describe('Tracer', () => {
     });
 
     it('the trace was started', () => {
-      assert.ok(tracerStarted.active);
+      assert.strictEqual(tracerStarted.active, true);
     });
   });
 
@@ -90,7 +94,8 @@ describe('Tracer', () => {
 
     it('should register a new OnEndSpanEventListener on listners list', () => {
       const listner = tracer.eventListeners[0];
-      assert.equal(listner, onEndSpan);
+      assert.strictEqual(tracer.eventListeners.length, 1);
+      assert.strictEqual(listner, onEndSpan);
     });
 
     it('should return an OnEndSpanEventListener list', () => {
@@ -104,27 +109,14 @@ describe('Tracer', () => {
   describe('stop()', () => {
     it('should stop the trace instance', () => {
       const tracer = new Tracer();
+      assert.strictEqual(tracer.active, false);
       tracer.start(defaultConfig);
+      assert.strictEqual(tracer.active, true);
       tracer.stop();
-      assert.ok(!tracer.active);
+      assert.strictEqual(tracer.active, false);
     });
   });
 
-  /** Should check if the trace instance is started or stop */
-  describe('get active()', () => {
-    let tracer: Tracer;
-    before(() => {
-      tracer = new Tracer();
-    });
-    it('should check if the trace instance is started', () => {
-      tracer.start(defaultConfig);
-      assert.ok(tracer.active);
-    });
-    it('should check if the trace instance is stoped', () => {
-      tracer.stop();
-      assert.ok(!tracer.active);
-    });
-  });
 
   /** Should create and start a new RootSpan instance */
   describe('startRootSpan()', () => {
@@ -169,20 +161,71 @@ describe('Tracer', () => {
       const config = {samplingRate: 0} as TracerConfig;
       tracer.start(config);
       tracer.startRootSpan(options, (rootSpan) => {
-        assert.ok(!rootSpan.started);
+        assert.strictEqual(rootSpan, null);
       });
     });
   });
 
   /** Should not create the new RootSpan instance */
   describe('startRootSpan() before start()', () => {
-    it('should not create the new RootSpan instance', () => {
+    it('should not create the new RootSpan instance, tracer not started',
+       () => {
+         const tracer = new Tracer();
+         assert.strictEqual(tracer.active, false);
+         tracer.startRootSpan(options, (rootSpan) => {
+           assert.equal(rootSpan, null);
+         });
+       });
+  });
+
+  describe('startRootSpan() with context propagation', () => {
+    const traceOptions = {name: 'rootName', type: 'spanType'} as
+        types.TraceOptions;
+
+    it('should create new RootSpan instance, no propagation', () => {
       const tracer = new Tracer();
-      tracer.startRootSpan(options, (rootSpan) => {
-        assert.equal(rootSpan, null);
+      tracer.start(defaultConfig);
+      tracer.startRootSpan(traceOptions, (rootSpan) => {
+        assert.ok(rootSpan);
+        assert.strictEqual(rootSpan.name, traceOptions.name);
+        assert.strictEqual(rootSpan.type, traceOptions.type);
+      });
+    });
+
+    const spanContextPropagated = {
+      traceId: uuid.v4().split('-').join(''),
+      spanId: randomSpanId(),
+      options: 0x1
+    } as types.SpanContext;
+
+
+    it('should reate the new RootSpan with propagation', () => {
+      const tracer = new Tracer();
+      tracer.start(defaultConfig);
+      traceOptions.spanContext = spanContextPropagated;
+      tracer.startRootSpan(traceOptions, (rootSpan) => {
+        assert.ok(rootSpan);
+        assert.strictEqual(rootSpan.name, traceOptions.name);
+        assert.strictEqual(rootSpan.type, traceOptions.type);
+        assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
+        assert.strictEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
+      });
+    });
+
+    it('should reate the new RootSpan with no propagation', () => {
+      const tracer = new Tracer();
+      tracer.start(defaultConfig);
+      traceOptions.spanContext.options = 0x0;
+      tracer.startRootSpan(traceOptions, (rootSpan) => {
+        assert.ok(rootSpan);
+        assert.strictEqual(rootSpan.name, traceOptions.name);
+        assert.strictEqual(rootSpan.type, traceOptions.type);
+        assert.notEqual(rootSpan.traceId, spanContextPropagated.traceId);
+        assert.notEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
       });
     });
   });
+
 
   /** Should set the current root span to null */
   describe('clearCurrentRootSpan()', () => {
@@ -191,19 +234,20 @@ describe('Tracer', () => {
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
         tracer.clearCurrentTrace();
-        assert.ok(tracer.currentRootSpan == null);
+        assert.strictEqual(tracer.currentRootSpan, null);
       });
     });
   });
 
+
   /** Should create and start a Span instance into a rootSpan */
-  describe('startSpan()', () => {
-    let span;
+  describe('startChildSpan()', () => {
+    let span: types.Span;
     before(() => {
       const tracer = new Tracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
-        span = tracer.startSpan('spanName', 'spanType');
+        span = tracer.startChildSpan('spanName', 'spanType');
       });
     });
     it('should create a Span instance', () => {
@@ -211,15 +255,17 @@ describe('Tracer', () => {
     });
     it('should start a span', () => {
       assert.ok(span.started);
+      assert.strictEqual(span.name, 'spanName');
+      assert.strictEqual(span.type, 'spanType');
     });
   });
 
   /** Should not create a Span instance */
-  describe('startSpan() before startRootSpan()', () => {
-    it('should not create a Span instance', () => {
+  describe('startChildSpan() before startRootSpan()', () => {
+    it('should not create a Span instance, without a rootspan', () => {
       const tracer = new Tracer();
       tracer.start(defaultConfig);
-      const span = tracer.startSpan('spanName', 'spanType');
+      const span = tracer.startChildSpan('spanName', 'spanType');
       assert.equal(span, null);
     });
   });
@@ -236,34 +282,6 @@ describe('Tracer', () => {
         rootSpan.end();
         assert.equal(eventListener.testCount, tracer.eventListeners.length);
       });
-    });
-  });
-
-
-  /** Testing void functions */
-  describe('void functions', () => {
-    it('wrap()', () => {
-      const tracer = new Tracer();
-      tracer.start(defaultConfig);
-      assert.ok(tracer.wrap(() => {}) instanceof Function);
-    });
-
-    it('wrap() before start()', () => {
-      const tracer = new Tracer();
-      assert.ok(tracer.wrap(() => {}) instanceof Function);
-    });
-
-    it('wrapEmitter()', () => {
-      const tracer = new Tracer();
-      tracer.start(defaultConfig);
-      assert.strictEqual(
-          typeof tracer.wrapEmitter(new EventEmitter()), 'undefined');
-    });
-
-    it('wrapEmitter() before start()', () => {
-      const tracer = new Tracer();
-      assert.strictEqual(
-          typeof tracer.wrapEmitter(new EventEmitter()), 'undefined');
     });
   });
 });

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2018 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// Original file from Stackdriver Trace Agent for Node.js
+// https://github.com/GoogleCloudPlatform/cloud-trace-nodejs
 
 import * as CLS from 'continuation-local-storage';
 import * as semver from 'semver';
@@ -30,8 +33,7 @@ import * as Debug from 'debug';
 const debug = Debug('opencensus');
 debug('useAsyncHooks = %s', useAsyncHooks);
 
-const cls: typeof CLS =
-    useAsyncHooks ? cls_ah : CLS;
+const cls: typeof CLS = useAsyncHooks ? cls_ah : CLS;
 
 
 const TRACE_NAMESPACE = 'opencensus.io';

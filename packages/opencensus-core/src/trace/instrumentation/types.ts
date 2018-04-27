@@ -14,13 +14,28 @@
  * limitations under the License.
  */
 
-import {Tracer} from "../model/types";
+import {Tracer} from '../model/types';
 
 /** Interface Plugin to apply patch. */
 export interface Plugin {
+  /**
+   * Method to apply the instrumentation patch
+   * @param moduleExporters exporters from the module to patch
+   * @param tracer a tracer instance
+   * @param version version of the current instaled module to patch
+   */
   // tslint:disable:no-any
-  applyPatch(exporter: any, tracer: Tracer, version: string): any;
+  applyPatch(moduleExporters: any, tracer: Tracer, version: string): any;
+  /** Method to unpatch the instrumentation  */
   applyUnpatch(): void;
 }
 
-export type PluginNames = {[pluginName: string]: string;};
+
+/**
+ * Type PluginNames: each key should be the name of the module to trace,
+ * and its value should be the name of the package  which has the
+ * plugin implementation.
+ */
+export type PluginNames = {
+  [pluginName: string]: string;
+};

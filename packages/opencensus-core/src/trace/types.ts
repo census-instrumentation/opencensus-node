@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
+import * as exportersTypes from '../exporters/types';
+
+import * as configTypes from './config/types';
 import * as modelTypes from './model/types';
 import * as samplerTypes from './sampler/types';
-import * as configTypes from './config/types';
-import * as exportersTypes from '../exporters/types';
 
 /** Main interface for tracing. */
 export interface Tracing {
-  
   /** Object responsible for managing a trace. */
   readonly tracer: modelTypes.Tracer;
 
@@ -45,4 +45,3 @@ export interface Tracing {
    */
   registerExporter(exporter: exportersTypes.Exporter): Tracing;
 }
-

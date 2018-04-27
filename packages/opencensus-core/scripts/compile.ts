@@ -11,7 +11,7 @@ export interface CompileOptions {
 export async function compile(options: CompileOptions) {
   let { strict, languageLevel } = options;
   if (languageLevel === 'auto') {
-    languageLevel = semver.satisfies(process.version, '>=7.5') ? 'es6' : 'es5';
+    languageLevel = semver.satisfies(process.version, '>=7.5') ? 'es2017' : 'es2015';
   }
   await forkP(`node_modules/.bin/tsc`, [
     '-p',

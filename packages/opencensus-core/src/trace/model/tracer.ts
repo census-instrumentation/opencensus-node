@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import * as cls from '../../internal/cls';
-import * as types from './types';
-import * as samplerTypes from '../sampler/types';
-import * as configTypes from '../config/types';
-import * as loggerTypes from '../../common/types';
 import * as logger from '../../common/console-logger';
+import * as loggerTypes from '../../common/types';
+import * as cls from '../../internal/cls';
+import * as configTypes from '../config/types';
+import {Sampler} from '../sampler/sampler';
+import * as samplerTypes from '../sampler/types';
 
 import {RootSpan} from './root-span';
 import {Span} from './span';
-import {Sampler} from '../sampler/sampler';
+import * as types from './types';
 
 
 /**
@@ -32,7 +32,7 @@ import {Sampler} from '../sampler/sampler';
 export class Tracer implements types.Tracer {
   /** Indicates if the tracer is active */
   private activeLocal: boolean;
-  /** TODO */
+  /** Manage context automatic propagation */
   private contextManager: cls.Namespace;
   /** A configuration for starting the tracer */
   private config: configTypes.TracerConfig;
@@ -40,10 +40,13 @@ export class Tracer implements types.Tracer {
   private eventListenersLocal: types.OnEndSpanEventListener[] = [];
   /** A list of ended root spans */
   private endedTraces: types.RootSpan[] = [];
+  /** Bit to represent whether trace is sampled or not. */
+  private readonly IS_SAMPLED = 0x1;
   /** A sampler used to make sample decisions */
-  sampler:  samplerTypes.Sampler;
+  sampler: samplerTypes.Sampler;
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger = logger.logger();
+
 
   /** Constructs a new TraceImpl instance. */
   constructor() {
@@ -74,14 +77,15 @@ export class Tracer implements types.Tracer {
     return this;
   }
 
+  /** Stops the tracer. */
+  stop(): types.Tracer {
+    this.activeLocal = false;
+    return this;
+  }
+
   /** Gets the list of event listners. */
   get eventListeners(): types.OnEndSpanEventListener[] {
     return this.eventListenersLocal;
-  }
-
-  /** Stops the tracer. */
-  stop() {
-    this.activeLocal = false;
   }
 
   /** Indicates if the tracer is active or not. */
@@ -94,15 +98,32 @@ export class Tracer implements types.Tracer {
    * @param options A TraceOptions object to start a root span.
    * @param fn A callback function to run after starting a root span.
    */
-  startRootSpan<T>(options: types.TraceOptions, fn: (root: types.RootSpan) => T): T {
+  startRootSpan<T>(
+      options: types.TraceOptions, fn: (root: types.RootSpan) => T): T {
     return this.contextManager.runAndReturn((root) => {
       let newRoot = null;
       if (this.active) {
-        newRoot = new RootSpan(this, options);
-        if (this.sampler.shouldSample(newRoot.traceId)) {
-          newRoot.start();
-          this.currentRootSpan = newRoot;
-          return fn(newRoot);
+        let propagatedSample = null;
+
+        // if there is a context propagation, keep the decistion
+        if (options && options.spanContext) {
+          if (options.spanContext.options) {
+            propagatedSample =
+                ((options.spanContext.options & this.IS_SAMPLED) !== 0);
+          }
+          if (!propagatedSample) {
+            options.spanContext = null;
+          }
+        }
+        const aRoot = new RootSpan(this, options);
+        const sampleDecisition: boolean = propagatedSample ?
+            propagatedSample :
+            this.sampler.shouldSample(aRoot.traceId);
+
+        if (sampleDecisition) {
+          aRoot.start();
+          this.currentRootSpan = aRoot;
+          newRoot = aRoot;
         }
       } else {
         this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
@@ -116,14 +137,16 @@ export class Tracer implements types.Tracer {
    * @param root The ended span.
    */
   onEndSpan(root: types.RootSpan): void {
-    if (!root) {
-      return this.logger.debug('cannot end trace - no active trace found');
+    if (this.active) {
+      if (!root) {
+        return this.logger.debug('cannot end trace - no active trace found');
+      }
+      if (this.currentRootSpan !== root) {
+        this.logger.debug(
+            'currentRootSpan != root on notifyEnd. Need more investigation.');
+      }
+      this.notifyEndSpan(root);
     }
-    if (this.currentRootSpan !== root) {
-      this.logger.debug('currentRootSpan != root on notifyEnd. Need more investigation.');
-    }
-    this.notifyEndSpan(root);
-    // this.clearCurrentTrace();
   }
 
   /**
@@ -158,12 +181,14 @@ export class Tracer implements types.Tracer {
    * @param type The span type.
    * @param parentSpanId The parent span ID.
    */
-  startSpan(name?: string, type?: string, parentSpanId?: string): types.Span {
+  startChildSpan(name?: string, type?: string, parentSpanId?: string):
+      types.Span {
     let newSpan: types.Span = null;
     if (!this.currentRootSpan) {
-      this.logger.debug('no current trace found - must start a new root span first');
+      this.logger.debug(
+          'no current trace found - must start a new root span first');
     } else {
-      newSpan = this.currentRootSpan.startSpan(name, type, parentSpanId);
+      newSpan = this.currentRootSpan.startChildSpan(name, type, parentSpanId);
     }
     return newSpan;
   }
@@ -179,8 +204,6 @@ export class Tracer implements types.Tracer {
     if (!this.active) {
       return fn;
     }
-
-    // This is safe because isActive checks the value of this.namespace.
     const namespace = this.contextManager;
     return namespace.bind<T>(fn);
   }
@@ -196,8 +219,6 @@ export class Tracer implements types.Tracer {
     if (!this.active) {
       return;
     }
-
-    // This is safe because isActive checks the value of this.namespace.
     const namespace = this.contextManager;
     namespace.bindEmitter(emitter);
   }

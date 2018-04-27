@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import * as loggerTypes from '../../common/types';
 import * as configTypes from '../config/types';
 import * as samplerTypes from '../sampler/types';
-import * as loggerTypes from '../../common/types';
+
 
 
 /** Default type for functions */
@@ -64,21 +65,19 @@ export interface TraceOptions {
   /** Root span name */
   name: string;
   /** Trace context */
-  traceContext?: TraceContext;
+  spanContext?: SpanContext;
   /** Span type */
   type?: string;
 }
 
-/** Defines the trace context */
-export interface TraceContext {
+/** Defines the span context */
+export interface SpanContext {
   /** Trace ID */
   traceId: string;
   /** Span ID */
   spanId: string;
   /** Options */
   options?: number;
-  /** Sample decision */
-  sampleDecision?: boolean;
 }
 
 /** Defines an end span event listener */
@@ -150,7 +149,7 @@ export interface Span {
   readonly duration: number;
 
   /** Gives the TraceContext of the span. */
-  readonly traceContext: TraceContext;
+  readonly spanContext: SpanContext;
 
   /**
    * Adds an atribute to the span.
@@ -208,7 +207,7 @@ export interface RootSpan extends Span {
   end(): void;
 
   /** Starts a new Span instance in the RootSpan instance */
-  startSpan(name: string, type: string, parentSpanId?: string): Span;
+  startChildSpan(name: string, type: string, parentSpanId?: string): Span;
 }
 
 
@@ -237,7 +236,7 @@ export interface Tracer extends OnEndSpanEventListener {
   start(config: configTypes.TracerConfig): Tracer;
 
   /** Stop the tracer instance */
-  stop(): void;
+  stop(): Tracer;
 
   /**
    * Start a new RootSpan to currentRootSpan
@@ -263,7 +262,7 @@ export interface Tracer extends OnEndSpanEventListener {
    * @param parentSpanId Parent SpanId
    * @returns The new Span instance started
    */
-  startSpan(name?: string, type?: string, parentSpanId?: string): Span;
+  startChildSpan(name?: string, type?: string, parentSpanId?: string): Span;
 
   /**
    * Binds the trace context to the given function.
@@ -283,6 +282,3 @@ export interface Tracer extends OnEndSpanEventListener {
    */
   wrapEmitter(emitter: NodeJS.EventEmitter): void;
 }
-
-
-

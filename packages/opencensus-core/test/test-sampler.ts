@@ -25,61 +25,6 @@ const tracer = new Tracer();
 
 describe('Sampler', () => {
   /**
-   * Should create a sampler
-   */
-  describe('new Sampler()', () => {
-    it('should create a Sampler instance', () => {
-      const sampler = new Sampler();
-      assert.ok(sampler instanceof Sampler);
-    });
-  });
-
-  /**
-   * Should create a sampler with traceId
-   */
-  describe('new Sampler(traceId)', () => {
-    it('should create a Sampler instance', () => {
-      const root = new RootSpan(tracer);
-      const sampler = new Sampler();
-      assert.ok(sampler instanceof Sampler);
-    });
-  });
-
-  /**
-   * Should return the SamplerImpl
-   */
-  describe('always()', () => {
-    it('should return a sampler instance', () => {
-      const sampler = new Sampler();
-      const samplerAlways = sampler.always();
-      assert.ok(samplerAlways instanceof Sampler);
-    });
-  });
-
-  /**
-   * Should return the SamplerImpl
-   */
-  describe('never()', () => {
-    it('should return a sampler instance', () => {
-      const sampler = new Sampler();
-      const samplerNever = sampler.never();
-      assert.ok(samplerNever instanceof Sampler);
-    });
-  });
-
-  /**
-   * Should return the SamplerImpl
-   */
-  describe('probability()', () => {
-    it('should return a sampler instance', () => {
-      const PROBABILITY = 0.5;
-      const sampler = new Sampler();
-      const samplerProbability = sampler.probability(PROBABILITY);
-      assert.ok(samplerProbability instanceof Sampler);
-    });
-  });
-
-  /**
    * Should return true
    */
   describe('shouldSample() always', () => {
@@ -88,6 +33,20 @@ describe('Sampler', () => {
       const sampler = new Sampler();
       sampler.always();
       const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      assert.ok(samplerShouldSampler);
+    });
+    it('should return a always sampler', () => {
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler().probability(1);
+      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      assert.strictEqual(sampler.description, 'always');
+      assert.ok(samplerShouldSampler);
+    });
+    it('should return a always sampler', () => {
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler().probability(100);
+      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      assert.strictEqual(sampler.description, 'always');
       assert.ok(samplerShouldSampler);
     });
   });
@@ -101,6 +60,28 @@ describe('Sampler', () => {
       sampler.never();
       const samplerShouldSampler = sampler.shouldSample(root.traceId);
       assert.ok(!samplerShouldSampler);
+    });
+    it('should return a never sampler', () => {
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler().probability(0);
+      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      assert.strictEqual(sampler.description, 'never');
+      assert.ok(!samplerShouldSampler);
+    });
+    it('should return a never sampler', () => {
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler().probability(-1);
+      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      assert.strictEqual(sampler.description, 'never');
+      assert.ok(!samplerShouldSampler);
+    });
+  });
+
+  describe('shouldSample() never', () => {
+    it('should return a probability sampler', () => {
+      const root = new RootSpan(tracer);
+      const sampler = new Sampler().probability(0.7);
+      assert.ok(sampler.description.indexOf('probability') >= 0);
     });
   });
 });

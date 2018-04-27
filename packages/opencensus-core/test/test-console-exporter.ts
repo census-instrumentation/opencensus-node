@@ -17,12 +17,12 @@
 import * as assert from 'assert';
 import * as mocha from 'mocha';
 
-import {Buffer} from '../src/exporters/buffer';
 import {ConsoleExporter, NoopExporter} from '../src/exporters/console-exporter';
+import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Tracer} from '../src/trace/model/tracer';
 
-const tracer = new Tracer();
+const tracer = new Tracer().start({});
 const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
 const defaultBufferConfig = {
@@ -30,8 +30,22 @@ const defaultBufferConfig = {
   bufferTimeout: DEFAULT_BUFFER_TIMEOUT
 };
 
+const createRootSpans = (): RootSpan[] => {
+  const rootSpans = [];
+  for (let i = 0; i < DEFAULT_BUFFER_SIZE + 1; i++) {
+    const rootSpan = new RootSpan(tracer, {name: `rootSpan.${i}`});
+    rootSpan.start();
+    for (let j = 0; j < 10; j++) {
+      rootSpan.startChildSpan(`childSpan.${i}.${j}`, 'client');
+    }
+    rootSpans.push(rootSpan);
+  }
+  return rootSpans;
+};
+
+
 describe('NoopExporter', () => {
-  /** Should do anything when calling onEndSpan() */
+  /** Should do nothing when calling onEndSpan() */
   describe('onEndSpan()', () => {
     it('should do anything', () => {
       const exporter = new NoopExporter();
@@ -60,8 +74,12 @@ describe('ConsoleLogExporter', () => {
   describe('onEndSpan()', () => {
     it('should end a span', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
-      const rootSpan = new RootSpan(tracer);
-      exporter.onEndSpan(rootSpan);
+      tracer.registerEndSpanListener(exporter);
+      // const rootSpan = new RootSpan(tracer);
+      const rootSpans = createRootSpans();
+      for (const rootSpan of rootSpans) {
+        rootSpan.end();
+      }
       assert.ok(true);
     });
   });
@@ -71,7 +89,7 @@ describe('ConsoleLogExporter', () => {
     it('should publish the rootspans in queue', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpan(tracer);
-      rootSpan.startSpan('name', 'type', rootSpan.traceId);
+      rootSpan.startChildSpan('name', 'type', rootSpan.traceId);
       const queue: RootSpan[] = [];
       queue.push(rootSpan);
 

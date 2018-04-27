@@ -18,17 +18,20 @@ import * as assert from 'assert';
 import * as mocha from 'mocha';
 
 import * as logger from '../src/common/console-logger';
-
+import {ConsoleLogger} from '../src/common/console-logger';
 import {Logger} from '../src/common/types';
-import {Buffer} from '../src/exporters/buffer';
 import {ConsoleExporter} from '../src/exporters/console-exporter';
+import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {BufferConfig, TracerConfig} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Tracer} from '../src/trace/model/tracer';
 import {TraceOptions} from '../src/trace/model/types';
 
-const LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
+const LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
 let consoleTxt = '';
+
+// TODO: Review test cases: Maybe testing the info log level is sufficient
+// because it already shows that lower levels will log, and higher levels won't.
 
 describe('ConsoleLogger', () => {
   const intercept = require('intercept-stdout');
@@ -39,22 +42,22 @@ describe('ConsoleLogger', () => {
 
   /** Should create a new ConsoleLogger */
   describe('new ConsoleLogger()', () => {
-    it('should consoleLogger with default levels', () => {
+    it('should log with default levels', () => {
       const consoleLogger = logger.logger();
-      assert.equal(LEVELS.length, consoleLogger.logger.levels.length);
+      assert.equal(LEVELS.length, ConsoleLogger.LEVELS.length);
     });
 
-    it('should consoleLogger with error', () => {
-      const consoleLogger = logger.logger(LEVELS[0]);
-      assert.strictEqual(LEVELS[0], consoleLogger.logger.level);
+    it('should log with error', () => {
+      const consoleLogger = logger.logger(1);
+      assert.strictEqual(LEVELS[1], consoleLogger.level);
     });
   });
 
   /** Should logger only error log */
   describe('error logger', () => {
-    const consoleLogger = logger.logger(LEVELS[0]);
+    const consoleLogger = logger.logger(LEVELS[1]);
 
-    it('should logger error', () => {
+    it('should log error', () => {
       consoleTxt = '';
       consoleLogger.error('error test logger');
       unhookIntercept();
@@ -63,7 +66,7 @@ describe('ConsoleLogger', () => {
       assert.ok(validateString >= 0);
     });
 
-    it('should not logger warn', () => {
+    it('should not log warn', () => {
       consoleTxt = '';
       consoleLogger.warn('warn test logger');
       unhookIntercept();
@@ -73,7 +76,7 @@ describe('ConsoleLogger', () => {
       assert.equal(validateString, -1);
     });
 
-    it('should not logger info', () => {
+    it('should not log info', () => {
       consoleTxt = '';
       consoleLogger.info('info test logger');
       unhookIntercept();
@@ -83,7 +86,7 @@ describe('ConsoleLogger', () => {
       assert.equal(validateString, -1);
     });
 
-    it('should not logger debug', () => {
+    it('should not log debug', () => {
       consoleTxt = '';
       consoleLogger.debug('debug test logger');
       unhookIntercept();
@@ -92,7 +95,7 @@ describe('ConsoleLogger', () => {
       assert.equal(validateString, -1);
     });
 
-    it('should not logger silly', () => {
+    it('should not log silly', () => {
       consoleTxt = '';
       consoleLogger.silly('silly test logger');
       unhookIntercept();
@@ -102,62 +105,40 @@ describe('ConsoleLogger', () => {
     });
   });
 
-  /** Should logger error, warn and info log */
-  describe('info logger', () => {
-    const consoleLogger = logger.logger(LEVELS[2]);
+  /** Should disable logger  */
+  describe('silent logger', () => {
+    const consoleLogger = logger.logger(0);
 
-    it('should logger error', () => {
-      const intercept = require('intercept-stdout');
-      const unhookIntercept = intercept((txt) => {
-        consoleTxt = txt;
-        return txt;
-      });
-
+    it('should not log error', () => {
       consoleTxt = '';
       consoleLogger.error('error test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('error');
 
-      assert.ok(validateString >= 0);
+      assert.equal(validateString, -1);
     });
 
-    it('should not logger warn', () => {
-      const intercept = require('intercept-stdout');
-      const unhookIntercept = intercept((txt) => {
-        consoleTxt = txt;
-        return txt;
-      });
-
+    it('should not log warn', () => {
       consoleTxt = '';
       consoleLogger.warn('warn test logger');
       unhookIntercept();
+
       const validateString = consoleTxt.indexOf('warn');
 
-      assert.ok(validateString >= 0);
+      assert.equal(validateString, -1);
     });
 
-    it('should logger info', () => {
-      const intercept = require('intercept-stdout');
-      const unhookIntercept = intercept((txt) => {
-        consoleTxt = txt;
-        return txt;
-      });
-
+    it('should not log info', () => {
       consoleTxt = '';
       consoleLogger.info('info test logger');
       unhookIntercept();
+
       const validateString = consoleTxt.indexOf('info');
 
-      assert.ok(validateString >= 0);
+      assert.equal(validateString, -1);
     });
 
-    it('should not logger debug', () => {
-      const intercept = require('intercept-stdout');
-      const unhookIntercept = intercept((txt) => {
-        consoleTxt = txt;
-        return txt;
-      });
-
+    it('should not log debug', () => {
       consoleTxt = '';
       consoleLogger.debug('debug test logger');
       unhookIntercept();
@@ -166,57 +147,13 @@ describe('ConsoleLogger', () => {
       assert.equal(validateString, -1);
     });
 
-    it('should not logger silly', () => {
-      const intercept = require('intercept-stdout');
-      const unhookIntercept = intercept((txt) => {
-        consoleTxt = txt;
-        return txt;
-      });
-
+    it('should not log silly', () => {
       consoleTxt = '';
       consoleLogger.silly('silly test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('silly');
 
       assert.equal(validateString, -1);
-    });
-  });
-
-  describe('Model classes has a logger', () => {
-    // tslint:disable:no-any
-    function instanceOfLogger(object: any): object is Logger {
-      return 'error' in object && 'warn' in object && 'info' in object &&
-          'debug' in object && 'silly' in object;
-    }
-
-    const consoleLogger = logger.logger('debug');
-
-    const tracer = new Tracer();
-    tracer.start({logger: consoleLogger});
-
-    it('checks if Tracer has a logger', () => {
-      assert.ok(instanceOfLogger(tracer.logger));
-    });
-
-    it('checks if RootSpanImpl and SpanImpl has a logger', () => {
-      tracer.startRootSpan({name: 'rootSpanTest'} as TraceOptions, (root) => {
-        assert.ok(instanceOfLogger(root.logger));
-
-        const span = tracer.startSpan('spanTest');
-        assert.ok(instanceOfLogger(span.logger));
-      });
-    });
-
-    const exporterConfig = {logger: consoleLogger};
-    const exporter = new ConsoleExporter(exporterConfig);
-
-    it('checks if exporter has a logger', () => {
-      assert.ok(instanceOfLogger(exporter.logger));
-    });
-
-    it('checks if buffer has a logger', () => {
-      const buffer = new Buffer(exporter, exporterConfig);
-      assert.ok(instanceOfLogger(buffer.logger));
     });
   });
 });

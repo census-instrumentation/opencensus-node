@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as types from './types';
-
 import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 import {randomSpanId} from '../../internal/util';
+
+import * as types from './types';
 
 
 /** Defines a base model for spans. */
@@ -75,7 +75,7 @@ export abstract class SpanBase implements types.Span {
   }
 
   /**
-   * Gives a timestap that indicates the span's start time in RFC3339 UTC
+   * Gives a timestamp that indicates the span's start time in RFC3339 UTC
    * "Zulu" format.
    */
   get startTime(): Date {
@@ -114,12 +114,12 @@ export abstract class SpanBase implements types.Span {
   }
 
   /** Gives the TraceContext of the span. */
-  get traceContext(): types.TraceContext {
+  get spanContext(): types.SpanContext {
     return {
       traceId: this.traceId.toString(),
       spanId: this.id.toString(),
       parentSpanId: this.parentSpanId
-    } as types.TraceContext;
+    } as types.SpanContext;
   }
 
   /**
@@ -154,7 +154,8 @@ export abstract class SpanBase implements types.Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: string, attributes?: types.Attributes) {
+      traceId: string, spanId: string, type: string,
+      attributes?: types.Attributes) {
     this.links.push({
       'traceId': traceId,
       'spanId': spanId,
@@ -209,10 +210,9 @@ export abstract class SpanBase implements types.Span {
 
   /** Forces the span to end. */
   truncate() {
-    // TODO: review
     this.truncated = true;
     this.end();
     this.logger.debug(
-      'truncating %s  %o', this.className, {id: this.id, name: this.name});
+        'truncating %s  %o', this.className, {id: this.id, name: this.name});
   }
 }

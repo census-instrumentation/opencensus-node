@@ -28,5 +28,5 @@ export * from './trace/sampler/sampler';
 export * from './trace/instrumentation/base-plugin';
 
 // console exporter and buffer impls
-export * from './exporters/buffer';
+export * from './exporters/exporter-buffer';
 export * from './exporters/console-exporter';

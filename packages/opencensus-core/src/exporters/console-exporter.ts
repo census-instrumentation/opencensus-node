@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import * as types from './types';
-import * as modelTypes from '../trace/model/types';
 import * as loggerTypes from '../common/types';
+import * as modelTypes from '../trace/model/types';
 
-import {Buffer} from './buffer';
+import {ExporterBuffer} from './exporter-buffer';
+import * as types from './types';
 
 /** Do not send span data */
 export class NoopExporter implements types.Exporter {
@@ -30,8 +30,8 @@ export class NoopExporter implements types.Exporter {
 /** Format and sends span data to the console. */
 export class ConsoleExporter implements types.Exporter {
   /** Buffer object to store the spans. */
-  private buffer: Buffer;
-  logger: loggerTypes.Logger;
+  private buffer: ExporterBuffer;
+  private logger: loggerTypes.Logger;
 
   /**
    * Constructs a new ConsoleLogExporter instance.
@@ -39,7 +39,7 @@ export class ConsoleExporter implements types.Exporter {
    * exporter.
    */
   constructor(config: types.ExporterConfig) {
-    this.buffer = new Buffer(this, config);
+    this.buffer = new ExporterBuffer(this, config);
     this.logger = config.logger;
   }
 
@@ -57,18 +57,16 @@ export class ConsoleExporter implements types.Exporter {
    */
   publish(rootSpans: modelTypes.RootSpan[]) {
     rootSpans.map((root) => {
-      const ROOT_STR: string = (`
-                RootSpan: {traceId: ${root.traceId}, 
-                spanId: ${root.id}, 
-                name: ${root.name} }`);
-      const SPANS_STR: string[] = root.spans.map((span) => `   ChildSpan: 
-                    {traceId: ${span.traceId}, 
-                    spanId: ${span.id}, 
-                    name: ${span.name} }`);
+      const ROOT_STR = `RootSpan: {traceId: ${root.traceId}, spanId: ${
+          root.id}, name: ${root.name} }`;
+      const SPANS_STR: string[] = root.spans.map(
+          (span) => [`\t\t{spanId: ${span.id}, name: ${span.name}}`].join(
+              '\n'));
       const result: string[] = [];
 
-      result.push(ROOT_STR);
-      result.push(`${SPANS_STR.join('')}`);
+      result.push(
+          ROOT_STR + '\n\tChildSpans:\n' +
+          `${SPANS_STR.join('\n')}`);
       console.log(`${result}`);
     });
   }

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
   "main": "build/src/index.js",
-  "types": "build/src/index.d.js",
+  "types": "build/src/index.d.ts",
   "repository": "census-instrumentation/opencensus-node",
   "scripts": {
     "build": "node_modules/.bin/tsc --declaration",
@@ -25,7 +25,7 @@
   "author": "Google Inc.",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=6.00"
+    "node": ">=6.0"
   },
   "files": [
     "build/src/**/*.js",

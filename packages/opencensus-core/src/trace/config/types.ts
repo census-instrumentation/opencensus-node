@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
- import {Exporter} from '../../exporters/types';
-import {PluginNames} from '../instrumentation/types';
 import {Logger} from '../../common/types';
+import {Exporter} from '../../exporters/types';
+import {PluginNames} from '../instrumentation/types';
 
 /** Interface configuration for a buffer. */
 export interface BufferConfig {
+  /** Maximum size of a buffer. */
   bufferSize?: number;
+  /** Max time for a buffer can wait before being sent */
   bufferTimeout?: number;
+  /** A logger object  */
   logger?: Logger;
 }
 
@@ -31,19 +34,39 @@ export interface TracerConfig {
   samplingRate?: number;
   /** Determines the ignored (or blacklisted) URLs */
   ignoreUrls?: Array<string|RegExp>;
-  /** A logger object to show infos */
+  /** A logger object  */
   logger?: Logger;
 }
 
 /** Available configuration options. */
 export interface TracingConfig {
+  /** level of logger - 0:disable, 1: error, 2: warn, 3: info, 4: debug  */
   logLevel?: number;
+
+  /**
+   * The maximum number of characters reported on a label value.
+   */
   maximumLabelValueSize?: number;
+
+  /**
+   * A list of trace instrumentations plugins to load.
+   * Each key is the name of the module to trace, and its
+   * value is the name of the package which has the plugin
+   * implementation.
+   * Ex.:
+   * plugins: {
+   *  'http': '@opencensus/opencensus-instrumentation-http',
+   *  'mongodb-core': '@opencensus/opencensus-instrumentation-mongodb-core',
+   *   ...
+   * }
+   * Any user-provided value will be added to the default list.
+   * It will override any default plugin for the same key.
+   */
   plugins?: PluginNames;
+  /** An exporter object */
   exporter?: Exporter;
+  /** An instance of a logger  */
   logger?: Logger;
 }
 
 export type Config = TracingConfig&TracerConfig&BufferConfig;
-
-

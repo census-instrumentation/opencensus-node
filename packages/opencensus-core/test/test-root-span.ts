@@ -41,7 +41,7 @@ describe('RootSpan', () => {
   describe('new RootSpan() with options', () => {
     it('should create a RootSpan instance with options', () => {
       const trace = new RootSpan(tracer);
-      const options = {name: 'test', traceContext: trace.traceContext} as
+      const options = {name: 'test', spanContext: trace.spanContext} as
           TraceOptions;
       const root = new RootSpan(tracer, options);
       assert.ok(root instanceof RootSpan);
@@ -54,8 +54,12 @@ describe('RootSpan', () => {
   describe('get spans()', () => {
     it('should get span list from rootspan instance', () => {
       const root = new RootSpan(tracer);
+      // TODO: Suggetion: make sure that root.spans.length is 1,
+      // and that it's the same as the earlier (shadowed) span object
       root.start();
-      const span = root.startSpan('spanName', 'spanType');
+      const span = root.startChildSpan('spanName', 'spanType');
+      assert.strictEqual(root.spans.length, 1);
+      assert.strictEqual(span, root.spans[0]);
 
       for (const span of root.spans) {
         assert.ok(span instanceof Span);
@@ -69,7 +73,7 @@ describe('RootSpan', () => {
   describe('new traceId()', () => {
     it('should get trace id from rootspan instance', () => {
       const root = new RootSpan(tracer);
-      assert.equal(root.traceId, root.traceContext.traceId);
+      assert.equal(root.traceId, root.spanContext.traceId);
     });
   });
 
@@ -93,7 +97,7 @@ describe('RootSpan', () => {
     before(() => {
       root = new RootSpan(tracer);
       root.start();
-      span = root.startSpan('spanName', 'spanType');
+      span = root.startChildSpan('spanName', 'spanType');
     });
 
     it('should create span instance', () => {
@@ -111,8 +115,8 @@ describe('RootSpan', () => {
   describe('startSpan() before start rootspan', () => {
     it('should not create span', () => {
       const root = new RootSpan(tracer);
-      const span = root.startSpan('spanName', 'spanType');
-      assert.ok(span == null);
+      const span = root.startChildSpan('spanName', 'spanType');
+      assert.strictEqual(span, null);
     });
   });
 
@@ -124,8 +128,8 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer);
       root.start();
       root.end();
-      const span = root.startSpan('spanName', 'spanType');
-      assert.ok(span == null);
+      const span = root.startChildSpan('spanName', 'spanType');
+      assert.strictEqual(span, null);
     });
   });
 
@@ -159,7 +163,7 @@ describe('RootSpan', () => {
     it('should end all spans inside rootspan', () => {
       const root = new RootSpan(tracer);
       root.start();
-      const span = root.startSpan('spanName', 'spanType');
+      const span = root.startChildSpan('spanName', 'spanType');
       root.end();
 
       for (const span of root.spans) {

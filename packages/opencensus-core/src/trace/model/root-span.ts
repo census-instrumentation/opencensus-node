@@ -15,12 +15,13 @@
  */
 
 import * as uuid from 'uuid';
-import * as types from './types';
-import * as logger from '../../common/console-logger';
 
-import {SpanBase} from './span-base';
+import * as logger from '../../common/console-logger';
 import {Clock} from '../../internal/clock';
+
 import {Span} from './span';
+import {SpanBase} from './span-base';
+import * as types from './types';
 
 
 /** Defines a root span */
@@ -41,14 +42,15 @@ export class RootSpan extends SpanBase implements types.RootSpan {
     super();
     this.tracer = tracer;
     this.traceIdLocal =
-        context && context.traceContext && context.traceContext.traceId ?
-        context.traceContext.traceId :
+        context && context.spanContext && context.spanContext.traceId ?
+        context.spanContext.traceId :
         (uuid.v4().split('-').join(''));
     this.name = context && context.name ? context.name : 'undefined';
-    if (context && context.traceContext) {
-      this.parentSpanId = context.traceContext.spanId || '';
+    if (context && context.spanContext) {
+      this.parentSpanId = context.spanContext.spanId || '';
     }
     this.spansLocal = [];
+    this.type = context && context.type ? context.type : null;
     this.logger = tracer.logger || logger.logger();
   }
 
@@ -70,11 +72,12 @@ export class RootSpan extends SpanBase implements types.RootSpan {
         {traceId: this.traceId, id: this.id, parentSpanId: this.parentSpanId});
   }
 
+  // TODO: review end() behavior if it should throw an error when it is called
+  // before start()
   /** Ends a rootspan instance. */
   end() {
     super.end();
 
-    // TODO - Define logic for list of spans
     for (const span of this.spansLocal) {
       if (!span.ended && span.started) {
         span.truncate();
@@ -91,7 +94,8 @@ export class RootSpan extends SpanBase implements types.RootSpan {
    * @param type Span type.
    * @param parentSpanId Span parent ID.
    */
-  startSpan(name: string, type: string, parentSpanId?: string) {
+  startChildSpan(name: string, type: string, parentSpanId?: string):
+      types.Span {
     if (this.ended) {
       this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,

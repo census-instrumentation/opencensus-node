@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2018 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+// Code snippets from Stackdriver Trace Agent
+// https://github.com/GoogleCloudPlatform/cloud-trace-nodejs
+
 import * as crypto from 'crypto';
 
 
 // TODO: rethink this snippet aproach
-//--- Code snippet from Stackdriver Trace Agent
+
 // Use 6 bytes of randomness only as JS numbers are doubles not 64-bit ints.
 const SPAN_ID_RANDOM_BYTES = 6;
 

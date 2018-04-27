@@ -17,15 +17,18 @@
 import {randomSpanId} from '../../internal/util';
 import * as types from './types';
 
-const MIN_NUMBER = 1e-4;
-const MAX_NUMBER = 0xffffffffffffffff;
+
+const MIN_NUMBER = Number.MIN_VALUE;
+const MAX_NUMBER = Number.MAX_VALUE;
+
 
 /** This class represent the probability of a tracer. */
 export class Sampler implements types.Sampler {
   private idUpperBound: number;
+  description: string;
 
   /**
-   * Constructs a new SamplerImpl instance.
+   * Constructs a new Sampler instance.
    */
   constructor() {}
 
@@ -34,6 +37,7 @@ export class Sampler implements types.Sampler {
    * @returns a Sampler object
    */
   always(): Sampler {
+    this.description = 'always';
     this.idUpperBound = MAX_NUMBER;
     return this;
   }
@@ -43,6 +47,7 @@ export class Sampler implements types.Sampler {
    * @returns a Sampler object
    */
   never(): Sampler {
+    this.description = 'never';
     this.idUpperBound = MIN_NUMBER;
     return this;
   }
@@ -54,12 +59,13 @@ export class Sampler implements types.Sampler {
    * @param probability probability between 0 and 1
    * @returns a Sampler object
    */
-  probability(probability?: number): Sampler {
-    if (probability == null || probability > MAX_NUMBER) {
+  probability(probability: number): Sampler {
+    if (probability >= 1.0) {
       return this.always();
-    } else if (probability < MIN_NUMBER) {
+    } else if (probability <= 0) {
       return this.never();
     }
+    this.description = `probability.(${probability})`;
     this.idUpperBound = probability * MAX_NUMBER;
     return this;
   }
@@ -71,7 +77,7 @@ export class Sampler implements types.Sampler {
    * False if the traceId is not in probability.
    */
   shouldSample(traceId: string): boolean {
-    const LOWER_BYTES = traceId?traceId.substring(16):'0';
+    const LOWER_BYTES = traceId ? traceId.substring(16) : '0';
     // tslint:disable-next-line:ban Needed to parse hexadecimal.
     const LOWER_LONG = parseInt(LOWER_BYTES, 16);
 
