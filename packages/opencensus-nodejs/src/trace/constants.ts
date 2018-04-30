@@ -15,7 +15,7 @@
  */
 
 /** General pupose constants. */
- const constants = {
+const constants = {
   DEFAULT_BUFFER_SIZE: 3,
   DEFAULT_BUFFER_TIMEOUT: 20000,
   DEFAULT_INSTRUMENTATION_MODULES: ['http', 'https', 'mongodb-core'],

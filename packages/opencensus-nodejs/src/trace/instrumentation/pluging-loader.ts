@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {types} from  '@opencensus/opencensus-core';
+import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
 
@@ -90,7 +90,8 @@ export class PluginLoader {
       try {
         version = JSON.parse(fs.readFileSync(pkgJson).toString()).version;
       } catch (e) {
-        this.logger.error('could not get version of %s module: %s', name, e.message);
+        this.logger.error(
+            'could not get version of %s module: %s', name, e.message);
       }
     } else {
       version = process.versions.node;
@@ -112,7 +113,8 @@ export class PluginLoader {
         return exports;
       } else {
         self.logger.debug('applying patch to %s@%s module', name, version);
-        self.logger.debug('using package %s to patch %s', pluginList[name], name);
+        self.logger.debug(
+            'using package %s to patch %s', pluginList[name], name);
         const pluginImportPath =
             self.getPlugingImportPath(pluginList[name], name);
         const plugin: types.Plugin = require(pluginImportPath);

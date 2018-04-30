@@ -23,13 +23,13 @@ import * as assert from 'assert';
 import {isArray} from 'util';
 
 import {Constants} from '../src/trace/constants';
-import {PluginLoader} from '../src/trace/instrumentation/plugingloader';
+import {PluginLoader} from '../src/trace/instrumentation/pluging-loader';
 import {Tracing} from '../src/trace/tracing';
 
 describe('PluginLoader', () => {
   /** Should create a Tracing instance */
   describe('new PluginLoader()', () => {
-    it('should create a PluginLoader instance', () => {
+    it('should create a PluginLoader insctance', () => {
       const tracer = new classes.Tracer();
       const pluginLoader = new PluginLoader(log, tracer);
       assert.ok(pluginLoader instanceof PluginLoader);
