@@ -30,13 +30,23 @@ export class ConsoleLogger implements types.Logger {
   static LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
   level: string;
 
+
+  // TODO: reevaluate options to accept numbers as a parameter
+
   /**
    * Constructs a new ConsoleLogger instance
    * @param options A logger configuration object.
    */
-  constructor(options?: types.LoggerOptions|string) {
+  constructor(options?: types.LoggerOptions|string|number) {
     let opt: types.LoggerOptions = {};
-    if (typeof options === 'string') {
+    if (typeof options === 'number') {
+      if (options < 0) {
+        options = 0;
+      } else if (options > ConsoleLogger.LEVELS.length) {
+        options = ConsoleLogger.LEVELS.length - 1;
+      }
+      opt = {level: ConsoleLogger.LEVELS[options]};
+    } else if (typeof options === 'string') {
       opt = {level: options};
     } else {
       opt = options || {};
@@ -98,24 +108,15 @@ export class ConsoleLogger implements types.Logger {
 }
 
 
+// TODO: reevaluate the need to create a new logger instance on every call to
+// logger();
+
 /**
  *  Function logger exported to others classes.
  * @param options A logger options or strig to logger in console
  */
 const logger = (options?: types.LoggerOptions|string|number) => {
-  let opt: types.LoggerOptions|string;
-  if (typeof options === 'number') {
-    if (options < 0) {
-      options = 0;
-    } else if (options > ConsoleLogger.LEVELS.length) {
-      options = ConsoleLogger.LEVELS.length - 1;
-    }
-    opt = {level: ConsoleLogger.LEVELS[options]};
-  } else {
-    opt = options;
-  }
-
-  const aLogger = new ConsoleLogger(opt);
+  const aLogger = new ConsoleLogger(options);
   logger['logger'] = aLogger;
   return aLogger;
 };

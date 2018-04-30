@@ -181,14 +181,13 @@ export class Tracer implements types.Tracer {
    * @param type The span type.
    * @param parentSpanId The parent span ID.
    */
-  startChildSpan(name?: string, type?: string, parentSpanId?: string):
-      types.Span {
+  startChildSpan(name?: string, type?: string): types.Span {
     let newSpan: types.Span = null;
     if (!this.currentRootSpan) {
       this.logger.debug(
           'no current trace found - must start a new root span first');
     } else {
-      newSpan = this.currentRootSpan.startChildSpan(name, type, parentSpanId);
+      newSpan = this.currentRootSpan.startChildSpan(name, type);
     }
     return newSpan;
   }

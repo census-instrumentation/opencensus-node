@@ -207,7 +207,7 @@ export interface RootSpan extends Span {
   end(): void;
 
   /** Starts a new Span instance in the RootSpan instance */
-  startChildSpan(name: string, type: string, parentSpanId?: string): Span;
+  startChildSpan(name: string, type: string): Span;
 }
 
 

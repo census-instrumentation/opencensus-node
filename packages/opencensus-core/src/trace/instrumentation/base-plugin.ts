@@ -53,43 +53,6 @@ export abstract class BasePlugin implements types.Plugin {
     this.version = version;
   }
 
-  /**
-   * Wraps a function.
-   * @param nodule The module.
-   * @param name The function name.
-   * @param wrapper The wrapper.
-   */
-  protected wrap(nodule, name, wrapper) {
-    shimmer.wrap(nodule, name, wrapper);
-  }
-
-  /**
-   * Unwraps a function.
-   * @param nodule The module.
-   * @param name The function name.
-   */
-  protected unwrap(nodule, name) {
-    shimmer.unwrap(nodule, name);
-  }
-
-  /**
-   * Wraps one or more funcitons.
-   * @param nodule The module.
-   * @param names A list of function names.
-   * @param wrapper The wrapper.
-   */
-  protected massWrap(nodule, names, wrapper) {
-    shimmer.massWrap(nodule, names, wrapper);
-  }
-
-  /**
-   * Unwraps one or more functions.
-   * @param nodule The module.
-   * @param names The list of function names.
-   */
-  protected massUnwrap(nodule, names) {
-    shimmer.massUnwrap(nodule, names);
-  }
 
   // TODO: review this implementation
   // From the perspective of an instrumentation module author,

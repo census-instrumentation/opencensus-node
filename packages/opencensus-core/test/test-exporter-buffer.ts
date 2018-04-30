@@ -67,9 +67,10 @@ describe('ExporterBuffer', () => {
   describe('setBufferSize', () => {
     it('should set BufferSize', () => {
       const buffer = new ExporterBuffer(exporter, defaultBufferConfig);
-      const bufferResize = buffer.setBufferSize(DEFAULT_BUFFER_SIZE);
+      const newBufferSize = DEFAULT_BUFFER_SIZE + 10;
+      const bufferResize = buffer.setBufferSize(newBufferSize);
       assert.ok(bufferResize instanceof ExporterBuffer);
-      assert.strictEqual(bufferResize.getBufferSize(), DEFAULT_BUFFER_SIZE);
+      assert.strictEqual(bufferResize.getBufferSize(), newBufferSize);
     });
   });
 
