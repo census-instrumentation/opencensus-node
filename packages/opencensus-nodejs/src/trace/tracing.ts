@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as extend from 'extend';
-import {types} from  '@opencensus/opencensus-core';
+import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
+import * as extend from 'extend';
 
 import {defaultConfig} from './config/config';
 import {Constants} from './constants';
-import {PluginLoader} from './instrumentation/plugingloader';
+import {PluginLoader} from './instrumentation/pluging-loader';
 
 
 /** Implements a Tracing. */
@@ -69,7 +69,7 @@ export class Tracing implements types.Tracing {
     if (!this.config.exporter) {
       const exporter = new classes.ConsoleExporter(this.config);
       this.registerExporter(exporter);
-    }else{
+    } else {
       this.registerExporter(this.config.exporter);
     }
     this.active = true;
