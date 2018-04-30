@@ -200,14 +200,8 @@ export interface RootSpan extends Span {
   /** Get the span list from RootSpan instance */
   readonly spans: Span[];
 
-  /** Starts the RootSpan instance */
-  start(): void;
-
-  /** Ends the RootSpan instance */
-  end(): void;
-
   /** Starts a new Span instance in the RootSpan instance */
-  startChildSpan(name: string, type: string, parentSpanId?: string): Span;
+  startChildSpan(name: string, type: string): Span;
 }
 
 
@@ -247,6 +241,14 @@ export interface Tracer extends OnEndSpanEventListener {
   startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T;
 
   /**
+   * Start a new Span instance to the currentRootSpan
+   * @param name Span name
+   * @param type Span type
+   * @returns The new Span instance started
+   */
+  startChildSpan(name?: string, type?: string): Span;
+
+  /**
    * Register a OnEndSpanEventListener on the tracer instance
    * @param listener An OnEndSpanEventListener instance
    */
@@ -254,15 +256,6 @@ export interface Tracer extends OnEndSpanEventListener {
 
   /** Clear the currentRootSpan from tracer instance */
   clearCurrentTrace(): void;
-
-  /**
-   * Start a new Span instance to the currentRootSpan
-   * @param name Span name
-   * @param type Span type
-   * @param parentSpanId Parent SpanId
-   * @returns The new Span instance started
-   */
-  startChildSpan(name?: string, type?: string, parentSpanId?: string): Span;
 
   /**
    * Binds the trace context to the given function.

@@ -199,7 +199,7 @@ describe('Tracer', () => {
     } as types.SpanContext;
 
 
-    it('should reate the new RootSpan with propagation', () => {
+    it('should create the new RootSpan with propagation', () => {
       const tracer = new Tracer();
       tracer.start(defaultConfig);
       traceOptions.spanContext = spanContextPropagated;
@@ -212,7 +212,7 @@ describe('Tracer', () => {
       });
     });
 
-    it('should reate the new RootSpan with no propagation', () => {
+    it('should create the new RootSpan with no propagation', () => {
       const tracer = new Tracer();
       tracer.start(defaultConfig);
       traceOptions.spanContext.options = 0x0;

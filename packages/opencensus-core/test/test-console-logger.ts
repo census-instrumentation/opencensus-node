@@ -20,12 +20,7 @@ import * as mocha from 'mocha';
 import * as logger from '../src/common/console-logger';
 import {ConsoleLogger} from '../src/common/console-logger';
 import {Logger} from '../src/common/types';
-import {ConsoleExporter} from '../src/exporters/console-exporter';
-import {ExporterBuffer} from '../src/exporters/exporter-buffer';
-import {BufferConfig, TracerConfig} from '../src/trace/config/types';
-import {RootSpan} from '../src/trace/model/root-span';
-import {Tracer} from '../src/trace/model/tracer';
-import {TraceOptions} from '../src/trace/model/types';
+
 
 const LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
 let consoleTxt = '';
