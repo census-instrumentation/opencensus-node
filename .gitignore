@@ -18,5 +18,25 @@ bin
 # Vim
 .swp
 
+#VScode
+.vscode/
+
 # Other
 TAGS
+
+# nodejs
+node_modules/
+npm-debug.log
+.nyc_output/
+build/
+
+#backup files
+*--
+*_backup
+
+#log files
+*.log
+
+#istanbul files
+coverage/
+

@@ -14,4 +14,3 @@ Please join [gitter](https://gitter.im/census-instrumentation/Lobby) for help or
 
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
 [gitter-url]: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
