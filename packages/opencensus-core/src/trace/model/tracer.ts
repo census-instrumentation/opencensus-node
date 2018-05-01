@@ -116,11 +116,11 @@ export class Tracer implements types.Tracer {
           }
         }
         const aRoot = new RootSpan(this, options);
-        const sampleDecisition: boolean = propagatedSample ?
+        const sampleDecision: boolean = propagatedSample ?
             propagatedSample :
             this.sampler.shouldSample(aRoot.traceId);
 
-        if (sampleDecisition) {
+        if (sampleDecision) {
           aRoot.start();
           this.currentRootSpan = aRoot;
           newRoot = aRoot;
