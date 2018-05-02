@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Google Inc. All Rights Reserved.
+ * Copyright 2018, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,51 @@
  * limitations under the License.
  */
 
-import * as semver from 'semver'
-
-import {Tracer} from '@opencensus/opencensus-core'
-import {debug} from '@opencensus/opencensus-core'
-import {HttpPlugin} from '@opencensus/opencensus-instrumentation-http'
+import {types} from '@opencensus/opencensus-core';
+import {classes} from '@opencensus/opencensus-core';
+import {logger} from '@opencensus/opencensus-core';
+import {HttpPlugin} from '@opencensus/opencensus-instrumentation-http';
+import {B3Format} from '@opencensus/opencensus-propagation-b3';
+import * as shimmer from 'shimmer';
+import * as url from 'url';
 
 export class HttpsPlugin extends HttpPlugin {
-
+  /** Constructs a new HttpsPlugin instance. */
   constructor() {
-    super()
-    this.moduleName = 'https'
+    super('https');
   }
 
-  public applyPatch (exporters: any, tracer: Tracer, version: string) {
-      
-    return exporters
- }
+  /**
+   * Patches HTTPS incoming and outcoming request functions.
+   * @param moduleExporters The HTTPS package.
+   * @param tracer A tracer instance to create spans on.
+   * @param version The package version.
+   */
+  // tslint:disable:no-any
+  applyPatch(moduleExporters: any, tracer: types.Tracer, version: string) {
+    this.setPluginContext(moduleExporters, tracer, version);
+    this.logger = tracer.logger || logger.logger('debug');
+
+    shimmer.wrap(moduleExporters, 'request', this.patchOutgoingRequest());
+
+    shimmer.wrap(
+        moduleExporters && moduleExporters.Server &&
+            moduleExporters.Server.prototype,
+        'emit', this.patchIncomingRequest());
+
+    return moduleExporters;
+  }
+
+  /** Unpatches all HTTPS patched function. */
+  applyUnpatch(): void {
+    shimmer.unwrap(this.moduleExporters, 'request');
+
+    shimmer.unwrap(
+        this.moduleExporters && this.moduleExporters.Server &&
+            this.moduleExporters.Server.prototype,
+        'emit');
+  }
 }
 
-module.exports = new HttpsPlugin();
+const plugin = new HttpsPlugin();
+export {plugin};
