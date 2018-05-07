@@ -20,8 +20,6 @@
 import * as CLS from 'continuation-local-storage';
 import * as semver from 'semver';
 
-import * as cls_ah from './cls-ah';
-
 export type Namespace = CLS.Namespace;
 export type Func<T> = CLS.Func<T>;
 
@@ -33,7 +31,7 @@ import * as Debug from 'debug';
 const debug = Debug('opencensus');
 debug('useAsyncHooks = %s', useAsyncHooks);
 
-const cls: typeof CLS = useAsyncHooks ? cls_ah : CLS;
+const cls: typeof CLS = useAsyncHooks ? require('./cls-ah') : CLS;
 
 
 const TRACE_NAMESPACE = 'opencensus.io';

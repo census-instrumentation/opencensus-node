@@ -52,7 +52,6 @@ export class Tracer implements types.Tracer {
   constructor() {
     this.activeLocal = false;
     this.contextManager = cls.createNamespace();
-    this.clearCurrentTrace();
   }
 
   /** Gets the current root span. */

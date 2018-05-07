@@ -52,17 +52,13 @@ describe('Tracer', () => {
 
   /** Should get/set the current RootSpan from tracer instance */
   describe('get/set currentRootSpan()', () => {
-    let tracer, rootSpan;
-    before(() => {
-      tracer = new Tracer();
-      rootSpan = new RootSpan(tracer);
-      tracer.currentRootSpan = rootSpan;
-    });
+    const tracer = new Tracer().start(defaultConfig);
     it('should get the current RootSpan from tracer instance', () => {
-      assert.ok(tracer.currentRootSpan instanceof RootSpan);
-    });
-    it('should set the current RootSpan from tracer instance', () => {
-      assert.strictEqual(tracer.currentRootSpan, rootSpan);
+      tracer.startRootSpan(options, (root) => {
+        assert.ok(root);
+        assert.ok(tracer.currentRootSpan instanceof RootSpan);
+        assert.strictEqual(tracer.currentRootSpan, root);
+      });
     });
   });
 
