@@ -169,6 +169,7 @@ export class Tracer implements types.Tracer {
     }
   }
 
+  // TODO: reveiw clearCurrentTrace when using continuation-local-storage
   /** Clears the current root span. */
   clearCurrentTrace() {
     this.currentRootSpan = null;
