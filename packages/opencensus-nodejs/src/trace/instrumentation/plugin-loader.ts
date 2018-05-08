@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
-
+import {classes, logger, types} from '@opencensus/opencensus-core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
 
 import {Constants} from '../constants';
 
-/** Defines a plugin loader. */
+/**
+ * The PluginLoader class can load instrumentation plugins that
+ * use a patch mechanism to enable automatic tracing for
+ * specific target modules.
+ */
 export class PluginLoader {
   /** The tracer */
   private tracer: types.Tracer;
-  /** A list of plugins. */
-  private plugins: types.Plugin[] = [];
   /** logger */
   private logger: types.Logger;
+  /** A list of loaded plugins. */
+  plugins: types.Plugin[] = [];
 
   /**
    * Constructs a new PluginLoader instance.
@@ -43,38 +44,31 @@ export class PluginLoader {
   }
 
   /**
-   * Gets the default package name.
+   * Gets the default package name for a target module. The default package
+   * name uses the default scope and a default prefix.
    * @param moduleName The module name.
    * @returns The default name for that package.
    */
-  private static defaultPackageName(moduleName): string {
-    return `${Constants.SCOPE}/${Constants.PLUGIN_PACKAGE_NAME_PREFIX}-${
-        moduleName}`;
+  private static defaultPackageName(moduleName: string): string {
+    return `${Constants.OPENCENSUS_SCOPE}/${
+        Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-${moduleName}`;
   }
 
 
   /**
-   * Gets the plugins to use.
+   * Returns a PlunginNames object, build from a string array of target modules
+   * names, using the defaultPackageName.
    * @param modulesToPatch A list of modules to patch.
    * @returns Plugin names.
    */
   static defaultPluginsFromArray(modulesToPatch: string[]): types.PluginNames {
-    const plugins = modulesToPatch.reduce((plugins, moduleName) => {
-      plugins[moduleName] = PluginLoader.defaultPackageName(moduleName);
-      return plugins;
-    }, {});
+    const plugins = modulesToPatch.reduce(
+        (plugins: types.PluginNames, moduleName: string) => {
+          plugins[moduleName] = PluginLoader.defaultPackageName(moduleName);
+          return plugins;
+        },
+        {} as types.PluginNames);
     return plugins;
-  }
-
-
-  /**
-   * Gets the plugin import path.
-   * @param pkgname Pakage name.
-   * @param name Name.
-   * @returns The import path.
-   */
-  private getPlugingImportPath(pkgname: string, name: string): string {
-    return path.join(pkgname, 'build', 'src', name);
   }
 
 
@@ -101,23 +95,27 @@ export class PluginLoader {
 
 
   /**
-   * Loads plugins.
+   * Loads a list of plugins (using a map of the target module name
+   * and its instrumentation plugin package name). Each plugin module
+   * should implement the core Plugin interface and export an instance
+   * named as "plugin".
    * @param pluginList A list of plugins.
    */
   loadPlugins(pluginList: types.PluginNames) {
     const self = this;
 
+    // tslint:disable:no-any
     hook(Object.keys(pluginList), (exports, name, basedir) => {
-      const version = self.getPackageVersion(name, basedir);
+      const version = self.getPackageVersion(name, basedir as string);
+      self.logger.info('trying loading %s.%s', name, version);
       if (!version) {
         return exports;
       } else {
         self.logger.debug('applying patch to %s@%s module', name, version);
         self.logger.debug(
             'using package %s to patch %s', pluginList[name], name);
-        const pluginImportPath =
-            self.getPlugingImportPath(pluginList[name], name);
-        const plugin: types.Plugin = require(pluginImportPath);
+        // Expecting a plugin from module;
+        const plugin: types.Plugin = require(pluginList[name]).plugin;
         self.plugins.push(plugin);
         return plugin.applyPatch(exports, self.tracer, version);
       }
@@ -131,5 +129,13 @@ export class PluginLoader {
       plugin.applyUnpatch();
     }
     this.plugins = [];
+  }
+
+  /**
+   * Adds a search path for plugin modules. Intended for testing purposes only.
+   * @param searchPath The path to add.
+   */
+  static set searchPathForTest(searchPath: string) {
+    module.paths.push(searchPath);
   }
 }

@@ -16,11 +16,17 @@
 
 /** General pupose constants. */
 const constants = {
-  DEFAULT_BUFFER_SIZE: 3,
+  /** Default maximum size of a buffer. */
+  DEFAULT_BUFFER_SIZE: 100,
+  /** Default max timeout for a buffer before being flushed */
   DEFAULT_BUFFER_TIMEOUT: 20000,
-  DEFAULT_INSTRUMENTATION_MODULES: ['http', 'https', 'mongodb-core'],
-  SCOPE: '@opencensus',
-  PLUGIN_PACKAGE_NAME_PREFIX: 'opencensus-instrumentation'
+  /** Default list of target modules to be instrumented */
+  DEFAULT_INSTRUMENTATION_MODULES: [] as string[],
+  // DEFAULT_INSTRUMENTATION_MODULES: ['http', 'https', 'mongodb-core'],
+  /** Opencensus Scope */
+  OPENCENSUS_SCOPE: '@opencensus',
+  /** Defult prefix for instrumentation modules */
+  DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'opencensus-instrumentation'
 };
 
 export {constants as Constants};
