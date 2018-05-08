@@ -19,11 +19,16 @@ import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
 import * as assert from 'assert';
 
+import {defaultConfig} from '../src/trace/config/default-config';
+import {Constants} from '../src/trace/constants';
 import {Tracing} from '../src/trace/tracing';
+
 
 
 const NOOP_EXPORTER = new classes.NoopExporter();
 describe('Tracing', () => {
+  Constants.DEFAULT_INSTRUMENTATION_MODULES = ['http', 'https'];
+
   /** Should create a Tracing instance */
   describe('new Tracing()', () => {
     it('should create a Tracer instance', () => {
@@ -42,29 +47,111 @@ describe('Tracing', () => {
 
   /** Should return a started tracing instance */
   describe('start()', () => {
-    let tracingStarted: types.Tracing;
+    let aTracing: types.Tracing;
     const tracing = new Tracing();
     // tslint:disable:no-any
-    function instanceOfLogger(object: any): object is types.Logger {
-      return 'debug' in object;
-    }
+    beforeEach(() => {
+      if (tracing.active) {
+        tracing.stop();
+      }
+    });
 
     it('should return a tracing instance', () => {
-      tracingStarted = tracing.start();
-      assert.ok(tracingStarted instanceof Tracing);
+      aTracing = tracing.start();
+      assert.ok(aTracing instanceof Tracing);
+      assert.ok(tracing.active);
+      assert.ok(aTracing.tracer.active);
     });
 
-    it('the tracing was started', () => {
-      tracingStarted = tracing.start();
-      assert.ok(tracingStarted.tracer.active);
+    it('should start with default config', () => {
+      tracing.start();
+      assert.strictEqual(defaultConfig.bufferSize, tracing.config.bufferSize);
+      assert.strictEqual(
+          defaultConfig.bufferTimeout, tracing.config.bufferTimeout);
+      assert.strictEqual(defaultConfig.logLevel, tracing.config.logLevel);
+      assert.strictEqual(
+          defaultConfig.maximumLabelValueSize,
+          tracing.config.maximumLabelValueSize);
+      assert.strictEqual(
+          defaultConfig.samplingRate, tracing.config.samplingRate);
+      assert.ok(tracing.config.plugins['http']);
+      assert.strictEqual(
+          tracing.config.plugins['http'],
+          `${Constants.OPENCENSUS_SCOPE}/${
+              Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-http`);
+
+      assert.ok(tracing.config.plugins['https']);
+      assert.strictEqual(
+          tracing.config.plugins['https'],
+          `${Constants.OPENCENSUS_SCOPE}/${
+              Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
     });
-    it('should tracing.tracer instance with logger', () => {
-      tracingStarted = tracing.start({logger: logger.logger('debug')});
-      assert.ok(instanceOfLogger(tracingStarted.tracer.logger));
+
+    it('should start tracing with a non-default logLevel', () => {
+      aTracing = tracing.start({logLevel: 3});
+      assert.strictEqual(tracing.config.logLevel, 3);
+      const consoleLogger = aTracing.tracer.logger as logger.ConsoleLogger;
+      assert.strictEqual(consoleLogger.level, 'info');
     });
-    it('should tracing.tracer instance with exporter', () => {
-      tracingStarted = tracing.start({exporter: NOOP_EXPORTER});
-      assert.equal(tracingStarted.exporter, NOOP_EXPORTER);
+
+    it('should start tracing with a logger instance', () => {
+      const aLogger = logger.logger('debug');
+      aTracing = tracing.start({logger: aLogger});
+      assert.strictEqual(tracing.config.logger, aLogger);
+      const consoleLogger = aTracing.tracer.logger as logger.ConsoleLogger;
+      assert.strictEqual(consoleLogger.level, 'debug');
+    });
+
+    it('should start with an exporter instance', () => {
+      aTracing = tracing.start({exporter: NOOP_EXPORTER});
+      assert.strictEqual(tracing.config.exporter, NOOP_EXPORTER);
+      assert.strictEqual(aTracing.exporter, NOOP_EXPORTER);
+    });
+
+    it('should start with a non-default bufferSize', () => {
+      const bufferSizeValue = defaultConfig.bufferSize + 1;
+      tracing.start({bufferSize: bufferSizeValue});
+      assert.strictEqual(tracing.config.bufferSize, bufferSizeValue);
+    });
+
+    it('should start with a non-default bufferTimeout', () => {
+      const bufferTimeoutValue = defaultConfig.bufferTimeout + 100;
+      tracing.start({bufferTimeout: bufferTimeoutValue});
+      assert.strictEqual(tracing.config.bufferTimeout, bufferTimeoutValue);
+    });
+
+    it('should start with a non-default maximumLabelValueSize', () => {
+      const maximumLabelValueSizeValue =
+          defaultConfig.maximumLabelValueSize + 10;
+      tracing.start({maximumLabelValueSize: maximumLabelValueSizeValue});
+      assert.strictEqual(
+          tracing.config.maximumLabelValueSize, maximumLabelValueSizeValue);
+    });
+
+    it('should start with a non-default samplingRate', () => {
+      const samplingRateValue = defaultConfig.samplingRate / 100;
+      tracing.start({samplingRate: samplingRateValue});
+      assert.strictEqual(tracing.config.samplingRate, samplingRateValue);
+    });
+
+    it('should start with an end-user plugin list', () => {
+      const endUserPlugins = {
+        'http': 'enduser-http-pluging',
+        'simple-module': 'enduser-simple-module-pluging'
+      };
+      tracing.start({plugins: endUserPlugins});
+      // should overwrite default http plugin
+      assert.strictEqual(
+          tracing.config.plugins['http'], endUserPlugins['http']);
+      // should add a new plugin
+      assert.strictEqual(
+          tracing.config.plugins['simple-module'],
+          endUserPlugins['simple-module']);
+      // should keep plugins default value
+      assert.strictEqual(
+          tracing.config.plugins['https'],
+          `${Constants.OPENCENSUS_SCOPE}/${
+              Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
     });
   });
 
@@ -73,8 +160,13 @@ describe('Tracing', () => {
     it('should stop the tracing instance', () => {
       const tracing = new Tracing();
       tracing.start();
+      assert.ok(tracing.config);
+      assert.ok(tracing.tracer.active);
       tracing.stop();
+      assert.ok(!tracing.config);
       assert.ok(!tracing.tracer.active);
+      assert.strictEqual(tracing.exporter, null);
+      assert.strictEqual(tracing.config, null);
     });
   });
 
@@ -98,14 +190,14 @@ describe('Tracing', () => {
     });
   });
 
-  /** Should get the exporter instance */
+  /** Should register the exporter instance */
   describe('registerExporter()', () => {
     it('should register the exporter on tracer', () => {
       const tracing = new Tracing();
       tracing.start();
-      const exporter = tracing.exporter;
+      const exporter = NOOP_EXPORTER;
       tracing.registerExporter(exporter);
-      assert.equal(tracing.tracer.eventListeners.length, 2);
+      assert.strictEqual(tracing.config.exporter, exporter);
     });
   });
 });
