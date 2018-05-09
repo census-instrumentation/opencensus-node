@@ -1,0 +1,28 @@
+{
+  "name": "@opencensus/opencensus-propagation-stackdriver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^10.0.6",
+    "@types/uuid": "^3.4.3",
+    "gts": "^0.5.4",
+    "typescript": "~2.6.1"
+  },
+  "dependencies": {
+    "uuid": "^3.2.1"
+  }
+}
