@@ -56,7 +56,7 @@ export class PluginLoader {
 
 
   /**
-   * Returns a PlunginNames object, build from a string array of target modules
+   * Returns a PluginNames object, build from a string array of target modules
    * names, using the defaultPackageName.
    * @param modulesToPatch A list of modules to patch.
    * @returns Plugin names.
@@ -98,26 +98,33 @@ export class PluginLoader {
    * Loads a list of plugins (using a map of the target module name
    * and its instrumentation plugin package name). Each plugin module
    * should implement the core Plugin interface and export an instance
-   * named as "plugin".
+   * named as "plugin". This function will attach a hook to be called
+   * the first time the module is loaded.
    * @param pluginList A list of plugins.
    */
   loadPlugins(pluginList: types.PluginNames) {
-    const self = this;
-
     // tslint:disable:no-any
     hook(Object.keys(pluginList), (exports, name, basedir) => {
-      const version = self.getPackageVersion(name, basedir as string);
-      self.logger.info('trying loading %s.%s', name, version);
+      const version = this.getPackageVersion(name, basedir as string);
+      this.logger.info('trying loading %s.%s', name, version);
+      let result = exports;
       if (!version) {
-        return exports;
+        return result;
       } else {
-        self.logger.debug('applying patch to %s@%s module', name, version);
-        self.logger.debug(
+        this.logger.debug('applying patch to %s@%s module', name, version);
+        this.logger.debug(
             'using package %s to patch %s', pluginList[name], name);
         // Expecting a plugin from module;
-        const plugin: types.Plugin = require(pluginList[name]).plugin;
-        self.plugins.push(plugin);
-        return plugin.applyPatch(exports, self.tracer, version);
+        try {
+          const plugin: types.Plugin = require(pluginList[name]).plugin;
+          this.plugins.push(plugin);
+          result = plugin.applyPatch(exports, this.tracer, version);
+        } catch (e) {
+          this.logger.error(
+              'could not load plugin %s of module %s. Error: %s',
+              pluginList[name], name, e.message);
+        }
+        return result;
       }
     });
   }

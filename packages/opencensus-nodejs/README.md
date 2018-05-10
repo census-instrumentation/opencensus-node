@@ -1,4 +1,4 @@
-# OpenCensus Core Node.js
+# OpenCensus Main Package
 [![Gitter chat][gitter-image]][gitter-url]
 
 OpenCensus for Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. 

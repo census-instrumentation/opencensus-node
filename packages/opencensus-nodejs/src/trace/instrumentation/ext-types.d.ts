@@ -26,4 +26,3 @@ declare module 'require-in-the-middle' {
     function hook(onRequire: hook.OnRequireFn): void;
     export = hook;
   }
-  

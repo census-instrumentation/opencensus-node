@@ -24,7 +24,7 @@ import {PluginLoader} from './instrumentation/plugin-loader';
 /** Implements a Tracing. */
 export class Tracing implements types.Tracing {
   /** A tracer object */
-  private tracerLocal: types.Tracer;
+  readonly tracer: types.Tracer;
   /** A plugin loader object */
   private pluginLoader: PluginLoader;
   /** Plugin names */
@@ -34,20 +34,20 @@ export class Tracing implements types.Tracing {
   /** An object to log information to */
   private logger: types.Logger = null;
   /** Singleton instance */
-  private static sgltnInstance: types.Tracing;
+  private static singletonInstance: types.Tracing;
   /** Indicates if the tracing is active */
   private activeLocal: boolean;
 
   /** Constructs a new TracingImpl instance. */
   constructor() {
-    this.tracerLocal = new classes.Tracer();
+    this.tracer = new classes.Tracer();
     this.defaultPlugins = PluginLoader.defaultPluginsFromArray(
         Constants.DEFAULT_INSTRUMENTATION_MODULES);
   }
 
   /** Gets the trancing instance. */
   static get instance(): types.Tracing {
-    return this.sgltnInstance || (this.sgltnInstance = new this());
+    return this.singletonInstance || (this.singletonInstance = new this());
   }
 
   // TODO: tracing interface should be updated
@@ -74,7 +74,7 @@ export class Tracing implements types.Tracing {
         this.configLocal.logger || logger.logger(this.configLocal.logLevel);
     this.configLocal.logger = this.logger;
     this.logger.debug('config: %o', this.configLocal);
-    this.pluginLoader = new PluginLoader(this.logger, this.tracerLocal);
+    this.pluginLoader = new PluginLoader(this.logger, this.tracer);
     this.pluginLoader.loadPlugins(
         this.configLocal.plugins as types.PluginNames);
 
@@ -85,24 +85,20 @@ export class Tracing implements types.Tracing {
       this.registerExporter(this.configLocal.exporter);
     }
     this.activeLocal = true;
-    this.tracerLocal.start(this.configLocal);
+    this.tracer.start(this.configLocal);
     return this;
   }
 
   /** Stops the tracing. */
   stop() {
     this.activeLocal = false;
-    this.tracerLocal.stop();
+    this.tracer.stop();
     this.pluginLoader.unloadPlugins();
     this.configLocal = null;
     this.logger = null;
     // TODO: maybe some exporter logic when stop tracing
   }
 
-  /** Gets the tracer. */
-  get tracer(): types.Tracer {
-    return this.tracerLocal;
-  }
 
   /** Gets the exporter. */
   get exporter(): types.Exporter {
@@ -115,14 +111,35 @@ export class Tracing implements types.Tracing {
    * @param exporter THe exporter to send the traces to.
    */
   registerExporter(exporter: types.Exporter): types.Tracing {
-    this.configLocal.exporter = exporter;
-
-    // TODO: review this logic. Tracer.registerEndSpanListener
-    // should allow only one exporter listener
-    // an unregister method on Tracer is needed or a clear EndSpanListener
-    if (this.tracer.eventListeners.indexOf(exporter) < 0) {
+    if (exporter) {
+      if (this.configLocal.exporter) {
+        this.unRegisterExporter(this.configLocal.exporter);
+      }
+      this.configLocal.exporter = exporter;
       this.tracer.registerEndSpanListener(exporter);
+    } else {
+      // TODO: if unRegisterExporter go public, this logic may not be
+      // necessary - register a null to unRegister
+      if (this.configLocal.exporter) {
+        this.unRegisterExporter(this.configLocal.exporter);
+      }
     }
+    return this;
+  }
+
+
+  /**
+   * Registers an exporter to send the collected traces to.
+   * @param exporter THe exporter to send the traces to.
+   */
+  // TODO: maybe this method should be added to Tracing interface
+  private unRegisterExporter(exporter: types.Exporter): types.Tracing {
+    // TODO: maybe an unRegisterEndSpanListener method should be added to Tracer
+    const index = this.tracer.eventListeners.indexOf(exporter, 0);
+    if (index > -1) {
+      this.tracer.eventListeners.splice(index, 1);
+    }
+    this.configLocal.exporter = null;
     return this;
   }
 }
