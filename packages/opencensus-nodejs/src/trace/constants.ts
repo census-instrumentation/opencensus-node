@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/** General pupose constants. */
+/** General purpose constants. */
 const constants = {
   /** Default maximum size of a buffer. */
   DEFAULT_BUFFER_SIZE: 100,

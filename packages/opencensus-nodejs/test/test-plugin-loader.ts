@@ -24,20 +24,27 @@ import {Constants} from '../src/trace/constants';
 import {PluginLoader} from '../src/trace/instrumentation/plugin-loader';
 import {Tracing} from '../src/trace/tracing';
 
+// TODO: Clarify requirement regarding instrumentation of nodejs core modules
+// for Opencensus
 
-const INSTALED_PLUGINS_PATH = `${__dirname}/instrumentation/node_modules`;
-const TEST_MODULES = ['simple-module'];
+
+const INSTALLED_PLUGINS_PATH = `${__dirname}/instrumentation/node_modules`;
+const TEST_MODULES = [
+  'simple-module',       // this module exist and has a plugin
+  'nonexistent-module',  // this module does not exist
+  'http'                 // this module does not have a plugin
+];
 
 const clearRequireCache = () => {
   Object.keys(require.cache).forEach(key => delete require.cache[key]);
 };
 
-describe('Trace Plugin Loader', () => {
-  const log = logger.logger();
+describe('Plugin Loader', () => {
+  const log = logger.logger('error');
 
   before(() => {
-    module.paths.push(INSTALED_PLUGINS_PATH);
-    PluginLoader.searchPathForTest = INSTALED_PLUGINS_PATH;
+    module.paths.push(INSTALLED_PLUGINS_PATH);
+    PluginLoader.searchPathForTest = INSTALLED_PLUGINS_PATH;
   });
 
   afterEach(() => {
@@ -49,23 +56,22 @@ describe('Trace Plugin Loader', () => {
     const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
     const tracer = new classes.Tracer();
 
-
-    /** Should create a PluginLoader instance */
-    describe('new PluginLoader()', () => {
-      it('should create a PluginLoader instance', () => {
-        const pluginLoader = new PluginLoader(log, tracer);
-        assert.ok(pluginLoader instanceof PluginLoader);
-      });
-    });
-
     /** Should get the plugins to use. */
     describe('static defaultPluginsFromArray()', () => {
       it('should get the default plugins from a module name array', () => {
         const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
         assert.ok(plugins[TEST_MODULES[0]]);
+        assert.ok(plugins[TEST_MODULES[1]]);
+        assert.ok(plugins[TEST_MODULES[2]]);
         assert.strictEqual(
             plugins[TEST_MODULES[0]],
             '@opencensus/opencensus-instrumentation-simple-module');
+        assert.strictEqual(
+            plugins[TEST_MODULES[1]],
+            '@opencensus/opencensus-instrumentation-nonexistent-module');
+        assert.strictEqual(
+            plugins[TEST_MODULES[2]],
+            '@opencensus/opencensus-instrumentation-http');
       });
     });
 
@@ -75,16 +81,31 @@ describe('Trace Plugin Loader', () => {
         const simpleModule = require(TEST_MODULES[0]);
         assert.strictEqual(simpleModule.name(), TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 100);
+        assert.throws(() => require(TEST_MODULES[1]));
       });
 
-      it('should load the plugins and patch the target modules', () => {
+      it('should load a plugin and patch the target modules', () => {
         const pluginLoader = new PluginLoader(log, tracer);
-        assert.equal(pluginLoader.plugins.length, 0);
+        assert.strictEqual(pluginLoader.plugins.length, 0);
         pluginLoader.loadPlugins(plugins);
+        // The hook is only called the first time the module is loaded.
         const simpleModule = require(TEST_MODULES[0]);
-        assert.equal(pluginLoader.plugins.length, 1);
+        assert.strictEqual(pluginLoader.plugins.length, 1);
         assert.strictEqual(simpleModule.name(), 'patched-' + TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 101);
+      });
+
+      it('should not load a non existing plugin and just log an erro', () => {
+        const intercept = require('intercept-stdout');
+
+        const pluginLoader = new PluginLoader(log, tracer);
+        assert.strictEqual(pluginLoader.plugins.length, 0);
+        pluginLoader.loadPlugins(plugins);
+        const http = require(TEST_MODULES[2]);
+        intercept((txt: string) => {
+          assert.ok(txt.indexOf('error') >= 0);
+        });
+        assert.strictEqual(pluginLoader.plugins.length, 0);
       });
     });
 
@@ -92,14 +113,14 @@ describe('Trace Plugin Loader', () => {
     describe('unloadPlugins()', () => {
       it('should unload the plugins and unpatch the target module', () => {
         const pluginLoader = new PluginLoader(log, tracer);
-        assert.equal(pluginLoader.plugins.length, 0);
+        assert.strictEqual(pluginLoader.plugins.length, 0);
         pluginLoader.loadPlugins(plugins);
         const simpleModule = require(TEST_MODULES[0]);
-        assert.equal(pluginLoader.plugins.length, 1);
+        assert.strictEqual(pluginLoader.plugins.length, 1);
         assert.strictEqual(simpleModule.name(), 'patched-' + TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 101);
         pluginLoader.unloadPlugins();
-        assert.equal(pluginLoader.plugins.length, 0);
+        assert.strictEqual(pluginLoader.plugins.length, 0);
         assert.strictEqual(simpleModule.name(), TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 100);
       });
@@ -109,19 +130,19 @@ describe('Trace Plugin Loader', () => {
     describe('load/unload end-user pluging', () => {
       it('should load/unload patch/unpatch end-user plugins', () => {
         const pluginLoader = new PluginLoader(log, tracer);
-        assert.equal(pluginLoader.plugins.length, 0);
+        assert.strictEqual(pluginLoader.plugins.length, 0);
 
         const endUserPlugins = {
-          'simple-module': 'enduser-simple-module-pluging'
+          'simple-module': 'enduser-simple-module-plugin'
         };
         pluginLoader.loadPlugins(endUserPlugins);
         const simpleModule = require(TEST_MODULES[0]);
-        assert.equal(pluginLoader.plugins.length, 1);
+        assert.strictEqual(pluginLoader.plugins.length, 1);
         assert.strictEqual(
             simpleModule.name(), 'my-patched-' + TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 102);
         pluginLoader.unloadPlugins();
-        assert.equal(pluginLoader.plugins.length, 0);
+        assert.strictEqual(pluginLoader.plugins.length, 0);
         assert.strictEqual(simpleModule.name(), TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 100);
       });
