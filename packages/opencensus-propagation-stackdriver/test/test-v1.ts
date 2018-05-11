@@ -19,7 +19,7 @@ import * as mocha from 'mocha';
 import {inspect} from 'util';
 
 import {SpanContext} from '../src/index';
-import {extract, inject} from '../src/v1';
+import {extract, generate, inject, parseContextFromHeader, serializeSpanContext} from '../src/v1';
 
 const notNull = <T>(x: T|null|undefined): T => {
   assert.notStrictEqual(x, null);
@@ -27,15 +27,11 @@ const notNull = <T>(x: T|null|undefined): T => {
   return x as T;
 };
 
-describe('extract', () => {
+describe('parseContextFromHeader', () => {
   describe('valid inputs', () => {
     it('should return expected values: cafef00d/667;o=1', () => {
-      const getter = {
-        getHeader() {
-          return 'cafef00d/667;o=1';
-        }
-      };
-      const result = notNull(extract(getter));
+      const header = 'cafef00d/667;o=1';
+      const result = notNull(parseContextFromHeader(header));
       assert.strictEqual(result.traceId, 'cafef00d');
       assert.strictEqual(result.spanId, '667');
       assert.strictEqual(result.options, 1);
@@ -44,12 +40,8 @@ describe('extract', () => {
     it('should return expected values:' +
            '123456/123456123456123456123456123456123456;o=1',
        () => {
-         const getter = {
-           getHeader() {
-             return '123456/123456123456123456123456123456123456;o=1';
-           }
-         };
-         const result = notNull(extract(getter));
+         const header = '123456/123456123456123456123456123456123456;o=1';
+         const result = notNull(parseContextFromHeader(header));
          assert.strictEqual(result.traceId, '123456');
          assert.strictEqual(
              result.spanId, '123456123456123456123456123456123456');
@@ -57,12 +49,8 @@ describe('extract', () => {
        });
 
     it('should return expected values: 123456/667', () => {
-      const getter = {
-        getHeader() {
-          return '123456/667';
-        }
-      };
-      const result = notNull(extract(getter));
+      const header = '123456/667';
+      const result = notNull(parseContextFromHeader(header));
       assert.strictEqual(result.traceId, '123456');
       assert.strictEqual(result.spanId, '667');
       assert.strictEqual(result.options, undefined);
@@ -76,20 +64,15 @@ describe('extract', () => {
     ];
     inputs.forEach(s => {
       it(`should reject ${s}`, () => {
-        const getter = {
-          getHeader() {
-            // tslint:disable-next-line:no-any
-            return s as any;
-          }
-        };
-        const result = extract(getter);
+        // tslint:disable-next-line:no-any
+        const result = parseContextFromHeader(s as any);
         assert.ok(!result);
       });
     });
   });
 });
 
-describe('inject', () => {
+describe('serializeSpanContext', () => {
   interface TestData {
     input: SpanContext;
     output: string;
@@ -108,12 +91,47 @@ describe('inject', () => {
 
   testData.forEach(({input, output}) => {
     it(`returns well-formatted trace context for ${inspect(input)}`, () => {
-      const setter = {
-        setHeader(name: string, value: string) {
-          assert.deepEqual(value, output);
-        }
-      };
-      inject(setter, input);
+      const header = serializeSpanContext(input);
+      assert.deepEqual(header, output);
     });
+  });
+});
+
+describe('extract', () => {
+  it('should return prased header from getter.getHeader', () => {
+    const HEADER = 'cafef00d/123';
+    const getter = {
+      getHeader(name: string) {
+        return HEADER;
+      }
+    };
+    assert.deepEqual(extract(getter), parseContextFromHeader(HEADER));
+  });
+});
+
+describe('inject', () => {
+  it('should call setter.setHeader with serialized header', (done) => {
+    const spanContext = generate();
+    const setter = {
+      setHeader(name: string, value: string) {
+        assert.deepEqual(value, serializeSpanContext(spanContext));
+        done();
+      }
+    };
+    inject(setter, spanContext);
+  });
+});
+
+describe('generate', () => {
+  it('should generate a valid span context', () => {
+    const TIMES = 20;
+    // Generate 20 contexts and then ensure they are valid.
+    const ok =
+        Array.from({length: TIMES}).fill(0).map(_ => generate()).every(c => {
+          const serialized = serializeSpanContext(c);
+          const parsed = parseContextFromHeader(serialized);
+          return null !== parsed;
+        });
+    assert.ok(ok);
   });
 });

@@ -28,24 +28,31 @@ export interface SpanContext {
 /**
  * An transport and environment neutral API for getting request headers.
  */
-export interface Getter {
+export interface HeaderGetter {
   getHeader(name: string): string|string[]|undefined;
 }
 
 /**
  * A transport and environment neutral API for setting headers.
  */
-export interface Setter {
+export interface HeaderSetter {
   setHeader(name: string, value: string): void;
 }
 
+
 export interface Propagation {
-  extract(getter: Getter): SpanContext|null;
-  inject(setter: Setter, spanContext: SpanContext): void;
+  extract(getter: HeaderGetter): SpanContext|null;
+  inject(setter: HeaderSetter, spanContext: SpanContext): void;
   generate(): SpanContext;
 }
 
-export const v1: Propagation = v1API;
+export const v1: Propagation = {
+  extract: v1API.extract,
+  inject: v1API.inject,
+  generate: v1API.generate
+};
 
 // Also export the v1 API as the default API.
-export * from './v1';
+export const extract = v1.extract;
+export const inject = v1.inject;
+export const generate = v1.generate;

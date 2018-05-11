@@ -23,12 +23,12 @@
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 
-import {Getter, Setter, SpanContext} from './index';
+import {HeaderGetter, HeaderSetter, SpanContext} from './index';
 
 const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';
 
-function parseContextFromHeader(str: string|string[]|undefined): SpanContext|
-    null {
+export function parseContextFromHeader(str: string|string[]|
+                                       undefined): SpanContext|null {
   if (typeof str !== 'string') {
     return null;
   }
@@ -44,7 +44,7 @@ function parseContextFromHeader(str: string|string[]|undefined): SpanContext|
   };
 }
 
-function serializeSpanContext(spanContext: SpanContext) {
+export function serializeSpanContext(spanContext: SpanContext) {
   let header = `${spanContext.traceId}/${spanContext.spanId}`;
   if (spanContext.options) {
     header += `;o=${spanContext.options}`;
@@ -52,11 +52,11 @@ function serializeSpanContext(spanContext: SpanContext) {
   return header;
 }
 
-export function extract(getter: Getter) {
+export function extract(getter: HeaderGetter) {
   return parseContextFromHeader(getter.getHeader(TRACE_CONTEXT_HEADER_NAME));
 }
 
-export function inject(setter: Setter, spanContext: SpanContext) {
+export function inject(setter: HeaderSetter, spanContext: SpanContext) {
   setter.setHeader(
       TRACE_CONTEXT_HEADER_NAME, serializeSpanContext(spanContext));
 }
