@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-import {SpanContext} from './index';
-import {IncomingMessage, ServerResponse} from 'http';
-import * as uuid from 'uuid';
+/**
+ * This file implements propagation for the Stackdriver Trace v1 Trace Context
+ * format.
+ * Full details at https://cloud.google.com/trace/docs/support.
+ */
+
 import * as crypto from 'crypto';
+import * as uuid from 'uuid';
+
+import {Getter, Setter, SpanContext} from './index';
 
 const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';
 
-function parseContextFromHeader(str: string|string[]|undefined): SpanContext|null {
-  if (typeof str !== 'string')
+function parseContextFromHeader(str: string|string[]|undefined): SpanContext|
+    null {
+  if (typeof str !== 'string') {
     return null;
+  }
   const matches = str.match(/^([0-9a-fA-F]+)(?:\/([0-9]+))(?:;o=(.*))?/);
   if (!matches || matches.length !== 4 || matches[0] !== str ||
       (matches[2] && isNaN(Number(matches[2])))) {
@@ -44,21 +52,33 @@ function serializeSpanContext(spanContext: SpanContext) {
   return header;
 }
 
-function extract(req: IncomingMessage) {
-  return parseContextFromHeader(req.headers[TRACE_CONTEXT_HEADER_NAME]);
+export function extract(getter: Getter) {
+  return parseContextFromHeader(getter.getHeader(TRACE_CONTEXT_HEADER_NAME));
 }
 
-function inject(res: ServerResponse, spanContext: SpanContext) {
-  res.setHeader(TRACE_CONTEXT_HEADER_NAME, serializeSpanContext(spanContext));
+export function inject(setter: Setter, spanContext: SpanContext) {
+  setter.setHeader(
+      TRACE_CONTEXT_HEADER_NAME, serializeSpanContext(spanContext));
 }
 
-function generateNewSpanContext() {
- return {
+// Use 6 bytes of randomness only as JS numbers are doubles not 64-bit ints.
+const SPAN_ID_RANDOM_BYTES = 6;
+
+// Use the faster crypto.randomFillSync when available (Node 7+) falling back to
+// using crypto.randomBytes.
+// TODO(ofrobots): Use alternate logic for the browser where crypto and Buffer
+//    are not available.
+const spanIdBuffer = Buffer.alloc(SPAN_ID_RANDOM_BYTES);
+const randomFillSync = crypto.randomFillSync;
+const randomBytes = crypto.randomBytes;
+const spanRandomBuffer = randomFillSync ?
+    () => randomFillSync(spanIdBuffer) :
+    () => randomBytes(SPAN_ID_RANDOM_BYTES);
+
+export function generate(): SpanContext {
+  return {
     traceId: uuid.v4().split('-').join(''),
-    spanId: parseInt(crypto.randomBytes(6).toString('hex'), 16).toString()
+    // tslint:disable-next-line:ban Needed to parse hexadecimal.
+    spanId: parseInt(spanRandomBuffer().toString('hex'), 16).toString()
   };
 }
-
-export {
-  extract, inject, generateNewSpanContext
-};

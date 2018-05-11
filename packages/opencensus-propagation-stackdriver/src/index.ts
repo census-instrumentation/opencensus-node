@@ -1,5 +1,19 @@
+/**
+ * Copyright 2018, OpenCensus Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import {IncomingMessage, ServerResponse} from 'http';
 import * as v1API from './v1';
 
 export interface SpanContext {
@@ -9,13 +23,29 @@ export interface SpanContext {
   spanId: string;
   /** Options */
   options?: number;
-};
+}
 
-export interface API {
-  extract(req: IncomingMessage): SpanContext|null;
-  inject(res: ServerResponse, spanContext: SpanContext): void;
-  generateNewSpanContext(): SpanContext;
-};
+/**
+ * An transport and environment neutral API for getting request headers.
+ */
+export interface Getter {
+  getHeader(name: string): string|string[]|undefined;
+}
 
-export const v1: API = v1API;
+/**
+ * A transport and environment neutral API for setting headers.
+ */
+export interface Setter {
+  setHeader(name: string, value: string): void;
+}
 
+export interface Propagation {
+  extract(getter: Getter): SpanContext|null;
+  inject(setter: Setter, spanContext: SpanContext): void;
+  generate(): SpanContext;
+}
+
+export const v1: Propagation = v1API;
+
+// Also export the v1 API as the default API.
+export * from './v1';
