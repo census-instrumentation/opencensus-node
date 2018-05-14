@@ -123,15 +123,27 @@ describe('inject', () => {
 });
 
 describe('generate', () => {
+  const TIMES = 20;
+
+  // Generate some span contexts.
+  const GENERATED = Array.from({length: TIMES}).fill(0).map(_ => generate());
+
   it('should generate a valid span context', () => {
-    const TIMES = 20;
-    // Generate 20 contexts and then ensure they are valid.
-    const ok =
-        Array.from({length: TIMES}).fill(0).map(_ => generate()).every(c => {
-          const serialized = serializeSpanContext(c);
-          const parsed = parseContextFromHeader(serialized);
-          return null !== parsed;
-        });
+    const ok = GENERATED.every(c => {
+      const serialized = serializeSpanContext(c);
+      const parsed = parseContextFromHeader(serialized);
+      return null !== parsed;
+    });
     assert.ok(ok);
+  });
+
+  it('should generate unique traceIds', () => {
+    const traceIds = GENERATED.map(c => c.traceId);
+    assert.strictEqual((new Set(traceIds)).size, TIMES);
+  });
+
+  it('should generate unique spanIds', () => {
+    const spanIds = GENERATED.map(c => c.spanId);
+    assert.strictEqual((new Set(spanIds)).size, TIMES);
   });
 });
