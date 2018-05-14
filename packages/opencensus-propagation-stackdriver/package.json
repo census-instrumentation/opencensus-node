@@ -1,0 +1,35 @@
+{
+  "name": "@opencensus/propagation-stackdriver",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha 'build/test/**/*.js'",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/express": "^4.11.1",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^10.0.6",
+    "@types/uuid": "^3.4.3",
+    "gts": "^0.6.0",
+    "mocha": "^5.1.1",
+    "nyc": "^11.7.3",
+    "typescript": "~2.8.0"
+  },
+  "dependencies": {
+    "uuid": "^3.2.1"
+  },
+  "files": [
+    "build/src"
+  ]
+}
