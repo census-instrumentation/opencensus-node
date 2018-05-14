@@ -18,6 +18,7 @@ import * as logger from '../../common/console-logger';
 import * as loggerTypes from '../../common/types';
 import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
+import {Propagation} from '../propagation/types';
 import {Sampler} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 
@@ -62,6 +63,11 @@ export class Tracer implements types.Tracer {
   /** Sets the current root span. */
   set currentRootSpan(root: types.RootSpan) {
     this.contextManager.set('rootspan', root);
+  }
+
+  /** A propagation instance */
+  get propagation(): Propagation {
+    return this.config ? this.config.propagation : null;
   }
 
   /**

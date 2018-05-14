@@ -20,5 +20,6 @@ export * from './trace/model/types';
 export * from './trace/config/types';
 export * from './trace/sampler/types';
 export * from './trace/instrumentation/types';
+export * from './trace/propagation/types';
 export * from './exporters/types';
 export * from './common/types';

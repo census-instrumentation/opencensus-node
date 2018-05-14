@@ -16,6 +16,7 @@
 
 import * as loggerTypes from '../../common/types';
 import * as configTypes from '../config/types';
+import {Propagation} from '../propagation/types';
 import * as samplerTypes from '../sampler/types';
 
 
@@ -221,6 +222,9 @@ export interface Tracer extends OnEndSpanEventListener {
 
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger;
+
+  /** A propagation instance */
+  readonly propagation: Propagation;
 
   /** Get the eventListeners from tracer instance */
   readonly eventListeners: OnEndSpanEventListener[];
