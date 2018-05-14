@@ -17,6 +17,7 @@
 import {Logger} from '../../common/types';
 import {Exporter} from '../../exporters/types';
 import {PluginNames} from '../instrumentation/types';
+import {Propagation} from '../propagation/types';
 
 /** Interface configuration for a buffer. */
 export interface BufferConfig {
@@ -36,6 +37,8 @@ export interface TracerConfig {
   ignoreUrls?: Array<string|RegExp>;
   /** A logger object  */
   logger?: Logger;
+  /** A propagation instance */
+  propagation?: Propagation;
 }
 
 /** Available configuration options. */
