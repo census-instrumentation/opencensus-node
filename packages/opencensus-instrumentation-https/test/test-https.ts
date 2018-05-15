@@ -21,171 +21,198 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as mocha from 'mocha';
+import * as nock from 'nock';
 import * as shimmer from 'shimmer';
 
-const log = logger.logger('debug');
+import {plugin} from '../src/';
+import {HttpsPlugin} from '../src/';
 
-import {plugin} from '../src/https';
+// TODO: evaluate how to reuse test code from http plugin
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-async function makeRequest(href: string|object, span?: types.Span) {
-  await https.get(href, resp => {
-    resp.on('data', chunk => {});
-    resp.on('end', () => {
-      if (span) span.end();
-    });
-  });
+function doNoke(
+    url: string, path: string, httpCode: number, respBody: string,
+    times?: number) {
+  let i = times;
+  if (!times) {
+    i = 1;
+  }
+  nock(url).get(path).times(i).reply(httpCode, respBody);
 }
+
+
+const httpsRequest = {
+  get: (options: {}|string) => {
+    return (new Promise((resolve, reject) => {
+      return https.get(options, resp => {
+        let data = '';
+        resp.on('data', chunk => {
+          data += chunk;
+        });
+        resp.on('end', () => {
+          resolve(data);
+        });
+        resp.on('error', err => {
+          reject(err);
+        });
+      });
+    }));
+  }
+};
+
+const VERSION = process.versions.node;
+
+class RootSpanVerifier implements types.OnEndSpanEventListener {
+  endedRootSpans: types.RootSpan[] = [];
+
+  onEndSpan(root: types.RootSpan) {
+    this.endedRootSpans.push(root);
+  }
+}
+
+const httpsOptions = {
+  key: fs.readFileSync('./encryption/key.pem'),
+  cert: fs.readFileSync('./encryption/cert.pem')
+};
+
+const server = https
+                   .createServer(
+                       httpsOptions,
+                       (request, response) => {
+                         response.end('Test Server Response');
+                       })
+                   .listen(3000);
+
+
 
 // mocha this.timeout() fails when using ES6's arrow functions
 // (Issue link: https://github.com/mochajs/mocha/issues/2018)
 // tslint:disable-next-line
-describe('HttpsPlugin', function() {
-  const testHost = 'https://localhost:3000/';
+describe('HttpPlugin', function() {
+  const urlHost = 'https://fake.service.io';
 
-  class RootSpanVerifier implements types.OnEndSpanEventListener {
-    endedRootSpans: types.RootSpan[] = [];
-
-    onEndSpan(root: types.RootSpan) {
-      this.endedRootSpans.push(root);
-    }
-  }
-
+  const log = logger.logger();
   const tracer = new classes.Tracer();
-  tracer.start({
-    samplingRate: 1,
+  const rootSpanVerifier = new RootSpanVerifier();
+  tracer.start({samplingRate: 1, logger: log});
+
+  it('should return a plugin', () => {
+    assert.ok(plugin instanceof HttpsPlugin);
   });
 
-  plugin.applyPatch(https, tracer, '8.9.1');
+  before(() => {
+    plugin.applyPatch(https, tracer, VERSION);
+    tracer.registerEndSpanListener(rootSpanVerifier);
+  });
 
-  const rootSpanVerifier = new RootSpanVerifier();
-  tracer.registerEndSpanListener(rootSpanVerifier);
+  beforeEach(() => {
+    rootSpanVerifier.endedRootSpans = [];
+    nock.cleanAll();
+  });
 
-  const httpsOptions = {
-    key: fs.readFileSync('./encryption/key.pem'),
-    cert: fs.readFileSync('./encryption/cert.pem')
-  };
-
-  const server = https
-                     .createServer(
-                         httpsOptions,
-                         (request, response) => {
-                           response.end('Test Server Response');
-                         })
-                     .listen(3000);
+  after(() => {
+    server.close();
+  });
 
   /** Should intercept outgoing requests */
   describe('patchOutgoingRequest()', () => {
-    this.timeout(0);
     shimmer.unwrap(https && https.Server && https.Server.prototype, 'emit');
 
-    it('should create a rootSpan for GET requests', async () => {
-      const testPath = 'testOutgoing/rootSpan/';
-      makeRequest(testHost + testPath);
-
-      setTimeout(() => {
-        assert.ok(rootSpanVerifier.endedRootSpans.some(root => {
-          return root.name.indexOf(testPath) >= 0;
-        }));
+    it('should create a rootSpan for GET requests as a client', async () => {
+      const testPath = '/outgoing/rootSpan/1';
+      doNoke(urlHost, testPath, 200, 'Ok');
+      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      await httpsRequest.get(`${urlHost}${testPath}`).then((result) => {
+        assert.strictEqual(result, 'Ok');
+        assert.ok(
+            rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-      }, 400);
-    });
-
-    it('should create a child span for GET requests', async () => {
-      rootSpanVerifier.endedRootSpans = [];
-      const options = {name: 'TestRootSpan'};
-      const testPath = 'testOutgoing/childSpan/';
-
-      tracer.startRootSpan(options, async root => {
-        makeRequest(testHost + testPath, root);
       });
-
-      setTimeout(() => {
-        assert.ok(rootSpanVerifier.endedRootSpans.some(root => {
-          return root.name.indexOf('TestRootSpan') >= 0 &&
-              root.spans.some(span => {
-                return span.name.indexOf(testPath) >= 0;
-              });
-        }));
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-      }, 400);
     });
 
-    it('should create multiple child spans for GET requests', async () => {
-      rootSpanVerifier.endedRootSpans = [];
-      const testPath = 'testOutgoing/multipleChildSpans/';
-
+    it('should create a child span for GET requests', () => {
+      const testPath = '/outgoing/rootSpan/childs/1';
+      doNoke(urlHost, testPath, 200, 'Ok');
       const options = {name: 'TestRootSpan'};
-      tracer.startRootSpan(options, async root => {
-        let i = 0;
-        while (i < 10) {
-          makeRequest(testHost + testPath, root);
-          i += 1;
+      return tracer.startRootSpan(options, async root => {
+        await httpsRequest.get(`${urlHost}${testPath}`).then((result) => {
+          assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+          assert.strictEqual(root.spans.length, 1);
+          assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
+          assert.strictEqual(root.traceId, root.spans[0].traceId);
+        });
+      });
+    });
+
+    it('should create multiple child spans for GET requests', () => {
+      const testPath = '/outgoing/rootSpan/childs';
+      const num = 5;
+      doNoke(urlHost, testPath, 200, 'Ok', num);
+      const options = {name: 'TestRootSpan'};
+      return tracer.startRootSpan(options, async root => {
+        assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+        for (let i = 0; i < num; i++) {
+          await httpsRequest.get(`${urlHost}${testPath}`).then((result) => {
+            assert.strictEqual(root.spans.length, i + 1);
+            assert.ok(root.spans[i].name.indexOf(testPath) >= 0);
+            assert.strictEqual(root.traceId, root.spans[i].traceId);
+          });
         }
-      });
-
-      setTimeout(() => {
-        assert.ok(rootSpanVerifier.endedRootSpans.some(root => {
-          return root.name.indexOf('TestRootSpan') >= 0 &&
-              root.spans.length === 10 && root.spans.some(span => {
-                return span.name.indexOf(testPath) >= 0;
-              });
-        }));
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+        root.end();
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-      }, 300);
+      });
     });
 
     it('should not trace exporters requests', async () => {
-      rootSpanVerifier.endedRootSpans = [];
+      const testPath = '/outgoing/do-not-trace';
+      doNoke(urlHost, testPath, 200, 'Ok');
 
       const options = {
-        host: 'localhost',
-        port: 3000,
+        host: 'fake.service.io',
+        path: testPath,
         headers: {'x-opencensus-outgoing-request': 1}
       };
-      makeRequest(options);
 
-      setTimeout(() => {
+      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      await httpsRequest.get(options).then((result) => {
+        assert.equal(result, 'Ok');
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-      }, 400);
+      });
     });
-  });
+  });  // describe pathcOutgoing
+
 
   /** Should intercept incoming requests */
   describe('patchIncomingRequest()', () => {
-    this.timeout(0);
-    plugin.applyPatch(https, tracer, '8.9.1');
-    shimmer.unwrap(https, 'request');
-
     it('should create a root span for incoming requests', async () => {
-      rootSpanVerifier.endedRootSpans = [];
-      const testPath = 'testIncoming/rootSpan/';
-      makeRequest(testHost + testPath);
+      const testPath = '/incoming/rootSpan/';
 
-      setTimeout(() => {
-        assert.ok(rootSpanVerifier.endedRootSpans.some(root => {
-          return root.name.indexOf(testPath) >= 0;
-        }));
+      const options = {host: 'localhost', path: testPath, port: 3000};
+      shimmer.unwrap(https, 'get');
+
+      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      await httpsRequest.get(options).then((result) => {
+        assert.ok(
+            rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-      }, 400);
+      });
     });
   });
 
   /** Should not intercept incoming and outgoing requests */
   describe('applyUnpatch()', () => {
-    this.timeout(0);
-
     it('should not create a root span for incoming requests', async () => {
       plugin.applyUnpatch();
-      rootSpanVerifier.endedRootSpans = [];
-      const testPath = 'testIncoming/doNotTrace/';
-      makeRequest(testHost + testPath);
+      const testPath = '/incoming/unpatch/';
 
-      setTimeout(() => {
+      const options = {host: 'localhost', path: testPath, port: 3000};
+
+      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      await httpsRequest.get(options).then((result) => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-        server.close();
-      }, 500);
+      });
     });
   });
 });

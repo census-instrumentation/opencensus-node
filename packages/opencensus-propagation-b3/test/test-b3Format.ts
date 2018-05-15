@@ -19,7 +19,6 @@ import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
 import * as assert from 'assert';
 
-import {Span} from '../../opencensus-core/build/src/index-classes';
 import {B3Format} from '../src/b3Format';
 
 const X_B3_TRACE_ID = 'x-b3-traceid';
@@ -27,87 +26,69 @@ const X_B3_SPAN_ID = 'x-b3-spanid';
 const X_B3_PARENT_SPAN_ID = 'x-x3-parentspanid';
 const X_B3_SAMPLED = 'x-b3-sampled';
 
-const SAMPLED_VALUE = '1';
-const NOT_SAMPLED_VALUE = '0';
+const SAMPLED_VALUE = 0x1;
+const NOT_SAMPLED_VALUE = 0x0;
 
-// tslint:disable:no-any
-function assertHeader(headers: any, span: types.Span) {
-  if (span) {
-    assert.ok(
-        headers[X_B3_TRACE_ID] && headers[X_B3_TRACE_ID] === span.traceId);
-    assert.ok(headers[X_B3_SPAN_ID] && headers[X_B3_SPAN_ID] === span.id);
-    assert.ok(headers[X_B3_SAMPLED] && headers[X_B3_SAMPLED] === SAMPLED_VALUE);
-  } else {
-    assert.ok(headers[X_B3_TRACE_ID] && headers[X_B3_TRACE_ID] === 'undefined');
-    assert.ok(headers[X_B3_SPAN_ID] && headers[X_B3_SPAN_ID] === 'undefined');
-    assert.ok(
-        headers[X_B3_SAMPLED] && headers[X_B3_SAMPLED] === NOT_SAMPLED_VALUE);
-  }
-}
-
-// tslint:disable:no-any
-function assertContext(headers: any, context: types.SpanContext) {
-  if (headers[X_B3_SAMPLED] && headers[X_B3_SAMPLED] === SAMPLED_VALUE) {
-    assert.ok(
-        headers[X_B3_TRACE_ID] && headers[X_B3_TRACE_ID] === context.traceId);
-    assert.ok(
-        headers[X_B3_SPAN_ID] && headers[X_B3_SPAN_ID] === context.spanId);
-    assert.strictEqual(context.options, 1);
-  } else {
-    assert.strictEqual(context.options, 0);
-  }
-}
+const b3Format = new B3Format();
 
 describe('B3Propagation', () => {
-  /** Should inject spans to header */
-  describe('injectToHeader()', () => {
-    it('should inject a sapmled span context to a header', () => {
-      const tracer = new classes.Tracer();
-      tracer.start({
-        samplingRate: 1,
-      });
+  /** Should get the singleton trancing instance. */
+  describe('extract()', () => {
+    it('should extract context of a sampled span from headers', () => {
+      // tslint:disable:no-any
+      const spanContext = b3Format.generate();
+      const headers = {} as any;
+      headers[X_B3_TRACE_ID] = spanContext.traceId;
+      headers[X_B3_SPAN_ID] = spanContext.spanId;
+      headers[X_B3_SAMPLED] = spanContext.options;
 
-      tracer.startRootSpan({name: 'testRootSpan'}, span => {
-        const headers = B3Format.injectToHeader({}, span);
-        assertHeader(headers, span);
-        span.end();
-      });
-    });
+      const getter = {
+        getHeader(name: string) {
+          return headers[name];
+        }
+      } as types.HeaderGetter;
 
-    it('should inject a not sapmled span context to a header', () => {
-      const tracer = new classes.Tracer();
-      tracer.start({
-        samplingRate: 0,
-      });
-
-      tracer.startRootSpan({name: 'testRootSpan'}, span => {
-        const headers = B3Format.injectToHeader({}, span);
-        assertHeader(headers, span);
-      });
+      assert.deepEqual(b3Format.extract(getter), spanContext);
     });
   });
 
-  /** Should get the singleton trancing instance. */
-  describe('extractFromHeader()', () => {
-    it('should extract context of a sampled span from headers', () => {
-      // tslint:disable:no-any
+  describe('inject', () => {
+    it('should inject a context of a sampled span', () => {
+      const spanContext = b3Format.generate();
       const headers = {} as any;
-      headers[X_B3_TRACE_ID] = 'testTraceId';
-      headers[X_B3_SPAN_ID] = 'testSpanId';
-      headers[X_B3_PARENT_SPAN_ID] = 'testParentSpanId';
-      headers[X_B3_SAMPLED] = SAMPLED_VALUE;
+      const setter = {
+        setHeader(name: string, value: string) {
+          headers[name] = value;
+        }
+      };
+      const getter = {
+        getHeader(name: string) {
+          return headers[name];
+        }
+      } as types.HeaderGetter;
 
-      const context = B3Format.extractFromHeader(headers);
-      assertContext(headers, context);
+      b3Format.inject(setter, spanContext);
+      assert.deepEqual(b3Format.extract(getter), spanContext);
+    });
+  });
+
+
+  // Same test as propagation-stackdriver.
+  describe('generate', () => {
+    const TIMES = 20;
+
+    // Generate some span contexts.
+    const GENERATED =
+        Array.from({length: TIMES}).fill(0).map(_ => b3Format.generate());
+
+    it('should generate unique traceIds', () => {
+      const traceIds = GENERATED.map(c => c.traceId);
+      assert.strictEqual((new Set(traceIds)).size, TIMES);
     });
 
-    it('should extract context of a sampled span from headers', () => {
-      // tslint:disable:no-any
-      const headers = {} as any;
-      headers[X_B3_SAMPLED] = NOT_SAMPLED_VALUE;
-
-      const context = B3Format.extractFromHeader(headers);
-      assertContext(headers, context);
+    it('should generate unique spanIds', () => {
+      const spanIds = GENERATED.map(c => c.spanId);
+      assert.strictEqual((new Set(spanIds)).size, TIMES);
     });
   });
 });
