@@ -3,15 +3,10 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
-    "allowUnreachableCode": true,
-    "noUnusedParameters": false,
-    "noImplicitAny": false,
-    "noImplicitThis": false,
-    "noEmitOnError": false,
     "pretty": true,
-    "strict": false,
     "module": "commonjs",
     "target": "es6",
+    "strictNullChecks": false,
     "sourceMap": false
   },
   "include": [
@@ -22,3 +17,4 @@
     "node_modules"
   ]
 }
+

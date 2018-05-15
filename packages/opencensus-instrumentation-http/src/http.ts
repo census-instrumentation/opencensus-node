@@ -17,7 +17,6 @@
 import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
-import {B3Format} from '@opencensus/opencensus-propagation-b3';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
@@ -45,6 +44,8 @@ export class HttpPlugin extends classes.BasePlugin {
     this.setPluginContext(moduleExporters, tracer, version);
     this.logger = tracer.logger || logger.logger('debug');
 
+    this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
+
     shimmer.wrap(moduleExporters, 'request', this.patchOutgoingRequest());
 
     // In Node 8, http.get calls a private request method, therefore we patch it
@@ -64,7 +65,9 @@ export class HttpPlugin extends classes.BasePlugin {
   /** Unpatches all HTTP patched function. */
   applyUnpatch(): void {
     shimmer.unwrap(this.moduleExporters, 'request');
-    shimmer.unwrap(this.moduleExporters, 'get');
+    if (semver.satisfies(this.version, '>=8.0.0')) {
+      shimmer.unwrap(this.moduleExporters, 'get');
+    }
     shimmer.unwrap(
         this.moduleExporters && this.moduleExporters.Server &&
             this.moduleExporters.Server.prototype,
@@ -86,10 +89,18 @@ export class HttpPlugin extends classes.BasePlugin {
           return original.apply(this, arguments);
         }
 
+        plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
+        const propagation = plugin.tracer.propagation;
+        const headers = arguments[1].headers;
+        const getter = {
+          getHeader(name: string) {
+            return headers[name];
+          }
+        } as types.HeaderGetter;
         const traceOptions = {
           name: arguments[1].url,
           type: 'SERVER',
-          spanContext: B3Format.extractFromHeader(arguments[1].headers)
+          spanContext: propagation ? propagation.extract(getter) : null
         };
 
         return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
@@ -151,27 +162,38 @@ export class HttpPlugin extends classes.BasePlugin {
         if (arguments[0].headers &&
             arguments[0].headers['x-opencensus-outgoing-request']) {
           // tslint:disable:no-any
-          return original.apply(this as any, arguments);
+          plugin.logger.debug(
+              'header with "x-opencensus-outgoing-request" - do not trace');
+          return original.apply(this, arguments);
         }
 
+        const request = original.apply(this, arguments);
+
+        plugin.tracer.wrapEmitter(request);
+
+        plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
-          name: arguments[0].pathname,
+          name: `${request.method ? request.method : 'GET'}  ${
+              arguments[0].pathname}`,
           type: 'CLIENT',
         };
+
 
         // Checks if this outgoing request is part of an operation by checking
         // if there is a current root span, if so, we create a child span. In
         // case there is no root span, this means that the outgoing request is
         // the first operation, therefore we create a root span.
         if (!plugin.tracer.currentRootSpan) {
+          plugin.logger.debug('outgoingRequest starting a root span');
           return plugin.tracer.startRootSpan(
               traceOptions,
-              plugin.makeRequestTrace(original, arguments, plugin));
+              plugin.makeRequestTrace(request, arguments, plugin));
         } else {
+          plugin.logger.debug('outgoingRequest starting a child span');
           const span: types.Span = plugin.tracer.startChildSpan(
               traceOptions.name, traceOptions.type);
           return (span: types.Span) =>
-                     plugin.makeRequestTrace(original, arguments, plugin);
+                     plugin.makeRequestTrace(request, arguments, plugin);
         }
       };
     };
@@ -184,19 +206,34 @@ export class HttpPlugin extends classes.BasePlugin {
    * @param args The arguments to the original function.
    */
   // tslint:disable:no-any
-  makeRequestTrace(original: Function, args: any, plugin: HttpPlugin): any {
+  makeRequestTrace(request: any, args: any, plugin: HttpPlugin): any {
     return (span: types.Span) => {
-      args[0].headers = B3Format.injectToHeader(args[0].headers, span);
+      plugin.logger.debug('makeRequestTrace');
 
-      const request = original.apply(this, args);
+      const headers = args[0].headers;
+      const setter = {
+        setHeader(name: string, value: string) {
+          headers[name] = value;
+        }
+      };
+
+      const propagation = plugin.tracer.propagation;
+      if (propagation) {
+        propagation.inject(setter, span.spanContext);
+      }
 
       if (!span) {
+        plugin.logger.debug('makeRequestTrace span is null');
         return request;
       }
 
       // tslint:disable:no-any
-      request.on('response', (response: any) => {
+      const req = request.on('response', (response: any) => {
+        plugin.tracer.wrapEmitter(response);
+        plugin.logger.debug('outgoingRequest on response()');
+
         response.on('end', () => {
+          plugin.logger.debug('outgoingRequest on end()');
           span.addAttribute('http.host', args[0].host);
           span.addAttribute('http.method', request.method);
           span.addAttribute('http.path', args[0].pathname);
@@ -211,11 +248,12 @@ export class HttpPlugin extends classes.BasePlugin {
           span.addMessageEvent(
               'MessageEventTypeSent', uuid.v4().split('-').join(''));
 
-          // debug('Ended span: ', span.name, span.id, span.traceId);
           span.end();
         });
       });
+      plugin.tracer.wrapEmitter(req);
 
+      plugin.logger.debug('makeRequestTrace retun request');
       return request;
     };
   }

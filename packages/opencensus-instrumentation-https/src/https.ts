@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
+import {HttpPlugin} from '@opencensus/instrumentation-http';
 import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
-import {HttpPlugin} from '@opencensus/opencensus-instrumentation-http';
-import {B3Format} from '@opencensus/opencensus-propagation-b3';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 
@@ -39,24 +38,23 @@ export class HttpsPlugin extends HttpPlugin {
     this.setPluginContext(moduleExporters, tracer, version);
     this.logger = tracer.logger || logger.logger('debug');
 
-    shimmer.wrap(moduleExporters, 'request', this.patchOutgoingRequest());
-
     shimmer.wrap(
         moduleExporters && moduleExporters.Server &&
             moduleExporters.Server.prototype,
         'emit', this.patchIncomingRequest());
+
+    shimmer.wrap(moduleExporters, 'get', this.patchOutgoingRequest());
 
     return moduleExporters;
   }
 
   /** Unpatches all HTTPS patched function. */
   applyUnpatch(): void {
-    shimmer.unwrap(this.moduleExporters, 'request');
-
     shimmer.unwrap(
         this.moduleExporters && this.moduleExporters.Server &&
             this.moduleExporters.Server.prototype,
         'emit');
+    shimmer.unwrap(this.moduleExporters, 'get');
   }
 }
 
