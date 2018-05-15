@@ -116,7 +116,7 @@ export class Tracing implements types.Tracing {
         this.unRegisterExporter(this.configLocal.exporter);
       }
       this.configLocal.exporter = exporter;
-      this.tracer.registerEndSpanListener(exporter);
+      this.tracer.registerSpanEventListener(exporter);
     } else {
       // TODO: if unRegisterExporter go public, this logic may not be
       // necessary - register a null to unRegister

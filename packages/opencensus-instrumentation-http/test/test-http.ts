@@ -56,9 +56,10 @@ const httpRequest = {
 
 const VERSION = process.versions.node;
 
-class RootSpanVerifier implements types.OnEndSpanEventListener {
+class RootSpanVerifier implements types.SpanEventListener {
   endedRootSpans: types.RootSpan[] = [];
 
+  onStartSpan(span: types.RootSpan): void {}
   onEndSpan(root: types.RootSpan) {
     this.endedRootSpans.push(root);
   }
@@ -99,7 +100,7 @@ describe('HttpPlugin', () => {
 
   before(() => {
     plugin.applyPatch(http, tracer, VERSION);
-    tracer.registerEndSpanListener(rootSpanVerifier);
+    tracer.registerSpanEventListener(rootSpanVerifier);
     server = http.createServer((request, response) => {
       response.end('Test Server Response');
     });

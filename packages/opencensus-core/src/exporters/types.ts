@@ -20,7 +20,7 @@ import * as configTypes from '../trace/config/types';
 import * as modelTypes from '../trace/model/types';
 
 /** Defines an exporter interface. */
-export interface Exporter extends modelTypes.OnEndSpanEventListener {
+export interface Exporter extends modelTypes.SpanEventListener {
   /**
    * Sends a list of root spans to the service.
    * @param rootSpans A list of root spans to publish.

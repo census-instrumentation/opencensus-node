@@ -23,6 +23,7 @@ import * as types from './types';
 /** Do not send span data */
 export class NoopExporter implements types.Exporter {
   logger: loggerTypes.Logger;
+  onStartSpan(root: modelTypes.RootSpan) {}
   onEndSpan(root: modelTypes.RootSpan) {}
   publish(rootSpans: modelTypes.RootSpan[]) {}
 }
@@ -42,6 +43,8 @@ export class ConsoleExporter implements types.Exporter {
     this.buffer = new ExporterBuffer(this, config);
     this.logger = config.logger;
   }
+
+  onStartSpan(root: modelTypes.RootSpan) {}
 
   /**
    * Event called when a span is ended.
