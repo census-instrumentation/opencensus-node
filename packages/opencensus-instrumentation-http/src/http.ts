@@ -192,8 +192,7 @@ export class HttpPlugin extends classes.BasePlugin {
           plugin.logger.debug('outgoingRequest starting a child span');
           const span: types.Span = plugin.tracer.startChildSpan(
               traceOptions.name, traceOptions.type);
-          return (span: types.Span) =>
-                     plugin.makeRequestTrace(request, arguments, plugin);
+          return (plugin.makeRequestTrace(request, arguments, plugin))(span);
         }
       };
     };
