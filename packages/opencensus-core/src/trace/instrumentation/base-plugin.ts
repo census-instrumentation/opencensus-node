@@ -21,9 +21,9 @@ import * as types from './types';
 
 /** This class represent the base to patch plugin. */
 export abstract class BasePlugin implements types.Plugin {
-  /** Exporters from the nodejs module to be instrumented */
+  /** Exports from the nodejs module to be instrumented */
   // tslint:disable:no-any
-  protected moduleExporters: any;
+  protected moduleExports: any;
   /** The module name */
   protected moduleName: string;
   /** A tracer object. */
@@ -41,14 +41,14 @@ export abstract class BasePlugin implements types.Plugin {
 
   /**
    * Sets modified plugin to the context.
-   * @param moduleExporters object moduleExporters to set as context
+   * @param moduleExports nodejs module exports to set as context
    * @param tracer tracer relating to context
    * @param version module version description
    */
   // tslint:disable:no-any
   protected setPluginContext(
-      moduleExporters: any, tracer: modelTypes.Tracer, version: string) {
-    this.moduleExporters = moduleExporters;
+      moduleExports: any, tracer: modelTypes.Tracer, version: string) {
+    this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
   }
@@ -60,9 +60,9 @@ export abstract class BasePlugin implements types.Plugin {
   // while unpatching is not. It should be the other way around
 
   // tslint:disable:no-any
-  applyPatch(moduleExporters: any, tracer: modelTypes.Tracer, version: string):
+  applyPatch(moduleExports: any, tracer: modelTypes.Tracer, version: string):
       any {
-    this.setPluginContext(moduleExporters, tracer, version);
+    this.setPluginContext(moduleExports, tracer, version);
   }
 
   abstract applyUnpatch(): void;
