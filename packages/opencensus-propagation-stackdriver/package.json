@@ -2,7 +2,9 @@
   "name": "@opencensus/propagation-stackdriver",
   "version": "0.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "repository": "census-instrumentation/opencensus-node",
   "scripts": {
     "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha 'build/test/**/*.js'",
     "check": "gts check",
@@ -13,8 +15,15 @@
     "pretest": "npm run compile",
     "posttest": "npm run check"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "opencensus",
+    "nodejs",
+    "tracing",
+    "profiling",
+    "stackdriver",
+    "trace"
+  ],
+  "author": "OpenCensus Authors",
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/express": "^4.11.1",
@@ -31,5 +40,8 @@
   },
   "files": [
     "build/src"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
