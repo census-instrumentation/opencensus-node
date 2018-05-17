@@ -14,13 +14,4 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-/**
- * This class represents the options from stackdriver
- */
-export interface StackdriverOptions extends types.ExporterConfig {
-  /**
-   * projectId project id defined to stackdriver
-   */
-  projectId: string;
-}
+export * from './stackdriver';

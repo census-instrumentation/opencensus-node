@@ -18,22 +18,37 @@ import {classes, logger, types} from '@opencensus/opencensus-core';
 import {JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 
-import {StackdriverOptions} from './options';
-
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
 const cloudTrace = google.cloudtrace('v1');
 
 type ExporterBuffer = typeof classes.ExporterBuffer;
 
+/**
+ * Options for stackdriver configuration
+ */
+export interface StackdriverExporterOptions extends types.ExporterConfig {
+  /**
+   * projectId project id defined to stackdriver
+   */
+  projectId: string;
+}
+
+interface TracesWithCredentials {
+  projectId: string;
+  resource: {traces: {}};
+  auth: JWT;
+}
+
 /** Format and sends span information to Stackdriver */
-export class Stackdriver implements types.Exporter {
+export class StackdriverTraceExporter implements types.Exporter {
   projectId: string;
   exporterBuffer: classes.ExporterBuffer;
   logger: types.Logger;
+  failBuffer: types.SpanContext[] = [];
 
-  constructor(options: StackdriverOptions) {
+  constructor(options: StackdriverExporterOptions) {
     this.projectId = options.projectId;
-    this.logger = options.logger || logger.logger('debug');
+    this.logger = options.logger || logger.logger();
     this.exporterBuffer = new classes.ExporterBuffer(this, options);
   }
 
@@ -49,10 +64,19 @@ export class Stackdriver implements types.Exporter {
    * Publishes a list of root spans to Stackdriver.
    * @param rootSpans
    */
-  async publish(rootSpans: types.RootSpan[]) {
+  publish(rootSpans: types.RootSpan[]) {
     const stackdriverTraces =
         rootSpans.map(trace => this.translateTrace(trace));
-    return this.authorize(this.sendTrace, stackdriverTraces);
+    return this.authorize(stackdriverTraces)
+        .then((result: TracesWithCredentials) => {
+          return this.sendTrace(result);
+        })
+        .catch(err => {
+          for (const root of rootSpans) {
+            this.failBuffer.push(root.spanContext);
+          }
+          return `${err}`;
+        });
   }
 
   /**
@@ -90,23 +114,23 @@ export class Stackdriver implements types.Exporter {
    * @param authClient
    * @param stackdriverTraces
    */
-  private async sendTrace(
-      projectId: string, authClient: JWT, stackdriverTraces) {
-    const request = {
-      projectId,
-      resource: {traces: stackdriverTraces},
-      auth: authClient
-    };
+  private sendTrace(traces: TracesWithCredentials) {
     return new Promise((resolve, reject) => {
-      cloudTrace.projects.patchTraces(request, (err) => {
+      cloudTrace.projects.patchTraces(traces, err => {
         if (err) {
-          reject(err);
+          const errorMsg = `sendTrace error: ${err.message}`;
+          this.logger.error(errorMsg);
+          reject(errorMsg);
         } else {
-          resolve('Sent traces sucessfully');
+          const successMsg = 'sendTrace sucessfully';
+          this.logger.debug(successMsg);
+          resolve(successMsg);
         }
       });
     });
   }
+
+
 
   /**
    * Gets the Google Application Credentials from the environment variables,
@@ -114,29 +138,29 @@ export class Stackdriver implements types.Exporter {
    * @param sendTrace
    * @param stackdriverTraces
    */
-  private async authorize(sendTrace: Function, stackdriverTraces) {
-    const logger = this.logger;
+  private authorize(stackdriverTraces) {
     return new Promise((resolve, reject) => {
-      google.auth.getApplicationDefault(
-          (err, authClient: JWT, projectId: string) => {
+      return google.auth.getApplicationDefault(
+          (err, authClient: JWT, prjId: string) => {
             if (err) {
-              logger.error('authentication failed: ', err);
-              reject(err);
-              return;
-            }
-            if (authClient.createScopedRequired &&
-                authClient.createScopedRequired()) {
-              const scopes = ['https://www.googleapis.com/auth/cloud-platform'];
-              authClient = authClient.createScoped(scopes);
-            }
+              const errorMsg = `authorize error: ${err.message}`;
+              this.logger.error(errorMsg);
+              reject(errorMsg);
+            } else {
+              if (authClient.createScopedRequired &&
+                  authClient.createScopedRequired()) {
+                const scopes =
+                    ['https://www.googleapis.com/auth/cloud-platform'];
+                authClient = authClient.createScoped(scopes);
+              }
 
-            sendTrace(projectId, authClient, stackdriverTraces)
-                .then((result) => {
-                  resolve(result);
-                })
-                .catch((err) => {
-                  reject(err);
-                });
+              const traces: TracesWithCredentials = {
+                projectId: prjId,
+                resource: {traces: stackdriverTraces},
+                auth: authClient
+              };
+              resolve(traces);
+            }
           });
     });
   }
