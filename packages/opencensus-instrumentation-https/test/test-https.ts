@@ -31,20 +31,17 @@ import {HttpsPlugin} from '../src/';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-function doNoke(
+function doNock(
     url: string, path: string, httpCode: number, respBody: string,
     times?: number) {
-  let i = times;
-  if (!times) {
-    i = 1;
-  }
+  const i = times || 1;
   nock(url).get(path).times(i).reply(httpCode, respBody);
 }
 
 
-const httpsRequest = {
+const httpRequest = {
   get: (options: {}|string) => {
-    return (new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       return https.get(options, resp => {
         let data = '';
         resp.on('data', chunk => {
@@ -57,7 +54,7 @@ const httpsRequest = {
           reject(err);
         });
       });
-    }));
+    });
   }
 };
 
@@ -72,26 +69,33 @@ class RootSpanVerifier implements types.OnEndSpanEventListener {
 }
 
 const httpsOptions = {
-  key: fs.readFileSync('./encryption/key.pem'),
-  cert: fs.readFileSync('./encryption/cert.pem')
+  key: fs.readFileSync('./test/fixtures/key.pem'),
+  cert: fs.readFileSync('./test/fixtures/cert.pem')
 };
 
-const server = https
-                   .createServer(
-                       httpsOptions,
-                       (request, response) => {
-                         response.end('Test Server Response');
-                       })
-                   .listen(3000);
+function assertSpanAttributes(
+    span: types.Span, httpStatusCode: number, httpMethod: string,
+    hostName: string, path: string, userAgent: string) {
+  assert.strictEqual(span.status, plugin.traceStatus(httpStatusCode));
+  assert.strictEqual(
+      span.attributes[HttpsPlugin.ATTRIBUTE_HTTP_HOST], hostName);
+  assert.strictEqual(
+      span.attributes[HttpsPlugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
+  assert.strictEqual(span.attributes[HttpsPlugin.ATTRIBUTE_HTTP_PATH], path);
+  assert.strictEqual(span.attributes[HttpsPlugin.ATTRIBUTE_HTTP_ROUTE], path);
+  assert.strictEqual(
+      span.attributes[HttpsPlugin.ATTRIBUTE_HTTP_USER_AGENT], userAgent);
+  assert.strictEqual(
+      span.attributes[HttpsPlugin.ATTRIBUTE_HTTP_STATUS_CODE],
+      `${httpStatusCode}`);
+}
 
+describe('HttpsPlugin', () => {
+  const hostName = 'fake.service.io';
+  const urlHost = `https://${hostName}`;
 
-
-// mocha this.timeout() fails when using ES6's arrow functions
-// (Issue link: https://github.com/mochajs/mocha/issues/2018)
-// tslint:disable-next-line
-describe('HttpPlugin', function() {
-  const urlHost = 'https://fake.service.io';
-
+  let server: https.Server;
+  let serverPort = 0;
   const log = logger.logger();
   const tracer = new classes.Tracer();
   const rootSpanVerifier = new RootSpanVerifier();
@@ -104,6 +108,17 @@ describe('HttpPlugin', function() {
   before(() => {
     plugin.applyPatch(https, tracer, VERSION);
     tracer.registerEndSpanListener(rootSpanVerifier);
+    server = https.createServer(httpsOptions, (request, response) => {
+      response.end('Test Server Response');
+    });
+    server.listen(serverPort);
+    server.once('listening', () => {
+      // to fix node 6 issue
+      // disable-next-line to disable no-any check
+      // tslint:disable-next-line
+      serverPort = (server.address() as any).port;
+    });
+    nock.disableNetConnect();
   });
 
   beforeEach(() => {
@@ -115,45 +130,98 @@ describe('HttpPlugin', function() {
     server.close();
   });
 
+
   /** Should intercept outgoing requests */
   describe('patchOutgoingRequest()', () => {
-    shimmer.unwrap(https && https.Server && https.Server.prototype, 'emit');
-
     it('should create a rootSpan for GET requests as a client', async () => {
       const testPath = '/outgoing/rootSpan/1';
-      doNoke(urlHost, testPath, 200, 'Ok');
+      doNock(urlHost, testPath, 200, 'Ok');
       assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-      await httpsRequest.get(`${urlHost}${testPath}`).then((result) => {
+      await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
         assert.strictEqual(result, 'Ok');
         assert.ok(
             rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+
+        const span = rootSpanVerifier.endedRootSpans[0];
+        assertSpanAttributes(span, 200, 'GET', hostName, testPath, null);
       });
     });
 
+    const httpErrorCodes = [400, 401, 403, 404, 429, 501, 503, 504, 500];
+
+    for (let i = 0; i < httpErrorCodes.length; i++) {
+      it(`should test rootSpan for GET requests with http error ${
+             httpErrorCodes[i]}`,
+         async () => {
+           const testPath = '/outgoing/rootSpan/1';
+           doNock(
+               urlHost, testPath, httpErrorCodes[i],
+               httpErrorCodes[i].toString());
+           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+           await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
+             assert.strictEqual(result, httpErrorCodes[i].toString());
+             assert.ok(
+                 rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >=
+                 0);
+             assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+             const span = rootSpanVerifier.endedRootSpans[0];
+             assertSpanAttributes(
+                 span, httpErrorCodes[i], 'GET', hostName, testPath, null);
+           });
+         });
+    }
+
+
     it('should create a child span for GET requests', () => {
       const testPath = '/outgoing/rootSpan/childs/1';
-      doNoke(urlHost, testPath, 200, 'Ok');
+      doNock(urlHost, testPath, 200, 'Ok');
       const options = {name: 'TestRootSpan'};
       return tracer.startRootSpan(options, async root => {
-        await httpsRequest.get(`${urlHost}${testPath}`).then((result) => {
+        await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
           assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
           assert.strictEqual(root.traceId, root.spans[0].traceId);
+          const span = root.spans[0];
+          assertSpanAttributes(span, 200, 'GET', hostName, testPath, null);
         });
       });
     });
 
+    for (let i = 0; i < httpErrorCodes.length; i++) {
+      it(`should test a child spans for GET requests with http error ${
+             httpErrorCodes[i]}`,
+         () => {
+           const testPath = '/outgoing/rootSpan/childs/1';
+           doNock(
+               urlHost, testPath, httpErrorCodes[i],
+               httpErrorCodes[i].toString());
+           const options = {name: 'TestRootSpan'};
+           return tracer.startRootSpan(options, async root => {
+             await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
+               assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+               assert.strictEqual(root.spans.length, 1);
+               assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
+               assert.strictEqual(root.traceId, root.spans[0].traceId);
+
+               const span = root.spans[0];
+               assertSpanAttributes(
+                   span, httpErrorCodes[i], 'GET', hostName, testPath, null);
+             });
+           });
+         });
+    }
+
     it('should create multiple child spans for GET requests', () => {
       const testPath = '/outgoing/rootSpan/childs';
       const num = 5;
-      doNoke(urlHost, testPath, 200, 'Ok', num);
+      doNock(urlHost, testPath, 200, 'Ok', num);
       const options = {name: 'TestRootSpan'};
       return tracer.startRootSpan(options, async root => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
-          await httpsRequest.get(`${urlHost}${testPath}`).then((result) => {
+          await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
             assert.strictEqual(root.spans.length, i + 1);
             assert.ok(root.spans[i].name.indexOf(testPath) >= 0);
             assert.strictEqual(root.traceId, root.spans[i].traceId);
@@ -165,23 +233,24 @@ describe('HttpPlugin', function() {
       });
     });
 
-    it('should not trace exporters requests', async () => {
-      const testPath = '/outgoing/do-not-trace';
-      doNoke(urlHost, testPath, 200, 'Ok');
+    it('should not trace requests with \'x-opencensus-outgoing-request\' header',
+       async () => {
+         const testPath = '/outgoing/do-not-trace';
+         doNock(urlHost, testPath, 200, 'Ok');
 
-      const options = {
-        host: 'fake.service.io',
-        path: testPath,
-        headers: {'x-opencensus-outgoing-request': 1}
-      };
+         const options = {
+           host: hostName,
+           path: testPath,
+           headers: {'x-opencensus-outgoing-request': 1}
+         };
 
-      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-      await httpsRequest.get(options).then((result) => {
-        assert.equal(result, 'Ok');
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-      });
-    });
-  });  // describe pathcOutgoing
+         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+         await httpRequest.get(options).then((result) => {
+           assert.equal(result, 'Ok');
+           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+         });
+       });
+  });
 
 
   /** Should intercept incoming requests */
@@ -189,17 +258,30 @@ describe('HttpPlugin', function() {
     it('should create a root span for incoming requests', async () => {
       const testPath = '/incoming/rootSpan/';
 
-      const options = {host: 'localhost', path: testPath, port: 3000};
+      const options = {
+        host: 'localhost',
+        path: testPath,
+        port: serverPort,
+        headers: {'User-Agent': 'Android'}
+      };
       shimmer.unwrap(https, 'get');
+      nock.enableNetConnect();
 
       assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-      await httpsRequest.get(options).then((result) => {
+
+      await httpRequest.get(options).then((result) => {
         assert.ok(
             rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+        const span = rootSpanVerifier.endedRootSpans[0];
+        assertSpanAttributes(
+            span, 200, 'GET', 'localhost', testPath, 'Android');
       });
     });
   });
+
+  // TODO: This tests relies on a specific order in which tests are executed.
+  // Is it possible to make this test more isolated?
 
   /** Should not intercept incoming and outgoing requests */
   describe('applyUnpatch()', () => {
@@ -207,10 +289,10 @@ describe('HttpPlugin', function() {
       plugin.applyUnpatch();
       const testPath = '/incoming/unpatch/';
 
-      const options = {host: 'localhost', path: testPath, port: 3000};
+      const options = {host: 'localhost', path: testPath, port: serverPort};
 
       assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-      await httpsRequest.get(options).then((result) => {
+      await httpRequest.get(options).then((result) => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
       });
     });

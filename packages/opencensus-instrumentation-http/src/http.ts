@@ -17,15 +17,34 @@
 import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
+import * as httpModule from 'http';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as uuid from 'uuid';
 
-// import * as Debug from 'debug';
-// const debug = Debug('opencensus');
 
+// TODO: maybe we should have a setup as a Client or as Server.
+
+export type HttpModule = typeof httpModule;
+export type RequestFunction = typeof httpModule.request;
+
+/** Http instrumentation plugin for Opencensus */
 export class HttpPlugin extends classes.BasePlugin {
+  /**
+   * Attributes Names according to Opencensus HTTP Specs
+   * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/HTTP.md
+   */
+  static ATTRIBUTE_HTTP_HOST = 'http.host';
+  static ATTRIBUTE_HTTP_METHOD = 'http.method';
+  static ATTRIBUTE_HTTP_PATH = 'http.path';
+  static ATTRIBUTE_HTTP_ROUTE = 'http.route';
+  static ATTRIBUTE_HTTP_USER_AGENT = 'http.user_agent';
+  static ATTRIBUTE_HTTP_STATUS_CODE = 'http.status_code';
+  // NOT ON OFFICIAL SPEC
+  static ATTRIBUTE_HTTP_ERROR_NAME = 'http.error_name';
+  static ATTRIBUTE_HTTP_ERROR_MESSAGE = 'http.error_message';
+
   logger: types.Logger;
 
   /** Constructs a new HttpPlugin instance. */
@@ -33,138 +52,174 @@ export class HttpPlugin extends classes.BasePlugin {
     super(moduleName);
   }
 
+
+  // TODO: moduleExports should use type HttpModule instead of any
   /**
    * Patches HTTP incoming and outcoming request functions.
-   * @param moduleExporters The HTTP package.
+   * @param moduleExports The http module exports
    * @param tracer A tracer instance to create spans on.
    * @param version The package version.
    */
-  // tslint:disable:no-any
-  applyPatch(moduleExporters: any, tracer: types.Tracer, version: string) {
-    this.setPluginContext(moduleExporters, tracer, version);
+  // tslint:disable-next-line:no-any
+  applyPatch(moduleExports: any, tracer: types.Tracer, version: string) {
+    this.setPluginContext(moduleExports, tracer, version);
     this.logger = tracer.logger || logger.logger('debug');
 
     this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
 
-    shimmer.wrap(moduleExporters, 'request', this.patchOutgoingRequest());
+    shimmer.wrap(moduleExports, 'request', this.patchOutgoingRequest());
 
     // In Node 8, http.get calls a private request method, therefore we patch it
     // here too.
     if (semver.satisfies(version, '>=8.0.0')) {
-      shimmer.wrap(moduleExporters, 'get', this.patchOutgoingRequest());
+      shimmer.wrap(moduleExports, 'get', this.patchOutgoingRequest());
     }
 
-    shimmer.wrap(
-        moduleExporters && moduleExporters.Server &&
-            moduleExporters.Server.prototype,
-        'emit', this.patchIncomingRequest());
+    if (moduleExports && moduleExports.Server &&
+        moduleExports.Server.prototype) {
+      shimmer.wrap(
+          moduleExports && moduleExports.Server &&
+              moduleExports.Server.prototype,
+          'emit', this.patchIncomingRequest());
+    } else {
+      this.logger.error(
+          'Could not apply patch to %s.emit. Interface is not as expected.',
+          this.moduleName);
+    }
 
-    return moduleExporters;
+    return moduleExports;
   }
+
 
   /** Unpatches all HTTP patched function. */
   applyUnpatch(): void {
-    shimmer.unwrap(this.moduleExporters, 'request');
+    shimmer.unwrap(this.moduleExports, 'request');
     if (semver.satisfies(this.version, '>=8.0.0')) {
-      shimmer.unwrap(this.moduleExporters, 'get');
+      shimmer.unwrap(this.moduleExports, 'get');
     }
-    shimmer.unwrap(
-        this.moduleExporters && this.moduleExporters.Server &&
-            this.moduleExporters.Server.prototype,
-        'emit');
+    if (this.moduleExports && this.moduleExports.Server &&
+        this.moduleExports.Server.prototype) {
+      shimmer.unwrap(
+          this.moduleExports && this.moduleExports.Server &&
+              this.moduleExports.Server.prototype,
+          'emit');
+    }
   }
+
 
   /**
    * Creates spans for incoming requests, restoring spans' context if applied.
-   * @param plugin The HTTP plugin itself.
    */
   patchIncomingRequest() {
-    const plugin: HttpPlugin = this;
-    return (original: Function): Function => {
-      // tslint:disable:no-any
+    const plugin = this;
+    // TODO: evaluate if this function should return RequestFunction
+    return (original: RequestFunction):
+               types.Func<httpModule.ClientRequest> => {
       return function incomingRequest(
-          event: string, request: any, response: any) {
-        // Only traces request events
-        if (event !== 'request') {
-          return original.apply(this, arguments);
-        }
+                 event: string, request: httpModule.IncomingMessage,
+                 response: httpModule.ServerResponse):
+          httpModule.ClientRequest {
+            // Only traces request events
+            if (event !== 'request') {
+              return original.apply(this, arguments);
+            }
 
-        plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
-        const propagation = plugin.tracer.propagation;
-        const headers = arguments[1].headers;
-        const getter = {
-          getHeader(name: string) {
-            return headers[name];
-          }
-        } as types.HeaderGetter;
-        const traceOptions = {
-          name: arguments[1].url,
-          type: 'SERVER',
-          spanContext: propagation ? propagation.extract(getter) : null
-        };
+            plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
+            const propagation = plugin.tracer.propagation;
+            const headers = request.headers;
+            const getter: types.HeaderGetter = {
+              getHeader(name: string) {
+                return headers[name];
+              }
+            };
 
-        return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
-          if (!rootSpan) return original.apply(this, arguments);
+            const traceOptions = {
+              name: url.parse(request.url).pathname,
+              type: 'SERVER',
+              spanContext: propagation ? propagation.extract(getter) : null
+            };
 
-          plugin.tracer.wrapEmitter(request);
-          plugin.tracer.wrapEmitter(response);
+            return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
+              if (!rootSpan) return original.apply(this, arguments);
 
-          // Wraps end (inspired by:
-          // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/master/src/plugins/plugin-connect.ts#L75)
-          const originalEnd = response.end;
-          // tslint:disable:no-any
-          response.end = function(this: any) {
-            response.end = originalEnd;
-            const returned = response.end.apply(this, arguments);
+              plugin.tracer.wrapEmitter(request);
+              plugin.tracer.wrapEmitter(response);
 
-            rootSpan.addAttribute('http.host', request.url.host);
-            rootSpan.addAttribute('http.method', request.method);
-            rootSpan.addAttribute('http.path', request.url.pathname);
-            rootSpan.addAttribute('http.route', request.url.path);
-            rootSpan.addAttribute(
-                'http.user_agent', 'HTTPClient/' + request.httpVersion);
-            rootSpan.addAttribute('http.status_code', request.statusCode);
+              // Wraps end (inspired by:
+              // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/master/src/plugins/plugin-connect.ts#L75)
+              const originalEnd = response.end;
 
-            rootSpan.status = plugin.traceStatus(request.statusCode);
+              response.end = function(this: httpModule.ServerResponse) {
+                response.end = originalEnd;
+                const returned = response.end.apply(this, arguments);
 
-            // Message Event ID is not defined
-            rootSpan.addMessageEvent(
-                'MessageEventTypeRecv', uuid.v4().split('-').join(''));
+                const requestUrl = url.parse(request.url);
+                const host = headers.host || 'localhost';
+                const userAgent =
+                    (headers['user-agent'] || headers['User-Agent']) as string;
 
-            // debug('Ended root span: ', rootSpan.name, rootSpan.id,
-            // rootSpan.traceId);
-            rootSpan.end();
-            return returned;
+                rootSpan.addAttribute(
+                    HttpPlugin.ATTRIBUTE_HTTP_HOST,
+                    host.replace(
+                        /^(.*)(\:[0-9]{1,5})/,
+                        '$1',
+                        ));
+                rootSpan.addAttribute(
+                    HttpPlugin.ATTRIBUTE_HTTP_METHOD, request.method);
+                rootSpan.addAttribute(
+                    HttpPlugin.ATTRIBUTE_HTTP_PATH, requestUrl.pathname);
+                rootSpan.addAttribute(
+                    HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path);
+                rootSpan.addAttribute(
+                    HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
+
+                rootSpan.addAttribute(
+                    HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
+                    response.statusCode.toString());
+
+                rootSpan.status = plugin.traceStatus(response.statusCode);
+
+                // Message Event ID is not defined
+                rootSpan.addMessageEvent(
+                    'MessageEventTypeRecv', uuid.v4().split('-').join(''));
+
+                rootSpan.end();
+                return returned;
+              };
+
+              return original.apply(this, arguments);
+            });
           };
-
-          return original.apply(this, arguments);
-        });
-      };
     };
   }
+
 
   /**
    * Creates spans for outgoing requests, sending spans' context for distributed
    * tracing.
-   * @param plugin The HTTP plugin itself.
    */
   patchOutgoingRequest() {
-    const plugin: HttpPlugin = this;
-    // tslint:disable:no-any
-    return (original: any): any => {
-      return function outgoingRequest() {
-        // Makes sure the url is an url object
-        if (typeof (arguments[0]) === 'string') {
-          arguments[0] = url.parse(arguments[0]);
+    const plugin = this;
+    return (original: types.Func<httpModule.ClientRequest>):
+               types.Func<httpModule.ClientRequest> => {
+      return function outgoingRequest(
+                 options, callback): httpModule.ClientRequest {
+        if (!options) {
+          return original.apply(this, arguments);
         }
 
-        // Do not trace ourselves
-        if (arguments[0].headers &&
-            arguments[0].headers['x-opencensus-outgoing-request']) {
-          // tslint:disable:no-any
-          plugin.logger.debug(
-              'header with "x-opencensus-outgoing-request" - do not trace');
-          return original.apply(this, arguments);
+        // Makes sure the url is an url object
+        if (typeof (options) === 'string') {
+          options = url.parse(options);
+          arguments[0] = options;
+        } else {
+          // Do not trace ourselves
+          if (options.headers &&
+              options.headers['x-opencensus-outgoing-request']) {
+            plugin.logger.debug(
+                'header with "x-opencensus-outgoing-request" - do not trace');
+            return original.apply(this, arguments);
+          }
         }
 
         const request = original.apply(this, arguments);
@@ -173,8 +228,8 @@ export class HttpPlugin extends classes.BasePlugin {
 
         plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
-          name: `${request.method ? request.method : 'GET'}  ${
-              arguments[0].pathname}`,
+          name:
+              `${request.method ? request.method : 'GET'}  ${options.pathname}`,
           type: 'CLIENT',
         };
 
@@ -186,13 +241,12 @@ export class HttpPlugin extends classes.BasePlugin {
         if (!plugin.tracer.currentRootSpan) {
           plugin.logger.debug('outgoingRequest starting a root span');
           return plugin.tracer.startRootSpan(
-              traceOptions,
-              plugin.makeRequestTrace(request, arguments, plugin));
+              traceOptions, plugin.makeRequestTrace(request, options, plugin));
         } else {
           plugin.logger.debug('outgoingRequest starting a child span');
-          const span: types.Span = plugin.tracer.startChildSpan(
+          const span = plugin.tracer.startChildSpan(
               traceOptions.name, traceOptions.type);
-          return (plugin.makeRequestTrace(request, arguments, plugin))(span);
+          return (plugin.makeRequestTrace(request, options, plugin))(span);
         }
       };
     };
@@ -202,15 +256,17 @@ export class HttpPlugin extends classes.BasePlugin {
    * Injects span's context to header for distributed tracing and finshes the
    * span when the response is finished.
    * @param original The original patched function.
-   * @param args The arguments to the original function.
+   * @param options The arguments to the original function.
    */
-  // tslint:disable:no-any
-  makeRequestTrace(request: any, args: any, plugin: HttpPlugin): any {
-    return (span: types.Span) => {
+  makeRequestTrace(
+      // tslint:disable-next-line:no-any
+      request: httpModule.ClientRequest, options: any,
+      plugin: HttpPlugin): types.Func<httpModule.ClientRequest> {
+    return (span: types.Span): httpModule.ClientRequest => {
       plugin.logger.debug('makeRequestTrace');
 
-      const headers = args[0].headers;
-      const setter = {
+      const headers = options.headers;
+      const setter: types.HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
         }
@@ -226,22 +282,27 @@ export class HttpPlugin extends classes.BasePlugin {
         return request;
       }
 
-      // tslint:disable:no-any
-      const req = request.on('response', (response: any) => {
+      request.on('response', (response: httpModule.ClientResponse) => {
         plugin.tracer.wrapEmitter(response);
         plugin.logger.debug('outgoingRequest on response()');
 
         response.on('end', () => {
           plugin.logger.debug('outgoingRequest on end()');
-          span.addAttribute('http.host', args[0].host);
-          span.addAttribute('http.method', request.method);
-          span.addAttribute('http.path', args[0].pathname);
-          span.addAttribute('http.route', args[0].path);
-          span.addAttribute(
-              'http.user_agent', 'HTTPClient/' + request.httpVersion);
-          span.addAttribute('http.status_code', request.statusCode);
+          const method = response.method ? response.method : 'GET';
+          const reqUrl = url.parse(options);
+          const userAgent =
+              headers ? (headers['user-agent'] || headers['User-Agent']) : null;
 
-          span.status = plugin.traceStatus(request.statusCode);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, reqUrl.hostname);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_METHOD, method);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_PATH, reqUrl.pathname);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ROUTE, reqUrl.path);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
+          span.addAttribute(
+              HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
+              response.statusCode.toString());
+
+          span.status = plugin.traceStatus(response.statusCode);
 
           // Message Event ID is not defined
           span.addMessageEvent(
@@ -249,8 +310,15 @@ export class HttpPlugin extends classes.BasePlugin {
 
           span.end();
         });
+
+        response.on('error', error => {
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ERROR_NAME, error.name);
+          span.addAttribute(
+              HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE, error.message);
+          span.status = TraceStatusCodes.UNKNOWN;
+          span.end();
+        });
       });
-      plugin.tracer.wrapEmitter(req);
 
       plugin.logger.debug('makeRequestTrace retun request');
       return request;
@@ -258,34 +326,36 @@ export class HttpPlugin extends classes.BasePlugin {
   }
 
   traceStatus(statusCode: number): number {
-    if (statusCode < 200 || statusCode >= 400) {
-      return traceStatusCodes.UNKNOWN;
+    if (statusCode < 200 || statusCode > 504) {
+      return TraceStatusCodes.UNKNOWN;
+    } else if (statusCode >= 200 && statusCode < 400) {
+      return TraceStatusCodes.OK;
     } else {
       switch (statusCode) {
         case (400):
-          return traceStatusCodes.INVALID_ARGUMENT;
+          return TraceStatusCodes.INVALID_ARGUMENT;
         case (504):
-          return traceStatusCodes.DEADLINE_EXCEEDED;
+          return TraceStatusCodes.DEADLINE_EXCEEDED;
         case (404):
-          return traceStatusCodes.NOT_FOUND;
+          return TraceStatusCodes.NOT_FOUND;
         case (403):
-          return traceStatusCodes.PERMISSION_DENIED;
+          return TraceStatusCodes.PERMISSION_DENIED;
         case (401):
-          return traceStatusCodes.UNAUTHENTICATED;
+          return TraceStatusCodes.UNAUTHENTICATED;
         case (429):
-          return traceStatusCodes.RESOURCE_EXHAUSTED;
+          return TraceStatusCodes.RESOURCE_EXHAUSTED;
         case (501):
-          return traceStatusCodes.UNIMPLEMENTED;
+          return TraceStatusCodes.UNIMPLEMENTED;
         case (503):
-          return traceStatusCodes.UNAVAILABLE;
+          return TraceStatusCodes.UNAVAILABLE;
         default:
-          return traceStatusCodes.OK;
+          return TraceStatusCodes.UNKNOWN;
       }
     }
   }
 }
 
-enum traceStatusCodes {
+export enum TraceStatusCodes {
   UNKNOWN = 2,
   OK = 0,
   INVALID_ARGUMENT = 3,
@@ -297,6 +367,7 @@ enum traceStatusCodes {
   UNIMPLEMENTED = 12,
   UNAVAILABLE = 14
 }
+
 
 const plugin = new HttpPlugin('http');
 export {plugin};

@@ -1,7 +1,7 @@
 {
   "name": "@opencensus/instrumentation-http",
   "version": "0.0.1",
-  "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
+  "description": "Opencensus http automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "repository": "census-instrumentation/opencensus-node",
@@ -24,7 +24,7 @@
   "author": "Google Inc.",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=6.00"
+    "node": ">=6.0"
   },
   "files": [
     "build/src/**/*.js",
@@ -50,12 +50,12 @@
     "ncp": "^2.0.0",
     "nock": "^9.2.6",
     "nyc": "^11.7.1",
+    "rimraf": "^2.6.2",  
     "ts-node": "^4.0.0",
-    "typescript": "^2.7.2"
+    "typescript": "~2.7.2"
   },
   "dependencies": {
     "@opencensus/opencensus-core": "^0.0.1",
-    "@opencensus/propagation-b3": "^0.0.1",
     "end-of-stream": "^1.4.1",
     "semver": "^5.5.0",
     "shimmer": "^1.2.0",

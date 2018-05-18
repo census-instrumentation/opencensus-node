@@ -19,7 +19,7 @@ import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
 import * as assert from 'assert';
 
-import {B3Format} from '../src/b3Format';
+import {B3Format} from '../src/';
 
 const X_B3_TRACE_ID = 'x-b3-traceid';
 const X_B3_SPAN_ID = 'x-b3-spanid';
@@ -35,18 +35,19 @@ describe('B3Propagation', () => {
   /** Should get the singleton trancing instance. */
   describe('extract()', () => {
     it('should extract context of a sampled span from headers', () => {
-      // tslint:disable:no-any
       const spanContext = b3Format.generate();
+      // disable-next-line to disable no-any check
+      // tslint:disable-next-line
       const headers = {} as any;
       headers[X_B3_TRACE_ID] = spanContext.traceId;
       headers[X_B3_SPAN_ID] = spanContext.spanId;
       headers[X_B3_SAMPLED] = spanContext.options;
 
-      const getter = {
+      const getter: types.HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
         }
-      } as types.HeaderGetter;
+      };
 
       assert.deepEqual(b3Format.extract(getter), spanContext);
     });
@@ -55,17 +56,19 @@ describe('B3Propagation', () => {
   describe('inject', () => {
     it('should inject a context of a sampled span', () => {
       const spanContext = b3Format.generate();
+      // disable-next-line to disable no-any check
+      // tslint:disable-next-line
       const headers = {} as any;
-      const setter = {
+      const setter: types.HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
         }
       };
-      const getter = {
+      const getter: types.HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
         }
-      } as types.HeaderGetter;
+      };
 
       b3Format.inject(setter, spanContext);
       assert.deepEqual(b3Format.extract(getter), spanContext);
