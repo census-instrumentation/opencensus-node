@@ -21,6 +21,7 @@ import {logger} from '@opencensus/opencensus-core';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 
+/** Https instrumentation plugin for Opencensus */
 export class HttpsPlugin extends HttpPlugin {
   /** Constructs a new HttpsPlugin instance. */
   constructor() {
@@ -29,32 +30,46 @@ export class HttpsPlugin extends HttpPlugin {
 
   /**
    * Patches HTTPS incoming and outcoming request functions.
-   * @param moduleExporters The HTTPS package.
+   * @param moduleExports The HTTPS package.
    * @param tracer A tracer instance to create spans on.
    * @param version The package version.
    */
   // tslint:disable:no-any
-  applyPatch(moduleExporters: any, tracer: types.Tracer, version: string) {
-    this.setPluginContext(moduleExporters, tracer, version);
+  applyPatch(moduleExports: any, tracer: types.Tracer, version: string) {
+    this.setPluginContext(moduleExports, tracer, version);
     this.logger = tracer.logger || logger.logger('debug');
 
-    shimmer.wrap(
-        moduleExporters && moduleExporters.Server &&
-            moduleExporters.Server.prototype,
-        'emit', this.patchIncomingRequest());
+    this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
 
-    shimmer.wrap(moduleExporters, 'get', this.patchOutgoingRequest());
+    if (moduleExports && moduleExports.Server &&
+        moduleExports.Server.prototype) {
+      shimmer.wrap(
+          moduleExports && moduleExports.Server &&
+              moduleExports.Server.prototype,
+          'emit', this.patchIncomingRequest());
+    } else {
+      this.logger.error(
+          'Could not apply patch to %s.emit. Interface is not as expected.',
+          this.moduleName);
+    }
 
-    return moduleExporters;
+    // TODO: review the need to patch 'request'
+
+    shimmer.wrap(moduleExports, 'get', this.patchOutgoingRequest());
+
+    return moduleExports;
   }
 
   /** Unpatches all HTTPS patched function. */
   applyUnpatch(): void {
-    shimmer.unwrap(
-        this.moduleExporters && this.moduleExporters.Server &&
-            this.moduleExporters.Server.prototype,
-        'emit');
-    shimmer.unwrap(this.moduleExporters, 'get');
+    if (this.moduleExports && this.moduleExports.Server &&
+        this.moduleExports.Server.prototype) {
+      shimmer.unwrap(
+          this.moduleExports && this.moduleExports.Server &&
+              this.moduleExports.Server.prototype,
+          'emit');
+    }
+    shimmer.unwrap(this.moduleExports, 'get');
   }
 }
 

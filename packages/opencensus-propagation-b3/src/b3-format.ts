@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Google Inc. All Rights Reserved.
+ * Copyright 2018, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,10 @@ export class B3Format implements types.Propagation {
    * in the headers, null is returned.
    * @param getter
    */
-
   extract(getter: types.HeaderGetter): types.SpanContext {
-    // tslint:disable-next-line
+    // TODO: Review this logic, maybe make it more robust.
+    // Question: are this logic valid if any of the getHeader operations returns
+    // a string[].
     if (getter) {
       const opt = getter.getHeader(X_B3_SAMPLED);
       const spanContext = {
@@ -66,15 +67,15 @@ export class B3Format implements types.Propagation {
       setter.setHeader(
           X_B3_SPAN_ID, spanContext && spanContext.spanId || 'undefined');
       if (spanContext && (spanContext.options & SAMPLED_VALUE) !== 0) {
-        setter.setHeader(X_B3_SAMPLED, SAMPLED_VALUE.toString());
+        setter.setHeader(X_B3_SAMPLED, `${SAMPLED_VALUE}`);
       } else {
-        setter.setHeader(X_B3_SAMPLED, NOT_SAMPLED_VALUE.toString());
+        setter.setHeader(X_B3_SAMPLED, `${NOT_SAMPLED_VALUE}`);
       }
     }
   }
 
   /**
-   * Generate SpanContexts for testing
+   * Generate SpanContexts
    */
   generate(): types.SpanContext {
     return {
