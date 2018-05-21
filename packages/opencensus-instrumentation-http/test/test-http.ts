@@ -282,6 +282,7 @@ describe('HttpPlugin', () => {
     it('should not create a root span for incoming requests', async () => {
       plugin.applyUnpatch();
       const testPath = '/incoming/unpatch/';
+      nock.enableNetConnect();
 
       const options = {host: 'localhost', path: testPath, port: serverPort};
 

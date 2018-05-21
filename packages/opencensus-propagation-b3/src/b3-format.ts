@@ -62,10 +62,8 @@ export class B3Format implements types.Propagation {
    */
   inject(setter: types.HeaderSetter, spanContext: types.SpanContext): void {
     if (setter) {
-      setter.setHeader(
-          X_B3_TRACE_ID, spanContext && spanContext.traceId || 'undefined');
-      setter.setHeader(
-          X_B3_SPAN_ID, spanContext && spanContext.spanId || 'undefined');
+      setter.setHeader(X_B3_TRACE_ID, spanContext.traceId || 'undefined');
+      setter.setHeader(X_B3_SPAN_ID, spanContext.spanId || 'undefined');
       if (spanContext && (spanContext.options & SAMPLED_VALUE) !== 0) {
         setter.setHeader(X_B3_SAMPLED, `${SAMPLED_VALUE}`);
       } else {
