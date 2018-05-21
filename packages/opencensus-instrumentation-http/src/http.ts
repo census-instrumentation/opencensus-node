@@ -111,10 +111,10 @@ export class HttpPlugin extends classes.BasePlugin {
    * Creates spans for incoming requests, restoring spans' context if applied.
    */
   patchIncomingRequest() {
-    const plugin = this;
     // TODO: evaluate if this function should return RequestFunction
     return (original: RequestFunction):
                types.Func<httpModule.ClientRequest> => {
+      const plugin = this;
       return function incomingRequest(
                  event: string, request: httpModule.IncomingMessage,
                  response: httpModule.ServerResponse):
@@ -199,9 +199,9 @@ export class HttpPlugin extends classes.BasePlugin {
    * tracing.
    */
   patchOutgoingRequest() {
-    const plugin = this;
     return (original: types.Func<httpModule.ClientRequest>):
                types.Func<httpModule.ClientRequest> => {
+      const plugin = this;
       return function outgoingRequest(
                  options, callback): httpModule.ClientRequest {
         if (!options) {
@@ -229,7 +229,7 @@ export class HttpPlugin extends classes.BasePlugin {
         plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
           name:
-              `${request.method ? request.method : 'GET'}  ${options.pathname}`,
+              `${request.method ? request.method : 'GET'} ${options.pathname}`,
           type: 'CLIENT',
         };
 
@@ -252,6 +252,7 @@ export class HttpPlugin extends classes.BasePlugin {
     };
   }
 
+  // TODO: type of options shold be better define
   /**
    * Injects span's context to header for distributed tracing and finshes the
    * span when the response is finished.
