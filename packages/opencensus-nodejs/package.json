@@ -1,5 +1,5 @@
 {
-  "name": "@opencensus/opencensus-nodejs",
+  "name": "@opencensus/nodejs",
   "version": "0.0.1",
   "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
   "main": "build/src/index.js",

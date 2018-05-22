@@ -26,7 +26,7 @@ const constants = {
   /** Opencensus Scope */
   OPENCENSUS_SCOPE: '@opencensus',
   /** Defult prefix for instrumentation modules */
-  DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'opencensus-instrumentation'
+  DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'instrumentation'
 };
 
 export {constants as Constants};

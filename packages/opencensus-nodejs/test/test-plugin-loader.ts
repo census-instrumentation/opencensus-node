@@ -65,13 +65,16 @@ describe('Plugin Loader', () => {
         assert.ok(plugins[TEST_MODULES[2]]);
         assert.strictEqual(
             plugins[TEST_MODULES[0]],
-            '@opencensus/opencensus-instrumentation-simple-module');
+            `@opencensus/${
+                Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-simple-module`);
         assert.strictEqual(
             plugins[TEST_MODULES[1]],
-            '@opencensus/opencensus-instrumentation-nonexistent-module');
+            `@opencensus/${
+                Constants
+                    .DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-nonexistent-module`);
         assert.strictEqual(
             plugins[TEST_MODULES[2]],
-            '@opencensus/opencensus-instrumentation-http');
+            `@opencensus/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-http`);
       });
     });
 
