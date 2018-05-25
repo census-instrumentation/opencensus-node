@@ -15,7 +15,7 @@
  */
 
 import {classes, logger, types} from '@opencensus/opencensus-core';
-import {JWT} from 'google-auth-library';
+import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
@@ -67,9 +67,10 @@ export class StackdriverTraceExporter implements types.Exporter {
   publish(rootSpans: types.RootSpan[]) {
     const stackdriverTraces =
         rootSpans.map(trace => this.translateTrace(trace));
+
     return this.authorize(stackdriverTraces)
-        .then((result: TracesWithCredentials) => {
-          return this.sendTrace(result);
+        .then((traces: TracesWithCredentials) => {
+          return this.sendTrace(traces);
         })
         .catch(err => {
           for (const root of rootSpans) {
@@ -87,11 +88,7 @@ export class StackdriverTraceExporter implements types.Exporter {
     const spanList = root.spans.map(span => this.translateSpan(span));
     spanList.push(this.translateSpan(root));
 
-    return {
-      'projectId': this.projectId,
-      'traceId': root.traceId,
-      'spans': spanList
-    };
+    return {projectId: this.projectId, traceId: root.traceId, spans: spanList};
   }
 
   /**
@@ -100,19 +97,17 @@ export class StackdriverTraceExporter implements types.Exporter {
    */
   private translateSpan(span: types.Span) {
     return {
-      'name': span.name,
-      'kind': 'SPAN_KIND_UNSPECIFIED',
-      'spanId': span.id,
-      'startTime': span.startTime,
-      'endTime': span.endTime
+      name: span.name,
+      kind: 'SPAN_KIND_UNSPECIFIED',
+      spanId: span.id,
+      startTime: span.startTime,
+      endTime: span.endTime
     };
   }
 
   /**
    * Sends traces in the Stackdriver format to the service.
-   * @param projectId
-   * @param authClient
-   * @param stackdriverTraces
+   * @param traces
    */
   private sendTrace(traces: TracesWithCredentials) {
     return new Promise((resolve, reject) => {
@@ -130,38 +125,33 @@ export class StackdriverTraceExporter implements types.Exporter {
     });
   }
 
-
-
   /**
    * Gets the Google Application Credentials from the environment variables,
    * authenticates the client and calls a method to send the traces data.
-   * @param sendTrace
    * @param stackdriverTraces
    */
   private authorize(stackdriverTraces) {
-    return new Promise((resolve, reject) => {
-      return google.auth.getApplicationDefault(
-          (err, authClient: JWT, prjId: string) => {
-            if (err) {
-              const errorMsg = `authorize error: ${err.message}`;
-              this.logger.error(errorMsg);
-              reject(errorMsg);
-            } else {
-              if (authClient.createScopedRequired &&
-                  authClient.createScopedRequired()) {
-                const scopes =
-                    ['https://www.googleapis.com/auth/cloud-platform'];
-                authClient = authClient.createScoped(scopes);
-              }
+    return auth.getApplicationDefault()
+        .then((client) => {
+          let authClient = client.credential as JWT;
 
-              const traces: TracesWithCredentials = {
-                projectId: prjId,
-                resource: {traces: stackdriverTraces},
-                auth: authClient
-              };
-              resolve(traces);
-            }
-          });
-    });
+          if (authClient.createScopedRequired &&
+              authClient.createScopedRequired()) {
+            const scopes = ['https://www.googleapis.com/auth/cloud-platform'];
+            authClient = authClient.createScoped(scopes);
+          }
+
+          const traces: TracesWithCredentials = {
+            projectId: client.projectId,
+            resource: {traces: stackdriverTraces},
+            auth: authClient
+          };
+          return traces;
+        })
+        .catch((err) => {
+          err.message = `authorize error: ${err.message}`;
+          this.logger.error(err.message);
+          throw (err);
+        });
   }
 }

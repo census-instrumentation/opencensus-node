@@ -40,6 +40,8 @@ describe('Stackdriver Exporter', function() {
   let dryrun = true;
   const GOOGLE_APPLICATION_CREDENTIALS =
       process.env.GOOGLE_APPLICATION_CREDENTIALS as string;
+  const OPENCENSUS_NETWORK_TESTS =
+      process.env.OPENCENSUS_NETWORK_TESTS as string;
   let exporterOptions: StackdriverExporterOptions;
   let exporter: StackdriverTraceExporter;
   let tracer: classes.Tracer;
@@ -47,7 +49,8 @@ describe('Stackdriver Exporter', function() {
 
   before(() => {
     if (GOOGLE_APPLICATION_CREDENTIALS) {
-      dryrun = !fs.existsSync(GOOGLE_APPLICATION_CREDENTIALS);
+      dryrun = !fs.existsSync(GOOGLE_APPLICATION_CREDENTIALS) &&
+          !fs.existsSync(OPENCENSUS_NETWORK_TESTS);
       if (!dryrun) {
         const credentials = require(GOOGLE_APPLICATION_CREDENTIALS);
         PROJECT_ID = credentials.project_id;
@@ -131,7 +134,7 @@ describe('Stackdriver Exporter', function() {
         process.env.GOOGLE_APPLICATION_CREDENTIALS =
             __dirname + '/fixtures/fakecredentials.json';
         nocks.oauth2((body) => true);
-        const scope = nocks.patchTraces(NOEXIST_PROJECT_ID, null, null, false);
+        nocks.patchTraces(NOEXIST_PROJECT_ID, null, null, false);
       }
       const failExporterOptions = {
         projectId: NOEXIST_PROJECT_ID,
@@ -160,7 +163,7 @@ describe('Stackdriver Exporter', function() {
     it('should export traces to stackdriver', () => {
       if (dryrun) {
         nocks.oauth2((body) => true);
-        const scope = nocks.patchTraces(PROJECT_ID, null, null, false);
+        nocks.patchTraces(PROJECT_ID, null, null, false);
       }
 
       return tracer.startRootSpan(
@@ -183,10 +186,7 @@ describe('Stackdriver Exporter', function() {
               '/v1/projects/' + exporterOptions.projectId + '/traces', 'patch')
           .reply(443, 'Simulated Network Error');
 
-      if (dryrun) {
-        nocks.oauth2((body) => true);
-        const scope = nocks.patchTraces(PROJECT_ID, null, null, false);
-      }
+      nocks.oauth2((body) => true);
 
       return tracer.startRootSpan(
           {name: 'sdErrorExportTestRootSpan'}, (rootSpan) => {
