@@ -60,6 +60,9 @@ export class StackdriverTraceExporter implements types.Exporter {
     this.exporterBuffer.addToBuffer(root);
   }
 
+  /** Not used for this exporter */
+  onStartSpan(root: types.RootSpan) {}
+
   /**
    * Publishes a list of root spans to Stackdriver.
    * @param rootSpans

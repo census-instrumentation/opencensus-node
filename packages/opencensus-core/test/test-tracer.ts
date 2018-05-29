@@ -24,11 +24,12 @@ import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {Tracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
-import {OnEndSpanEventListener} from '../src/trace/model/types';
+import {SpanEventListener} from '../src/trace/model/types';
 
-class OnEndSpanClass implements OnEndSpanEventListener {
+class OnEndSpanClass implements SpanEventListener {
   /** Counter for test use */
   testCount = 0;
+  onStartSpan(span: RootSpan): void {}
   /** Happens when a span is ended */
   onEndSpan(span: RootSpan): void {
     this.testCount++;
@@ -80,12 +81,12 @@ describe('Tracer', () => {
   });
 
   /** Should return an OnEndSpanEventListener list */
-  describe('registerEndSpanListener() / get eventListeners()', () => {
+  describe('registerSpanEventListener() / get eventListeners()', () => {
     let tracer, onEndSpan;
     before(() => {
       tracer = new Tracer();
       onEndSpan = new OnEndSpanClass();
-      tracer.registerEndSpanListener(onEndSpan);
+      tracer.registerSpanEventListener(onEndSpan);
     });
 
     it('should register a new OnEndSpanEventListener on listners list', () => {
@@ -271,7 +272,7 @@ describe('Tracer', () => {
     it('should run eventListeners when the rootSpan ends', () => {
       const tracer = new Tracer();
       const eventListener = new OnEndSpanClass();
-      tracer.registerEndSpanListener(eventListener);
+      tracer.registerSpanEventListener(eventListener);
       tracer.start(defaultConfig);
 
       tracer.startRootSpan(options, (rootSpan) => {

@@ -82,8 +82,9 @@ export interface SpanContext {
 }
 
 /** Defines an end span event listener */
-export interface OnEndSpanEventListener {
+export interface SpanEventListener {
   /** Happens when a span is ended */
+  onStartSpan(span: RootSpan): void;
   onEndSpan(span: RootSpan): void;
 }
 
@@ -213,7 +214,7 @@ export interface RootSpan extends Span {
 
 
 /** Interface for Tracer */
-export interface Tracer extends OnEndSpanEventListener {
+export interface Tracer extends SpanEventListener {
   /** Get and set the currentRootSpan to tracer instance */
   currentRootSpan: RootSpan;
 
@@ -227,7 +228,7 @@ export interface Tracer extends OnEndSpanEventListener {
   readonly propagation: Propagation;
 
   /** Get the eventListeners from tracer instance */
-  readonly eventListeners: OnEndSpanEventListener[];
+  readonly eventListeners: SpanEventListener[];
 
   /** Get the active status from tracer instance */
   readonly active: boolean;
@@ -254,7 +255,7 @@ export interface Tracer extends OnEndSpanEventListener {
    * Register a OnEndSpanEventListener on the tracer instance
    * @param listener An OnEndSpanEventListener instance
    */
-  registerEndSpanListener(listener: OnEndSpanEventListener): void;
+  registerSpanEventListener(listener: SpanEventListener): void;
 
   /** Clear the currentRootSpan from tracer instance */
   clearCurrentTrace(): void;

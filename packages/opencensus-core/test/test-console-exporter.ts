@@ -74,7 +74,7 @@ describe('ConsoleLogExporter', () => {
   describe('onEndSpan()', () => {
     it('should end a span', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
-      tracer.registerEndSpanListener(exporter);
+      tracer.registerSpanEventListener(exporter);
       // const rootSpan = new RootSpan(tracer);
       const rootSpans = createRootSpans();
       for (const rootSpan of rootSpans) {

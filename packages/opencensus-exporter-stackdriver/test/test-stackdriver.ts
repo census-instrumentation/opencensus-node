@@ -75,7 +75,7 @@ describe('Stackdriver Exporter', function() {
     exporter = new StackdriverTraceExporter(exporterOptions);
     tracer = new classes.Tracer();
     tracer.start({samplingRate: 1});
-    tracer.registerEndSpanListener(exporter);
+    tracer.registerSpanEventListener(exporter);
     if (!dryrun) {
       process.env.GOOGLE_APPLICATION_CREDENTIALS =
           GOOGLE_APPLICATION_CREDENTIALS;
@@ -143,7 +143,7 @@ describe('Stackdriver Exporter', function() {
       const failExporter = new StackdriverTraceExporter(failExporterOptions);
       const failTracer = new classes.Tracer();
       failTracer.start({samplingRate: 1});
-      failTracer.registerEndSpanListener(failExporter);
+      failTracer.registerSpanEventListener(failExporter);
       return failTracer.startRootSpan(
           {name: 'sdNoExportTestRootSpan'}, async (rootSpan) => {
             const span = failTracer.startChildSpan('sdNoExportTestChildSpan');
