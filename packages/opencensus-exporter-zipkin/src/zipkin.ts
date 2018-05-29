@@ -17,6 +17,7 @@
 import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
+import {prototype} from 'events';
 import * as http from 'http';
 import * as url from 'url';
 
@@ -64,7 +65,7 @@ export class ZipkinTraceExporter implements types.Exporter {
    * Send a trace to zipkin service
    * @param zipkinTraces Trace translated to Zipkin Service
    */
-  private async sendTraces(zipkinTraces: TranslatedSpan[]) {
+  private sendTraces(zipkinTraces: TranslatedSpan[]) {
     /** Request options */
     const options = {
       hostname: this.zipkinUrl.hostname,
@@ -77,32 +78,28 @@ export class ZipkinTraceExporter implements types.Exporter {
     };
 
     return new Promise((resolve, reject) => {
+      /** Request object */
+      const req = http.request(options, (res) => {
+        res.on('data', (chunk) => {});
+        // Resolve on end
+        res.on('end', () => {
+          resolve(
+              {statusCode: res.statusCode, statusMessage: res.statusMessage});
+        });
+      });
+
+      /** Request error event */
+      req.on('error', (e) => {
+        reject({
+          statusCode: 500,
+          statusMessage: `Problem with request: ${e.message}`
+        });
+      });
+
       try {
-        /** Request object */
-        const req = http.request(options, (res) => {
-          res.on('data', (chunk) => {});
-          // Resolve on end
-          res.on('end', () => {
-            resolve(
-                {statusCode: res.statusCode, statusMessage: res.statusMessage});
-          });
-        });
-
-        /** Request error event */
-        req.on('error', (e) => {
-          reject({
-            statusCode: 500,
-            statusMessage: `Problem with request: ${e.message}`
-          });
-        });
-
         /** Request body */
-        const spansJson: string[] =
-            zipkinTraces.map((span) => JSON.stringify(span));
-        spansJson.join('');
-        const outputJson = `[${spansJson}]`;
+        const outputJson = JSON.stringify(zipkinTraces);
         this.logger.debug('Zipkins span list Json: %s', outputJson);
-
         // Sendind the request
         req.write(outputJson, 'utf8');
         req.end();
@@ -114,17 +111,19 @@ export class ZipkinTraceExporter implements types.Exporter {
 
   /**
    * Mount a list (array) of spans translated to Zipkin format
-   * @param rootSpan Trace to be translated
+   * @param rootSpans Rootspan array to be translated
    */
-  private mountSpanList(spanList: TranslatedSpan[], rootSpan: types.RootSpan):
-      TranslatedSpan[] {
-    /** RootSpan data */
-    const spanRoot = this.translateSpan(rootSpan);
-    spanList.push(spanRoot);
+  private mountSpanList(rootSpans: types.RootSpan[]): TranslatedSpan[] {
+    const spanList: TranslatedSpan[] = [];
 
-    // Builds spans data
-    for (const span of rootSpan.spans) {
-      spanList.push(this.translateSpan(span, rootSpan));
+    for (const root of rootSpans) {
+      /** RootSpan data */
+      spanList.push(this.translateSpan(root));
+
+      // Builds spans data
+      for (const span of root.spans) {
+        spanList.push(this.translateSpan(span));
+      }
     }
 
     return spanList;
@@ -135,13 +134,12 @@ export class ZipkinTraceExporter implements types.Exporter {
    * @param span Span to be translated
    * @param rootSpan Only necessary if the span has rootSpan
    */
-  private translateSpan(
-      span: types.Span|types.RootSpan,
-      rootSpan?: types.RootSpan): TranslatedSpan {
+  private translateSpan(span: types.Span|types.RootSpan): TranslatedSpan {
     const spanTraslated = {
       traceId: span.traceId,
       name: span.name,
       id: span.id,
+      parentId: span.parentSpanId,
       kind: 'SERVER',
       timestamp: (span.startTime.getTime() * 1000).toFixed(),
       duration: (span.duration * 1000).toFixed(),
@@ -150,29 +148,20 @@ export class ZipkinTraceExporter implements types.Exporter {
       localEndpoint: {serviceName: this.serviceName}
     } as TranslatedSpan;
 
-    if (rootSpan) {
-      spanTraslated.parentId = rootSpan.id;
-    }
-
     return spanTraslated;
   }
 
+  // TODO: review return of method publish from exporter interface - today is
+  // returning void
   /**
    * Send the rootSpans to zipkin service
    * @param rootSpans RootSpan array
    */
   publish(rootSpans: types.RootSpan[]) {
-    let zipkinTraces: TranslatedSpan[] = [];
-    for (const trace of rootSpans) {
-      zipkinTraces = this.mountSpanList(zipkinTraces, trace);
-    }
+    const spanList = this.mountSpanList(rootSpans);
 
-    return this.sendTraces(zipkinTraces)
-        .then((result) => {
-          return result;
-        })
-        .catch((err) => {
-          return err;
-        });
+    return this.sendTraces(spanList).catch((err) => {
+      return err;
+    });
   }
 }

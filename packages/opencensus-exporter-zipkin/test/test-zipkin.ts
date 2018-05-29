@@ -29,9 +29,21 @@ interface RequestResponse {
   statusMessage: string;
 }
 
+/** Zipkin host url */
+const zipkinHost = 'http://localhost:9411';
+/** Zipkin post path url */
+const postPath = '/api/v2/spans';
+/**
+ * Controls if the tests will use a real network or not
+ * true to use a real zipkin service
+ * false to use a nock server
+ */
+const OPENCENSUS_NETWORK_TESTS =
+    ['true', 'TRUE', '1'].indexOf(process.env.OPENCENSUS_NETWORK_TESTS) > -1;
+
 /** Default options for zipkin tests */
 const zipkinOptions = {
-  url: 'http://localhost:9411/api/v2/spans',
+  url: zipkinHost + postPath,
   serviceName: 'opencensus-tests'
 } as ZipkinExporterOptions;
 
@@ -42,50 +54,29 @@ const defaultConfig: types.TracerConfig = {
 
 /** Run a nock server to replace zipkin service */
 const runNockServer = () => {
-  nock('http://localhost:9411/')
+  nock(zipkinHost)
       .persist()
-      .post('/api/v2/spans')
+      .post(postPath)
       .reply(202)
-      .post('/api/v2/spanswrong')
+      .post('/wrong')
       .reply(404);
 };
 
-/**
- * Checks if zipkin service is not running for tests
- */
-const isNotZipkinRunning = (callback: Function) => {
-  http.get('http://localhost:9411', (res) => {
-        if (res.statusCode !== 200) {
-          callback();
-        }
-      }).on('error', (e) => {
-    callback();
-  });
-};
-
-/** Checking if zipkin service is running, otherwise run a nock server */
-before((done) => {
-  isNotZipkinRunning(() => {
+/** Checking if tests will use a real network, otherwise run a nock server */
+before(() => {
+  if (!OPENCENSUS_NETWORK_TESTS) {
     runNockServer();
-    done();
-  });
+  }
 });
 
 /** Zipkin tests */
 describe('Zipkin Exporter', function() {
   /** Desabling the timeout for tests */
   this.timeout(0);
-  /** Should create a Zipkin instance */
-  describe('new Zipkin()', () => {
-    it('should create a Zipkin instance', () => {
-      const zipkin = new ZipkinTraceExporter(zipkinOptions);
-      assert.ok(zipkin instanceof ZipkinTraceExporter);
-    });
-  });
 
   /** Should called when a rootSpan ended */
   describe('onEndSpan()', () => {
-    it('Should called when a rootSpan ended', () => {
+    it('Should add spans to the exporter buffer', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
       const tracer = new classes.Tracer();
       tracer.registerEndSpanListener(exporter);
@@ -112,21 +103,23 @@ describe('Zipkin Exporter', function() {
             const span = rootSpan.startChildSpan('spanTest', 'spanType');
             span.end();
             rootSpan.end();
-            return exporter.publish([rootSpan]).then((result) => {
-              const resultObject = result as RequestResponse;
-              assert.equal(resultObject.statusCode, 202);
+            return exporter.publish([rootSpan, rootSpan]).then((result) => {
+              assert.equal(result.statusCode, 202);
             });
           });
     });
   });
 
-  /** Should send traces to Zipkin service */
   describe('publish() with a wrong Zipkin url', () => {
     it('shouldn\'t send traces to Zipkin service and return an 404 error',
        () => {
-         /** adding a string to get a wrong url */
-         zipkinOptions.url += 'wrong';
-         const exporter = new ZipkinTraceExporter(zipkinOptions);
+         /** Creating new options with a wrong url */
+         const options = {
+           url: zipkinHost + '/wrong',
+           serviceName: 'opencensus-tests'
+         } as ZipkinExporterOptions;
+
+         const exporter = new ZipkinTraceExporter(options);
          const tracer = new classes.Tracer();
          tracer.start(defaultConfig);
 
@@ -136,8 +129,7 @@ describe('Zipkin Exporter', function() {
                span.end();
                rootSpan.end();
                return exporter.publish([rootSpan]).then((result) => {
-                 const resultObject = result as RequestResponse;
-                 assert.equal(resultObject.statusCode, 404);
+                 assert.equal(result.statusCode, 404);
                });
              });
        });
