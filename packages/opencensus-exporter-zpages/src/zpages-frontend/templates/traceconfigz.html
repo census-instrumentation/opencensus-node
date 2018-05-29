@@ -1,0 +1,109 @@
+<!--
+ * Copyright 2018 OpenCensus Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+ 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>TraceConfigZ</title>
+    <link rel="shortcut icon" href="https://www.opencensus.io/favicon.ico" />
+</head>
+
+<body>
+    <form action="/traceconfigz" method="get">
+        <table>
+            <td colspan="3">
+                <b>Permanently change</b>
+                <input type="hidden" name="change" value="permanently">
+            </td>
+            <tr>
+                <td>SamplingProbability to</td>
+                <td>
+                    <input type="text" size="10" name="samplingprobability" value="">
+                </td>
+                <td>(<?= defaultConfig.samplingRate ?>)</td>
+                <tr>
+                    <td>MaxNumberOfAttributes to</td>
+                    <td>
+                        <input type=text size=10 name=maxnumberofattributes value="">
+                    </td>
+                    <td>(32)</td>
+                    <tr>
+                        <td>MaxNumberOfAnnotations to</td>
+                        <td>
+                            <input type=text size=10 name=maxnumberofannotations value="">
+                        </td>
+                        <td>(32)</td>
+                        <tr>
+                            <td>MaxNumberOfNetworkEvents to</td>
+                            <td>
+                                <input type=text size=10 name=maxnumberofnetworkevents value="">
+                            </td>
+                            <td>(128)</td>
+                            <tr>
+                                <td>MaxNumberOfLinks to</td>
+                                <td>
+                                    <input type=text size=10 name=maxnumberoflinks value="">
+                                </td>
+                                <td>(128)</td>
+        </table>
+        <input type=submit value=Submit>
+    </form>
+    <br>
+    <form action=/traceconfigz method=get>
+        <b>Restore default</b>
+        <input type="hidden" name="change" value="restore_default">
+        </td>
+        </br>
+        <input type=submit value=Reset>
+    </form>
+    <br>
+    <b>Active tracing parameters:</b>
+    <br>
+    <table rules="all" frame="border">
+        <tr style="background: #eee">
+            <td>
+                <b>Name</b>
+            </td>
+            <td>
+                <b>Value</b>
+            </td>
+        </tr>
+        <tr>
+            <td>Sampler</td>
+            <td>ProbabilitySampler{<?= samplingProbability ?>}</td>
+        </tr>
+        <tr>
+            <td>MaxNumberOfAttributes</td>
+            <td>32</td>
+        </tr>
+        <tr>
+            <td>MaxNumberOfAnnotations</td>
+            <td>32</td>
+        </tr>
+        <tr>
+            <td>MaxNumberOfNetworkEvents</td>
+            <td>128</td>
+        </tr>
+        <tr>
+            <td>MaxNumberOfLinks</td>
+            <td>128</td>
+        </tr>
+    </table>
+</body>
+
+</html>
