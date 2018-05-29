@@ -79,7 +79,7 @@ describe('Zipkin Exporter', function() {
     it('Should add spans to the exporter buffer', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
       const tracer = new classes.Tracer();
-      tracer.registerEndSpanListener(exporter);
+      tracer.registerSpanEventListener(exporter);
       tracer.start(defaultConfig);
 
       tracer.startRootSpan({name: 'root-test'}, (rootSpan: types.RootSpan) => {

@@ -61,6 +61,9 @@ export class ZipkinTraceExporter implements types.Exporter {
     this.buffer.addToBuffer(root);
   }
 
+  /** Not used for this exporter */
+  onStartSpan(root: types.RootSpan) {}
+
   /**
    * Send a trace to zipkin service
    * @param zipkinTraces Trace translated to Zipkin Service
@@ -91,7 +94,7 @@ export class ZipkinTraceExporter implements types.Exporter {
       /** Request error event */
       req.on('error', (e) => {
         reject({
-          statusCode: 500,
+          statusCode: 0,
           statusMessage: `Problem with request: ${e.message}`
         });
       });
