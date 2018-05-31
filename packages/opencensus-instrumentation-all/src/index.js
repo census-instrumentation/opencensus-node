@@ -14,18 +14,4 @@
  * limitations under the License.
  */
 
-/** General purpose constants. */
-const constants = {
-  /** Default maximum size of a buffer. */
-  DEFAULT_BUFFER_SIZE: 100,
-  /** Default max timeout for a buffer before being flushed */
-  DEFAULT_BUFFER_TIMEOUT: 20000,
-  /** Default list of target modules to be instrumented */
-  DEFAULT_INSTRUMENTATION_MODULES: ['http', 'https'],
-  /** Opencensus Scope */
-  OPENCENSUS_SCOPE: '@opencensus',
-  /** Defult prefix for instrumentation modules */
-  DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'instrumentation'
-};
 
-export {constants as Constants};
