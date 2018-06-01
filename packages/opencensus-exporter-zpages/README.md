@@ -1,107 +1,90 @@
 # OpenCensus Zpages Exporter for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus for Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. 
+OpenCensus Zpages Exporter implements a collection of HTML pages that display stats and trace data sent from [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node).
 
-The library is in alpha stage and the API is subject to change.
+This project is still at an early stage of development. It's subject to change.
 
-Please join [gitter](https://gitter.im/census-instrumentation/Lobby) for help or feedback on this project.
-
-## Using Zpages Exporter
-
-Package Zpages implements a collection of HTML pages that display stats and trace data.
-
-### Installing the package
+## Installation
 
 ```node
 npm install @opencensus/nodejs
 npm install @opencensus/exporter-zpages
 ```
 
-### Importing the Zpages classes
+## Usage
 
-Two classes of the Zpages package are required for the Zpages Exporter works. The nodejs package is required for instrumentation.
+Zpages always runs on localhost, but you can change the port in the options. If the option `startServer` is set to `true`, Zpages server will start when a new Zpages instance is created. It's also possible to predefined some span names. These empty spans will be listed on Zpages.
+
+To use Zpages, instance the exporter on your application and pass the options. For javascript:
+
+```javascript
+var tracing = require('@opencensus/nodejs');
+var zpages = require('@opencensus/exporter-zipkin');
+
+// Add your zipkin url and application name to the Zipkin options
+var options = {
+  port: 8080,   // default
+  startServer: true,  // default
+  spanNames: ['predefined/span1', 'predefined/span2']
+}
+
+var exporter = new zpages.ZpagesExporter(options);
+```
+
+Similarly for Typescript:
 
 ```typescript
 import * as tracing from '@opencensus/nodejs';
 import {ZpagesExporter, ZpagesExporterOptions} from '@opencensus/zpages-exporter';
-```
 
-or
-
-```javascript
- import * as zpagesExporter from '@opencensus/zpages-exporter';
-```
-
-Using javascript:
-
-```javascript
-const tracing = require('@opencensus/nodejs');
-const zpagesExporter = require('@opencensus/zpages-exporter');
-```
-
-### Creating the Zpages options
-
-To run the Zpages it's necessary to set some options. You can use the interface ZpagesExporterOptions for this.
-
-```typescript
+// Add your zipkin url and application name to the Zipkin options
 const options = {
-  port: 8080, //default
-  startServer: true, //default
+  port: 8080,   // default
+  startServer: true,  // default
   spanNames: ['predefined/span1', 'predefined/span2']
-} as zpagesExporter.ZpagesExporterOptions;
+} as ZpagesExporterOptions;
+
+const exporter = new ZpagesExporter(options);
 ```
 
-The Zpages always run on localhost, but you can change the port in the options. If the option **startServer** is true, the Zpages server will start when a new Zpages instance is created. It's also possible to define some predefined span names. These empty spans will be listed on Zpages.
+Now, register the exporter and start tracing.
 
-### Creating a Zpages instance
-
-To create a new Zpages instance it's necessary to pass the Zpages options as parameter.
-
-```typescript
-const zpages = new zpagesExporter.ZpagesExporter(options);
-```
-
-### Zpages instrumentation
-
-Use the tracing singleton from nodejs package.
-
-```typescript
-tracing.start({exporter: zpages});
+```javascript
+tracing.start({'exporter': exporter});
 ```
 
 or
 
-```typescript
-tracing.start();
-tracing.registerExporter(zpages);
+```javascript
+tracing.registerExporter(exporter).start();
 ```
 
 ### Starting the Zpages server
 
-If options.startServer = false then the server can be started calling startServer method:
+If `options.startServer` is set to `false`, the server can be started by calling `startServer` method:
 
 ```typescript
 zpages.startServer();
 ```
 
-The server will run at http:\\\localhost:port.
+The server will run at `http:\\localhost:port`.
 
 ### Browsing the Zpages pages
 
 There are four pages you can browse.
 
-**/tracez** - Trace list.
+- **/tracez**: Trace list.
 
-**/traceconfigz** - Trace settings.
+- **/traceconfigz**: Trace settings.
 
-**/rpcz** - RPC stats *(not yet implemented)*.
+- **/rpcz**: RPC stats *(not yet implemented)*.
 
-**/stats** - Stats page *(not yet implemented)*.
+- **/stats**: Stats page *(not yet implemented)*.
 
 ### Stoping the Zpages server
 
-If it is necessary to stop the server programmatically, use this command:
+If it is necessary to stop the server programmatically, use the following command:
 
 ```typescript
 zpages.stopServer();
