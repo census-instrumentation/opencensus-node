@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const timeunit = require('timeunit');
+const timeunit = require('time-unit');
 
 /** Manager the latency list */
 export class LatencyBucketBoundaries {
@@ -43,24 +43,22 @@ export class LatencyBucketBoundaries {
       timeunit.seconds.toNanos(100), Number.MAX_VALUE);
   /* tslint:enable */
 
+  /** Return latency list */
+  static readonly values = [
+    LatencyBucketBoundaries.ZERO_MICROSx10,
+    LatencyBucketBoundaries.MICROSx10_MICROSx100,
+    LatencyBucketBoundaries.MICROSx100_MILLIx1,
+    LatencyBucketBoundaries.MILLIx1_MILLIx10,
+    LatencyBucketBoundaries.MILLIx10_MILLIx100,
+    LatencyBucketBoundaries.MILLIx100_SECONDx1,
+    LatencyBucketBoundaries.SECONDx1_SECONDx10,
+    LatencyBucketBoundaries.SECONDx10_SECONDx100,
+    LatencyBucketBoundaries.SECONDx100_MAX,
+  ];
+
   constructor(latencyLowerNs: number, latencyUpperNs: number) {
     this.latencyLowerNs = latencyLowerNs;
     this.latencyUpperNs = latencyUpperNs;
-  }
-
-  /** Return latency list */
-  static values() {
-    return [
-      LatencyBucketBoundaries.ZERO_MICROSx10,
-      LatencyBucketBoundaries.MICROSx10_MICROSx100,
-      LatencyBucketBoundaries.MICROSx100_MILLIx1,
-      LatencyBucketBoundaries.MILLIx1_MILLIx10,
-      LatencyBucketBoundaries.MILLIx10_MILLIx100,
-      LatencyBucketBoundaries.MILLIx100_SECONDx1,
-      LatencyBucketBoundaries.SECONDx1_SECONDx10,
-      LatencyBucketBoundaries.SECONDx10_SECONDx100,
-      LatencyBucketBoundaries.SECONDx100_MAX,
-    ];
   }
 
   /**

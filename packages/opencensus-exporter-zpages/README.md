@@ -36,8 +36,8 @@ or
 Using javascript:
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
-var zpagesExporter = require('@opencensus/zpages-exporter');
+const tracing = require('@opencensus/nodejs');
+const zpagesExporter = require('@opencensus/zpages-exporter');
 ```
 
 ### Creating the Zpages options
@@ -46,7 +46,6 @@ To run the Zpages it's necessary to set some options. You can use the interface 
 
 ```typescript
 const options = {
-  host: 'localhost', //default
   port: 8080, //default
   startServer: true, //default
   spanNames: ['predefined/span1', 'predefined/span2']

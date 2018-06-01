@@ -18,7 +18,7 @@ import * as express from 'express';
 
 import {TracezPageHandler} from './../page-handlers/tracez.page-handler';
 
-exports.home = (req: express.Request, res: express.Response) => {
+export const home = (req: express.Request, res: express.Response) => {
   const html = new TracezPageHandler();
   res.send(html.emitHtml(req.query));
 };

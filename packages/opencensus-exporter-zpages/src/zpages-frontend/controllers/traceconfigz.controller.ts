@@ -22,15 +22,29 @@ import {ZpagesExporter} from '../../zpages';
 
 import {TraceConfigzPageHandler} from './../page-handlers/traceconfigz.page-handler';
 
-exports.home = (req: express.Request, res: express.Response) => {
-  const html = new TraceConfigzPageHandler();
-  if (req.query) {
-    save(req.query);
-  }
-  res.send(html.emitHtml(req.query));
+type SaveQuery = {
+  change: string,
+  samplingprobability: number
 };
 
-const save = (query) => {
+/**
+ * Loads the Trace config page
+ * @param req request data
+ * @param res response data
+ */
+export const home = (req: express.Request, res: express.Response) => {
+  const html = new TraceConfigzPageHandler();
+  if (req.query) {
+    saveChanges(req.query);
+  }
+  res.send(html.emitHtml());
+};
+
+/**
+ * Saves changes made to Trace config page
+ * @param query request query
+ */
+const saveChanges = (query: SaveQuery) => {
   /** restore the config to default */
   if (query.change === 'restore_default') {
     const exporter = tracing.exporter as ZpagesExporter;

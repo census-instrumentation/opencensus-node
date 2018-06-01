@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {classes, logger, types} from '@opencensus/opencensus-core';
 import * as express from 'express';
 import * as http from 'http';
 import * as url from 'url';
-import {Span} from '../../opencensus-core/build/src/index-classes';
+
+const routes = require('./zpages-frontend/routes');
 
 /** Interface to Zpages options */
 export interface ZpagesExporterOptions extends types.ExporterConfig {
@@ -33,38 +32,39 @@ export interface ZpagesExporterOptions extends types.ExporterConfig {
 }
 
 export type TraceMap = {
-  [spanName: string]: types.Span[];
+  [key: string]: types.Span[];
 };
 
 /** Class to ZpagesExporter */
 export class ZpagesExporter implements types.Exporter {
+  /** ZpagesExporter default options */
+  static readonly defaultOptions = {port: 8080, startServer: true};
+
   private app: express.Application;
-  private server;
+  private server: http.Server;
   private port: number;
   private traces: TraceMap = {};
   buffer: classes.ExporterBuffer;
   logger: types.Logger;
   defaultConfig: types.TracerConfig;
-  /** ZpagesExporter default options */
-  defaultOptions = {port: 8080, startServer: true} as ZpagesExporterOptions;
 
   constructor(options: ZpagesExporterOptions) {
     /** create express app */
     this.app = express();
-    this.port = options.port || this.defaultOptions.port;
+    this.port = options.port || ZpagesExporter.defaultOptions.port;
     this.buffer = new classes.ExporterBuffer(this, options);
     this.logger = options.logger || logger.logger();
     const startServer = options.startServer != null ?
         options.startServer :
-        this.defaultOptions.startServer;
+        ZpagesExporter.defaultOptions.startServer;
 
     /** register predefined span names, if any */
     if (options.spanNames) {
       this.registerSpanNames(options.spanNames);
     }
 
-    /** importing the routes */
-    require('./zpages-frontend/routes')(this.app);
+    /** defining routes */
+    this.app.use('/', routes);
 
     /** start the server if the startServer option is true */
     if (startServer) {
@@ -132,17 +132,17 @@ export class ZpagesExporter implements types.Exporter {
   }
 
   /**
-   * Get all traces or traces by name from the trace list
-   * @param traceName name of the rootSpan to be get
+   * Get all traces registered on Zpages
    */
-  getTraces(traceName?: string): TraceMap|types.Span[] {
-    logger.logger().debug('Z-PAGES: returning from trace list');
-
-    if (traceName) {
-      return this.traces[traceName];
-    }
-
+  getAllTraces(): TraceMap {
     return this.traces;
+  }
+
+  /**
+   * Get all traces registered on Zpages
+   */
+  getTracesByName(traceName: string): types.Span[] {
+    return this.traces[traceName];
   }
 
   /**

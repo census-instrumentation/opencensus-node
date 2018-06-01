@@ -16,44 +16,42 @@
 
 import * as tracing from '@opencensus/nodejs';
 import {types} from '@opencensus/opencensus-core';
-import * as fs from 'fs';
 
 import {TraceMap, ZpagesExporter} from '../../zpages';
 import {LatencyBucketBoundaries} from '../latency-bucket-boundaries';
-import {PageHandler} from '../types';
 
 const ejs = require('ejs');
-const timeunit = require('timeunit');
+const timeunit = require('time-unit');
 
-export class TracezPageHandler implements PageHandler {
-  /** HTML page */
-  private html: string;
+export type TraceConfigzParams = {
+  tracename: string;
+};
 
-  constructor() {
-    this.html = '';
-  }
+export class TracezPageHandler {
+  constructor() {}
 
   /**
    * Generate Zpages Tracez HTML Page
    * @param params values to put in HTML template
    * @returns Output HTML
    */
-  emitHtml(params?): string {
+  emitHtml(params?: TraceConfigzParams): string {
     const tracezFile =
-        fs.readFileSync(__dirname + '/../templates/tracez.html', 'utf8');
+        ejs.fileLoader(__dirname + '/../templates/tracez.ejs', 'utf8');
     const summaryFile =
-        fs.readFileSync(__dirname + '/../templates/summary.html', 'utf8');
+        ejs.fileLoader(__dirname + '/../templates/summary.ejs', 'utf8');
     const spanCellFile =
-        fs.readFileSync(__dirname + '/../templates/span-cell.html', 'utf8');
+        ejs.fileLoader(__dirname + '/../templates/span-cell.ejs', 'utf8');
     const spansFile =
-        fs.readFileSync(__dirname + '/../templates/spans.html', 'utf8');
+        ejs.fileLoader(__dirname + '/../templates/spans.ejs', 'utf8');
     /** ejs render options */
     const options = {delimiter: '?'};
     /** latency array */
-    const latencyBucketBoundaries = LatencyBucketBoundaries.values();
-    const exporter = tracing.exporter as ZpagesExporter;
-    const traces = exporter.getTraces();
-
+    const latencyBucketBoundaries = LatencyBucketBoundaries.values;
+    /** zpages exporter singleton instance */
+    const zpages = tracing.exporter as ZpagesExporter;
+    /** trace list */
+    const traces = zpages.getAllTraces();
     /** latency names list */
     const latencyBucketNames = [];
     /** rootSpan lines */
@@ -65,7 +63,7 @@ export class TracezPageHandler implements PageHandler {
 
     // build a string list of latencyBucketBoundaries
     for (const latency of latencyBucketBoundaries) {
-      latencyBucketNames.push('[' + latency.toString() + ']');
+      latencyBucketNames.push(`[${latency}]`);
     }
 
     // build the table lines
@@ -112,14 +110,13 @@ export class TracezPageHandler implements PageHandler {
       spans = ejs.render(
           spansFile, {
             name: params.tracename,
-            traces: exporter.getTraces(params.tracename)
+            traces: zpages.getTracesByName(params.tracename)
           },
           options);
     }
-    this.html = ejs.render(
+
+    return ejs.render(
         tracezFile,
         {table_content: summary + spansCells, title: 'TraceZ', spans}, options);
-
-    return this.html;
   }
 }

@@ -16,60 +16,55 @@
 
 import * as tracing from '@opencensus/nodejs';
 import {types} from '@opencensus/opencensus-core';
-import * as fs from 'fs';
 
 import {ZpagesExporter} from '../../zpages';
-import {PageHandler} from '../types';
 
 const ejs = require('ejs');
 
-export class TraceConfigzPageHandler implements PageHandler {
-  /** HTML page */
-  private html: string;
-
-  constructor() {
-    this.html = '';
-  }
+export class TraceConfigzPageHandler {
+  constructor() {}
 
   /**
    * Generate Zpages Trace Config HTML Page
-   * @param params values to put in HTML template
-   * @returns Output HTML
+   * @returns output HTML
    */
-  emitHtml(params?): string {
+  emitHtml(): string {
     /** template HTML */
     const traceConfigzFile =
-        fs.readFileSync(__dirname + '/../templates/traceconfigz.html', 'utf8');
+        ejs.fileLoader(__dirname + '/../templates/traceconfigz.ejs', 'utf8');
     /** EJS render options */
     const options = {delimiter: '?'};
     /** Zpages exporter object from current instance */
     const exporter = tracing.exporter as ZpagesExporter;
-
+    /** Current sampling rate  */
     const samplingProbability = this.extractSamplingProbability();
 
+    /**
+     * Checks if the current export has a defaultConfig, otherwise creates one
+     */
     if (!exporter.defaultConfig) {
-      exporter.defaultConfig = {samplingRate: Number(samplingProbability)} as
+      exporter.defaultConfig = {samplingRate: samplingProbability} as
           types.TracerConfig;
     }
 
-    /** HTML table summary */
-    this.html = ejs.render(
+    /** Rendering the HTML table summary */
+    return ejs.render(
         traceConfigzFile,
         {defaultConfig: exporter.defaultConfig, samplingProbability}, options);
-
-    return this.html;
   }
 
   /**
    * Gets the sample rate from tracer instance
+   * @returns the sampling probability
    */
-  private extractSamplingProbability(): string {
+  private extractSamplingProbability(): number {
+    /**  */
     const samplingProbability = tracing.tracer.sampler.description;
     if (samplingProbability === 'always') {
-      return '1,0';
+      return 1;
     } else if (samplingProbability === 'never') {
-      return '0,0';
+      return 0;
     }
-    return samplingProbability.match(/\((.*)\)/)[1];
+    return Number(samplingProbability.match(/\((.*)\)/)[1]);
   }
 }

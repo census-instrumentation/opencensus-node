@@ -51,62 +51,76 @@ describe('Zpages Exporter', () => {
     it('Should create predefined span names in the zpages', () => {
       for (const name of options.spanNames) {
         /** Array within all same name spans */
-        const spans = zpages.getTraces(name);
+        const spans = zpages.getTracesByName(name);
         /** Check if the first position span has the same name */
-        assert.equal(spans[0].name, name);
+        assert.strictEqual(spans[0].name, name);
       }
     });
   });
 
   /** Should start a new span and get it with zpages */
   describe('starting a new span', () => {
-    /** Creating here because tracing is a singleton */
-    const tracing = require('@opencensus/nodejs');
-    const zpages = new ZpagesExporter(options);
+    let zpages: ZpagesExporter;
 
-    tracing.start(defaultConfig);
-    tracing.registerExporter(zpages);
+    before((done) => {
+      /** Creating here because tracing is a singleton */
+      const tracing = require('@opencensus/nodejs');
+      zpages = new ZpagesExporter(options);
 
-    tracing.tracer.startRootSpan({name: 'rootSpanTest'}, (rootSpan) => {
-      const span = tracing.tracer.startChildSpan('spanNameTest', 'spanType');
-      span.end();
-      rootSpan.end();
+      tracing.start(defaultConfig);
+      tracing.registerExporter(zpages);
+
+      tracing.tracer.startRootSpan(
+          {name: 'rootSpanTest'}, (rootSpan: types.RootSpan) => {
+            const span =
+                tracing.tracer.startChildSpan('spanNameTest', 'spanType');
+            span.end();
+            rootSpan.end();
+            done();
+          });
     });
+
     it('Should create span in the zpages', () => {
       /** Array within all same name spans */
-      let spans = zpages.getTraces('rootSpanTest');
+      let spans = zpages.getTracesByName('rootSpanTest');
       /** Check if the first position span has the same name */
-      assert.equal(spans[0].name, 'rootSpanTest');
+      assert.strictEqual(spans[0].name, 'rootSpanTest');
 
       /** Array within all same name spans */
-      spans = zpages.getTraces('spanNameTest');
+      spans = zpages.getTracesByName('spanNameTest');
       /** Check if the first position span has the same name */
-      assert.equal(spans[0].name, 'spanNameTest');
+      assert.strictEqual(spans[0].name, 'spanNameTest');
     });
   });
 
   describe('catching a running span', () => {
-    /** Creating here because tracing is a singleton */
-    const tracing = require('@opencensus/nodejs');
-    const zpages = new ZpagesExporter(options);
+    let zpages: ZpagesExporter;
 
-    tracing.start(defaultConfig);
-    tracing.registerExporter(zpages);
+    before((done) => {
+      /** Creating here because tracing is a singleton */
+      const tracing = require('@opencensus/nodejs');
+      zpages = new ZpagesExporter(options);
 
-    tracing.tracer.startRootSpan({name: 'runningSpanTest'}, () => {});
+      tracing.start(defaultConfig);
+      tracing.registerExporter(zpages);
+
+      tracing.tracer.startRootSpan({name: 'runningSpanTest'}, () => {
+        done();
+      });
+    });
 
     it('Should get a running span in the zpages', () => {
       /** Array within all same name spans */
-      const spans = zpages.getTraces('runningSpanTest');
+      const spans = zpages.getTracesByName('runningSpanTest');
       /** Check if the first position span has the same name */
-      assert.equal(spans[0].name, 'runningSpanTest');
+      assert.strictEqual(spans[0].name, 'runningSpanTest');
       assert.ok(spans[0].started);
       assert.ok(!spans[0].ended);
     });
   });
 
   describe('running Zpages Server', () => {
-    let zpages;
+    let zpages: ZpagesExporter;
 
     /** Starting the server */
     before((done) => {
@@ -116,24 +130,16 @@ describe('Zpages Exporter', () => {
 
     it('Should access tracez page', (done) => {
       http.get(zpagesServerUrl + '/tracez', (res) => {
-            assert.equal(res.statusCode, 200);
+            assert.strictEqual(res.statusCode, 200);
             done();
-          }).on('error', (e) => {
-        /** Force wrong assert and return error message */
-        assert.equal(e.message, 200);
-        done();
-      });
+          }).on('error', done);
     });
 
-    it('Should access tracez page', (done) => {
+    it('Should access trace config page', (done) => {
       http.get(zpagesServerUrl + '/traceconfigz', (res) => {
-            assert.equal(res.statusCode, 200);
+            assert.strictEqual(res.statusCode, 200);
             done();
-          }).on('error', (e) => {
-        /** Force wrong assert and return error message */
-        assert.equal(e.message, 200);
-        done();
-      });
+          }).on('error', done);
     });
 
     after(() => {

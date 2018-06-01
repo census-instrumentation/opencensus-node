@@ -16,23 +16,25 @@
 
 import * as express from 'express';
 
-const tracezController = require('./controllers/tracez.controller');
-const traceConfigzController = require('./controllers/traceconfigz.controller');
+import * as traceConfigzController from './controllers/traceconfigz.controller';
+import * as tracezController from './controllers/tracez.controller';
 
-module.exports = (app: express.Application) => {
-  // Tracez Page
-  app.get('/tracez', tracezController.home);
+const router = express.Router();
 
-  // Trace Config Page
-  app.get('/traceconfigz', traceConfigzController.home);
+// Tracez Page
+router.get('/tracez', tracezController.home);
 
-  // RPC Stats Page
-  app.get('/rpcz', (req: express.Request, res: express.Response) => {
-    res.status(200).send('working!');  // TODO
-  });
+// Trace Config Page
+router.get('/traceconfigz', traceConfigzController.home);
 
-  // Stats Page
-  app.get('/statsz', (req: express.Request, res: express.Response) => {
-    res.status(200).send('working!');  // TODO
-  });
-};
+// RPC Stats Page
+router.get('/rpcz', (req: express.Request, res: express.Response) => {
+  res.status(200).send('working!');  // TODO
+});
+
+// Stats Page
+router.get('/statsz', (req: express.Request, res: express.Response) => {
+  res.status(200).send('working!');  // TODO
+});
+
+module.exports = router;
