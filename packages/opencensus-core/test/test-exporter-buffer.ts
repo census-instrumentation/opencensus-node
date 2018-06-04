@@ -105,13 +105,14 @@ describe('ExporterBuffer', () => {
    * Should flush by timeout
    */
   describe('addToBuffer force flush by timeout ', () => {
-    it('should flush by timeout', () => {
+    it('should flush by timeout', (done) => {
       const buffer = new ExporterBuffer(exporter, defaultBufferConfig);
       buffer.addToBuffer(new RootSpan(tracer));
       assert.strictEqual(buffer.getQueue().length, 1);
       setTimeout(() => {
         assert.strictEqual(buffer.getQueue().length, 0);
+        done();
       }, DEFAULT_BUFFER_TIMEOUT + 100);
-    });
+    }).timeout(5000);
   });
 });
