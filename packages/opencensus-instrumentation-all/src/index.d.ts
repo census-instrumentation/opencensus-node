@@ -13,6 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-"use strict";
 
-exports.DEFAULT_INSTRUMENTATION_MODULES = ['http', 'https'];
+export declare const DEFAULT_INSTRUMENTATION_MODULES: string[];
