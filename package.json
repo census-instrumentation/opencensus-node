@@ -9,6 +9,7 @@
     "postinstall": "npm run bootstrap",
     "compile": "lerna run compile",
     "test": "lerna run test",
+    "report-coverage": "lerna run report-coverage",
     "bootstrap": "lerna bootstrap",
     "bump": "lerna publish"
   },
