@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-const timeunit = require('time-unit');
-
 /** Manager the latency list */
 export class LatencyBucketBoundaries {
   private latencyLowerNs: number;
@@ -23,27 +21,34 @@ export class LatencyBucketBoundaries {
 
   // Using the opencensus java standard names
   /* tslint:disable:variable-name */
-  static readonly ZERO_MICROSx10 =
-      new LatencyBucketBoundaries(0, timeunit.microseconds.toNanos(10));
+  static readonly ZERO_MICROSx10 = new LatencyBucketBoundaries(
+      0, LatencyBucketBoundaries.microsecondsToNanos(10));
   static readonly MICROSx10_MICROSx100 = new LatencyBucketBoundaries(
-      timeunit.microseconds.toNanos(10), timeunit.microseconds.toNanos(100));
+      LatencyBucketBoundaries.microsecondsToNanos(10),
+      LatencyBucketBoundaries.microsecondsToNanos(100));
   static readonly MICROSx100_MILLIx1 = new LatencyBucketBoundaries(
-      timeunit.microseconds.toNanos(100), timeunit.milliseconds.toNanos(1));
+      LatencyBucketBoundaries.microsecondsToNanos(100),
+      LatencyBucketBoundaries.millisecondsToNanos(1));
   static readonly MILLIx1_MILLIx10 = new LatencyBucketBoundaries(
-      timeunit.milliseconds.toNanos(1), timeunit.milliseconds.toNanos(10));
+      LatencyBucketBoundaries.millisecondsToNanos(1),
+      LatencyBucketBoundaries.millisecondsToNanos(10));
   static readonly MILLIx10_MILLIx100 = new LatencyBucketBoundaries(
-      timeunit.milliseconds.toNanos(10), timeunit.milliseconds.toNanos(100));
+      LatencyBucketBoundaries.millisecondsToNanos(10),
+      LatencyBucketBoundaries.millisecondsToNanos(100));
   static readonly MILLIx100_SECONDx1 = new LatencyBucketBoundaries(
-      timeunit.milliseconds.toNanos(100), timeunit.seconds.toNanos(1));
+      LatencyBucketBoundaries.millisecondsToNanos(100),
+      LatencyBucketBoundaries.secondsToNanos(1));
   static readonly SECONDx1_SECONDx10 = new LatencyBucketBoundaries(
-      timeunit.seconds.toNanos(1), timeunit.seconds.toNanos(10));
+      LatencyBucketBoundaries.secondsToNanos(1),
+      LatencyBucketBoundaries.secondsToNanos(10));
   static readonly SECONDx10_SECONDx100 = new LatencyBucketBoundaries(
-      timeunit.seconds.toNanos(10), timeunit.seconds.toNanos(100));
+      LatencyBucketBoundaries.secondsToNanos(10),
+      LatencyBucketBoundaries.secondsToNanos(100));
   static readonly SECONDx100_MAX = new LatencyBucketBoundaries(
-      timeunit.seconds.toNanos(100), Number.MAX_VALUE);
+      LatencyBucketBoundaries.secondsToNanos(100), Number.MAX_VALUE);
   /* tslint:enable */
 
-  /** Return latency list */
+  /** Latency list */
   static readonly values = [
     LatencyBucketBoundaries.ZERO_MICROSx10,
     LatencyBucketBoundaries.MICROSx10_MICROSx100,
@@ -53,7 +58,7 @@ export class LatencyBucketBoundaries {
     LatencyBucketBoundaries.MILLIx100_SECONDx1,
     LatencyBucketBoundaries.SECONDx1_SECONDx10,
     LatencyBucketBoundaries.SECONDx10_SECONDx100,
-    LatencyBucketBoundaries.SECONDx100_MAX,
+    LatencyBucketBoundaries.SECONDx100_MAX
   ];
 
   constructor(latencyLowerNs: number, latencyUpperNs: number) {
@@ -62,15 +67,15 @@ export class LatencyBucketBoundaries {
   }
 
   /**
-   * Check if a time belongs to a LatencyBucketBoundary
+   * Checks if a time belongs to a LatencyBucketBoundary
    * @param timeNs Time to compare in nanoseconds
    */
   belongs(timeNs: number): boolean {
     return timeNs >= this.latencyLowerNs && timeNs <= this.latencyUpperNs;
   }
 
-  /** Convert a latency to string  */
-  toString() {
+  /** Converts a latency to string  */
+  toString(): string {
     switch (this) {
       case LatencyBucketBoundaries.ZERO_MICROSx10:
         return '>0us';
@@ -95,8 +100,8 @@ export class LatencyBucketBoundaries {
     }
   }
 
-  /** Get latency name */
-  getName() {
+  /** Gets latency name */
+  getName(): string {
     switch (this) {
       case LatencyBucketBoundaries.ZERO_MICROSx10:
         return 'ZERO_MICROSx10';
@@ -119,5 +124,46 @@ export class LatencyBucketBoundaries {
       default:
         return null;
     }
+  }
+
+  /**
+   * Gets the corresponding LatencyBucketBoundaries from a time in nanoseconds
+   * @param timeNs time in nanoseconds
+   */
+  static getLatencyBucketBoundariesByTime(timeNs: number):
+      LatencyBucketBoundaries {
+    for (const latency of LatencyBucketBoundaries.values) {
+      if (latency.belongs(timeNs)) {
+        return latency;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Convert microseconds to nanoseconds
+   * @param microseconds
+   * @returns nanoseconds
+   */
+  static microsecondsToNanos(microseconds: number): number {
+    return microseconds * 1000;
+  }
+
+  /**
+   * Convert milliseconds to nanoseconds
+   * @param milliseconds
+   * @returns nanoseconds
+   */
+  static millisecondsToNanos(milliseconds: number): number {
+    return milliseconds * 1000000;
+  }
+
+  /**
+   * Convert seconds to nanoseconds
+   * @param seconds
+   * @returns nanoseconds
+   */
+  static secondsToNanos(seconds: number): number {
+    return seconds * 1e+9;
   }
 }

@@ -22,8 +22,6 @@ import {ZpagesExporter} from '../../zpages';
 const ejs = require('ejs');
 
 export class TraceConfigzPageHandler {
-  constructor() {}
-
   /**
    * Generate Zpages Trace Config HTML Page
    * @returns output HTML

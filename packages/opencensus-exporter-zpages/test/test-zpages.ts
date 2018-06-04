@@ -51,7 +51,7 @@ describe('Zpages Exporter', () => {
     it('Should create predefined span names in the zpages', () => {
       for (const name of options.spanNames) {
         /** Array within all same name spans */
-        const spans = zpages.getTracesByName(name);
+        const spans = zpages.getAllTraces()[name];
         /** Check if the first position span has the same name */
         assert.strictEqual(spans[0].name, name);
       }
@@ -82,12 +82,12 @@ describe('Zpages Exporter', () => {
 
     it('Should create span in the zpages', () => {
       /** Array within all same name spans */
-      let spans = zpages.getTracesByName('rootSpanTest');
+      let spans = zpages.getAllTraces()['rootSpanTest'];
       /** Check if the first position span has the same name */
       assert.strictEqual(spans[0].name, 'rootSpanTest');
 
       /** Array within all same name spans */
-      spans = zpages.getTracesByName('spanNameTest');
+      spans = zpages.getAllTraces()['spanNameTest'];
       /** Check if the first position span has the same name */
       assert.strictEqual(spans[0].name, 'spanNameTest');
     });
@@ -111,7 +111,7 @@ describe('Zpages Exporter', () => {
 
     it('Should get a running span in the zpages', () => {
       /** Array within all same name spans */
-      const spans = zpages.getTracesByName('runningSpanTest');
+      const spans = zpages.getAllTraces()['runningSpanTest'];
       /** Check if the first position span has the same name */
       assert.strictEqual(spans[0].name, 'runningSpanTest');
       assert.ok(spans[0].started);

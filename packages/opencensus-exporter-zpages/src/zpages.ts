@@ -93,9 +93,17 @@ export class ZpagesExporter implements types.Exporter {
    * @param trace the rootSpan to be sent to the array list
    */
   private sendTrace(trace: types.RootSpan) {
+    /** If there is no status, put status 0 (OK) */
+    if (!trace.status) {
+      trace.status = 0;
+    }
     this.pushSpan(trace);
 
     for (const span of trace.spans) {
+      /** If there is no status, put status 0 (OK) */
+      if (!span.status) {
+        span.status = 0;
+      }
       this.pushSpan(span);
     }
     this.logger.debug('Z-PAGES: trace added');
@@ -133,16 +141,10 @@ export class ZpagesExporter implements types.Exporter {
 
   /**
    * Get all traces registered on Zpages
+   * TODO: create endpoint to get traces
    */
   getAllTraces(): TraceMap {
     return this.traces;
-  }
-
-  /**
-   * Get all traces registered on Zpages
-   */
-  getTracesByName(traceName: string): types.Span[] {
-    return this.traces[traceName];
   }
 
   /**

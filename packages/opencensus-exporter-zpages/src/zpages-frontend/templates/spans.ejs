@@ -51,6 +51,13 @@
                         </tr>
                     <? } ?>
                 <? } ?>
+                <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Status{statusCode=<?= traces[i].status ?>,canonicalCode=<?= getCanonicalCode(traces[i].status) ?>}</td>
+            </tr>
         <? } ?>
     </table>
 </pre>

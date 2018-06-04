@@ -14,73 +14,77 @@
  * limitations under the License.
  -->
  
-<style>
-    .striped { background: #eee; }
+ <style>
+ .striped { background: #eee; }
 </style>
 
 <tr class="<?= spanCellClass ?>" style="text-align: center">
-    <td style="text-align: left"><?= name ?></td>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
-    <? if (RUNNING > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=ZERO_MICROSx10"><?= RUNNING ?></a></td>
-    <? } else { ?>
-        <td><?= RUNNING ?></td>
-    <? } ?>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
-    <? if (ZERO_MICROSx10 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=ZERO_MICROSx10"><?= ZERO_MICROSx10 ?></a></td>
-    <? } else { ?>
-        <td><?= ZERO_MICROSx10 ?></td>
-    <? } ?>
+ <td style="text-align: left"><?= name ?></td>
+ <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+ <? if (RUNNING > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=RUNNING"><?= RUNNING ?></a></td>
+ <? } else { ?>
+     <td><?= RUNNING ?></td>
+ <? } ?>
+ <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+ <? if (latencies.ZERO_MICROSx10 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=ZERO_MICROSx10"><?= latencies.ZERO_MICROSx10 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.ZERO_MICROSx10 ?></td>
+ <? } ?>
 
-    <? if (MICROSx10_MICROSx100 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=MICROSx10_MICROSx100"><?= MICROSx10_MICROSx100 ?></a></td>
-    <? } else { ?>
-        <td><?= MICROSx10_MICROSx100 ?></td>
-    <? } ?>
+ <? if (latencies.MICROSx10_MICROSx100 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MICROSx10_MICROSx100"><?= latencies.MICROSx10_MICROSx100 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MICROSx10_MICROSx100 ?></td>
+ <? } ?>
 
-    <? if (MICROSx100_MILLIx1 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=MICROSx100_MILLIx1"><?= MICROSx100_MILLIx1 ?></a></td>
-    <? } else { ?>
-        <td><?= MICROSx100_MILLIx1 ?></td>
-    <? } ?>
+ <? if (latencies.MICROSx100_MILLIx1 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MICROSx100_MILLIx1"><?= latencies.MICROSx100_MILLIx1 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MICROSx100_MILLIx1 ?></td>
+ <? } ?>
 
-    <? if (MILLIx1_MILLIx10 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=MILLIx1_MILLIx10"><?= MILLIx1_MILLIx10 ?></a></td>
-    <? } else { ?>
-        <td><?= MILLIx1_MILLIx10 ?></td>
-    <? } ?>
+ <? if (latencies.MILLIx1_MILLIx10 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MILLIx1_MILLIx10"><?= latencies.MILLIx1_MILLIx10 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MILLIx1_MILLIx10 ?></td>
+ <? } ?>
 
-    <? if (MILLIx10_MILLIx100 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=MILLIx10_MILLIx100"><?= MILLIx10_MILLIx100 ?></a></td>
-    <? } else { ?>
-        <td><?= MILLIx10_MILLIx100 ?></td>
-    <? } ?>
+ <? if (latencies.MILLIx10_MILLIx100 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MILLIx10_MILLIx100"><?= latencies.MILLIx10_MILLIx100 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MILLIx10_MILLIx100 ?></td>
+ <? } ?>
 
-    <? if (MILLIx100_SECONDx1 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=MILLIx100_SECONDx1"><?= MILLIx100_SECONDx1 ?></a></td>
-    <? } else { ?>
-        <td><?= MILLIx100_SECONDx1 ?></td>
-    <? } ?>
+ <? if (latencies.MILLIx100_SECONDx1 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MILLIx100_SECONDx1"><?= latencies.MILLIx100_SECONDx1 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MILLIx100_SECONDx1 ?></td>
+ <? } ?>
 
-    <? if (SECONDx1_SECONDx10 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=SECONDx1_SECONDx10"><?= SECONDx1_SECONDx10 ?></a></td>
-    <? } else { ?>
-        <td><?= SECONDx1_SECONDx10 ?></td>
-    <? } ?>
+ <? if (latencies.SECONDx1_SECONDx10 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=SECONDx1_SECONDx10"><?= latencies.SECONDx1_SECONDx10 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.SECONDx1_SECONDx10 ?></td>
+ <? } ?>
 
-    <? if (SECONDx10_SECONDx100 > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=SECONDx10_SECONDx100"><?= SECONDx10_SECONDx100 ?></a></td>
-    <? } else { ?>
-        <td><?= SECONDx10_SECONDx100 ?></td>
-    <? } ?>
+ <? if (latencies.SECONDx10_SECONDx100 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=SECONDx10_SECONDx100"><?= latencies.SECONDx10_SECONDx100 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.SECONDx10_SECONDx100 ?></td>
+ <? } ?>
 
-    <? if (SECONDx100_MAX > 0) { ?>
-        <td><a href="?tracename=<?= name ?>&type=SECONDx100_MAX"><?= SECONDx100_MAX ?></a></td>
-    <? } else { ?>
-        <td><?= SECONDx100_MAX ?></td>
-    <? } ?>
+ <? if (latencies.SECONDx100_MAX > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=SECONDx100_MAX"><?= latencies.SECONDx100_MAX ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.SECONDx100_MAX ?></td>
+ <? } ?>
 
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
-    <td><?= errors ?></td>
+ <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+ <? if (ERRORS > 0) { ?>
+ <td><a href="?tracename=<?= name ?>&type=ERRORS"><?= ERRORS ?></a></td>
+<? } else { ?>
+ <td><?= ERRORS ?></td>
+<? } ?>
 </tr>
