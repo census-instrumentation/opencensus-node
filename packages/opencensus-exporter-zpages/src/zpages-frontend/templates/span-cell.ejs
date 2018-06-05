@@ -1,0 +1,90 @@
+<!--
+ * Copyright 2018 OpenCensus Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+ 
+<style>
+ .striped { background: #eee; }
+</style>
+
+<tr class="<?= spanCellClass ?>" style="text-align: center">
+ <td style="text-align: left"><?= name ?></td>
+ <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+ <? if (RUNNING > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=RUNNING"><?= RUNNING ?></a></td>
+ <? } else { ?>
+     <td><?= RUNNING ?></td>
+ <? } ?>
+ <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+ <? if (latencies.ZERO_MICROSx10 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=ZERO_MICROSx10"><?= latencies.ZERO_MICROSx10 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.ZERO_MICROSx10 ?></td>
+ <? } ?>
+
+ <? if (latencies.MICROSx10_MICROSx100 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MICROSx10_MICROSx100"><?= latencies.MICROSx10_MICROSx100 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MICROSx10_MICROSx100 ?></td>
+ <? } ?>
+
+ <? if (latencies.MICROSx100_MILLIx1 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MICROSx100_MILLIx1"><?= latencies.MICROSx100_MILLIx1 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MICROSx100_MILLIx1 ?></td>
+ <? } ?>
+
+ <? if (latencies.MILLIx1_MILLIx10 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MILLIx1_MILLIx10"><?= latencies.MILLIx1_MILLIx10 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MILLIx1_MILLIx10 ?></td>
+ <? } ?>
+
+ <? if (latencies.MILLIx10_MILLIx100 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MILLIx10_MILLIx100"><?= latencies.MILLIx10_MILLIx100 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MILLIx10_MILLIx100 ?></td>
+ <? } ?>
+
+ <? if (latencies.MILLIx100_SECONDx1 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=MILLIx100_SECONDx1"><?= latencies.MILLIx100_SECONDx1 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.MILLIx100_SECONDx1 ?></td>
+ <? } ?>
+
+ <? if (latencies.SECONDx1_SECONDx10 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=SECONDx1_SECONDx10"><?= latencies.SECONDx1_SECONDx10 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.SECONDx1_SECONDx10 ?></td>
+ <? } ?>
+
+ <? if (latencies.SECONDx10_SECONDx100 > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=SECONDx10_SECONDx100"><?= latencies.SECONDx10_SECONDx100 ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.SECONDx10_SECONDx100 ?></td>
+ <? } ?>
+
+ <? if (latencies.SECONDx100_MAX > 0) { ?>
+     <td><a href="?tracename=<?= name ?>&type=SECONDx100_MAX"><?= latencies.SECONDx100_MAX ?></a></td>
+ <? } else { ?>
+     <td><?= latencies.SECONDx100_MAX ?></td>
+ <? } ?>
+
+ <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+ <? if (ERRORS > 0) { ?>
+ <td><a href="?tracename=<?= name ?>&type=ERRORS"><?= ERRORS ?></a></td>
+<? } else { ?>
+ <td><?= ERRORS ?></td>
+<? } ?>
+</tr>
