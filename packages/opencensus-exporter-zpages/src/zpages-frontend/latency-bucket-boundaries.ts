@@ -145,7 +145,7 @@ export class LatencyBucketBoundaries {
    * @param microseconds
    * @returns nanoseconds
    */
-  static microsecondsToNanos(microseconds: number): number {
+  private static microsecondsToNanos(microseconds: number): number {
     return microseconds * 1000;
   }
 
