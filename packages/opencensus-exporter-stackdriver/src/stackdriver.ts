@@ -21,6 +21,20 @@ import {google} from 'googleapis';
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
 const cloudTrace = google.cloudtrace('v1');
 
+type TranslatedTrace = {
+  projectId: string,
+  traceId: string,
+  spans: TranslatedSpan[]
+};
+
+type TranslatedSpan = {
+  name: string,
+  kind: string,
+  spanId: string,
+  startTime: Date,
+  endTime: Date
+};
+
 type ExporterBuffer = typeof classes.ExporterBuffer;
 
 /**
@@ -79,7 +93,7 @@ export class StackdriverTraceExporter implements types.Exporter {
           for (const root of rootSpans) {
             this.failBuffer.push(root.spanContext);
           }
-          return `${err}`;
+          return err;
         });
   }
 
@@ -87,7 +101,7 @@ export class StackdriverTraceExporter implements types.Exporter {
    * Translates root span data to Stackdriver's trace format.
    * @param root
    */
-  private translateTrace(root: types.RootSpan) {
+  private translateTrace(root: types.RootSpan): TranslatedTrace {
     const spanList = root.spans.map(span => this.translateSpan(span));
     spanList.push(this.translateSpan(root));
 
@@ -98,7 +112,7 @@ export class StackdriverTraceExporter implements types.Exporter {
    * Translates span data to Stackdriver's span format.
    * @param span
    */
-  private translateSpan(span: types.Span) {
+  private translateSpan(span: types.Span): TranslatedSpan {
     return {
       name: span.name,
       kind: 'SPAN_KIND_UNSPECIFIED',
@@ -114,11 +128,11 @@ export class StackdriverTraceExporter implements types.Exporter {
    */
   private sendTrace(traces: TracesWithCredentials) {
     return new Promise((resolve, reject) => {
-      cloudTrace.projects.patchTraces(traces, err => {
+      cloudTrace.projects.patchTraces(traces, (err: Error) => {
         if (err) {
-          const errorMsg = `sendTrace error: ${err.message}`;
-          this.logger.error(errorMsg);
-          reject(errorMsg);
+          err.message = `sendTrace error: ${err.message}`;
+          this.logger.error(err.message);
+          reject(err);
         } else {
           const successMsg = 'sendTrace sucessfully';
           this.logger.debug(successMsg);
@@ -133,7 +147,7 @@ export class StackdriverTraceExporter implements types.Exporter {
    * authenticates the client and calls a method to send the traces data.
    * @param stackdriverTraces
    */
-  private authorize(stackdriverTraces) {
+  private authorize(stackdriverTraces: TranslatedTrace[]) {
     return auth.getApplicationDefault()
         .then((client) => {
           let authClient = client.credential as JWT;
