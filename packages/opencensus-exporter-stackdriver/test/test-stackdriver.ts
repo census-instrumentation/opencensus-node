@@ -120,8 +120,8 @@ describe('Stackdriver Exporter', function() {
             span.end();
             rootSpan.end();
 
-            return exporter.publish([rootSpan]).then((result: string) => {
-              assert.ok(result.indexOf('authorize error') >= 0);
+            return exporter.publish([rootSpan]).then((result) => {
+              assert.ok(result.message.indexOf('authorize error') >= 0);
               assert.strictEqual(
                   exporter.failBuffer[0].traceId, rootSpan.spanContext.traceId);
             });
@@ -150,8 +150,8 @@ describe('Stackdriver Exporter', function() {
             span.end();
             rootSpan.end();
 
-            return failExporter.publish([rootSpan]).then((result: string) => {
-              assert.ok(result.indexOf('sendTrace error: ') >= 0);
+            return failExporter.publish([rootSpan]).then((result) => {
+              assert.ok(result.message.indexOf('sendTrace error: ') >= 0);
 
               assert.strictEqual(
                   failExporter.failBuffer[0].traceId,
@@ -172,7 +172,7 @@ describe('Stackdriver Exporter', function() {
             span.end();
             rootSpan.end();
 
-            return exporter.publish([rootSpan]).then((result: string) => {
+            return exporter.publish([rootSpan]).then((result) => {
               assert.ok(result.indexOf('sendTrace sucessfully') >= 0);
             });
           });
@@ -194,8 +194,8 @@ describe('Stackdriver Exporter', function() {
             span.end();
             rootSpan.end();
 
-            return exporter.publish([rootSpan]).then((result: string) => {
-              assert.ok(result.indexOf('Simulated Network Error') >= 0);
+            return exporter.publish([rootSpan]).then((result) => {
+              assert.ok(result.message.indexOf('Simulated Network Error') >= 0);
             });
           });
     });
