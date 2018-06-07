@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/propagation-b3",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Opencensus propagation package for B3 format.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
