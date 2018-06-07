@@ -124,15 +124,7 @@ describe('Http2Plugin', () => {
 
 
   /** Should intercept outgoing requests */
-  describe('patchRequest()', () => {
-    before(() => {
-      shimmer.unwrap(server.constructor.prototype, 'emit');
-    });
-
-    after(() => {
-      shimmer.wrap(server.constructor.prototype, 'emit', plugin.patchEmit());
-    });
-
+  describe('Instrumenting outgoing requests', () => {
     it('should create a rootSpan for GET requests as a client', async () => {
       const statusCode = 200;
       const testPath = `/${statusCode}`;
@@ -141,12 +133,12 @@ describe('Http2Plugin', () => {
 
       await http2Request.get(client, requestOptions).then((result) => {
         assert.strictEqual(result, `${statusCode}`);
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
         assert.ok(
-            rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >= 0);
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+            rootSpanVerifier.endedRootSpans[1].name.indexOf(testPath) >= 0);
 
-        const span = rootSpanVerifier.endedRootSpans[0];
-        assertSpanAttributes(span, 200, 'GET', host, testPath, null);
+        const span = rootSpanVerifier.endedRootSpans[1];
+        assertSpanAttributes(span, 200, 'GET', host, testPath, undefined);
       });
     });
 
@@ -161,13 +153,14 @@ describe('Http2Plugin', () => {
 
            await http2Request.get(client, requestOptions).then((result) => {
              assert.strictEqual(result, errorCode.toString());
+             assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
              assert.ok(
-                 rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >=
+                 rootSpanVerifier.endedRootSpans[1].name.indexOf(testPath) >=
                  0);
-             assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
 
-             const span = rootSpanVerifier.endedRootSpans[0];
-             assertSpanAttributes(span, errorCode, 'GET', host, testPath, null);
+             const span = rootSpanVerifier.endedRootSpans[1];
+             assertSpanAttributes(
+                 span, errorCode, 'GET', host, testPath, undefined);
            });
          });
     });
@@ -185,7 +178,8 @@ describe('Http2Plugin', () => {
           assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
           assert.strictEqual(root.traceId, root.spans[0].traceId);
           const span = root.spans[0];
-          assertSpanAttributes(span, statusCode, 'GET', host, testPath, null);
+          assertSpanAttributes(
+              span, statusCode, 'GET', host, testPath, undefined);
         });
       });
     });
@@ -207,7 +201,7 @@ describe('Http2Plugin', () => {
 
                const span = root.spans[0];
                assertSpanAttributes(
-                   span, errorCode, 'GET', host, testPath, null);
+                   span, errorCode, 'GET', host, testPath, undefined);
              });
            });
          });
@@ -229,9 +223,9 @@ describe('Http2Plugin', () => {
             assert.strictEqual(root.traceId, root.spans[i].traceId);
           });
         }
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, num);
         root.end();
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1 + num);
       });
     });
 
@@ -248,22 +242,14 @@ describe('Http2Plugin', () => {
          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
          await http2Request.get(client, requestOptions).then((result) => {
            assert.strictEqual(result, `${statusCode}`);
-           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
          });
        });
   });
 
 
   /** Should intercept incoming requests */
-  describe('patchEmit()', () => {
-    before(() => {
-      shimmer.unwrap(client, 'request');
-    });
-
-    after(() => {
-      shimmer.wrap(client, 'request', plugin.patchRequest());
-    });
-
+  describe('Instrumenting incoming requests', () => {
     it('should create a root span for incoming requests', async () => {
       const statusCode = 200;
       const testPath = `/${statusCode}`;
@@ -278,30 +264,9 @@ describe('Http2Plugin', () => {
       await http2Request.get(client, requestOptions).then((result) => {
         assert.ok(
             rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >= 0);
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
         const span = rootSpanVerifier.endedRootSpans[0];
         assertSpanAttributes(span, 200, 'GET', host, testPath, 'Android');
-      });
-    });
-  });
-
-  // TODO: This tests relies on a specific order in which tests are executed.
-  // Is it possible to make this test more isolated?
-
-  /** Should not intercept incoming and outgoing requests */
-  describe('applyUnpatch()', () => {
-    before(() => {
-      plugin.applyUnpatch();
-    });
-
-    it('should not create a root span for incoming requests', async () => {
-      const statusCode = 200;
-      const testPath = `/${statusCode}`;
-      const requestOptions = {':method': 'GET', ':path': testPath};
-
-      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-      await http2Request.get(client, requestOptions).then((result) => {
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
       });
     });
   });

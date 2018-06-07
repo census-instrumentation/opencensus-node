@@ -3,7 +3,6 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
-    "noImplicitThis": false,
     "pretty": true,
     "module": "commonjs",
     "target": "es6",

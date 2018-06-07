@@ -35,12 +35,6 @@ export type CreateServerFunction = typeof http2.createServer;
 
 /** Http2 instrumentation plugin for Opencensus */
 export class Http2Plugin extends HttpPlugin {
-  server: http2.Http2Server|http2.Http2SecureServer;
-  client: http2.ClientHttp2Session;
-  clientUrl: url.UrlWithStringQuery;
-  patchedCreateServer = false;
-  patchedConnect = false;
-
   /** Constructs a new Http2Plugin instance. */
   constructor() {
     super('http2');
@@ -67,43 +61,38 @@ export class Http2Plugin extends HttpPlugin {
 
   /** Unpatches all HTTP2 patched function. */
   applyUnpatch(): void {
-    if (this.patchedCreateServer) {
-      shimmer.unwrap(plugin.server.constructor.prototype, 'emit');
-    } else {
-      shimmer.unwrap(plugin.moduleExports, 'createServer');
-      shimmer.unwrap(plugin.moduleExports, 'createSecureServer');
-    }
-
-    if (this.patchedConnect) {
-      shimmer.unwrap(plugin.client, 'request');
-    } else {
-      shimmer.unwrap(plugin.moduleExports, 'connect');
-    }
+    // Only Client and Server constructors will be unwrapped. Any existing
+    // Client or Server instances will still trace
+    shimmer.unwrap(this.moduleExports, 'createServer');
+    shimmer.unwrap(this.moduleExports, 'createSecureServer');
+    shimmer.unwrap(this.moduleExports, 'connect');
   }
 
-  patchConnect() {
+  private patchConnect() {
     const plugin = this;
     return (original: ConnectFunction):
                types.Func<http2.ClientHttp2Session> => {
-      return function patchedConnect(authority: string):
+      return function patchedConnect(this: Http2Plugin, authority: string):
           http2.ClientHttp2Session {
-            plugin.client = original.apply(this, arguments);
-            shimmer.wrap(plugin.client, 'request', plugin.patchRequest());
+            const client = original.apply(this, arguments);
+            shimmer.wrap(
+                client, 'request',
+                (original) => (plugin.patchRequest())(original, authority));
 
             shimmer.unwrap(plugin.moduleExports, 'connect');
-            plugin.patchedConnect = true;
-            plugin.clientUrl = url.parse(authority);
 
-            return plugin.client;
+            return client;
           };
     };
   }
 
-  patchRequest() {
+  private patchRequest() {
     const plugin = this;
-    return (original: RequestFunction): types.Func<http2.ClientHttp2Stream> => {
+    return (original: RequestFunction,
+            authority: string): types.Func<http2.ClientHttp2Stream> => {
       return function patchedRequest(
-                 headers: http2.IncomingHttpHeaders): http2.ClientHttp2Stream {
+                 this: http2.Http2Session,
+                 headers: http2.OutgoingHttpHeaders): http2.ClientHttp2Stream {
         // Do not trace ourselves
         if (headers['x-opencensus-outgoing-request']) {
           return original.apply(this, arguments);
@@ -113,8 +102,7 @@ export class Http2Plugin extends HttpPlugin {
         plugin.tracer.wrapEmitter(request);
 
         const traceOptions = {
-          name: `${headers[':method'] ? headers[':method'] : 'GET'} ${
-              headers[':path']}`,
+          name: `${headers[':method'] || 'GET'} ${headers[':path']}`,
           type: 'CLIENT',
         };
 
@@ -125,27 +113,30 @@ export class Http2Plugin extends HttpPlugin {
         if (!plugin.tracer.currentRootSpan) {
           return plugin.tracer.startRootSpan(
               traceOptions,
-              plugin.makeHttp2RequestTrace(request, headers, plugin));
+              plugin.makeHttp2RequestTrace(
+                  request, headers, authority, plugin));
         } else {
           const span = plugin.tracer.startChildSpan(
               traceOptions.name, traceOptions.type);
-          return (plugin.makeHttp2RequestTrace(request, headers, plugin))(span);
+          return (plugin.makeHttp2RequestTrace(
+              request, headers, authority, plugin))(span);
         }
       };
     };
   }
 
-  makeHttp2RequestTrace(
-      request: http2.ClientHttp2Stream, headers: http2.IncomingHttpHeaders,
+  private makeHttp2RequestTrace(
+      request: http2.ClientHttp2Stream, headers: http2.OutgoingHttpHeaders,
+      authority: string,
       plugin: Http2Plugin): types.Func<http2.ClientHttp2Stream> {
     return (span: types.Span): http2.ClientHttp2Stream => {
       if (!span) return request;
 
-      const setter = {
+      const setter: types.HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
         }
-      } as types.HeaderSetter;
+      };
 
       const propagation = plugin.tracer.propagation;
       if (propagation) {
@@ -161,17 +152,20 @@ export class Http2Plugin extends HttpPlugin {
 
       request.on('end', () => {
         const userAgent =
-            (headers['user-agent'] || headers['User-Agent'] || null) as string;
+            headers['user-agent'] || headers['User-Agent'] || null;
 
         span.addAttribute(
-            Http2Plugin.ATTRIBUTE_HTTP_HOST, plugin.clientUrl.host);
+            Http2Plugin.ATTRIBUTE_HTTP_HOST, url.parse(authority).host);
         span.addAttribute(
             Http2Plugin.ATTRIBUTE_HTTP_METHOD, `${headers[':method']}`);
         span.addAttribute(
             Http2Plugin.ATTRIBUTE_HTTP_PATH, `${headers[':path']}`);
         span.addAttribute(
             Http2Plugin.ATTRIBUTE_HTTP_ROUTE, `${headers[':path']}`);
-        span.addAttribute(Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
+        if (userAgent) {
+          span.addAttribute(
+              Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT, `${userAgent}`);
+        }
 
         span.addMessageEvent(
             'MessageEventTypeSent', uuid.v4().split('-').join(''));
@@ -190,28 +184,28 @@ export class Http2Plugin extends HttpPlugin {
     };
   }
 
-  patchCreateServer() {
+  private patchCreateServer() {
     const plugin = this;
     return (original: CreateServerFunction): types.Func<http2.Http2Server> => {
-      return function patchedCreateServer(): http2.Http2Server {
-        plugin.server = original.apply(this, arguments);
-        shimmer.wrap(
-            plugin.server.constructor.prototype, 'emit', plugin.patchEmit());
+      return function patchedCreateServer(
+                 this: Http2Plugin): http2.Http2Server {
+        const server = original.apply(this, arguments);
+        shimmer.wrap(server.constructor.prototype, 'emit', plugin.patchEmit());
 
         shimmer.unwrap(plugin.moduleExports, 'createServer');
         shimmer.unwrap(plugin.moduleExports, 'createSecureServer');
-        plugin.patchedCreateServer = true;
 
-        return plugin.server;
+        return server;
       };
     };
   }
 
-  patchEmit() {
+  private patchEmit() {
     const plugin = this;
     return (original: RequestFunction): types.Func<http2.ClientHttp2Stream> => {
       return function patchedEmit(
-                 event: string, stream: http2.ServerHttp2Stream,
+                 this: http2.Http2Server, event: string,
+                 stream: http2.ServerHttp2Stream,
                  headers: http2.IncomingHttpHeaders): http2.ClientHttp2Stream {
         if (event !== 'stream') {
           return original.apply(this, arguments);
@@ -230,9 +224,13 @@ export class Http2Plugin extends HttpPlugin {
           spanContext: propagation ? propagation.extract(getter) : null
         } as types.TraceOptions;
 
+        // Respond is called in a stream event. We wrap it to get the sent
+        // status code.
         let statusCode: number = null;
         const originalRespond = stream.respond;
         stream.respond = function(this: http2.Http2Stream) {
+          // Unwrap it since respond is not allowed to be called more than once
+          // per stream.
           stream.respond = originalRespond;
           statusCode = arguments[0][':status'];
           return stream.respond.apply(this, arguments);
