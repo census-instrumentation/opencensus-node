@@ -100,7 +100,7 @@ export class ExporterBuffer {
     this.logger.debug('ExporterBuffer: set timeout');
     this.bufferTimeoutInProgress = true;
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       if (this.queue.length === 0) {
         return;
       }
@@ -113,6 +113,8 @@ export class ExporterBuffer {
         this.flush();
       }
     }, this.bufferTimeout);
+    // Don't let this timer be the only thing keeping the process alive
+    timer.unref();
   }
 
   /** Send the trace queue to all exporters */
