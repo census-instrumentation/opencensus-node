@@ -126,8 +126,8 @@ export class Tracer implements types.Tracer {
             this.sampler.shouldSample(aRoot.traceId);
 
         if (sampleDecision) {
-          aRoot.start();
           this.currentRootSpan = aRoot;
+          aRoot.start();
           newRoot = aRoot;
         }
       } else {
