@@ -32,20 +32,12 @@ export class Span extends SpanBase implements types.Span {
     super();
     this.root = root;
     this.logger = this.root.logger || logger.logger();
+    this.parentSpanId = root.id;
   }
 
   /** Gets trace id of span. */
   get traceId(): string {
     return this.root.traceId;
-  }
-
-  /** Gets trace context of span. */
-  get spanContext(): types.SpanContext {
-    return {
-      traceId: this.traceId.toString(),
-      spanId: this.id.toString(),
-      options: 1  // always traced
-    };
   }
 
   /** Starts the span instance. */
@@ -55,7 +47,6 @@ export class Span extends SpanBase implements types.Span {
         'starting span  %o',
         {traceId: this.traceId, spanId: this.id, name: this.name});
   }
-
 
 
   /** Ends the span. */

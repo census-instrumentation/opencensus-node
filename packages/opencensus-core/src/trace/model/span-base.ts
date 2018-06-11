@@ -116,10 +116,10 @@ export abstract class SpanBase implements types.Span {
   /** Gives the TraceContext of the span. */
   get spanContext(): types.SpanContext {
     return {
-      traceId: this.traceId.toString(),
-      spanId: this.id.toString(),
-      parentSpanId: this.parentSpanId
-    } as types.SpanContext;
+      traceId: this.traceId,
+      spanId: this.id,
+      options: 0x1  // always traced
+    };
   }
 
   /**
