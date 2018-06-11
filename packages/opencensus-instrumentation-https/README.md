@@ -1,14 +1,9 @@
 # OpenCensus HTTPS Instrumentation for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus HTTPS Instrumentation allows the user to automatically collect trace data.
+OpenCensus HTTPS Instrumentation allows the user to automatically collect trace data. This package is used by [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) to instrument HTTPS for both servers and clients.
 
 This project is still at an early stage of development. It's subject to change.
-
-Note: This code was tested on the following Node versions:
-- v6.10.0 (for console exporter only)
-- v9.8.0 (for Stackdriver and Zipkin exporters)
-
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>

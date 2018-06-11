@@ -1,43 +1,42 @@
-# OpenCensus B3 Format Propagation for Node.js
+# OpenCensus Stackdriver Propagation for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus B3 Format Propagation sends a span context on the wire in an HTTP request, allowing other services to create spans with the right context.
+OpenCensus Stackdriver Propagation allow other services to create spans with the right context.
 
 This project is still at an early stage of development. It's subject to change.
 
 ## Installation
 
-Install OpenCensus B3 Propagation with:
+Install OpenCensus Stackdriver Propagation with:
 ```bash
-npm install @opencensus/propagation-b3
+npm install @opencensus/propagation-stackdriver
 ```
 
 ## Usage
 
-To propagate span context arround services with B3 Propagation, pass an instance of B3 Propagation to your tracing instance. For Javascript:
+To propagate span context arround services with Stackdriver Propagation, pass an instance of Stackdriver Propagation to your tracing instance. For Javascript:
 
 ```javascript
 const tracing = require('@opencensus/nodejs');
-const propagation = require('@opencensus/propagation-b3');
+const propagation = require('@opencensus/propagation-stackdriver');
 
-const b3 = new propagation.B3Format();
+const sd = propagation.v1;
 
-tracing.start({propagation: b3});
+tracing.start({propagation: sd});
 ```
 
 Similarly for Typescript:
 
 ```typescript
 import * as tracing from '@opencensus/nodejs';
-import { B3Format } from '@opencensus/propagation-b3';
+import * as propagation from '@opencensus/propagation-stackdriver';
 
-const b3 = new B3Format();
+const sd = propagation.v1;
 
-tracing.start({propagation: b3});
+tracing.start({propagation: sd});
 ```
 
 ## Useful links
-- To know more about B3 Format propagation, visit: <https://github.com/openzipkin/b3-propagation>
 - For more information on OpenCensus, visit: <https://opencensus.io/>
 - To checkout the OpenCensus for Node.js, visit: <https://github.com/census-instrumentation/opencensus-node>
 - For help or feedback on this project, join us on [gitter](https://gitter.im/census-instrumentation/Lobby)
