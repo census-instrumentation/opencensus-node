@@ -108,7 +108,7 @@ export class HttpPlugin extends classes.BasePlugin {
   /**
    * Creates spans for incoming requests, restoring spans' context if applied.
    */
-  patchIncomingRequest() {
+  protected patchIncomingRequest() {
     return (original: RequestFunction) => {
       const plugin = this;
       return function incomingRequest(
@@ -194,7 +194,7 @@ export class HttpPlugin extends classes.BasePlugin {
    * Creates spans for outgoing requests, sending spans' context for distributed
    * tracing.
    */
-  patchOutgoingRequest() {
+  protected patchOutgoingRequest() {
     return (original: types.Func<httpModule.ClientRequest>):
                types.Func<httpModule.ClientRequest> => {
       const plugin = this;
@@ -254,7 +254,7 @@ export class HttpPlugin extends classes.BasePlugin {
    * @param original The original patched function.
    * @param options The arguments to the original function.
    */
-  makeRequestTrace(
+  private makeRequestTrace(
       // tslint:disable-next-line:no-any
       request: httpModule.ClientRequest, options: httpModule.RequestOptions,
       plugin: HttpPlugin): types.Func<httpModule.ClientRequest> {
@@ -286,14 +286,16 @@ export class HttpPlugin extends classes.BasePlugin {
           plugin.logger.debug('outgoingRequest on end()');
           const method = response.method ? response.method : 'GET';
           const userAgent =
-              headers ? (headers['user-agent'] || headers['User-Agent']) : '';
+              headers ? (headers['user-agent'] || headers['User-Agent']) : null;
 
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, options.hostname);
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_METHOD, method);
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_PATH, options.path);
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ROUTE, options.path);
-          span.addAttribute(
-              HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent.toString());
+          if (userAgent) {
+            span.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent.toString());
+          }
           span.addAttribute(
               HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
               response.statusCode.toString());
