@@ -15,18 +15,15 @@
  */
 
 import * as util from 'util';
-
 import * as types from './types';
 
 const logDriver = require('log-driver');
-
 
 /**
  * This class implements a console logger.
  */
 export class ConsoleLogger implements types.Logger {
-  // tslint:disable:no-any
-  private logger: any;
+  private logger: typeof logDriver;
   static LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
   level: string;
 
@@ -61,7 +58,7 @@ export class ConsoleLogger implements types.Logger {
    * @param message menssage erro to log in console
    * @param args arguments to log in console
    */
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   error(message: any, ...args: any[]): void {
     this.logger.error(util.format(message, ...args));
   }
@@ -71,7 +68,7 @@ export class ConsoleLogger implements types.Logger {
    * @param message menssage warning to log in console
    * @param args arguments to log in console
    */
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   warn(message: any, ...args: any[]): void {
     this.logger.warn(util.format(message, ...args));
   }
@@ -81,7 +78,7 @@ export class ConsoleLogger implements types.Logger {
    * @param message menssage info to log in console
    * @param args arguments to log in console
    */
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   info(message: any, ...args: any[]): void {
     this.logger.info(util.format(message, ...args));
   }
@@ -91,7 +88,7 @@ export class ConsoleLogger implements types.Logger {
    * @param message menssage debug to log in console
    * @param args arguments to log in console
    */
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   debug(message: any, ...args: any[]): void {
     this.logger.debug(util.format(message, ...args));
   }
@@ -101,7 +98,7 @@ export class ConsoleLogger implements types.Logger {
    * @param message menssage silly to log in console
    * @param args arguments to log in console
    */
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   silly(message: any, ...args: any[]): void {
     this.logger.silly(util.format(message, ...args));
   }
@@ -115,7 +112,8 @@ export class ConsoleLogger implements types.Logger {
  *  Function logger exported to others classes.
  * @param options A logger options or strig to logger in console
  */
-const logger = (options?: types.LoggerOptions|string|number) => {
+// tslint:disable-next-line:no-any
+const logger: any = (options?: types.LoggerOptions|string|number) => {
   const aLogger = new ConsoleLogger(options);
   logger['logger'] = aLogger;
   return aLogger;

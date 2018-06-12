@@ -20,6 +20,7 @@ import * as mocha from 'mocha';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {Tracer} from '../src/trace/model/tracer';
+import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link, MessageEvent, TraceOptions} from '../src/trace/model/types';
 
 const tracer = new Tracer();
@@ -92,7 +93,7 @@ describe('RootSpan', () => {
    * Should create and start a new span instance
    */
   describe('startSpan()', () => {
-    let root, span;
+    let root: types.RootSpan, span: types.Span;
 
     before(() => {
       root = new RootSpan(tracer);

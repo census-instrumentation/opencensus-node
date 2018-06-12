@@ -20,6 +20,7 @@ import * as mocha from 'mocha';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {Tracer} from '../src/trace/model/tracer';
+import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link, MessageEvent} from '../src/trace/model/types';
 
 
@@ -74,7 +75,7 @@ describe('Span', () => {
    * clock instance created
    */
   describe('get time properties before start()', () => {
-    let span;
+    let span: types.Span;
     before(() => {
       const rootSpan = new RootSpan(tracer);
       rootSpan.start();

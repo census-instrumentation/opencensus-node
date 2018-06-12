@@ -65,7 +65,7 @@ describe('Tracer', () => {
 
   /** Should return a started tracer instance */
   describe('start()', () => {
-    let tracerStarted;
+    let tracerStarted: types.Tracer;
     before(() => {
       const tracer = new Tracer();
       assert.strictEqual(tracer.active, false);
@@ -82,7 +82,7 @@ describe('Tracer', () => {
 
   /** Should return an OnEndSpanEventListener list */
   describe('registerSpanEventListener() / get eventListeners()', () => {
-    let tracer, onEndSpan;
+    let tracer: types.Tracer, onEndSpan: OnEndSpanClass;
     before(() => {
       tracer = new Tracer();
       onEndSpan = new OnEndSpanClass();
@@ -117,7 +117,7 @@ describe('Tracer', () => {
 
   /** Should create and start a new RootSpan instance */
   describe('startRootSpan()', () => {
-    let rootSpanLocal;
+    let rootSpanLocal: types.RootSpan;
     before(() => {
       const tracer = new Tracer();
       tracer.start(defaultConfig);
@@ -135,7 +135,7 @@ describe('Tracer', () => {
 
   /** Should create and start a new RootSpan instance with options */
   describe('startRootSpan() with options', () => {
-    let rootSpanLocal;
+    let rootSpanLocal: types.RootSpan;
     before(() => {
       const tracer = new Tracer();
       tracer.start(defaultConfig);

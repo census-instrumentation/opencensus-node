@@ -30,7 +30,7 @@ let consoleTxt = '';
 
 describe('ConsoleLogger', () => {
   const intercept = require('intercept-stdout');
-  const unhookIntercept = intercept((txt) => {
+  const unhookIntercept = intercept((txt: string) => {
     consoleTxt = txt;
     return txt;
   });
