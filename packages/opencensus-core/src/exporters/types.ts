@@ -15,7 +15,7 @@
  */
 
 
-import * as loggerTypes from '../common/types';
+import {Measure, Measurement, View} from '../stats/model/types';
 import * as configTypes from '../trace/config/types';
 import * as modelTypes from '../trace/model/types';
 
@@ -27,6 +27,21 @@ export interface Exporter extends modelTypes.SpanEventListener {
    */
 
   publish(rootSpans: modelTypes.RootSpan[]): Promise<number|string|void>;
+}
+
+export interface StatsExporter {
+  /**
+   * Event called when a view is registered
+   * @param view registered view
+   * @param measure registered measure
+   */
+  onRegisterView(view: View, measure: Measure): void;
+  /**
+   * Event called when a measurement is recorded
+   * @param view recorded view from measurement
+   * @param measurement recorded measurement
+   */
+  onRecord(view: View, measurement: Measurement): void;
 }
 
 export type ExporterConfig = configTypes.BufferConfig;
