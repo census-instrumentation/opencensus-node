@@ -20,23 +20,28 @@ import {logger} from '@opencensus/opencensus-core';
 import * as mongodb from 'mongodb';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
-import {callbackify} from 'util';
 
+export type MongoDB = typeof mongodb;
 
-/** Http instrumentation plugin for Opencensus */
+/** MongoDB instrumentation plugin for Opencensus */
 export class MongoDBPlugin extends classes.BasePlugin {
-  readonly SERVER_FNS = ['insert', 'update', 'remove', 'auth'];
-  readonly CURSOR_FNS_FIRST = ['_find', '_getmore'];
-  readonly SPAN_MONGODB_QUERY_TYPE = 'db.mongodb.query';
-  logger: types.Logger;
+  private readonly SERVER_FNS = ['insert', 'update', 'remove', 'auth'];
+  private readonly CURSOR_FNS_FIRST = ['_find', '_getmore'];
+  private readonly SPAN_MONGODB_QUERY_TYPE = 'db.mongodb.query';
+  private logger: types.Logger;
 
-  /** Constructs a new HttpPlugin instance. */
+  /** Constructs a new MongoDBPlugin instance. */
   constructor(moduleName: string) {
     super(moduleName);
   }
 
-  // tslint:disable-next-line:no-any
-  applyPatch(moduleExports: any, tracer: types.Tracer, version: string) {
+  /**
+   * Patches MongoDB operations.
+   * @param moduleExports The mongodb module exports.
+   * @param tracer A tracer instance to create spans on.
+   * @param version The package version.
+   */
+  applyPatch(moduleExports: MongoDB, tracer: types.Tracer, version: string) {
     this.setPluginContext(moduleExports, tracer, version);
     this.logger = tracer.logger || logger.logger('debug');
 
@@ -45,11 +50,13 @@ export class MongoDBPlugin extends classes.BasePlugin {
     if (moduleExports.Server) {
       this.logger.debug('patching mongodb-core.Server.prototype.command');
       shimmer.wrap(
-          moduleExports.Server.prototype, 'command', this.patchCommand());
+          moduleExports.Server.prototype, 'command' as never,
+          this.getPatchCommand());
       this.logger.debug(
           'patching mongodb-core.Server.prototype functions:', this.SERVER_FNS);
       shimmer.massWrap(
-          [moduleExports.Server.prototype], this.SERVER_FNS, this.patchQuery());
+          [moduleExports.Server.prototype], this.SERVER_FNS as never[],
+          this.getPatchQuery());
     }
 
     if (moduleExports.Cursor) {
@@ -57,14 +64,14 @@ export class MongoDBPlugin extends classes.BasePlugin {
           'patching mongodb-core.Cursor.prototype functions:',
           this.CURSOR_FNS_FIRST);
       shimmer.massWrap(
-          [moduleExports.Cursor.prototype], this.CURSOR_FNS_FIRST,
-          this.patchCursor());
+          [moduleExports.Cursor.prototype], this.CURSOR_FNS_FIRST as never[],
+          this.getPatchCursor());
     }
 
     return moduleExports;
   }
 
-  /** Unpatches all HTTP patched function. */
+  /** Unpatches all MongoDB patched functions. */
   applyUnpatch(): void {
     shimmer.unwrap(this.moduleExports.Server.prototype, 'command');
     shimmer.massUnwrap(this.moduleExports.Server.prototype, this.SERVER_FNS);
@@ -72,34 +79,54 @@ export class MongoDBPlugin extends classes.BasePlugin {
         this.moduleExports.Cursor.prototype, this.CURSOR_FNS_FIRST);
   }
 
-  patchCommand() {
+  /** Creates spans for Command operations */
+  private getPatchCommand() {
+    const plugin = this;
+    return (original: types.Func<mongodb.Server>) => {
+      return function(
+                 // tslint:disable-next-line:no-any
+                 this: mongodb.Server, ns: string, command: any,
+                 // tslint:disable-next-line:no-any
+                 ...args: any[]): mongodb.Server {
+        let resultHandler = args[args.length - 1];
+        if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
+            typeof resultHandler === 'function') {
+          let type: string;
+          if (command.createIndexes) {
+            type = 'createIndexes';
+          } else if (command.findandmodify) {
+            type = 'findAndModify';
+          } else if (command.ismaster) {
+            type = 'isMaster';
+          } else if (command.count) {
+            type = 'count';
+          } else {
+            type = 'command';
+          }
+
+          const span = plugin.tracer.startChildSpan(
+              ns + '.' + type, plugin.SPAN_MONGODB_QUERY_TYPE);
+          resultHandler = plugin.patchEnd(span, resultHandler);
+        }
+
+        return original.apply(this, arguments);
+      };
+    };
+  }
+
+  /** Creates spans for Query operations */
+  private getPatchQuery() {
     const plugin = this;
     return (original: types.Func<mongodb.Server>) => {
       // tslint:disable-next-line:no-any
-      return function(this: mongodb.Server, ns: string, command: any):
+      return function(this: mongodb.Server, ns: string, ...args: any[]):
           mongodb.Server {
-            let span: types.Span;
-            const index = arguments.length - 1;
-            const resultHandler = arguments[index];
-
+            let resultHandler = args[args.length - 1];
             if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
                 typeof resultHandler === 'function') {
-              let type: string;
-              if (command.createIndexes) {
-                type = 'createIndexes';
-              } else if (command.findandmodify) {
-                type = 'findAndModify';
-              } else if (command.ismaster) {
-                type = 'ismaster';
-              } else if (command.count) {
-                type = 'count';
-              } else {
-                type = 'command';
-              }
-
-              span = plugin.tracer.startChildSpan(
-                  ns + '.' + type, plugin.SPAN_MONGODB_QUERY_TYPE);
-              arguments[index] = plugin.patchEnd(span, resultHandler);
+              const span = plugin.tracer.startChildSpan(
+                  ns + '.query', plugin.SPAN_MONGODB_QUERY_TYPE);
+              resultHandler = plugin.patchEnd(span, resultHandler);
             }
 
             return original.apply(this, arguments);
@@ -107,40 +134,18 @@ export class MongoDBPlugin extends classes.BasePlugin {
     };
   }
 
-  patchQuery() {
-    const plugin = this;
-    return (original: types.Func<mongodb.Server>) => {
-      return function(this: mongodb.Server, ns: string): mongodb.Server {
-        let span: types.Span;
-        const index = arguments.length - 1;
-        const resultHandler = arguments[index];
-
-        if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
-            typeof resultHandler === 'function') {
-          span = plugin.tracer.startChildSpan(
-              ns + '.query', plugin.SPAN_MONGODB_QUERY_TYPE);
-          arguments[index] = plugin.patchEnd(span, resultHandler);
-        }
-
-        return original.apply(this, arguments);
-      };
-    };
-  }
-
-  patchCursor() {
+  /** Creates spans for Cursor operations */
+  private getPatchCursor() {
     const plugin = this;
     return (original: types.Func<mongodb.Cursor>) => {
       // tslint:disable-next-line:no-any
-      return function(this: any): mongodb.Cursor {
-        let span: types.Span;
-        const index = 0;
-        const resultHandler = arguments[index];
-
+      return function(this: any, ...args: any[]): mongodb.Cursor {
+        let resultHandler = args[0];
         if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
             typeof resultHandler === 'function') {
-          span = plugin.tracer.startChildSpan(
+          const span = plugin.tracer.startChildSpan(
               this.ns + '.cursor', plugin.SPAN_MONGODB_QUERY_TYPE);
-          arguments[index] = plugin.patchEnd(span, resultHandler);
+          resultHandler = plugin.patchEnd(span, resultHandler);
         }
 
         return original.apply(this, arguments);
@@ -148,6 +153,11 @@ export class MongoDBPlugin extends classes.BasePlugin {
     };
   }
 
+  /**
+   * Ends a created span.
+   * @param span The created span to end.
+   * @param resultHandler A callback function.
+   */
   patchEnd(span: types.Span, resultHandler: Function): Function {
     // tslint:disable-next-line:no-any
     return function patchedEnd(this: any) {

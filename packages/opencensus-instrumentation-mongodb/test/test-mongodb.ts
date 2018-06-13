@@ -27,11 +27,12 @@ import * as semver from 'semver';
 import {plugin} from '../src/';
 import {MongoDBPlugin} from '../src/';
 
-type MongoDBAccess = {
+export type MongoDBAccess = {
   client: mongodb.MongoClient,
   collection: mongodb.Collection
 };
 
+/** Collects ended root spans to allow for later analysis. */
 class RootSpanVerifier implements types.SpanEventListener {
   endedRootSpans: types.RootSpan[] = [];
 
@@ -41,7 +42,14 @@ class RootSpanVerifier implements types.SpanEventListener {
   }
 }
 
-function accessCollection(url: string, dbName: string, collectionName: string) {
+/**
+ * Access the mongodb collection.
+ * @param url The mongodb URL to access.
+ * @param dbName The mongodb database name.
+ * @param collectionName The mongodb collection name.
+ */
+function accessCollection(url: string, dbName: string, collectionName: string):
+    Promise<MongoDBAccess> {
   return new Promise((resolve, reject) => {
     mongodb.MongoClient.connect(url, function connectedClient(err, client) {
       if (err) {
@@ -50,11 +58,18 @@ function accessCollection(url: string, dbName: string, collectionName: string) {
       }
       const db = client.db(dbName);
       const collection = db.collection(collectionName);
-      resolve({'client': client, 'collection': collection} as MongoDBAccess);
+      resolve({'client': client, 'collection': collection});
     });
   });
 }
 
+/**
+ * Asserts root spans attributes.
+ * @param rootSpanVerifier An instance of rootSpanVerifier to analyse RootSpan
+ * instances from.
+ * @param expectedName The expected name of the first root span.
+ * @param expectedType The expected type of the first root span.
+ */
 function assertSpan(
     rootSpanVerifier: RootSpanVerifier, expectedName: string,
     expectedType: string) {
@@ -69,17 +84,17 @@ function assertSpan(
 describe('MongoDBPlugin', () => {
   // For these tests, mongo must be runing. Add OPENCENSUS_MONGODB_TESTS to run
   // these tests.
-  const OPENCENSUS_NETWORK_TESTS =
-      process.env.OPENCENSUS_NETWORK_TESTS as string;
+  const OPENCENSUS_MONGODB_TESTS =
+      process.env.OPENCENSUS_MONGODB_TESTS as string;
   let shouldTest = true;
-  if (!OPENCENSUS_NETWORK_TESTS) {
+  if (!OPENCENSUS_MONGODB_TESTS) {
     console.log('Skipping test-mongodb. Run MongoDB to test');
     shouldTest = false;
   }
 
-  const url = 'mongodb://localhost:27017';
-  const dbName = 'opencensus-tests';
-  const collectionName = 'test';
+  const URL = 'mongodb://localhost:27017';
+  const DB_NAME = 'opencensus-tests';
+  const COLLECTION_NAME = 'test';
   const VERSION = process.versions.node;
 
   const tracer = new classes.Tracer();
@@ -91,9 +106,8 @@ describe('MongoDBPlugin', () => {
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(rootSpanVerifier);
     plugin.applyPatch(mongodb, tracer, VERSION);
-    accessCollection(url, dbName, collectionName)
-        // tslint:disable-next-line:no-any
-        .then((result: any) => {
+    accessCollection(URL, DB_NAME, COLLECTION_NAME)
+        .then(result => {
           client = result.client;
           collection = result.collection;
           done();
@@ -122,9 +136,7 @@ describe('MongoDBPlugin', () => {
   });
 
   afterEach((done) => {
-    collection.remove({}, (err, result) => {
-      done();
-    });
+    collection.remove({}, done);
   });
 
   after(() => {
@@ -142,9 +154,9 @@ describe('MongoDBPlugin', () => {
         collection.insertMany(insertData, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${dbName}.${collectionName}.query`,
+              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
               'db.mongodb.query');
           done();
         });
@@ -156,9 +168,9 @@ describe('MongoDBPlugin', () => {
         collection.updateOne({a: 2}, {$set: {b: 1}}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${dbName}.${collectionName}.query`,
+              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
               'db.mongodb.query');
           done();
         });
@@ -170,9 +182,9 @@ describe('MongoDBPlugin', () => {
         collection.deleteOne({a: 3}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${dbName}.${collectionName}.query`,
+              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
               'db.mongodb.query');
           done();
         });
@@ -187,9 +199,9 @@ describe('MongoDBPlugin', () => {
         collection.find({}).toArray((err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${dbName}.${collectionName}.cursor`,
+              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.cursor`,
               'db.mongodb.query');
           done();
         });
@@ -204,9 +216,9 @@ describe('MongoDBPlugin', () => {
         collection.createIndex({a: 1}, null, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${dbName}.$cmd.createIndexes`,
+              rootSpanVerifier, `${DB_NAME}.$cmd.createIndexes`,
               'db.mongodb.query');
           done();
         });
@@ -218,9 +230,9 @@ describe('MongoDBPlugin', () => {
         collection.count({a: 1}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${dbName}.$cmd.count`, 'db.mongodb.query');
+              rootSpanVerifier, `${DB_NAME}.$cmd.count`, 'db.mongodb.query');
           done();
         });
       });
@@ -240,7 +252,7 @@ describe('MongoDBPlugin', () => {
         collection.insertMany(insertData, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
           assert.strictEqual(
               rootSpanVerifier.endedRootSpans[0].spans.length, 0);
@@ -254,7 +266,7 @@ describe('MongoDBPlugin', () => {
         collection.find({}).toArray((err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
           assert.strictEqual(
               rootSpanVerifier.endedRootSpans[0].spans.length, 0);
@@ -268,7 +280,7 @@ describe('MongoDBPlugin', () => {
         collection.createIndex({a: 1}, null, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assert.equal(err, null);
+          assert.ifError(err);
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
           assert.strictEqual(
               rootSpanVerifier.endedRootSpans[0].spans.length, 0);

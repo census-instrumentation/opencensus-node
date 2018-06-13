@@ -3,6 +3,9 @@ release_tags: &release_tags
   tags:
     only: /^v\d+(\.\d+){2}(-.*)?$/
 
+test_env: &test_env
+  OPENCENSUS_MONGODB_TESTS: 1
+
 # "Include" for unit tests definition.
 unit_tests: &unit_tests
   steps:
@@ -13,6 +16,9 @@ unit_tests: &unit_tests
     - run:
         name: Run unit tests.
         command: npm run test
+
+mongo_service: &mongo_service
+  image: mongo
 
 version: 2.0
 workflows:
@@ -40,16 +46,22 @@ jobs:
     docker:
       - image: node:6
         user: node
+        environment: *test_env
+      - *mongo_service
     <<: *unit_tests
   node8:
     docker:
       - image: node:8
         user: node
+        environment: *test_env
+      - *mongo_service
     <<: *unit_tests
   node9:
     docker:
       - image: node:9
         user: node
+        environment: *test_env
+      - *mongo_service
     <<: *unit_tests
   publish_npm:
     docker:
