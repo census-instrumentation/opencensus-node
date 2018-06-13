@@ -40,6 +40,16 @@ export * from './trace/instrumentation/base-plugin';
 export * from './exporters/exporter-buffer';
 export * from './exporters/console-exporter';
 
+// STATS CLASSES
+
+// domain models impls
+export * from './stats/model/aggregation';
+export * from './stats/model/measure';
+export * from './stats/model/stats-manager';
+
+// interfaces
+export * from './stats/model/types';
+
 // logger
 import * as logger from './common/console-logger';
 export {logger};
