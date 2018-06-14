@@ -16,10 +16,13 @@
 
 import {types} from '@opencensus/opencensus-core';
 import * as assert from 'assert';
+import axios from 'axios';
 import * as http from 'http';
-import * as mocha from 'mocha';
+import * as qs from 'querystring';
 
 import {ZpagesExporter, ZpagesExporterOptions} from '../src/zpages';
+import {TraceConfigzData, TraceConfigzParams} from '../src/zpages-frontend/page-handlers/traceconfigz.page-handler';
+import {TracezData, TracezParams} from '../src/zpages-frontend/page-handlers/tracez.page-handler';
 
 /** Default options for zpages tests */
 const options = {
@@ -36,30 +39,71 @@ const defaultConfig: types.TracerConfig = {
   samplingRate: 0.2
 };
 
+/**
+ * A class that acts as a client for getting Zpages data.
+ * It is used by tests to ensure that information reported by the Zpages UI
+ * is consistent with the rest of the application.
+ */
+class ZpagesJSONClient {
+  constructor(private readonly origin: string) {}
+
+  private async getEndpoint<P, R>(endpoint: string, query?: Partial<P>):
+      Promise<R> {
+    query = Object.assign({json: '1'}, query);
+    const response =
+        await axios.get(`${this.origin}/${endpoint}?${qs.stringify(query)}`);
+    return response.data as R;
+  }
+
+  /**
+   * Gets the data model backing the tracez UI.
+   * @param query Optional query parameters.
+   */
+  async getTracez(query?: Partial<TracezParams>): Promise<TracezData> {
+    return this.getEndpoint<TracezParams, TracezData>('tracez', query);
+  }
+
+  /**
+   * Gets the data model backing the traceconfigz UI.
+   * @param query Optional query parameters.
+   */
+  async getTraceConfigz(query?: Partial<TraceConfigzParams>):
+      Promise<TraceConfigzData> {
+    return this.getEndpoint<TraceConfigzParams, TraceConfigzData>(
+        'tracez', query);
+  }
+}
+
 /** Zpages tests */
 describe('Zpages Exporter', () => {
+  const zpagesClient = new ZpagesJSONClient(`http://localhost:${options.port}`);
+
   /** Should create a ZpagesExporter instance with predefined span names */
   describe('new ZpagesExporter()', () => {
-    const zpages = new ZpagesExporter(options);
-    it('Should create a ZpagesExporter instance', () => {
-      /**
-       * This test ensures that if there are any exceptions during the
-       * constructor execution the test will fail
-       */
-      assert.ok(zpages instanceof ZpagesExporter);
+    let zpages: ZpagesExporter;
+
+    before((done) => {
+      zpages = new ZpagesExporter(options);
+      zpages.startServer(done);
     });
-    it('Should create predefined span names in the zpages', () => {
+
+    after((done) => {
+      zpages.stopServer(done);
+    });
+
+    it('Should create predefined span names in the zpages', async () => {
+      // Get the data backing the current tracez UI.
+      const tracezData = await zpagesClient.getTracez();
       for (const name of options.spanNames) {
-        /** Array within all same name spans */
-        const spans = zpages.getAllTraces()[name];
-        /** Check if the first position span has the same name */
-        assert.strictEqual(spans[0].name, name);
+        // Check that each span name is contained in the data backing the
+        // tracez view.
+        assert.ok(tracezData.spanCells.some(cell => cell.name === name));
       }
     });
   });
 
   /** Should start a new span and get it with zpages */
-  describe('starting a new span', () => {
+  describe('when a span is started and ended', () => {
     let zpages: ZpagesExporter;
 
     before((done) => {
@@ -76,24 +120,31 @@ describe('Zpages Exporter', () => {
                 tracing.tracer.startChildSpan('spanNameTest', 'spanType');
             span.end();
             rootSpan.end();
-            done();
           });
+      zpages.startServer(done);
     });
 
-    it('Should create span in the zpages', () => {
-      /** Array within all same name spans */
-      let spans = zpages.getAllTraces()['rootSpanTest'];
-      /** Check if the first position span has the same name */
-      assert.strictEqual(spans[0].name, 'rootSpanTest');
+    after((done) => {
+      zpages.stopServer(done);
+    });
 
-      /** Array within all same name spans */
-      spans = zpages.getAllTraces()['spanNameTest'];
-      /** Check if the first position span has the same name */
-      assert.strictEqual(spans[0].name, 'spanNameTest');
+    it('should create a corresponding cell in the tracez UI', async () => {
+      // Get the data backing the current tracez UI.
+      const zpagesData = await zpagesClient.getTracez();
+      // Check that exactly one cell was created for the root span.
+      assert.strictEqual(
+          zpagesData.spanCells.filter(cell => cell.name === 'rootSpanTest')
+              .length,
+          1);
+      // Check that exactly one cell was created for the child span.
+      assert.strictEqual(
+          zpagesData.spanCells.filter(cell => cell.name === 'spanNameTest')
+              .length,
+          1);
     });
   });
 
-  describe('catching a running span', () => {
+  describe('when a span is started, but not ended', () => {
     let zpages: ZpagesExporter;
 
     before((done) => {
@@ -104,18 +155,23 @@ describe('Zpages Exporter', () => {
       tracing.start(defaultConfig);
       tracing.registerExporter(zpages);
 
-      tracing.tracer.startRootSpan({name: 'runningSpanTest'}, () => {
-        done();
-      });
+      tracing.tracer.startRootSpan({name: 'runningSpanTest'}, () => {});
+      zpages.startServer(done);
     });
 
-    it('Should get a running span in the zpages', () => {
-      /** Array within all same name spans */
-      const spans = zpages.getAllTraces()['runningSpanTest'];
-      /** Check if the first position span has the same name */
-      assert.strictEqual(spans[0].name, 'runningSpanTest');
-      assert.ok(spans[0].started);
-      assert.ok(!spans[0].ended);
+    after((done) => {
+      zpages.stopServer(done);
+    });
+
+    it('should appear in the RUNNING category in the tracez UI', async () => {
+      // Get the data backing the current tracez UI for the currently running
+      // span.
+      const zpagesData = await zpagesClient.getTracez(
+          {tracename: 'runningSpanTest', type: 'RUNNING'});
+      // selectedTraces should be populated.
+      assert.ok(zpagesData.selectedTraces);
+      // Its name should be that of the currently running span.
+      assert.strictEqual(zpagesData.selectedTraces!.name, 'runningSpanTest');
     });
   });
 

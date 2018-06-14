@@ -17,9 +17,7 @@
 import {classes, logger, types} from '@opencensus/opencensus-core';
 import * as express from 'express';
 import * as http from 'http';
-import * as url from 'url';
-
-const routes = require('./zpages-frontend/routes');
+import {createRoutes} from './zpages-frontend/routes';
 
 /** Interface to Zpages options */
 export interface ZpagesExporterOptions extends types.ExporterConfig {
@@ -31,10 +29,6 @@ export interface ZpagesExporterOptions extends types.ExporterConfig {
   startServer: boolean;
 }
 
-export type TraceMap = {
-  [key: string]: types.Span[];
-};
-
 /** Class to ZpagesExporter */
 export class ZpagesExporter implements types.Exporter {
   /** ZpagesExporter default options */
@@ -43,16 +37,13 @@ export class ZpagesExporter implements types.Exporter {
   private app: express.Application;
   private server: http.Server;
   private port: number;
-  private traces: TraceMap = {};
-  buffer: classes.ExporterBuffer;
-  logger: types.Logger;
-  defaultConfig: types.TracerConfig;
+  private traces: Map<string, types.Span[]> = new Map();
+  private logger: types.Logger;
 
   constructor(options: ZpagesExporterOptions) {
     /** create express app */
     this.app = express();
     this.port = options.port || ZpagesExporter.defaultOptions.port;
-    this.buffer = new classes.ExporterBuffer(this, options);
     this.logger = options.logger || logger.logger();
     const startServer = options.startServer != null ?
         options.startServer :
@@ -64,7 +55,7 @@ export class ZpagesExporter implements types.Exporter {
     }
 
     /** defining routes */
-    this.app.use('/', routes);
+    this.app.use(createRoutes(this.traces));
 
     /** start the server if the startServer option is true */
     if (startServer) {
@@ -114,17 +105,18 @@ export class ZpagesExporter implements types.Exporter {
    * @param span the span to be push to the array list
    */
   private pushSpan(span: types.Span): void {
-    if (this.traces[span.name]) {
+    if (this.traces.has(span.name)) {
+      const spans = this.traces.get(span.name)!;
       // if a trace already in list, just update
-      for (let i = 0; i < this.traces[span.name].length; i++) {
-        if (this.traces[span.name][i].id === span.id) {
-          this.traces[span.name][i] = span;
+      for (let i = 0; i < spans.length; i++) {
+        if (spans[i].id === span.id) {
+          spans[i] = span;
           return;
         }
       }
-      this.traces[span.name].push(span);
+      spans.push(span);
     } else {
-      this.traces[span.name] = [span];
+      this.traces.set(span.name, [span]);
     }
   }
 
@@ -132,32 +124,24 @@ export class ZpagesExporter implements types.Exporter {
    * Register a span names array in the Zpages Exporter
    * @param spanNames
    */
-  registerSpanNames(spanNames: string[]) {
+  private registerSpanNames(spanNames: string[]) {
     for (const name of spanNames) {
       const span = {name} as types.Span;
-      this.traces[name] = [span];
+      this.traces.set(name, [span]);
     }
   }
 
   /**
-   * Get all traces registered on Zpages
-   * TODO: create endpoint to get traces
-   */
-  getAllTraces(): TraceMap {
-    return this.traces;
-  }
-
-  /**
-   * Not used in this context
+   * Not used in this context.
    * @param spans
    */
   publish(spans: types.Span[]) {}
 
   /**
-   * Start the Zpages HTTP Server
-   * @param callback Function that will run after server starts
+   * Start the Zpages HTTP Server.
+   * @param callback A function that will be called when the server has started.
    */
-  startServer(callback?: Function) {
+  startServer(callback?: () => void) {
     const self = this;
     this.server = this.app.listen(self.port, () => {
       self.logger.debug('Zpages Server was started on port ' + self.port);
@@ -168,9 +152,10 @@ export class ZpagesExporter implements types.Exporter {
   }
 
   /**
-   * Stop the Zpages HTTP Server
+   * Stop the Zpages HTTP Server.
+   * @param callback A function that will be called when the server is stopped.
    */
-  stopServer() {
-    this.server.close();
+  stopServer(callback?: () => void) {
+    this.server.close(callback);
   }
 }

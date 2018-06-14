@@ -15,47 +15,89 @@
  */
 
 import * as tracing from '@opencensus/nodejs';
-import {types} from '@opencensus/opencensus-core';
+import {classes, types} from '@opencensus/opencensus-core';
 
 import {ZpagesExporter} from '../../zpages';
 
 const ejs = require('ejs');
 
+export interface TraceConfigzParams {
+  change: string;
+  samplingprobability: number;
+}
+
+export interface TraceConfigzData {
+  defaultConfig: {samplingRate: number};
+  samplingProbability: number;
+}
+
 export class TraceConfigzPageHandler {
+  /** Configuration defaults. Currently just the default sampling rate. */
+  private defaultConfig: {samplingRate: number;};
+
   /**
    * Generate Zpages Trace Config HTML Page
+   * @param params The incoming request query.
+   * @param json If true, JSON will be emitted instead. Used for testing only.
    * @returns output HTML
    */
-  emitHtml(): string {
+  emitHtml(params: Partial<TraceConfigzParams>, json: boolean): string {
+    if (params) {
+      this.saveChanges(params);
+    }
+
+    if (!this.defaultConfig) {
+      this.defaultConfig = {
+        samplingRate: TraceConfigzPageHandler.extractSamplingProbability()
+      };
+    }
+
     /** template HTML */
     const traceConfigzFile =
         ejs.fileLoader(__dirname + '/../templates/traceconfigz.ejs', 'utf8');
     /** EJS render options */
     const options = {delimiter: '?'};
-    /** Zpages exporter object from current instance */
-    const exporter = tracing.exporter as ZpagesExporter;
     /** Current sampling rate  */
-    const samplingProbability = this.extractSamplingProbability();
-
-    /**
-     * Checks if the current export has a defaultConfig, otherwise creates one
-     */
-    if (!exporter.defaultConfig) {
-      exporter.defaultConfig = {samplingRate: samplingProbability} as
-          types.TracerConfig;
-    }
+    const samplingProbability =
+        TraceConfigzPageHandler.extractSamplingProbability();
 
     /** Rendering the HTML table summary */
-    return ejs.render(
-        traceConfigzFile,
-        {defaultConfig: exporter.defaultConfig, samplingProbability}, options);
+    const renderParams: TraceConfigzData = {
+      defaultConfig: this.defaultConfig,
+      samplingProbability
+    };
+    if (json) {
+      return JSON.stringify(renderParams, null, 2);
+    } else {
+      return ejs.render(traceConfigzFile, renderParams, options);
+    }
+  }
+
+  /**
+   * Saves changes made to Trace config page
+   * @param query request query
+   */
+  private saveChanges(query: Partial<TraceConfigzParams>): void {
+    /** restore the config to default */
+    if (query.change === 'restore_default') {
+      const exporter = tracing.exporter as ZpagesExporter;
+      tracing.tracer.sampler =
+          new classes.Sampler().probability(this.defaultConfig!.samplingRate);
+      return;
+    }
+
+    /** change the sampling probability value */
+    if (query.samplingprobability) {
+      tracing.tracer.sampler =
+          new classes.Sampler().probability(query.samplingprobability);
+    }
   }
 
   /**
    * Gets the sample rate from tracer instance
    * @returns the sampling probability
    */
-  private extractSamplingProbability(): number {
+  private static extractSamplingProbability(): number {
     /**  */
     const samplingProbability = tracing.tracer.sampler.description;
     if (samplingProbability === 'always') {
