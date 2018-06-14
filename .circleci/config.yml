@@ -13,6 +13,9 @@ unit_tests: &unit_tests
     - run:
         name: Run unit tests.
         command: npm run test
+    - run:
+        name: Report coverage.
+        command: npm run report-coverage
 
 version: 2.0
 workflows:
