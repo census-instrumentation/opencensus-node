@@ -77,7 +77,8 @@ const httpsOptions = {
 function assertSpanAttributes(
     span: types.Span, httpStatusCode: number, httpMethod: string,
     hostName: string, path: string, userAgent: string) {
-  assert.strictEqual(span.status, plugin.traceStatus(httpStatusCode));
+  assert.strictEqual(
+      span.status, HttpsPlugin.convertTraceStatus(httpStatusCode));
   assert.strictEqual(
       span.attributes[HttpsPlugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(

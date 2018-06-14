@@ -46,7 +46,7 @@ export class HttpsPlugin extends HttpPlugin {
       shimmer.wrap(
           moduleExports && moduleExports.Server &&
               moduleExports.Server.prototype,
-          'emit', this.patchIncomingRequest());
+          'emit', this.getPatchIncomingRequestFunction());
     } else {
       this.logger.error(
           'Could not apply patch to %s.emit. Interface is not as expected.',
@@ -55,7 +55,7 @@ export class HttpsPlugin extends HttpPlugin {
 
     // TODO: review the need to patch 'request'
 
-    shimmer.wrap(moduleExports, 'get', this.patchOutgoingRequest());
+    shimmer.wrap(moduleExports, 'get', this.getPatchOutgoingRequestFunction());
 
     return moduleExports;
   }

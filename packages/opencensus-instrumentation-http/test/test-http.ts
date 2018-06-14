@@ -68,7 +68,8 @@ class RootSpanVerifier implements types.SpanEventListener {
 function assertSpanAttributes(
     span: types.Span, httpStatusCode: number, httpMethod: string,
     hostName: string, path: string, userAgent: string) {
-  assert.strictEqual(span.status, plugin.traceStatus(httpStatusCode));
+  assert.strictEqual(
+      span.status, HttpPlugin.convertTraceStatus(httpStatusCode));
   assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(
       span.attributes[HttpPlugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
