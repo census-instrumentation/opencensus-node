@@ -24,7 +24,6 @@ import * as url from 'url';
 import * as uuid from 'uuid';
 
 
-// TODO: maybe we should have a setup as a Client or as Server.
 
 export type HttpModule = typeof httpModule;
 export type RequestFunction = typeof httpModule.request;
@@ -53,7 +52,6 @@ export class HttpPlugin extends classes.BasePlugin {
   }
 
 
-  // TODO: moduleExports should use type HttpModule instead of any
   /**
    * Patches HTTP incoming and outcoming request functions.
    * @param moduleExports The http module exports
@@ -61,7 +59,7 @@ export class HttpPlugin extends classes.BasePlugin {
    * @param version The package version.
    */
   // tslint:disable-next-line:no-any
-  applyPatch(moduleExports: any, tracer: types.Tracer, version: string) {
+  applyPatch(moduleExports: HttpModule, tracer: types.Tracer, version: string) {
     this.setPluginContext(moduleExports, tracer, version);
     this.logger = tracer.logger || logger.logger('debug');
 
@@ -80,7 +78,7 @@ export class HttpPlugin extends classes.BasePlugin {
       shimmer.wrap(
           moduleExports && moduleExports.Server &&
               moduleExports.Server.prototype,
-          'emit', this.patchIncomingRequest());
+          'emit' as never, this.patchIncomingRequest());
     } else {
       this.logger.error(
           'Could not apply patch to %s.emit. Interface is not as expected.',
@@ -110,10 +108,8 @@ export class HttpPlugin extends classes.BasePlugin {
   /**
    * Creates spans for incoming requests, restoring spans' context if applied.
    */
-  patchIncomingRequest() {
-    // TODO: evaluate if this function should return RequestFunction
-    return (original: RequestFunction):
-               types.Func<httpModule.ClientRequest> => {
+  protected patchIncomingRequest() {
+    return (original: RequestFunction) => {
       const plugin = this;
       return function incomingRequest(
                  event: string, request: httpModule.IncomingMessage,
@@ -198,7 +194,7 @@ export class HttpPlugin extends classes.BasePlugin {
    * Creates spans for outgoing requests, sending spans' context for distributed
    * tracing.
    */
-  patchOutgoingRequest() {
+  protected patchOutgoingRequest() {
     return (original: types.Func<httpModule.ClientRequest>):
                types.Func<httpModule.ClientRequest> => {
       const plugin = this;
@@ -252,16 +248,15 @@ export class HttpPlugin extends classes.BasePlugin {
     };
   }
 
-  // TODO: type of options shold be better define
   /**
    * Injects span's context to header for distributed tracing and finshes the
    * span when the response is finished.
    * @param original The original patched function.
    * @param options The arguments to the original function.
    */
-  makeRequestTrace(
+  private makeRequestTrace(
       // tslint:disable-next-line:no-any
-      request: httpModule.ClientRequest, options: any,
+      request: httpModule.ClientRequest, options: httpModule.RequestOptions,
       plugin: HttpPlugin): types.Func<httpModule.ClientRequest> {
     return (span: types.Span): httpModule.ClientRequest => {
       plugin.logger.debug('makeRequestTrace');
@@ -290,15 +285,17 @@ export class HttpPlugin extends classes.BasePlugin {
         response.on('end', () => {
           plugin.logger.debug('outgoingRequest on end()');
           const method = response.method ? response.method : 'GET';
-          const reqUrl = url.parse(options);
           const userAgent =
               headers ? (headers['user-agent'] || headers['User-Agent']) : null;
 
-          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, reqUrl.hostname);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, options.hostname);
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_METHOD, method);
-          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_PATH, reqUrl.pathname);
-          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ROUTE, reqUrl.path);
-          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_PATH, options.path);
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ROUTE, options.path);
+          if (userAgent) {
+            span.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent.toString());
+          }
           span.addAttribute(
               HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
               response.statusCode.toString());

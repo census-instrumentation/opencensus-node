@@ -145,7 +145,7 @@ describe('HttpsPlugin', () => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
 
         const span = rootSpanVerifier.endedRootSpans[0];
-        assertSpanAttributes(span, 200, 'GET', hostName, testPath, null);
+        assertSpanAttributes(span, 200, 'GET', hostName, testPath, undefined);
       });
     });
 
@@ -168,7 +168,7 @@ describe('HttpsPlugin', () => {
              assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
              const span = rootSpanVerifier.endedRootSpans[0];
              assertSpanAttributes(
-                 span, httpErrorCodes[i], 'GET', hostName, testPath, null);
+                 span, httpErrorCodes[i], 'GET', hostName, testPath, undefined);
            });
          });
     }
@@ -185,7 +185,7 @@ describe('HttpsPlugin', () => {
           assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
           assert.strictEqual(root.traceId, root.spans[0].traceId);
           const span = root.spans[0];
-          assertSpanAttributes(span, 200, 'GET', hostName, testPath, null);
+          assertSpanAttributes(span, 200, 'GET', hostName, testPath, undefined);
         });
       });
     });
@@ -208,7 +208,8 @@ describe('HttpsPlugin', () => {
 
                const span = root.spans[0];
                assertSpanAttributes(
-                   span, httpErrorCodes[i], 'GET', hostName, testPath, null);
+                   span, httpErrorCodes[i], 'GET', hostName, testPath,
+                   undefined);
              });
            });
          });
