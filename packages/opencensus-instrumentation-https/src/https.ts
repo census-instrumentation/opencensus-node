@@ -18,6 +18,8 @@ import {HttpPlugin} from '@opencensus/instrumentation-http';
 import {types} from '@opencensus/opencensus-core';
 import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
+import * as http from 'http';
+import * as https from 'https';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 
@@ -46,12 +48,27 @@ export class HttpsPlugin extends HttpPlugin {
           this.moduleName);
     }
 
-    // TODO: review the need to patch 'request'
-
-    shimmer.wrap(
-        this.moduleExports, 'get', this.getPatchOutgoingRequestFunction());
+    shimmer.wrap(moduleExports, 'request', this.getPatchHttpsOutgoingRequest());
 
     return this.moduleExports;
+  }
+
+  /** Patches HTTPS outgoing requests */
+  private getPatchHttpsOutgoingRequest() {
+    return (original: types.Func<http.ClientRequest>):
+               types.Func<http.ClientRequest> => {
+      const plugin = this;
+      return function httpsOutgoingRequest(
+                 options, callback): http.ClientRequest {
+        // Makes sure options will have default HTTPS parameters
+        if (typeof (options) !== 'string') {
+          options.protocol = options.protocol || 'https:';
+          options.port = options.port || 443;
+          options.agent = options.agent || https.globalAgent;
+        }
+        return (plugin.patchOutgoingRequest())(original)(options, callback);
+      };
+    };
   }
 
   /** Unpatches all HTTPS patched function. */
@@ -63,7 +80,7 @@ export class HttpsPlugin extends HttpPlugin {
               this.moduleExports.Server.prototype,
           'emit');
     }
-    shimmer.unwrap(this.moduleExports, 'get');
+    shimmer.unwrap(this.moduleExports, 'request');
   }
 }
 

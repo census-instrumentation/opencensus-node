@@ -23,6 +23,7 @@ import * as https from 'https';
 import * as mocha from 'mocha';
 import * as nock from 'nock';
 import * as shimmer from 'shimmer';
+import * as url from 'url';
 
 import {plugin} from '../src/';
 import {HttpsPlugin} from '../src/';
@@ -42,7 +43,10 @@ function doNock(
 const httpRequest = {
   get: (options: {}|string) => {
     return new Promise((resolve, reject) => {
-      return https.get(options, resp => {
+      if (typeof (options) === 'string') {
+        options = url.parse(options);
+      }
+      const req = https.request(options, resp => {
         let data = '';
         resp.on('data', chunk => {
           data += chunk;
@@ -54,6 +58,8 @@ const httpRequest = {
           reject(err);
         });
       });
+      req.end();
+      return req;
     });
   }
 };
@@ -95,9 +101,9 @@ function assertSpanAttributes(
 describe('HttpsPlugin', () => {
   const hostName = 'fake.service.io';
   const urlHost = `https://${hostName}`;
+  let serverPort = 3000;
 
   let server: https.Server;
-  let serverPort = 0;
   const log = logger.logger();
   const tracer = new classes.Tracer();
   const rootSpanVerifier = new RootSpanVerifier();
@@ -267,7 +273,7 @@ describe('HttpsPlugin', () => {
         port: serverPort,
         headers: {'User-Agent': 'Android'}
       };
-      shimmer.unwrap(https, 'get');
+      shimmer.unwrap(https, 'request');
       nock.enableNetConnect();
 
       assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
