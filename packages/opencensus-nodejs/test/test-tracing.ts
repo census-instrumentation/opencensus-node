@@ -242,4 +242,19 @@ describe('Tracing', () => {
       assert.strictEqual(tracing.tracer.eventListeners.length, 0);
     });
   });
+
+  /** Should unregister the exporter instance */
+  describe('unregisterExporter()', () => {
+    it('should unregister the exporter on tracer', () => {
+      const tracing = new Tracing();
+      tracing.start();
+      const exporter = NOOP_EXPORTER;
+      tracing.registerExporter(exporter);
+      assert.strictEqual(tracing.config.exporter, exporter);
+      assert.strictEqual(tracing.tracer.eventListeners.length, 1);
+      tracing.unregisterExporter(exporter);
+      assert.strictEqual(tracing.config.exporter, null);
+      assert.strictEqual(tracing.tracer.eventListeners.length, 0);
+    });
+  });
 });

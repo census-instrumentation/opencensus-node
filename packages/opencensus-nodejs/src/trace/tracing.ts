@@ -50,7 +50,6 @@ export class Tracing implements types.Tracing {
     return this.singletonInstance || (this.singletonInstance = new this());
   }
 
-  // TODO: tracing interface should be updated
   /** Gets active status  */
   get active(): boolean {
     return this.activeLocal;
@@ -62,9 +61,9 @@ export class Tracing implements types.Tracing {
   }
 
   /**
-   * Starts the tracing.
-   * @param userConfig A configuration object to start the tracing.
-   * @returns The started tracing.
+   * Starts tracing.
+   * @param userConfig A configuration object to start tracing.
+   * @returns The started Tracing instance.
    */
   start(userConfig?: types.Config): types.Tracing {
     this.configLocal = extend(
@@ -96,7 +95,6 @@ export class Tracing implements types.Tracing {
     this.pluginLoader.unloadPlugins();
     this.configLocal = null;
     this.logger = null;
-    // TODO: maybe some exporter logic when stop tracing
   }
 
 
@@ -108,20 +106,18 @@ export class Tracing implements types.Tracing {
 
   /**
    * Registers an exporter to send the collected traces to.
-   * @param exporter THe exporter to send the traces to.
+   * @param exporter The exporter to send the traces to.
    */
   registerExporter(exporter: types.Exporter): types.Tracing {
     if (exporter) {
       if (this.configLocal.exporter) {
-        this.unRegisterExporter(this.configLocal.exporter);
+        this.unregisterExporter(this.configLocal.exporter);
       }
       this.configLocal.exporter = exporter;
       this.tracer.registerSpanEventListener(exporter);
     } else {
-      // TODO: if unRegisterExporter go public, this logic may not be
-      // necessary - register a null to unRegister
       if (this.configLocal.exporter) {
-        this.unRegisterExporter(this.configLocal.exporter);
+        this.unregisterExporter(this.configLocal.exporter);
       }
     }
     return this;
@@ -129,16 +125,11 @@ export class Tracing implements types.Tracing {
 
 
   /**
-   * Registers an exporter to send the collected traces to.
-   * @param exporter THe exporter to send the traces to.
+   * Unregisters an exporter.
+   * @param exporter The exporter to stop sending traces to.
    */
-  // TODO: maybe this method should be added to Tracing interface
-  private unRegisterExporter(exporter: types.Exporter): types.Tracing {
-    // TODO: maybe an unRegisterEndSpanListener method should be added to Tracer
-    const index = this.tracer.eventListeners.indexOf(exporter, 0);
-    if (index > -1) {
-      this.tracer.eventListeners.splice(index, 1);
-    }
+  unregisterExporter(exporter: types.Exporter): types.Tracing {
+    this.tracer.unregisterSpanEventListener(exporter);
     this.configLocal.exporter = null;
     return this;
   }

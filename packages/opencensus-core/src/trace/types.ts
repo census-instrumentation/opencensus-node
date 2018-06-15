@@ -28,10 +28,13 @@ export interface Tracing {
   /** Service to send collected traces to. */
   readonly exporter: exportersTypes.Exporter;
 
+  /** Gets active status  */
+  active: boolean;
+
   /**
-   * Enables the tracing process.
-   * @param userConfig A configuration object.
-   * @returns The tracing object.
+   * Starts tracing.
+   * @param userConfig A configuration object to start tracing.
+   * @returns The started Tracing instance.
    */
   start(userConfig?: configTypes.Config): Tracing;
 
@@ -44,4 +47,10 @@ export interface Tracing {
    * @returns The tracing object.
    */
   registerExporter(exporter: exportersTypes.Exporter): Tracing;
+
+  /**
+   * Unregisters an exporter.
+   * @param exporter The exporter to stop sending traces to.
+   */
+  unregisterExporter(exporter: exportersTypes.Exporter): Tracing;
 }
