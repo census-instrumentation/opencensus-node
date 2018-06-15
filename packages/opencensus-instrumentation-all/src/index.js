@@ -15,4 +15,11 @@
  */
 "use strict";
 
-exports.DEFAULT_INSTRUMENTATION_MODULES = ['http', 'https'];
+exports.DEFAULT_INSTRUMENTATION_MODULES = [
+    ,'http' 
+    ,'https'
+    ,'http2'
+    ,'grpc'
+    ,'mongodb'
+];
+

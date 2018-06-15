@@ -18,8 +18,7 @@ import {classes, logger, types} from '@opencensus/opencensus-core';
 import {B3Format} from '@opencensus/propagation-b3';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
-import * as mocha from 'mocha';
-import * as shimmer from 'shimmer';
+import * as path from 'path';
 
 import {GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
 
@@ -27,6 +26,8 @@ import {GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
 const PROTO_PATH = __dirname + '/fixtures/grpc-instrumentation-test.proto';
 const grpcPort = 50051;
 const MAX_ERROR_STATUS = grpcModule.status.UNAUTHENTICATED;
+const log = logger.logger();
+
 
 const replicate = (request: TestRequestResponse) => {
   const result: TestRequestResponse[] = [];
@@ -145,25 +146,25 @@ type TestRequestResponse = {
 };
 
 const grpcClient = {
-  // tslint:disable-next-line:no-any
-  unaryMethod: (client: TestGrpcClient, request: TestRequestResponse): any => {
-    return new Promise((resolve, reject) => {
-      return client.unaryMethod(
-          request,
-          (err: grpcModule.ServiceError, response: TestRequestResponse) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(response);
-            }
-          });
-    });
-  },
+
+  unaryMethod: (client: TestGrpcClient, request: TestRequestResponse):
+      Promise<TestRequestResponse> => {
+        return new Promise((resolve, reject) => {
+          return client.unaryMethod(
+              request,
+              (err: grpcModule.ServiceError, response: TestRequestResponse) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(response);
+                }
+              });
+        });
+      },
 
 
   clientStreamMethod: (client: TestGrpcClient, request: TestRequestResponse[]):
-      // tslint:disable-next-line:no-any
-      any => {
+      Promise<TestRequestResponse> => {
         return new Promise((resolve, reject) => {
           const writeStream = client.clientStreamMethod(
               (err: grpcModule.ServiceError, response: TestRequestResponse) => {
@@ -182,8 +183,7 @@ const grpcClient = {
       },
 
   serverStreamMethod: (client: TestGrpcClient, request: TestRequestResponse):
-      // tslint:disable-next-line:no-any
-      any => {
+      Promise<TestRequestResponse[]> => {
         return new Promise((resolve, reject) => {
           const result: TestRequestResponse[] = [];
           const readStream = client.serverStreamMethod(request);
@@ -202,8 +202,7 @@ const grpcClient = {
 
 
   bidiStreamMethod: (client: TestGrpcClient, request: TestRequestResponse[]):
-      // tslint:disable-next-line:no-any
-      any => {
+      Promise<TestRequestResponse[]> => {
         return new Promise((resolve, reject) => {
           const result: TestRequestResponse[] = [];
           const bidiStream = client.bidiStreamMethod([]);
@@ -239,21 +238,21 @@ class RootSpanVerifier implements types.SpanEventListener {
 }
 
 
-describe('GrppcPlugin() ', () => {
+describe('GrpcPlugin() ', function() {
   let server: grpcModule.Server;
   let client: TestGrpcClient;
-  const log = logger.logger();
   const tracer = new classes.Tracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start({samplingRate: 1, propagation: new B3Format(), logger: log});
-  const VERSION = '1.12';
 
   it('should return a plugin', () => {
     assert.ok(plugin instanceof GrpcPlugin);
   });
 
   before(() => {
-    plugin.applyPatch(grpcModule, tracer, VERSION);
+    const basedir = path.dirname(require.resolve('grpc'));
+    const version = require(path.join(basedir, 'package.json')).version;
+    plugin.enablePluginPatch(grpcModule, tracer, version, basedir);
     tracer.registerSpanEventListener(rootSpanVerifier);
     const proto = grpcModule.load(PROTO_PATH).pkg_test;
     server = startServer(grpcModule, proto);
@@ -331,7 +330,8 @@ describe('GrppcPlugin() ', () => {
       status: grpcModule.status) {
     assert.strictEqual(span.name, spanName);
     assert.strictEqual(span.type, type);
-    assert.strictEqual(span.status, plugin.traceStatus(status));
+    assert.strictEqual(
+        span.status, GrpcPlugin.convertGrpcStatusToSpanStatus(status));
 
     assert.strictEqual(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_KIND], type);
     assert.strictEqual(
@@ -343,6 +343,7 @@ describe('GrppcPlugin() ', () => {
     }
   }
 
+  // Check if sourceSpan was propagated to targetSpan
   function assertPropagation(sourceSpan: types.Span, targetSpan: types.Span) {
     assert.strictEqual(targetSpan.traceId, sourceSpan.traceId);
     assert.strictEqual(targetSpan.parentSpanId, sourceSpan.id);
@@ -380,7 +381,6 @@ describe('GrppcPlugin() ', () => {
                          assertPropagation(clientRoot, serverRoot);
                        });
              });
-
 
           it(`should create a childSpan for client and rootSpan for server -  ${
                  method.description}`,
