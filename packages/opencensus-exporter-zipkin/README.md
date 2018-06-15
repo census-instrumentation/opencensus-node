@@ -7,7 +7,7 @@ This project is still at an early stage of development. It's subject to change.
 
 ## Installation
 
-Install OpenCensus Zipikin Exporter with:
+Install OpenCensus Zipkin Exporter with:
 ```bash
 npm install @opencensus/nodejs
 npm install @opencensus/exporter-zipkin
