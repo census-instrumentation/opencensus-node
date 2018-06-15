@@ -39,9 +39,6 @@ export class B3Format implements types.Propagation {
    * @param getter
    */
   extract(getter: types.HeaderGetter): types.SpanContext {
-    // TODO: Review this logic, maybe make it more robust.
-    // Question: are this logic valid if any of the getHeader operations returns
-    // a string[].
     if (getter) {
       const opt = getter.getHeader(X_B3_SAMPLED);
       const spanContext = {
