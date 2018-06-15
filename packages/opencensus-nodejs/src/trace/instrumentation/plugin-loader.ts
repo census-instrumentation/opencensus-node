@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {types} from '@opencensus/opencensus-core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
@@ -100,16 +100,25 @@ export class PluginLoader {
    * should implement the core Plugin interface and export an instance
    * named as "plugin". This function will attach a hook to be called
    * the first time the module is loaded.
+   *
+   * If pluginExtra is provided - (internal files not exported by default)
+   * a property 'extraPluginModules' will be added to the moduleExports passed
+   * as a parameter to the plugin. This new property maps the name chosen to
+   * represent the internal module file and its exports loaded.
+   *
    * @param pluginList A list of plugins.
+   * @param pluginExtra A Map of target modules and internal files to be patched
    */
-  loadPlugins(pluginList: types.PluginNames) {
-    // tslint:disable:no-any
+  loadPlugins(
+      pluginList: types.PluginNames,
+      pluginExtra?: types.PluginExtraFiles2Patch) {
     hook(Object.keys(pluginList), (exports, name, basedir) => {
-      const version = this.getPackageVersion(name, basedir as string);
+      const version: string = this.getPackageVersion(name, basedir as string);
       this.logger.info('trying loading %s.%s', name, version);
-      let result = exports;
+      // tslint:disable-next-line:no-any
+      let moduleExports: any = exports;
       if (!version) {
-        return result;
+        return moduleExports;
       } else {
         this.logger.debug('applying patch to %s@%s module', name, version);
         this.logger.debug(
@@ -118,17 +127,54 @@ export class PluginLoader {
         try {
           const plugin: types.Plugin = require(pluginList[name]).plugin;
           this.plugins.push(plugin);
-          result = plugin.applyPatch(exports, this.tracer, version);
+
+          if (pluginExtra) {
+            this.loadInternalFiles(
+                moduleExports, pluginExtra[name], name, basedir);
+          }
+          moduleExports =
+              plugin.applyPatch(moduleExports, this.tracer, version);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s',
               pluginList[name], name, e.message);
         }
-        return result;
+        return moduleExports;
       }
     });
   }
 
+  /**
+   * Load internal files from a module and add their exports as property
+   * 'extraPluginModules'
+   */
+  loadInternalFiles(
+      // tslint:disable-next-line:no-any
+      moduleExports: any, extraModulesList: types.PluginNames, name: string,
+      basedir: string) {
+    const extraModules: types.ExtraModuleExports = {};
+    if (extraModulesList) {
+      Object.keys(extraModulesList).map(modulename => {
+        try {
+          extraModules[modulename] =
+              require(path.join(basedir, extraModulesList[modulename]));
+        } catch (e) {
+          this.logger.error(
+              'Could not load internal file %s of module %s. Error: %s',
+              extraModulesList[modulename], name, e.message);
+        }
+      });
+    }
+    if (!moduleExports.extraPluginModules) {
+      if (extraModules) {
+        moduleExports.extraPluginModules = extraModules;
+      }
+    } else {
+      this.logger.error(
+          'Property extraPluginModules already exist in module: %s. Could not set extra plugins',
+          name);
+    }
+  }
 
   /** Unloads plugins. */
   unloadPlugins() {

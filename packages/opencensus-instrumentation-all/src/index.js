@@ -15,4 +15,13 @@
  */
 "use strict";
 
-exports.DEFAULT_INSTRUMENTATION_MODULES = ['http', 'https'];
+exports.DEFAULT_INSTRUMENTATION_MODULES = [
+    'http'
+    ,'https'
+    ,'http2'
+    ,'mongodb'
+];
+
+exports.EXTRA_INSTRUMENTATION = {
+    'grpc':{'client':'src/client.js','metadata':'src/metadata.js'}
+};

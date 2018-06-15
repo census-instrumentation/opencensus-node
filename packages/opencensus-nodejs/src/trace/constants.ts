@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {DEFAULT_INSTRUMENTATION_MODULES} from '@opencensus/instrumentation-all';
+import {DEFAULT_EXTRA_INSTRUMENTATION, DEFAULT_INSTRUMENTATION_MODULES} from '@opencensus/instrumentation-all';
 
 
 /** General purpose constants. */
@@ -25,6 +25,8 @@ const constants = {
   DEFAULT_BUFFER_TIMEOUT: 20000,
   /** Default list of target modules to be instrumented */
   DEFAULT_INSTRUMENTATION_MODULES,
+  /** Extra instrumentation file list */
+  DEFAULT_EXTRA_INSTRUMENTATION,
   /** Opencensus Scope */
   OPENCENSUS_SCOPE: '@opencensus',
   /** Defult prefix for instrumentation modules */
