@@ -197,7 +197,7 @@ export abstract class SpanBase implements types.Span {
       return;
     }
     if (!this.started) {
-      this.logger.debug(
+      this.logger.error(
           'calling %s.end() on un-started %s %o', this.className,
           this.className, {id: this.id, name: this.name, type: this.kind});
       return;

@@ -27,9 +27,6 @@ export class ConsoleLogger implements types.Logger {
   static LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
   level: string;
 
-
-  // TODO: reevaluate options to accept numbers as a parameter
-
   /**
    * Constructs a new ConsoleLogger instance
    * @param options A logger configuration object.
@@ -103,10 +100,6 @@ export class ConsoleLogger implements types.Logger {
     this.logger.silly(util.format(message, ...args));
   }
 }
-
-
-// TODO: reevaluate the need to create a new logger instance on every call to
-// logger();
 
 /**
  *  Function logger exported to others classes.

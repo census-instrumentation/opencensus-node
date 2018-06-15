@@ -78,7 +78,6 @@ export abstract class BasePlugin implements types.Plugin {
     this.internalFilesExports = this.loadInternalFiles();
   }
 
-
   /**
    * Method that enables the instrumentation patch.
    *

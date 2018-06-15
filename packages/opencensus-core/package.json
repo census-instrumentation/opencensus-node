@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "@types/continuation-local-storage": "^3.2.1",
-    "@types/debug": "0.0.30",
     "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.7",
     "@types/semver": "^5.5.0",
@@ -54,8 +53,6 @@
   },
   "dependencies": {
     "continuation-local-storage": "^3.2.1",
-    "debug": "^3.1.0",
-    "intercept-stdout": "^0.1.2",
     "log-driver": "^1.2.7",
     "semver": "^5.5.0",
     "shimmer": "^1.2.0",
