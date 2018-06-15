@@ -14,27 +14,38 @@
  * limitations under the License.
  */
 
+import {types} from '@opencensus/opencensus-core';
 import * as express from 'express';
 
-import * as traceConfigzController from './controllers/traceconfigz.controller';
-import * as tracezController from './controllers/tracez.controller';
+import {ZpagesExporter} from '../zpages';
 
-const router = express.Router();
+import {createTraceConfigzHandler} from './controllers/traceconfigz.controller';
+import {createTracezHandler} from './controllers/tracez.controller';
 
-// Tracez Page
-router.get('/tracez', tracezController.home);
+/**
+ * Create a set of routes that consults the given TraceMap instance for span
+ * data.
+ * @param traceMap A span data store.
+ */
+export function createRoutes(traceMap: Map<string, types.Span[]>):
+    express.Router {
+  const router = express.Router();
 
-// Trace Config Page
-router.get('/traceconfigz', traceConfigzController.home);
+  // Tracez Page
+  router.get('/tracez', createTracezHandler(traceMap));
 
-// RPC Stats Page
-router.get('/rpcz', (req: express.Request, res: express.Response) => {
-  res.status(200).send('working!');  // TODO
-});
+  // Trace Config Page
+  router.get('/traceconfigz', createTraceConfigzHandler());
 
-// Stats Page
-router.get('/statsz', (req: express.Request, res: express.Response) => {
-  res.status(200).send('working!');  // TODO
-});
+  // RPC Stats Page
+  router.get('/rpcz', (req: express.Request, res: express.Response) => {
+    res.status(200).send('working!');  // TODO
+  });
 
-module.exports = router;
+  // Stats Page
+  router.get('/statsz', (req: express.Request, res: express.Response) => {
+    res.status(200).send('working!');  // TODO
+  });
+
+  return router;
+}
