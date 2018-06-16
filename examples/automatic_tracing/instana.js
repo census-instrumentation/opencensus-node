@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-var tracing = require('@opencensus/nodejs');
-var instana = require('@opencensus/exporter-instana');
-var logger = require('@opencensus/opencensus-core').logger;
+const tracing = require('@opencensus/nodejs');
+const instana = require('@opencensus/exporter-instana');
 
-tracing.start({
-    exporter: new instana.InstanaTraceExporter({
-        logger: logger.logger({
-            level: 'debug'
-        })
-    }),
-});
+const exporter = new instana.InstanaTraceExporter();
 
-var http = require('http');
-http.createServer(function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.write('Hello World!');
-    res.end();
+tracing.start({exporter});
+
+// example application
+const http = require('http');
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.write('Hello World!');
+  res.end();
 }).listen(8080);

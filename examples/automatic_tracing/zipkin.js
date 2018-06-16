@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-var tracing = require('opencensus-nodejs');
-var zipkin = require('@opencensus/opencensus-exporter-zipkin');
+const tracing = require('@opencensus/nodejs');
+const zipkin = require('@opencensus/exporter-zipkin');
 
 // Add your zipkin url and service name to the Zipkin options
-var options = {
+const options = {
   url: 'your-zipkin-url',
   serviceName: 'your-service-name'
-}
-var exporter = new zipkin.ZipkinTraceExporter(options);
+};
+const exporter = new zipkin.ZipkinTraceExporter(options);
 
-tracing.start({'exporter': exporter});
+tracing.start({exporter});
 
-var http = require('http');
-http.createServer(function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.write('Hello World!');
-    res.end();
+// example application
+const http = require('http');
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.write('Hello World!');
+  res.end();
 }).listen(8080);

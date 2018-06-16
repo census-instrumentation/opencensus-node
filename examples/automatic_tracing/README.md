@@ -26,48 +26,9 @@ http.createServer(function (req, res) {
 }).listen(8080);
 ```
 
-### Using Stackdriver Exporter
+### Using Exporters
 
-To use Stackdriver as your exporter, make sure you have enabled [Stackdriver Tracing](https://cloud.google.com/trace/docs/quickstart) on Google Cloud Platform. Enable your [Application Default Credentials](https://cloud.google.com/docs/authentication/getting-started) for authentication with:
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=path/to/your/credential.json
-```
-
-In your code, instanciate a Stackdriver Exporter and pass it to `tracing.start()`.
-
-```javascript
-var stackdriver = require('@opencensus/exporter-stackdriver');
-
-// Add your project id to the Stackdriver options
-exporter = new stackdriver.StackdriverTraceExporter({projectId: "your-project-id"});
-
-tracing.start({'exporter': exporter});
-```
-
-### Using Zipkin Exporter
-
-To use Zipkin as your exporter, first, download from any of the three available options on [Quickstart](https://zipkin.io/pages/quickstart.html): through Docker, on Java or manually compiling the source code. Tests were executed running Zipkin with Java, through the following commands on terminal:
-
-```bash
-    wget -O zipkin.jar 'https://search.maven.org/remote_content?g=io.zipkin.java&a=zipkin-server&v=LATEST&c=exec'
-    java -jar zipkin.jar
-```
-
-In your code, instanciate a Zipkin Exporter and pass it to `tracing.start()`.
-
-```javascript
-var zipkin = require('@opencensus/exporter-zipkin');
-
-// Add your zipkin url and service name to the Zipkin options
-var options = {
-  url: 'your-zipkin-url',
-  serviceName: 'your-service-name'
-}
-var exporter = new zipkin.ZipkinTraceExporter(options);
-
-tracing.start({'exporter': exporter});
-```
+OpenCensus is vendor-agnostic and can upload data to any backend with various exporter implementations. Even though, OpenCensus provides support for many backends, users can also implement their own exporters for proprietary and unofficially supported backends. Refer to the `README.md` of the [exporters](https://github.com/census-instrumentation/opencensus-node/blob/master/README.md#exporters) to learn more.
 
 ## Running the Instrumented Application
 

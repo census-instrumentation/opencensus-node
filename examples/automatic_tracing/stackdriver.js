@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-var tracing = require('opencensus-nodejs');
-var stackdriver = require('@opencensus/opencensus-exporter-stackdriver');
+const tracing = require('@opencensus/nodejs');
+const stackdriver = require('@opencensus/exporter-stackdriver');
 
 // Add your project id to the Stackdriver options
-exporter = new stackdriver.StackdriverTraceExporter({projectId: "your-project-id"});
+const exporter = new stackdriver.StackdriverTraceExporter({projectId: "your-project-id"});
 
-tracing.start({'exporter': exporter});
+tracing.start({exporter});
 
-var http = require('http');
-http.createServer(function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.write('Hello World!');
-    res.end();
+// example application
+const http = require('http');
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.write('Hello World!');
+  res.end();
 }).listen(8080);
