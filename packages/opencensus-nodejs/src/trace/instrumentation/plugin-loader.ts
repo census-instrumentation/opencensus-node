@@ -118,7 +118,7 @@ export class PluginLoader {
         try {
           const plugin: types.Plugin = require(pluginList[name]).plugin;
           this.plugins.push(plugin);
-          result = plugin.applyPatch(exports, this.tracer, version);
+          result = plugin.applyPatch(exports, this.tracer, version, basedir);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s',

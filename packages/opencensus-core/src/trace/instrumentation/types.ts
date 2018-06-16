@@ -25,7 +25,9 @@ export interface Plugin {
    * @param version version of the current instaled module to patch
    */
   // tslint:disable:no-any
-  applyPatch(moduleExports: any, tracer: Tracer, version: string): any;
+  applyPatch(
+      moduleExports: any, tracer: Tracer, version: string,
+      basedir?: string): any;
   /** Method to unpatch the instrumentation  */
   applyUnpatch(): void;
 }
@@ -38,4 +40,19 @@ export interface Plugin {
  */
 export type PluginNames = {
   [pluginName: string]: string;
+};
+
+/**
+ * Each key should be the name of the module to trace, and its value
+ * a mapping of a property name to a internal plugin file name.
+ */
+export type PluginInternalFiles = {
+  [versions: string]: PluginNames;
+};
+
+/**
+ * Maps a name (key) representing a internal file module and its exports
+ */
+export type ModuleExports = {
+  [key: string]: any;
 };

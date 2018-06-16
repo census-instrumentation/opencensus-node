@@ -28,7 +28,6 @@ export class MongoDBPlugin extends classes.BasePlugin {
   private readonly SERVER_FNS = ['insert', 'update', 'remove', 'auth'];
   private readonly CURSOR_FNS_FIRST = ['_find', '_getmore'];
   private readonly SPAN_MONGODB_QUERY_TYPE = 'db.mongodb.query';
-  private logger: types.Logger;
 
   /** Constructs a new MongoDBPlugin instance. */
   constructor(moduleName: string) {

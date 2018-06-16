@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as shimmer from 'shimmer';
+import * as path from 'path';
+import * as semver from 'semver';
+
+import {logger} from '../../common/console-logger';
+import {Logger} from '../../common/types';
 import * as modelTypes from '../model/types';
+
 import * as types from './types';
+
 
 // TODO: improve Jsdoc comments
 
@@ -30,6 +36,14 @@ export abstract class BasePlugin implements types.Plugin {
   protected tracer: modelTypes.Tracer;
   /** The module version. */
   protected version: string;
+  /** a logger */
+  protected logger: Logger;
+  /** list of internal files that need patch and are not exported by default */
+  protected internalFileList: types.PluginInternalFiles;
+  /**  internal files loaded */
+  protected internalFilesExports: types.ModuleExports;
+  /** module directory - used to load internal files */
+  protected basedir: string;
 
   /**
    * Constructs a new BasePlugin instance.
@@ -47,10 +61,14 @@ export abstract class BasePlugin implements types.Plugin {
    */
   // tslint:disable:no-any
   protected setPluginContext(
-      moduleExports: any, tracer: modelTypes.Tracer, version: string) {
+      moduleExports: any, tracer: modelTypes.Tracer, version: string,
+      basedir?: string) {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
+    this.basedir = basedir;
+    this.logger = tracer.logger || logger.logger();
+    this.internalFilesExports = this.loadInternalFiles();
   }
 
 
@@ -60,10 +78,59 @@ export abstract class BasePlugin implements types.Plugin {
   // while unpatching is not. It should be the other way around
 
   // tslint:disable:no-any
-  applyPatch(moduleExports: any, tracer: modelTypes.Tracer, version: string):
-      any {
-    this.setPluginContext(moduleExports, tracer, version);
+  applyPatch(
+      moduleExports: any, tracer: modelTypes.Tracer, version: string,
+      basedir?: string): any {
+    this.setPluginContext(moduleExports, tracer, version, basedir);
   }
 
   abstract applyUnpatch(): void;
+
+
+  /**
+   * Load internal files according to version range
+   */
+  private loadInternalFiles(): types.ModuleExports {
+    let result: types.ModuleExports = null;
+    this.logger.debug('loadInternalFiles %o', this.internalFileList);
+    if (this.internalFileList) {
+      Object.keys(this.internalFileList).map(versionRange => {
+        if (semver.satisfies(this.version, versionRange)) {
+          result = this.loadInternalModuleFiles(
+              this.internalFileList[versionRange], this.basedir);
+        }
+        if (!result) {
+          this.logger.debug(
+              'No internal file could be loaded for %s@%s', this.moduleName,
+              this.version);
+        }
+      });
+    }
+    return result;
+  }
+
+
+  /**
+   * Load internal files from a module and  set internalFilesExports
+   */
+  private loadInternalModuleFiles(
+      extraModulesList: types.PluginNames,
+      basedir: string): types.ModuleExports {
+    const extraModules: types.ModuleExports = {};
+    if (extraModulesList) {
+      Object.keys(extraModulesList).map(modulename => {
+        try {
+          this.logger.debug('loading File %s', extraModulesList[modulename]);
+          extraModules[modulename] =
+              require(path.join(basedir, extraModulesList[modulename]));
+        } catch (e) {
+          this.logger.error(
+              'Could not load internal file %s of module %s. Error: %s',
+              path.join(basedir, extraModulesList[modulename]), this.moduleName,
+              e.message);
+        }
+      });
+    }
+    return extraModules;
+  }
 }
