@@ -15,3 +15,5 @@
  */
 
 export declare const DEFAULT_INSTRUMENTATION_MODULES: string[];
+
+export declare const DEFAULT_EXTRA_INSTRUMENTATION : {};

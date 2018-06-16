@@ -29,6 +29,7 @@ export const defaultConfig = {
   logLevel: 1,
   maximumLabelValueSize: 150,
   plugins: {},
+  pluginsExtra: Constants.DEFAULT_EXTRA_INSTRUMENTATION,
   bufferSize: Constants.DEFAULT_BUFFER_SIZE,
   bufferTimeout: Constants.DEFAULT_BUFFER_TIMEOUT,
   samplingRate: 1

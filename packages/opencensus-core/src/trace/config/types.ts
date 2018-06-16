@@ -16,7 +16,7 @@
 
 import {Logger} from '../../common/types';
 import {Exporter} from '../../exporters/types';
-import {PluginNames} from '../instrumentation/types';
+import {PluginExtraFiles2Patch, PluginNames} from '../instrumentation/types';
 import {Propagation} from '../propagation/types';
 
 /** Interface configuration for a buffer. */
@@ -59,13 +59,31 @@ export interface TracingConfig {
    * Ex.:
    * plugins: {
    *  'http': '@opencensus/opencensus-instrumentation-http',
-   *  'mongodb-core': '@opencensus/opencensus-instrumentation-mongodb-core',
+   *  'mongodb': '@opencensus/opencensus-instrumentation-mongodb',
+   *  'grpc': '@opencensus/opencensus-instrumentation-grpc',
    *   ...
    * }
    * Any user-provided value will be added to the default list.
    * It will override any default plugin for the same key.
    */
   plugins?: PluginNames;
+  /**
+   * Sometimes, there is a need to patch internal module files that are not
+   * exported by default.
+   *
+   * In those cases, those files can be set using this config property.  A name
+   * should be provided to be mapped to the file path. This path should be a
+   * relative path considering the main index file directory.
+   *
+   * Ex.: (internal files for grpc plugin that need patch)
+   *
+   *  pluginsExtra: {
+   *      'grpc':{'client':'src/client.js','metadata':'src/metadata.js'
+   *       ...
+   * }
+   *
+   */
+  pluginsExtra?: PluginExtraFiles2Patch;
   /** An exporter object */
   exporter?: Exporter;
   /** An instance of a logger  */

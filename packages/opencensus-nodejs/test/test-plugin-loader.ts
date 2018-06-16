@@ -16,13 +16,12 @@
 
 import {classes, types} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
-
 import * as assert from 'assert';
-import {isArray} from 'util';
+import * as path from 'path';
 
 import {Constants} from '../src/trace/constants';
 import {PluginLoader} from '../src/trace/instrumentation/plugin-loader';
-import {Tracing} from '../src/trace/tracing';
+
 
 // TODO: Clarify requirement regarding instrumentation of nodejs core modules
 // for Opencensus
@@ -35,12 +34,16 @@ const TEST_MODULES = [
   'http'                 // this module does not have a plugin
 ];
 
+const EXTRA_INSTRUMENTATION: types.ExtraModuleExports = {
+  'simple-module': {'extra-module': 'src/extra-module'}
+};
+
 const clearRequireCache = () => {
   Object.keys(require.cache).forEach(key => delete require.cache[key]);
 };
 
 describe('Plugin Loader', () => {
-  const log = logger.logger('error');
+  const log = logger.logger();
 
   before(() => {
     module.paths.push(INSTALLED_PLUGINS_PATH);
@@ -96,6 +99,24 @@ describe('Plugin Loader', () => {
         assert.strictEqual(pluginLoader.plugins.length, 1);
         assert.strictEqual(simpleModule.name(), 'patched-' + TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 101);
+      });
+
+      it('should load and patch extra plugin file', () => {
+        const pluginLoader = new PluginLoader(log, tracer);
+        assert.strictEqual(pluginLoader.plugins.length, 0);
+        pluginLoader.loadPlugins(plugins, EXTRA_INSTRUMENTATION);
+        const modulename = TEST_MODULES[0];
+        const simpleModule = require(modulename);
+        assert.strictEqual(pluginLoader.plugins.length, 1);
+        assert.strictEqual(simpleModule.name(), 'patched-' + modulename);
+        assert.strictEqual(simpleModule.value(), 101);
+
+        const extraModuleName = 'extra-module';
+        const indexPath = path.dirname(require.resolve(modulename));
+        const extraFile = EXTRA_INSTRUMENTATION[modulename][extraModuleName];
+        const extraModule = require(path.join(indexPath, extraFile));
+        assert.strictEqual(extraModule.name(), 'patched-' + extraModuleName);
+        assert.strictEqual(extraModule.value(), 121);
       });
 
       it('should not load a non existing plugin and just log an erro', () => {
