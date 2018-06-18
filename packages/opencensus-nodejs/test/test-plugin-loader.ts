@@ -25,9 +25,13 @@ import {PluginLoader} from '../src/trace/instrumentation/plugin-loader';
 
 const INSTALLED_PLUGINS_PATH = `${__dirname}/instrumentation/node_modules`;
 const TEST_MODULES = [
-  'simple-module',       // this module exist and has a plugin
-  'nonexistent-module',  // this module does not exist
-  'http'                 // this module does not have a plugin
+  'simple-module'  // this module exist and has a plugin
+  ,
+  'nonexistent-module'  // this module does not exist
+  ,
+  'http'  // this module does not have a plugin
+  ,
+  'load-internal-file-module'  // this module has an internal file not exported
 ];
 
 
@@ -36,7 +40,7 @@ const clearRequireCache = () => {
 };
 
 describe('Plugin Loader', () => {
-  const log = logger.logger();
+  const log = logger.logger(4);
 
   before(() => {
     module.paths.push(INSTALLED_PLUGINS_PATH);
@@ -51,6 +55,7 @@ describe('Plugin Loader', () => {
   describe('PluginLoader', () => {
     const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
     const tracer = new classes.Tracer();
+    tracer.start({logger: log});
 
     /** Should get the plugins to use. */
     describe('static defaultPluginsFromArray()', () => {
@@ -59,6 +64,7 @@ describe('Plugin Loader', () => {
         assert.ok(plugins[TEST_MODULES[0]]);
         assert.ok(plugins[TEST_MODULES[1]]);
         assert.ok(plugins[TEST_MODULES[2]]);
+        assert.ok(plugins[TEST_MODULES[3]]);
         assert.strictEqual(
             plugins[TEST_MODULES[0]],
             `@opencensus/${
@@ -71,6 +77,11 @@ describe('Plugin Loader', () => {
         assert.strictEqual(
             plugins[TEST_MODULES[2]],
             `@opencensus/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-http`);
+        assert.strictEqual(
+            plugins[TEST_MODULES[3]],
+            `@opencensus/${
+                Constants
+                    .DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-load-internal-file-module`);
       });
     });
 
@@ -98,19 +109,21 @@ describe('Plugin Loader', () => {
         const pluginLoader = new PluginLoader(log, tracer);
         assert.strictEqual(pluginLoader.plugins.length, 0);
         pluginLoader.loadPlugins(plugins);
-        const modulename = TEST_MODULES[0];
-        const simpleModule = require(modulename);
+        const moduleName = TEST_MODULES[3];
+        const loadInternalFileModule = require(moduleName);
         assert.strictEqual(pluginLoader.plugins.length, 1);
-        assert.strictEqual(simpleModule.name(), 'patched-' + modulename);
-        assert.strictEqual(simpleModule.value(), 101);
+        assert.strictEqual(
+            loadInternalFileModule.name(), 'patched-' + moduleName);
+        assert.strictEqual(loadInternalFileModule.value(), 111);
 
         const extraModuleName = 'extra-module';
-        const indexPath = path.dirname(require.resolve(modulename));
+        const indexPath = path.dirname(require.resolve(moduleName));
         const extraFile = 'src/extra-module';
         const extraModule = require(path.join(indexPath, extraFile));
         assert.strictEqual(extraModule.name(), 'patched-' + extraModuleName);
         assert.strictEqual(extraModule.value(), 121);
       });
+
 
       it('should not load a non existing plugin and just log an erro', () => {
         const intercept = require('intercept-stdout');
@@ -143,7 +156,7 @@ describe('Plugin Loader', () => {
       });
     });
 
-    /** Should load/unload end-user (non-default named) plugin. */
+    // Should load/unload end-user (non-default named) plugin.
     describe('load/unload end-user pluging', () => {
       it('should load/unload patch/unpatch end-user plugins', () => {
         const pluginLoader = new PluginLoader(log, tracer);

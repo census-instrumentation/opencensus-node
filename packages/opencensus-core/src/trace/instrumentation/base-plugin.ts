@@ -22,8 +22,14 @@ import * as modelTypes from '../model/types';
 
 import * as types from './types';
 
+/**
+ * Maps a name (key) representing a internal file module and its exports
+ */
+export type ModuleExportsMapping = {
+  // tslint:disable:no-any
+  [key: string]: any;
+};
 
-// TODO: improve Jsdoc comments
 
 /** This class represent the base to patch plugin. */
 export abstract class BasePlugin implements types.Plugin {
@@ -39,9 +45,9 @@ export abstract class BasePlugin implements types.Plugin {
   /** a logger */
   protected logger: Logger;
   /** list of internal files that need patch and are not exported by default */
-  protected internalFileList: types.PluginInternalFiles;
+  protected readonly internalFileList: types.PluginInternalFiles;
   /**  internal files loaded */
-  protected internalFilesExports: types.ModuleExports;
+  protected internalFilesExports: ModuleExportsMapping;
   /** module directory - used to load internal files */
   protected basedir: string;
 
@@ -58,43 +64,63 @@ export abstract class BasePlugin implements types.Plugin {
    * @param moduleExports nodejs module exports to set as context
    * @param tracer tracer relating to context
    * @param version module version description
+   * @param basedir module absolute path
    */
   // tslint:disable:no-any
-  protected setPluginContext(
+  private setPluginContext(
       moduleExports: any, tracer: modelTypes.Tracer, version: string,
       basedir?: string) {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
     this.basedir = basedir;
-    this.logger = tracer.logger || logger.logger();
+    this.logger = tracer.logger;
     this.internalFilesExports = this.loadInternalFiles();
   }
 
 
-  // TODO: review this implementation
-  // From the perspective of an instrumentation module author,
-  // that applyUnpatch is abstract makes it seem like patching is optional,
-  // while unpatching is not. It should be the other way around
-
-  // tslint:disable:no-any
-  applyPatch(
+  /**
+   * Method to apply the instrumentation patch.
+   *
+   * GoF Template Method Pattern - this is the invariant part of the patthern
+   *
+   * @param moduleExports nodejs module exports from the module to patch
+   * @param tracer a tracer instance
+   * @param version version of the current instaled module to patch
+   * @param basedir module absolute path
+   */
+  applyPluginPatch(
+      // tslint:disable:no-any
       moduleExports: any, tracer: modelTypes.Tracer, version: string,
-      basedir?: string): any {
+      basedir: string) {
     this.setPluginContext(moduleExports, tracer, version, basedir);
+    return this.applyPatch();
   }
 
-  abstract applyUnpatch(): void;
+
+  applyPluginUnPatch() {
+    this.applyUnpatch();
+  }
+
+  /**
+   * applyPatch() and applyUnpatch()
+   *
+   * GoF Template Method Pattern - this is the variant part of the pattern
+   * Each plugin should implement his own version
+   */
+  // tslint:disable:no-any
+  protected abstract applyPatch(): any;
+  protected abstract applyUnpatch(): void;
 
 
   /**
    * Load internal files according to version range
    */
-  private loadInternalFiles(): types.ModuleExports {
-    let result: types.ModuleExports = null;
-    this.logger.debug('loadInternalFiles %o', this.internalFileList);
+  private loadInternalFiles(): ModuleExportsMapping {
+    let result: ModuleExportsMapping = null;
     if (this.internalFileList) {
-      Object.keys(this.internalFileList).map(versionRange => {
+      this.logger.debug('loadInternalFiles %o', this.internalFileList);
+      Object.keys(this.internalFileList).forEach(versionRange => {
         if (semver.satisfies(this.version, versionRange)) {
           result = this.loadInternalModuleFiles(
               this.internalFileList[versionRange], this.basedir);
@@ -115,18 +141,18 @@ export abstract class BasePlugin implements types.Plugin {
    */
   private loadInternalModuleFiles(
       extraModulesList: types.PluginNames,
-      basedir: string): types.ModuleExports {
-    const extraModules: types.ModuleExports = {};
+      basedir: string): ModuleExportsMapping {
+    const extraModules: ModuleExportsMapping = {};
     if (extraModulesList) {
-      Object.keys(extraModulesList).map(modulename => {
+      Object.keys(extraModulesList).forEach(moduleName => {
         try {
-          this.logger.debug('loading File %s', extraModulesList[modulename]);
-          extraModules[modulename] =
-              require(path.join(basedir, extraModulesList[modulename]));
+          this.logger.debug('loading File %s', extraModulesList[moduleName]);
+          extraModules[moduleName] =
+              require(path.join(basedir, extraModulesList[moduleName]));
         } catch (e) {
           this.logger.error(
               'Could not load internal file %s of module %s. Error: %s',
-              path.join(basedir, extraModulesList[modulename]), this.moduleName,
+              path.join(basedir, extraModulesList[moduleName]), this.moduleName,
               e.message);
         }
       });

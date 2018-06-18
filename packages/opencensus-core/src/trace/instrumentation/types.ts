@@ -23,13 +23,15 @@ export interface Plugin {
    * @param moduleExports nodejs module exports from the module to patch
    * @param tracer a tracer instance
    * @param version version of the current instaled module to patch
+   * @param basedir module absolute path
    */
-  // tslint:disable:no-any
-  applyPatch(
+  applyPluginPatch(
+      // tslint:disable-next-line:no-any
       moduleExports: any, tracer: Tracer, version: string,
+      // tslint:disable-next-line:no-any
       basedir?: string): any;
   /** Method to unpatch the instrumentation  */
-  applyUnpatch(): void;
+  applyPluginUnPatch(): void;
 }
 
 
@@ -48,11 +50,4 @@ export type PluginNames = {
  */
 export type PluginInternalFiles = {
   [versions: string]: PluginNames;
-};
-
-/**
- * Maps a name (key) representing a internal file module and its exports
- */
-export type ModuleExports = {
-  [key: string]: any;
 };
