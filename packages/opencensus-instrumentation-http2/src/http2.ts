@@ -42,28 +42,22 @@ export class Http2Plugin extends HttpPlugin {
 
   /**
    * Patches HTTP2 incoming and outcoming request functions.
-   * @param moduleExporters The HTTP2 package.
-   * @param tracer A tracer instance to create spans on.
-   * @param version The package version.
    */
-  // tslint:disable-next-line:no-any
-  applyPatch(moduleExports: any, tracer: types.Tracer, version: string) {
-    this.setPluginContext(moduleExports, tracer, version);
-    this.logger = tracer.logger || logger.logger('debug');
-
+  protected applyPatch() {
     shimmer.wrap(
-        moduleExports, 'createServer', this.getPatchCreateServerFunction());
+        this.moduleExports, 'createServer',
+        this.getPatchCreateServerFunction());
     shimmer.wrap(
-        moduleExports, 'createSecureServer',
+        this.moduleExports, 'createSecureServer',
         this.getPatchCreateServerFunction());
 
-    shimmer.wrap(moduleExports, 'connect', this.getPatchConnectFunction());
+    shimmer.wrap(this.moduleExports, 'connect', this.getPatchConnectFunction());
 
-    return moduleExports;
+    return this.moduleExports;
   }
 
   /** Unpatches all HTTP2 patched function. */
-  applyUnpatch(): void {
+  protected applyUnpatch(): void {
     // Only Client and Server constructors will be unwrapped. Any existing
     // Client or Server instances will still trace
     shimmer.unwrap(this.moduleExports, 'createServer');
