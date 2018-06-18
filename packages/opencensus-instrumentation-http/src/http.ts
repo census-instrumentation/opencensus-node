@@ -44,7 +44,6 @@ export class HttpPlugin extends classes.BasePlugin {
   static ATTRIBUTE_HTTP_ERROR_NAME = 'http.error_name';
   static ATTRIBUTE_HTTP_ERROR_MESSAGE = 'http.error_message';
 
-  logger: types.Logger;
 
   /** Constructs a new HttpPlugin instance. */
   constructor(moduleName: string) {
@@ -54,31 +53,24 @@ export class HttpPlugin extends classes.BasePlugin {
 
   /**
    * Patches HTTP incoming and outcoming request functions.
-   * @param moduleExports The http module exports
-   * @param tracer A tracer instance to create spans on.
-   * @param version The package version.
    */
-  // tslint:disable-next-line:no-any
-  applyPatch(moduleExports: HttpModule, tracer: types.Tracer, version: string) {
-    this.setPluginContext(moduleExports, tracer, version);
-    this.logger = tracer.logger || logger.logger('debug');
-
+  protected applyPatch() {
     this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
 
     shimmer.wrap(
-        moduleExports, 'request', this.getPatchOutgoingRequestFunction());
+        this.moduleExports, 'request', this.getPatchOutgoingRequestFunction());
 
     // In Node 8, http.get calls a private request method, therefore we patch it
     // here too.
-    if (semver.satisfies(version, '>=8.0.0')) {
+    if (semver.satisfies(this.version, '>=8.0.0')) {
       shimmer.wrap(
-          moduleExports, 'get', this.getPatchOutgoingRequestFunction());
+          this.moduleExports, 'get', this.getPatchOutgoingRequestFunction());
     }
 
-    if (moduleExports && moduleExports.Server &&
-        moduleExports.Server.prototype) {
+    if (this.moduleExports && this.moduleExports.Server &&
+        this.moduleExports.Server.prototype) {
       shimmer.wrap(
-          moduleExports.Server.prototype, 'emit',
+          this.moduleExports.Server.prototype, 'emit',
           this.getPatchIncomingRequestFunction());
     } else {
       this.logger.error(
@@ -86,12 +78,12 @@ export class HttpPlugin extends classes.BasePlugin {
           this.moduleName);
     }
 
-    return moduleExports;
+    return this.moduleExports;
   }
 
 
   /** Unpatches all HTTP patched function. */
-  applyUnpatch(): void {
+  protected applyUnpatch(): void {
     shimmer.unwrap(this.moduleExports, 'request');
     if (semver.satisfies(this.version, '>=8.0.0')) {
       shimmer.unwrap(this.moduleExports, 'get');
