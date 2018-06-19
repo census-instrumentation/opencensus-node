@@ -108,7 +108,7 @@ describe('HttpsPlugin', () => {
   });
 
   before(() => {
-    plugin.applyPluginPatch(https, tracer, VERSION, null);
+    plugin.enable(https, tracer, VERSION, null);
     tracer.registerSpanEventListener(rootSpanVerifier);
     server = https.createServer(httpsOptions, (request, response) => {
       response.end('Test Server Response');
@@ -289,7 +289,7 @@ describe('HttpsPlugin', () => {
   /** Should not intercept incoming and outgoing requests */
   describe('applyUnpatch()', () => {
     it('should not create a root span for incoming requests', async () => {
-      plugin.applyPluginUnPatch();
+      plugin.disable();
       const testPath = '/incoming/unpatch/';
 
       const options = {host: 'localhost', path: testPath, port: serverPort};

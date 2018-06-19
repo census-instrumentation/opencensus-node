@@ -100,7 +100,7 @@ describe('Http2Plugin', () => {
   before(() => {
     tracer.registerSpanEventListener(rootSpanVerifier);
 
-    plugin.applyPluginPatch(http2, tracer, VERSION, null);
+    plugin.enable(http2, tracer, VERSION, null);
     server = http2.createServer();
     server.on('stream', (stream, requestHeaders) => {
       const statusCode = requestHeaders[':path'].length > 1 ?

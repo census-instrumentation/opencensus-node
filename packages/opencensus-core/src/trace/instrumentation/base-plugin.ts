@@ -80,16 +80,18 @@ export abstract class BasePlugin implements types.Plugin {
 
 
   /**
-   * Method to apply the instrumentation patch.
+   * Method that enables the instrumentation patch.
    *
-   * GoF Template Method Pattern - this is the invariant part of the patthern
+   * This method implements the GoF Template Method Pattern
+   * 'enable' is the invariant part of the pattern and
+   * 'applyPatch' the variant.
    *
    * @param moduleExports nodejs module exports from the module to patch
    * @param tracer a tracer instance
    * @param version version of the current instaled module to patch
    * @param basedir module absolute path
    */
-  applyPluginPatch(
+  enable(
       // tslint:disable:no-any
       moduleExports: any, tracer: modelTypes.Tracer, version: string,
       basedir: string) {
@@ -97,16 +99,17 @@ export abstract class BasePlugin implements types.Plugin {
     return this.applyPatch();
   }
 
-
-  applyPluginUnPatch() {
+  /** Method to disable the instrumentation  */
+  disable() {
     this.applyUnpatch();
   }
 
   /**
-   * applyPatch() and applyUnpatch()
+   * This method implements the GoF Template Method Pattern,
+   * 'applyPatch' is the variant part, each instrumentation should
+   * implement its own version, 'enable' method is the invariant.
+   * Wil be called when enable is called.
    *
-   * GoF Template Method Pattern - this is the variant part of the pattern
-   * Each plugin should implement his own version
    */
   // tslint:disable:no-any
   protected abstract applyPatch(): any;
@@ -122,16 +125,23 @@ export abstract class BasePlugin implements types.Plugin {
       this.logger.debug('loadInternalFiles %o', this.internalFileList);
       Object.keys(this.internalFileList).forEach(versionRange => {
         if (semver.satisfies(this.version, versionRange)) {
+          if (result) {
+            this.logger.warn(
+                'Plugin for %s@%s, has overlap version range (%s) for internal files: %o',
+                this.moduleName, this.version, versionRange,
+                this.internalFileList);
+          }
           result = this.loadInternalModuleFiles(
               this.internalFileList[versionRange], this.basedir);
         }
-        if (!result) {
-          this.logger.debug(
-              'No internal file could be loaded for %s@%s', this.moduleName,
-              this.version);
-        }
       });
+      if (!result) {
+        this.logger.debug(
+            'No internal file could be loaded for %s@%s', this.moduleName,
+            this.version);
+      }
     }
+
     return result;
   }
 

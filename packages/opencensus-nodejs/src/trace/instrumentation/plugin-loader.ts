@@ -118,8 +118,7 @@ export class PluginLoader {
         try {
           const plugin: types.Plugin = require(pluginList[name]).plugin;
           this.plugins.push(plugin);
-          moduleExports =
-              plugin.applyPluginPatch(exports, this.tracer, version, basedir);
+          moduleExports = plugin.enable(exports, this.tracer, version, basedir);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s',
@@ -134,7 +133,7 @@ export class PluginLoader {
   /** Unloads plugins. */
   unloadPlugins() {
     for (const plugin of this.plugins) {
-      plugin.applyPluginUnPatch();
+      plugin.disable();
     }
     this.plugins = [];
   }
