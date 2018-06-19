@@ -252,7 +252,7 @@ describe('GrpcPlugin() ', function() {
   before(() => {
     const basedir = path.dirname(require.resolve('grpc'));
     const version = require(path.join(basedir, 'package.json')).version;
-    plugin.enablePluginPatch(grpcModule, tracer, version, basedir);
+    plugin.enable(grpcModule, tracer, version, basedir);
     tracer.registerSpanEventListener(rootSpanVerifier);
     const proto = grpcModule.load(PROTO_PATH).pkg_test;
     server = startServer(grpcModule, proto);

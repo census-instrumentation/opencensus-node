@@ -213,8 +213,7 @@ export class GrpcPlugin extends classes.BasePlugin {
   private clientStreamAndUnaryHandler<RequestType, ResponseType>(
       plugin: GrpcPlugin, rootSpan: types.RootSpan, call: ServerCallWithMeta,
       callback: SendUnaryDataCallback,
-      original: grpcTypes.handleCall<RequestType, ResponseType>,
-      self: grpcTypes.handleCall<RequestType, ResponseType>) {
+      original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
     function patchedCallback(
         err: grpcTypes.ServiceError,
         // tslint:disable-next-line:no-any
@@ -246,8 +245,7 @@ export class GrpcPlugin extends classes.BasePlugin {
    */
   private serverStreamAndBidiHandler<RequestType, ResponseType>(
       plugin: GrpcPlugin, rootSpan: types.RootSpan, call: ServerCallWithMeta,
-      original: grpcTypes.handleCall<RequestType, ResponseType>,
-      self: grpcTypes.handleCall<RequestType, ResponseType>) {
+      original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
     let spanEnded = false;
     const endSpan = () => {
       if (!spanEnded) {
@@ -486,7 +484,9 @@ export class GrpcPlugin extends classes.BasePlugin {
   }
 
   /**
+   * Convert Grpc Status to Span Status
    *
+   * At this current version of Opencensus Specs they are the same.
    */
   static convertGrpcStatusToSpanStatus(statusCode: grpcTypes.status): number {
     return statusCode;
