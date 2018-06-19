@@ -65,20 +65,21 @@ export class HttpPlugin extends classes.BasePlugin {
 
     this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
 
-    shimmer.wrap(moduleExports, 'request', this.patchOutgoingRequest());
+    shimmer.wrap(
+        moduleExports, 'request', this.getPatchOutgoingRequestFunction());
 
     // In Node 8, http.get calls a private request method, therefore we patch it
     // here too.
     if (semver.satisfies(version, '>=8.0.0')) {
-      shimmer.wrap(moduleExports, 'get', this.patchOutgoingRequest());
+      shimmer.wrap(
+          moduleExports, 'get', this.getPatchOutgoingRequestFunction());
     }
 
     if (moduleExports && moduleExports.Server &&
         moduleExports.Server.prototype) {
       shimmer.wrap(
-          moduleExports && moduleExports.Server &&
-              moduleExports.Server.prototype,
-          'emit' as never, this.patchIncomingRequest());
+          moduleExports.Server.prototype, 'emit',
+          this.getPatchIncomingRequestFunction());
     } else {
       this.logger.error(
           'Could not apply patch to %s.emit. Interface is not as expected.',
@@ -97,10 +98,7 @@ export class HttpPlugin extends classes.BasePlugin {
     }
     if (this.moduleExports && this.moduleExports.Server &&
         this.moduleExports.Server.prototype) {
-      shimmer.unwrap(
-          this.moduleExports && this.moduleExports.Server &&
-              this.moduleExports.Server.prototype,
-          'emit');
+      shimmer.unwrap(this.moduleExports.Server.prototype, 'emit');
     }
   }
 
@@ -108,84 +106,88 @@ export class HttpPlugin extends classes.BasePlugin {
   /**
    * Creates spans for incoming requests, restoring spans' context if applied.
    */
-  protected patchIncomingRequest() {
-    return (original: RequestFunction) => {
+  protected getPatchIncomingRequestFunction() {
+    return (original: (event: string) => boolean) => {
       const plugin = this;
-      return function incomingRequest(
-                 event: string, request: httpModule.IncomingMessage,
-                 response: httpModule.ServerResponse):
-          httpModule.ClientRequest {
-            // Only traces request events
-            if (event !== 'request') {
-              return original.apply(this, arguments);
-            }
+      // This function's signature is that of an event listener, which can have
+      // any number of variable-type arguments.
+      // tslint:disable-next-line:no-any
+      return function incomingRequest(event: string, ...args: any[]): boolean {
+        // Only traces request events
+        if (event !== 'request') {
+          return original.apply(this, arguments);
+        }
 
-            plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
-            const propagation = plugin.tracer.propagation;
-            const headers = request.headers;
-            const getter: types.HeaderGetter = {
-              getHeader(name: string) {
-                return headers[name];
-              }
-            };
+        const request: httpModule.IncomingMessage = args[0];
+        const response: httpModule.ServerResponse = args[1];
 
-            const traceOptions = {
-              name: url.parse(request.url).pathname,
-              type: 'SERVER',
-              spanContext: propagation ? propagation.extract(getter) : null
-            };
+        plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
+        const propagation = plugin.tracer.propagation;
+        const headers = request.headers;
+        const getter: types.HeaderGetter = {
+          getHeader(name: string) {
+            return headers[name];
+          }
+        };
 
-            return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
-              if (!rootSpan) return original.apply(this, arguments);
+        const traceOptions = {
+          name: url.parse(request.url).pathname,
+          type: 'SERVER',
+          spanContext: propagation ? propagation.extract(getter) : null
+        };
 
-              plugin.tracer.wrapEmitter(request);
-              plugin.tracer.wrapEmitter(response);
+        return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
+          if (!rootSpan) return original.apply(this, arguments);
 
-              // Wraps end (inspired by:
-              // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/master/src/plugins/plugin-connect.ts#L75)
-              const originalEnd = response.end;
+          plugin.tracer.wrapEmitter(request);
+          plugin.tracer.wrapEmitter(response);
 
-              response.end = function(this: httpModule.ServerResponse) {
-                response.end = originalEnd;
-                const returned = response.end.apply(this, arguments);
+          // Wraps end (inspired by:
+          // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/master/src/plugins/plugin-connect.ts#L75)
+          const originalEnd = response.end;
 
-                const requestUrl = url.parse(request.url);
-                const host = headers.host || 'localhost';
-                const userAgent =
-                    (headers['user-agent'] || headers['User-Agent']) as string;
+          response.end = function(this: httpModule.ServerResponse) {
+            response.end = originalEnd;
+            const returned = response.end.apply(this, arguments);
 
-                rootSpan.addAttribute(
-                    HttpPlugin.ATTRIBUTE_HTTP_HOST,
-                    host.replace(
-                        /^(.*)(\:[0-9]{1,5})/,
-                        '$1',
-                        ));
-                rootSpan.addAttribute(
-                    HttpPlugin.ATTRIBUTE_HTTP_METHOD, request.method);
-                rootSpan.addAttribute(
-                    HttpPlugin.ATTRIBUTE_HTTP_PATH, requestUrl.pathname);
-                rootSpan.addAttribute(
-                    HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path);
-                rootSpan.addAttribute(
-                    HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
+            const requestUrl = url.parse(request.url);
+            const host = headers.host || 'localhost';
+            const userAgent =
+                (headers['user-agent'] || headers['User-Agent']) as string;
 
-                rootSpan.addAttribute(
-                    HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
-                    response.statusCode.toString());
+            rootSpan.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_HOST,
+                host.replace(
+                    /^(.*)(\:[0-9]{1,5})/,
+                    '$1',
+                    ));
+            rootSpan.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_METHOD, request.method);
+            rootSpan.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_PATH, requestUrl.pathname);
+            rootSpan.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path);
+            rootSpan.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
 
-                rootSpan.status = plugin.traceStatus(response.statusCode);
+            rootSpan.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
+                response.statusCode.toString());
 
-                // Message Event ID is not defined
-                rootSpan.addMessageEvent(
-                    'MessageEventTypeRecv', uuid.v4().split('-').join(''));
+            rootSpan.status =
+                HttpPlugin.convertTraceStatus(response.statusCode);
 
-                rootSpan.end();
-                return returned;
-              };
+            // Message Event ID is not defined
+            rootSpan.addMessageEvent(
+                'MessageEventTypeRecv', uuid.v4().split('-').join(''));
 
-              return original.apply(this, arguments);
-            });
+            rootSpan.end();
+            return returned;
           };
+
+          return original.apply(this, arguments);
+        });
+      };
     };
   }
 
@@ -194,7 +196,7 @@ export class HttpPlugin extends classes.BasePlugin {
    * Creates spans for outgoing requests, sending spans' context for distributed
    * tracing.
    */
-  protected patchOutgoingRequest() {
+  protected getPatchOutgoingRequestFunction() {
     return (original: types.Func<httpModule.ClientRequest>):
                types.Func<httpModule.ClientRequest> => {
       const plugin = this;
@@ -237,12 +239,14 @@ export class HttpPlugin extends classes.BasePlugin {
         if (!plugin.tracer.currentRootSpan) {
           plugin.logger.debug('outgoingRequest starting a root span');
           return plugin.tracer.startRootSpan(
-              traceOptions, plugin.makeRequestTrace(request, options, plugin));
+              traceOptions,
+              plugin.getMakeRequestTraceFunction(request, options, plugin));
         } else {
           plugin.logger.debug('outgoingRequest starting a child span');
           const span = plugin.tracer.startChildSpan(
               traceOptions.name, traceOptions.type);
-          return (plugin.makeRequestTrace(request, options, plugin))(span);
+          return (plugin.getMakeRequestTraceFunction(request, options, plugin))(
+              span);
         }
       };
     };
@@ -254,7 +258,7 @@ export class HttpPlugin extends classes.BasePlugin {
    * @param original The original patched function.
    * @param options The arguments to the original function.
    */
-  private makeRequestTrace(
+  private getMakeRequestTraceFunction(
       // tslint:disable-next-line:no-any
       request: httpModule.ClientRequest, options: httpModule.RequestOptions,
       plugin: HttpPlugin): types.Func<httpModule.ClientRequest> {
@@ -300,7 +304,7 @@ export class HttpPlugin extends classes.BasePlugin {
               HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
               response.statusCode.toString());
 
-          span.status = plugin.traceStatus(response.statusCode);
+          span.status = HttpPlugin.convertTraceStatus(response.statusCode);
 
           // Message Event ID is not defined
           span.addMessageEvent(
@@ -323,7 +327,11 @@ export class HttpPlugin extends classes.BasePlugin {
     };
   }
 
-  traceStatus(statusCode: number): number {
+  /**
+   * Converts an HTTP status code to an OpenCensus Trace status code.
+   * @param statusCode The HTTP status code to convert.
+   */
+  static convertTraceStatus(statusCode: number): number {
     if (statusCode < 200 || statusCode > 504) {
       return TraceStatusCodes.UNKNOWN;
     } else if (statusCode >= 200 && statusCode < 400) {
@@ -353,6 +361,9 @@ export class HttpPlugin extends classes.BasePlugin {
   }
 }
 
+/**
+ * An enumeration of OpenCensus Trace status codes.
+ */
 export enum TraceStatusCodes {
   UNKNOWN = 2,
   OK = 0,

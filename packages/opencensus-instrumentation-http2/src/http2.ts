@@ -51,10 +51,13 @@ export class Http2Plugin extends HttpPlugin {
     this.setPluginContext(moduleExports, tracer, version);
     this.logger = tracer.logger || logger.logger('debug');
 
-    shimmer.wrap(moduleExports, 'createServer', this.patchCreateServer());
-    shimmer.wrap(moduleExports, 'createSecureServer', this.patchCreateServer());
+    shimmer.wrap(
+        moduleExports, 'createServer', this.getPatchCreateServerFunction());
+    shimmer.wrap(
+        moduleExports, 'createSecureServer',
+        this.getPatchCreateServerFunction());
 
-    shimmer.wrap(moduleExports, 'connect', this.patchConnect());
+    shimmer.wrap(moduleExports, 'connect', this.getPatchConnectFunction());
 
     return moduleExports;
   }
@@ -68,7 +71,7 @@ export class Http2Plugin extends HttpPlugin {
     shimmer.unwrap(this.moduleExports, 'connect');
   }
 
-  private patchConnect() {
+  private getPatchConnectFunction() {
     const plugin = this;
     return (original: ConnectFunction):
                types.Func<http2.ClientHttp2Session> => {
@@ -77,7 +80,8 @@ export class Http2Plugin extends HttpPlugin {
             const client = original.apply(this, arguments);
             shimmer.wrap(
                 client, 'request',
-                (original) => (plugin.patchRequest())(original, authority));
+                (original) =>
+                    (plugin.getPatchRequestFunction())(original, authority));
 
             shimmer.unwrap(plugin.moduleExports, 'connect');
 
@@ -86,7 +90,7 @@ export class Http2Plugin extends HttpPlugin {
     };
   }
 
-  private patchRequest() {
+  private getPatchRequestFunction() {
     const plugin = this;
     return (original: RequestFunction,
             authority: string): types.Func<http2.ClientHttp2Stream> => {
@@ -113,19 +117,19 @@ export class Http2Plugin extends HttpPlugin {
         if (!plugin.tracer.currentRootSpan) {
           return plugin.tracer.startRootSpan(
               traceOptions,
-              plugin.makeHttp2RequestTrace(
+              plugin.getMakeHttp2RequestTraceFunction(
                   request, headers, authority, plugin));
         } else {
           const span = plugin.tracer.startChildSpan(
               traceOptions.name, traceOptions.type);
-          return (plugin.makeHttp2RequestTrace(
+          return (plugin.getMakeHttp2RequestTraceFunction(
               request, headers, authority, plugin))(span);
         }
       };
     };
   }
 
-  private makeHttp2RequestTrace(
+  private getMakeHttp2RequestTraceFunction(
       request: http2.ClientHttp2Stream, headers: http2.OutgoingHttpHeaders,
       authority: string,
       plugin: Http2Plugin): types.Func<http2.ClientHttp2Stream> {
@@ -147,7 +151,8 @@ export class Http2Plugin extends HttpPlugin {
         span.addAttribute(
             Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE,
             `${responseHeaders[':status']}`);
-        span.status = plugin.traceStatus(+responseHeaders[':status']);
+        span.status =
+            Http2Plugin.convertTraceStatus(+responseHeaders[':status']);
       });
 
       request.on('end', () => {
@@ -184,23 +189,25 @@ export class Http2Plugin extends HttpPlugin {
     };
   }
 
-  private patchCreateServer() {
+  private getPatchCreateServerFunction() {
     const plugin = this;
     return (original: CreateServerFunction): types.Func<http2.Http2Server> => {
-      return function patchedCreateServer(
-                 this: Http2Plugin): http2.Http2Server {
-        const server = original.apply(this, arguments);
-        shimmer.wrap(server.constructor.prototype, 'emit', plugin.patchEmit());
+      return function patchedCreateServer(this: Http2Plugin):
+          http2.Http2Server {
+            const server = original.apply(this, arguments);
+            shimmer.wrap(
+                server.constructor.prototype, 'emit',
+                plugin.getPatchEmitFunction());
 
-        shimmer.unwrap(plugin.moduleExports, 'createServer');
-        shimmer.unwrap(plugin.moduleExports, 'createSecureServer');
+            shimmer.unwrap(plugin.moduleExports, 'createServer');
+            shimmer.unwrap(plugin.moduleExports, 'createSecureServer');
 
-        return server;
-      };
+            return server;
+          };
     };
   }
 
-  private patchEmit() {
+  private getPatchEmitFunction() {
     const plugin = this;
     return (original: RequestFunction): types.Func<http2.ClientHttp2Stream> => {
       return function patchedEmit(
@@ -261,7 +268,7 @@ export class Http2Plugin extends HttpPlugin {
                 Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
             rootSpan.addAttribute(
                 Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE, `${statusCode}`);
-            rootSpan.status = plugin.traceStatus(statusCode);
+            rootSpan.status = Http2Plugin.convertTraceStatus(statusCode);
 
             rootSpan.addMessageEvent(
                 'MessageEventTypeRecv', uuid.v4().split('-').join(''));

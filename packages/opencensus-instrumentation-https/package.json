@@ -6,7 +6,7 @@
   "types": "build/src/index.d.ts",
   "repository": "census-instrumentation/opencensus-node",
   "scripts": {
-    "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha 'build/test/**/*.js'",
+    "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha -r source-map-support/register 'build/test/**/*.js'",
     "clean": "rimraf build/*",
     "check": "gts check",
     "compile": "tsc -p .",
@@ -50,7 +50,8 @@
     "ncp": "^2.0.0",
     "nock": "^9.2.6",
     "nyc": "^11.7.1",
-    "rimraf": "^2.6.2",  
+    "rimraf": "^2.6.2",
+    "source-map-support": "^0.5.6",
     "ts-node": "^4.0.0",
     "typescript": "~2.7.2"
   },
