@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2018 OpenCensus Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,4 @@
  * limitations under the License.
  */
 
-const tracing = require('@opencensus/nodejs');
-const stackdriver = require('@opencensus/exporter-stackdriver');
-
-// Add your project id to the Stackdriver options
-const exporter = new stackdriver.StackdriverTraceExporter({projectId: "your-project-id"});
-
-tracing.start({exporter});
-
-// example application
-const http = require('http');
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.write('Hello World!');
-  res.end();
-}).listen(8080);
+export * from './instana';

@@ -15,10 +15,9 @@
  */
 
 const tracing = require('@opencensus/nodejs');
-const stackdriver = require('@opencensus/exporter-stackdriver');
+const instana = require('@opencensus/exporter-instana');
 
-// Add your project id to the Stackdriver options
-const exporter = new stackdriver.StackdriverTraceExporter({projectId: "your-project-id"});
+const exporter = new instana.InstanaTraceExporter();
 
 tracing.start({exporter});
 
