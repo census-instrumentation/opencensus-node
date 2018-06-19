@@ -117,11 +117,9 @@ describe('Plugin Loader', () => {
         assert.strictEqual(loadInternalFileModule.value(), 111);
 
         const extraModuleName = 'extra-module';
-        const indexPath = path.dirname(require.resolve(moduleName));
-        const extraFile = 'src/extra-module';
-        const extraModule = require(path.join(indexPath, extraFile));
-        assert.strictEqual(extraModule.name(), 'patched-' + extraModuleName);
-        assert.strictEqual(extraModule.value(), 121);
+        assert.strictEqual(
+            loadInternalFileModule.extraName(), 'patched-' + extraModuleName);
+        assert.strictEqual(loadInternalFileModule.extraValue(), 121);
       });
 
 
