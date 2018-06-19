@@ -1,0 +1,68 @@
+{
+  "name": "@opencensus/instrumentation-grpc",
+  "version": "0.0.1",
+  "description": "Opencensus grpc automatic instrumentation package.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "repository": "census-instrumentation/opencensus-node",
+  "scripts": {
+    "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha 'build/test/**/*.js'",
+    "clean": "rimraf build/*",
+    "check": "gts check",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "pretest": "npm run compile; npm run copy-fixtures",
+    "posttest": "npm run check",
+    "copy-fixtures": "cp -r ./test/fixtures ./build/test/"
+  },
+  "keywords": [
+    "opencensus",
+    "nodejs",
+    "tracing",
+    "profiling"
+  ],
+  "author": "Google Inc.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "files": [
+    "build/src/**/*.js",
+    "build/src/**/*.d.ts",
+    "doc",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/end-of-stream": "^1.4.0",
+    "@types/lodash": "^4.14.109",
+    "@types/mocha": "^2.2.48",
+    "@types/nock": "^9.1.3",
+    "@types/node": "^9.4.7",
+    "@types/protobufjs": "^6.0.0",
+    "@types/semver": "^5.5.0",
+    "@types/shimmer": "^1.0.1",
+    "@types/uuid": "^3.4.3",
+    "gts": "^0.5.1",
+    "mocha": "^5.0.4",
+    "ncp": "^2.0.0",
+    "nock": "^9.2.6",
+    "nyc": "^11.7.1",
+    "protobufjs": "^6.8.6",
+    "rimraf": "^2.6.2",
+    "ts-node": "^4.0.0",
+    "typescript": "~2.7.2",
+    "@opencensus/propagation-b3": "^0.0.1"
+  },
+  "dependencies": {
+    "@opencensus/opencensus-core": "^0.0.1",
+    "grpc": "^1.12.2",
+    "lodash": "^4.17.10",
+    "semver": "^5.5.0",
+    "shimmer": "^1.2.0"
+  }
+}

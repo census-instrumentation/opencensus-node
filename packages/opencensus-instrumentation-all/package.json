@@ -39,6 +39,9 @@
   },
   "dependencies": {
     "@opencensus/instrumentation-http": "^0.0.1",
-    "@opencensus/instrumentation-https": "^0.0.1"
+    "@opencensus/instrumentation-https": "^0.0.1",
+    "@opencensus/instrumentation-http2": "^0.0.1",
+    "@opencensus/instrumentation-grpc": "^0.0.1",
+    "@opencensus/instrumentation-mongodb": "^0.0.1"
   }
 }
