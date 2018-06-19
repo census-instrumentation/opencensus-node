@@ -19,15 +19,20 @@ import {Tracer} from '../model/types';
 /** Interface Plugin to apply patch. */
 export interface Plugin {
   /**
-   * Method to apply the instrumentation patch
+   * Method that enables the instrumentation patch.
+   *
    * @param moduleExports nodejs module exports from the module to patch
    * @param tracer a tracer instance
    * @param version version of the current instaled module to patch
+   * @param basedir module absolute path
    */
-  // tslint:disable:no-any
-  applyPatch(moduleExports: any, tracer: Tracer, version: string): any;
-  /** Method to unpatch the instrumentation  */
-  applyUnpatch(): void;
+  enable(
+      // tslint:disable-next-line:no-any
+      moduleExports: any, tracer: Tracer, version: string,
+      // tslint:disable-next-line:no-any
+      basedir?: string): any;
+  /** Method to disable the instrumentation  */
+  disable(): void;
 }
 
 
@@ -38,4 +43,12 @@ export interface Plugin {
  */
 export type PluginNames = {
   [pluginName: string]: string;
+};
+
+/**
+ * Each key should be the name of the module to trace, and its value
+ * a mapping of a property name to a internal plugin file name.
+ */
+export type PluginInternalFiles = {
+  [versions: string]: PluginNames;
 };

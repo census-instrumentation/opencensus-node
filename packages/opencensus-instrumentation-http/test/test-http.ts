@@ -100,7 +100,7 @@ describe('HttpPlugin', () => {
   });
 
   before(() => {
-    plugin.applyPatch(http, tracer, VERSION);
+    plugin.enable(http, tracer, VERSION, null);
     tracer.registerSpanEventListener(rootSpanVerifier);
     server = http.createServer((request, response) => {
       response.end('Test Server Response');
@@ -283,7 +283,7 @@ describe('HttpPlugin', () => {
   /** Should not intercept incoming and outgoing requests */
   describe('applyUnpatch()', () => {
     it('should not create a root span for incoming requests', async () => {
-      plugin.applyUnpatch();
+      plugin.disable();
       const testPath = '/incoming/unpatch/';
       nock.enableNetConnect();
 

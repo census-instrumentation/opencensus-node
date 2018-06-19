@@ -107,9 +107,9 @@ export class PluginLoader {
     hook(Object.keys(pluginList), (exports, name, basedir) => {
       const version = this.getPackageVersion(name, basedir as string);
       this.logger.info('trying loading %s.%s', name, version);
-      let result = exports;
+      let moduleExports = exports;
       if (!version) {
-        return result;
+        return moduleExports;
       } else {
         this.logger.debug('applying patch to %s@%s module', name, version);
         this.logger.debug(
@@ -118,13 +118,13 @@ export class PluginLoader {
         try {
           const plugin: types.Plugin = require(pluginList[name]).plugin;
           this.plugins.push(plugin);
-          result = plugin.applyPatch(exports, this.tracer, version);
+          moduleExports = plugin.enable(exports, this.tracer, version, basedir);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s',
               pluginList[name], name, e.message);
         }
-        return result;
+        return moduleExports;
       }
     });
   }
@@ -133,7 +133,7 @@ export class PluginLoader {
   /** Unloads plugins. */
   unloadPlugins() {
     for (const plugin of this.plugins) {
-      plugin.applyUnpatch();
+      plugin.disable();
     }
     this.plugins = [];
   }

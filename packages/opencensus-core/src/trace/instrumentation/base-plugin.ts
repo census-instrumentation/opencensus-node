@@ -13,11 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as shimmer from 'shimmer';
+import * as path from 'path';
+import * as semver from 'semver';
+
+import {logger} from '../../common/console-logger';
+import {Logger} from '../../common/types';
 import * as modelTypes from '../model/types';
+
 import * as types from './types';
 
-// TODO: improve Jsdoc comments
+/**
+ * Maps a name (key) representing a internal file module and its exports
+ */
+export type ModuleExportsMapping = {
+  // tslint:disable:no-any
+  [key: string]: any;
+};
+
 
 /** This class represent the base to patch plugin. */
 export abstract class BasePlugin implements types.Plugin {
@@ -30,6 +42,14 @@ export abstract class BasePlugin implements types.Plugin {
   protected tracer: modelTypes.Tracer;
   /** The module version. */
   protected version: string;
+  /** a logger */
+  protected logger: Logger;
+  /** list of internal files that need patch and are not exported by default */
+  protected readonly internalFileList: types.PluginInternalFiles;
+  /**  internal files loaded */
+  protected internalFilesExports: ModuleExportsMapping;
+  /** module directory - used to load internal files */
+  protected basedir: string;
 
   /**
    * Constructs a new BasePlugin instance.
@@ -44,26 +64,109 @@ export abstract class BasePlugin implements types.Plugin {
    * @param moduleExports nodejs module exports to set as context
    * @param tracer tracer relating to context
    * @param version module version description
+   * @param basedir module absolute path
    */
   // tslint:disable:no-any
-  protected setPluginContext(
-      moduleExports: any, tracer: modelTypes.Tracer, version: string) {
+  private setPluginContext(
+      moduleExports: any, tracer: modelTypes.Tracer, version: string,
+      basedir?: string) {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
+    this.basedir = basedir;
+    this.logger = tracer.logger;
+    this.internalFilesExports = this.loadInternalFiles();
   }
 
 
-  // TODO: review this implementation
-  // From the perspective of an instrumentation module author,
-  // that applyUnpatch is abstract makes it seem like patching is optional,
-  // while unpatching is not. It should be the other way around
+  /**
+   * Method that enables the instrumentation patch.
+   *
+   * This method implements the GoF Template Method Pattern
+   * 'enable' is the invariant part of the pattern and
+   * 'applyPatch' the variant.
+   *
+   * @param moduleExports nodejs module exports from the module to patch
+   * @param tracer a tracer instance
+   * @param version version of the current instaled module to patch
+   * @param basedir module absolute path
+   */
+  enable(
+      // tslint:disable:no-any
+      moduleExports: any, tracer: modelTypes.Tracer, version: string,
+      basedir: string) {
+    this.setPluginContext(moduleExports, tracer, version, basedir);
+    return this.applyPatch();
+  }
 
+  /** Method to disable the instrumentation  */
+  disable() {
+    this.applyUnpatch();
+  }
+
+  /**
+   * This method implements the GoF Template Method Pattern,
+   * 'applyPatch' is the variant part, each instrumentation should
+   * implement its own version, 'enable' method is the invariant.
+   * Wil be called when enable is called.
+   *
+   */
   // tslint:disable:no-any
-  applyPatch(moduleExports: any, tracer: modelTypes.Tracer, version: string):
-      any {
-    this.setPluginContext(moduleExports, tracer, version);
+  protected abstract applyPatch(): any;
+  protected abstract applyUnpatch(): void;
+
+
+  /**
+   * Load internal files according to version range
+   */
+  private loadInternalFiles(): ModuleExportsMapping {
+    let result: ModuleExportsMapping = null;
+    if (this.internalFileList) {
+      this.logger.debug('loadInternalFiles %o', this.internalFileList);
+      Object.keys(this.internalFileList).forEach(versionRange => {
+        if (semver.satisfies(this.version, versionRange)) {
+          if (result) {
+            this.logger.warn(
+                'Plugin for %s@%s, has overlap version range (%s) for internal files: %o',
+                this.moduleName, this.version, versionRange,
+                this.internalFileList);
+          }
+          result = this.loadInternalModuleFiles(
+              this.internalFileList[versionRange], this.basedir);
+        }
+      });
+      if (!result) {
+        this.logger.debug(
+            'No internal file could be loaded for %s@%s', this.moduleName,
+            this.version);
+      }
+    }
+
+    return result;
   }
 
-  abstract applyUnpatch(): void;
+
+  /**
+   * Load internal files from a module and  set internalFilesExports
+   */
+  private loadInternalModuleFiles(
+      extraModulesList: types.PluginNames,
+      basedir: string): ModuleExportsMapping {
+    const extraModules: ModuleExportsMapping = {};
+    if (extraModulesList) {
+      Object.keys(extraModulesList).forEach(moduleName => {
+        try {
+          this.logger.debug('loading File %s', extraModulesList[moduleName]);
+          extraModules[moduleName] =
+              require(path.join(basedir, extraModulesList[moduleName]));
+        } catch (e) {
+          this.logger.error(
+              'Could not load internal file %s of module %s. Error: %s',
+              path.join(basedir, extraModulesList[moduleName]), this.moduleName,
+              e.message);
+        }
+      });
+    }
+    return extraModules;
+  }
 }

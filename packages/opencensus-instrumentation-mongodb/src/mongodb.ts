@@ -28,7 +28,6 @@ export class MongoDBPlugin extends classes.BasePlugin {
   private readonly SERVER_FNS = ['insert', 'update', 'remove', 'auth'];
   private readonly CURSOR_FNS_FIRST = ['_find', '_getmore'];
   private readonly SPAN_MONGODB_QUERY_TYPE = 'db.mongodb.query';
-  private logger: types.Logger;
 
   /** Constructs a new MongoDBPlugin instance. */
   constructor(moduleName: string) {
@@ -37,38 +36,32 @@ export class MongoDBPlugin extends classes.BasePlugin {
 
   /**
    * Patches MongoDB operations.
-   * @param moduleExports The mongodb module exports.
-   * @param tracer A tracer instance to create spans on.
-   * @param version The package version.
    */
-  applyPatch(moduleExports: MongoDB, tracer: types.Tracer, version: string) {
-    this.setPluginContext(moduleExports, tracer, version);
-    this.logger = tracer.logger || logger.logger('debug');
-
+  protected applyPatch() {
     this.logger.debug('Patched MongoDB');
 
-    if (moduleExports.Server) {
+    if (this.moduleExports.Server) {
       this.logger.debug('patching mongodb-core.Server.prototype.command');
       shimmer.wrap(
-          moduleExports.Server.prototype, 'command' as never,
+          this.moduleExports.Server.prototype, 'command' as never,
           this.getPatchCommand());
       this.logger.debug(
           'patching mongodb-core.Server.prototype functions:', this.SERVER_FNS);
       shimmer.massWrap(
-          [moduleExports.Server.prototype], this.SERVER_FNS as never[],
+          [this.moduleExports.Server.prototype], this.SERVER_FNS as never[],
           this.getPatchQuery());
     }
 
-    if (moduleExports.Cursor) {
+    if (this.moduleExports.Cursor) {
       this.logger.debug(
           'patching mongodb-core.Cursor.prototype functions:',
           this.CURSOR_FNS_FIRST);
       shimmer.massWrap(
-          [moduleExports.Cursor.prototype], this.CURSOR_FNS_FIRST as never[],
-          this.getPatchCursor());
+          [this.moduleExports.Cursor.prototype],
+          this.CURSOR_FNS_FIRST as never[], this.getPatchCursor());
     }
 
-    return moduleExports;
+    return this.moduleExports;
   }
 
   /** Unpatches all MongoDB patched functions. */

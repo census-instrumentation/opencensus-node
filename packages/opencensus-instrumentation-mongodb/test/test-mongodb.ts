@@ -105,7 +105,7 @@ describe('MongoDBPlugin', () => {
   before((done) => {
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(rootSpanVerifier);
-    plugin.applyPatch(mongodb, tracer, VERSION);
+    plugin.enable(mongodb, tracer, VERSION, null);
     accessCollection(URL, DB_NAME, COLLECTION_NAME)
         .then(result => {
           client = result.client;

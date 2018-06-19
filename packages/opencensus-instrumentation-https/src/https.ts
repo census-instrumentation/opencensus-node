@@ -30,22 +30,15 @@ export class HttpsPlugin extends HttpPlugin {
 
   /**
    * Patches HTTPS incoming and outcoming request functions.
-   * @param moduleExports The HTTPS package.
-   * @param tracer A tracer instance to create spans on.
-   * @param version The package version.
    */
-  // tslint:disable:no-any
-  applyPatch(moduleExports: any, tracer: types.Tracer, version: string) {
-    this.setPluginContext(moduleExports, tracer, version);
-    this.logger = tracer.logger || logger.logger('debug');
-
+  protected applyPatch() {
     this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
 
-    if (moduleExports && moduleExports.Server &&
-        moduleExports.Server.prototype) {
+    if (this.moduleExports && this.moduleExports.Server &&
+        this.moduleExports.Server.prototype) {
       shimmer.wrap(
-          moduleExports && moduleExports.Server &&
-              moduleExports.Server.prototype,
+          this.moduleExports && this.moduleExports.Server &&
+              this.moduleExports.Server.prototype,
           'emit', this.getPatchIncomingRequestFunction());
     } else {
       this.logger.error(
@@ -55,13 +48,14 @@ export class HttpsPlugin extends HttpPlugin {
 
     // TODO: review the need to patch 'request'
 
-    shimmer.wrap(moduleExports, 'get', this.getPatchOutgoingRequestFunction());
+    shimmer.wrap(
+        this.moduleExports, 'get', this.getPatchOutgoingRequestFunction());
 
-    return moduleExports;
+    return this.moduleExports;
   }
 
   /** Unpatches all HTTPS patched function. */
-  applyUnpatch(): void {
+  protected applyUnpatch(): void {
     if (this.moduleExports && this.moduleExports.Server &&
         this.moduleExports.Server.prototype) {
       shimmer.unwrap(
