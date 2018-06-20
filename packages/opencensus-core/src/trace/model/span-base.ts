@@ -49,8 +49,8 @@ export abstract class SpanBase implements types.Span {
   parentSpanId: string = null;
   /** The resource name of the span */
   name: string = null;
-  /** Type of span. Used to specify additional relationships between spans */
-  type: string = null;
+  /** Kind of span. */
+  kind: string = null;
   /** A final status for this span */
   status: number;
 
@@ -181,7 +181,7 @@ export abstract class SpanBase implements types.Span {
     if (this.started) {
       this.logger.debug(
           'calling %s.start() on already started %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.type});
+          this.className, {id: this.id, name: this.name, type: this.kind});
       return;
     }
     this.clock = new Clock();
@@ -193,13 +193,13 @@ export abstract class SpanBase implements types.Span {
     if (this.ended) {
       this.logger.debug(
           'calling %s.end() on already ended %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.type});
+          this.className, {id: this.id, name: this.name, type: this.kind});
       return;
     }
     if (!this.started) {
       this.logger.debug(
           'calling %s.end() on un-started %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.type});
+          this.className, {id: this.id, name: this.name, type: this.kind});
       return;
     }
     this.startedLocal = false;

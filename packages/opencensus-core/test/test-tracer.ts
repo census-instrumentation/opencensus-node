@@ -176,7 +176,7 @@ describe('Tracer', () => {
   });
 
   describe('startRootSpan() with context propagation', () => {
-    const traceOptions = {name: 'rootName', type: 'spanType'} as
+    const traceOptions = {name: 'rootName', kind: 'spanType'} as
         types.TraceOptions;
 
     it('should create new RootSpan instance, no propagation', () => {
@@ -185,7 +185,7 @@ describe('Tracer', () => {
       tracer.startRootSpan(traceOptions, (rootSpan) => {
         assert.ok(rootSpan);
         assert.strictEqual(rootSpan.name, traceOptions.name);
-        assert.strictEqual(rootSpan.type, traceOptions.type);
+        assert.strictEqual(rootSpan.kind, traceOptions.kind);
       });
     });
 
@@ -203,7 +203,7 @@ describe('Tracer', () => {
       tracer.startRootSpan(traceOptions, (rootSpan) => {
         assert.ok(rootSpan);
         assert.strictEqual(rootSpan.name, traceOptions.name);
-        assert.strictEqual(rootSpan.type, traceOptions.type);
+        assert.strictEqual(rootSpan.kind, traceOptions.kind);
         assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
         assert.strictEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
       });
@@ -216,7 +216,7 @@ describe('Tracer', () => {
       tracer.startRootSpan(traceOptions, (rootSpan) => {
         assert.ok(rootSpan);
         assert.strictEqual(rootSpan.name, traceOptions.name);
-        assert.strictEqual(rootSpan.type, traceOptions.type);
+        assert.strictEqual(rootSpan.kind, traceOptions.kind);
         assert.notEqual(rootSpan.traceId, spanContextPropagated.traceId);
         assert.notEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
       });
@@ -253,7 +253,7 @@ describe('Tracer', () => {
     it('should start a span', () => {
       assert.ok(span.started);
       assert.strictEqual(span.name, 'spanName');
-      assert.strictEqual(span.type, 'spanType');
+      assert.strictEqual(span.kind, 'spanType');
     });
   });
 

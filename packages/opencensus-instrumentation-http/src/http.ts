@@ -124,7 +124,7 @@ export class HttpPlugin extends classes.BasePlugin {
 
         const traceOptions = {
           name: url.parse(request.url).pathname,
-          type: 'SERVER',
+          kind: 'SERVER',
           spanContext: propagation ? propagation.extract(getter) : null
         };
 
@@ -220,7 +220,7 @@ export class HttpPlugin extends classes.BasePlugin {
         const traceOptions = {
           name:
               `${request.method ? request.method : 'GET'} ${options.pathname}`,
-          type: 'CLIENT',
+          kind: 'CLIENT',
         };
 
 
@@ -236,7 +236,7 @@ export class HttpPlugin extends classes.BasePlugin {
         } else {
           plugin.logger.debug('outgoingRequest starting a child span');
           const span = plugin.tracer.startChildSpan(
-              traceOptions.name, traceOptions.type);
+              traceOptions.name, traceOptions.kind);
           return (plugin.getMakeRequestTraceFunction(request, options, plugin))(
               span);
         }

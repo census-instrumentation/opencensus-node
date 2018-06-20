@@ -67,8 +67,8 @@ export interface TraceOptions {
   name: string;
   /** Trace context */
   spanContext?: SpanContext;
-  /** Span type */
-  type?: string;
+  /** Span kind */
+  kind?: string;
 }
 
 /** Defines the span context */
@@ -102,8 +102,8 @@ export interface Span {
   /** The resource name of the span */
   name: string;
 
-  /** Type of span. Used to specify additional relationships between spans */
-  type: string;
+  /** Kind of span. */
+  kind: string;
 
   /** An object to log information to */
   logger: loggerTypes.Logger;

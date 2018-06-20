@@ -101,7 +101,7 @@ export class Http2Plugin extends HttpPlugin {
 
         const traceOptions = {
           name: `${headers[':method'] || 'GET'} ${headers[':path']}`,
-          type: 'CLIENT',
+          kind: 'CLIENT',
         };
 
         // Checks if this outgoing request is part of an operation by checking
@@ -115,7 +115,7 @@ export class Http2Plugin extends HttpPlugin {
                   request, headers, authority, plugin));
         } else {
           const span = plugin.tracer.startChildSpan(
-              traceOptions.name, traceOptions.type);
+              traceOptions.name, traceOptions.kind);
           return (plugin.getMakeHttp2RequestTraceFunction(
               request, headers, authority, plugin))(span);
         }
@@ -221,7 +221,7 @@ export class Http2Plugin extends HttpPlugin {
 
         const traceOptions = {
           name: headers[':path'],
-          type: 'SERVER',
+          kind: 'SERVER',
           spanContext: propagation ? propagation.extract(getter) : null
         } as types.TraceOptions;
 
