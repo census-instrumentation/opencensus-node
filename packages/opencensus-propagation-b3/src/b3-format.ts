@@ -40,7 +40,10 @@ export class B3Format implements types.Propagation {
    */
   extract(getter: types.HeaderGetter): types.SpanContext {
     if (getter) {
-      const opt = getter.getHeader(X_B3_SAMPLED);
+      let opt = getter.getHeader(X_B3_SAMPLED);
+      if (opt instanceof Array) {
+        opt = opt[0];
+      }
       const spanContext = {
         traceId: getter.getHeader(X_B3_TRACE_ID),
         spanId: getter.getHeader(X_B3_SPAN_ID),
