@@ -326,14 +326,14 @@ describe('GrpcPlugin() ', function() {
                                                        false;
 
   function assertSpan(
-      span: types.Span, spanName: string, type: string,
+      span: types.Span, spanName: string, kind: string,
       status: grpcModule.status) {
     assert.strictEqual(span.name, spanName);
-    assert.strictEqual(span.type, type);
+    assert.strictEqual(span.kind, kind);
     assert.strictEqual(
         span.status, GrpcPlugin.convertGrpcStatusToSpanStatus(status));
 
-    assert.strictEqual(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_KIND], type);
+    assert.strictEqual(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_KIND], kind);
     assert.strictEqual(
         span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE], `${status}`);
     assert.ok(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_METHOD]);

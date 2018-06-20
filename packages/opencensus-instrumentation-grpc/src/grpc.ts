@@ -172,7 +172,7 @@ export class GrpcPlugin extends classes.BasePlugin {
 
                 const traceOptions = {
                   name: `grpc.${name.replace('/', '')}`,
-                  type: 'SERVER',
+                  kind: 'SERVER',
                   spanContext: propagation ? propagation.extract(getter) : null
                 };
                 plugin.logger.debug('path func: %s', traceOptions.name);
@@ -184,7 +184,7 @@ export class GrpcPlugin extends classes.BasePlugin {
 
                   rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, name);
                   rootSpan.addAttribute(
-                      GrpcPlugin.ATTRIBUTE_GRPC_KIND, traceOptions.type);
+                      GrpcPlugin.ATTRIBUTE_GRPC_KIND, traceOptions.kind);
 
                   switch (type) {
                     case 'unary':
@@ -314,7 +314,7 @@ export class GrpcPlugin extends classes.BasePlugin {
       ) {
         const traceOptions = {
           name: `grpc.${original.path.replace('/', '')}`,
-          type: 'CLIENT',
+          kind: 'CLIENT',
         };
         const args = Array.prototype.slice.call(arguments);
         // Checks if this remote function call is part of an operation by
@@ -328,7 +328,7 @@ export class GrpcPlugin extends classes.BasePlugin {
               plugin.makeGrpcClientRemoteCall(original, args, this, plugin));
         } else {
           const span = plugin.tracer.startChildSpan(
-              traceOptions.name, traceOptions.type);
+              traceOptions.name, traceOptions.kind);
           return (plugin.makeGrpcClientRemoteCall(
               original, args, this, plugin))(span);
         }
@@ -401,7 +401,7 @@ export class GrpcPlugin extends classes.BasePlugin {
       }
 
       span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, original.path);
-      span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_KIND, span.type);
+      span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_KIND, span.kind);
 
       const call = original.apply(self, args);
 

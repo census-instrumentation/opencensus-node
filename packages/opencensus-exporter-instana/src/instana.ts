@@ -103,7 +103,7 @@ export class InstanaTraceExporter implements types.Exporter {
       // API requires an integer/long
       duration: span.duration | 0,
       name: span.name,
-      type: span.type,
+      type: span.kind,
       // No translatable counterpart in OpenCensus as of 2018-06-14
       error: false,
       data: Object.keys(span.attributes)

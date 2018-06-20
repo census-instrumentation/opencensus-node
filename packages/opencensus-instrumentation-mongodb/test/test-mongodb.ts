@@ -68,17 +68,17 @@ function accessCollection(url: string, dbName: string, collectionName: string):
  * @param rootSpanVerifier An instance of rootSpanVerifier to analyse RootSpan
  * instances from.
  * @param expectedName The expected name of the first root span.
- * @param expectedType The expected type of the first root span.
+ * @param expectedKind The expected kind of the first root span.
  */
 function assertSpan(
     rootSpanVerifier: RootSpanVerifier, expectedName: string,
-    expectedType: string) {
+    expectedKind: string) {
   assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
   assert.strictEqual(rootSpanVerifier.endedRootSpans[0].spans.length, 1);
   assert.strictEqual(
       rootSpanVerifier.endedRootSpans[0].spans[0].name, expectedName);
   assert.strictEqual(
-      rootSpanVerifier.endedRootSpans[0].spans[0].type, expectedType);
+      rootSpanVerifier.endedRootSpans[0].spans[0].kind, expectedKind);
 }
 
 describe('MongoDBPlugin', () => {

@@ -50,7 +50,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
       this.parentSpanId = context.spanContext.spanId || '';
     }
     this.spansLocal = [];
-    this.type = context && context.type ? context.type : null;
+    this.kind = context && context.kind ? context.kind : null;
     this.logger = tracer.logger || logger.logger();
   }
 
@@ -93,29 +93,29 @@ export class RootSpan extends SpanBase implements types.RootSpan {
   /**
    * Starts a new child span in the root span.
    * @param name Span name.
-   * @param type Span type.
+   * @param kind Span kind.
    * @param parentSpanId Span parent ID.
    */
-  startChildSpan(name: string, type: string, parentSpanId?: string):
+  startChildSpan(name: string, kind: string, parentSpanId?: string):
       types.Span {
     if (this.ended) {
       this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.type});
+          this.className, {id: this.id, name: this.name, kind: this.kind});
       return null;
     }
     if (!this.started) {
       this.logger.debug(
           'calling %s.startSpan() on un-started %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.type});
+          this.className, {id: this.id, name: this.name, kind: this.kind});
       return null;
     }
     const newSpan = new Span(this);
     if (name) {
       newSpan.name = name;
     }
-    if (type) {
-      newSpan.type = type;
+    if (kind) {
+      newSpan.kind = kind;
     }
     newSpan.start();
     this.spansLocal.push(newSpan);
