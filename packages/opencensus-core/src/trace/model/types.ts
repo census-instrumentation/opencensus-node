@@ -257,6 +257,12 @@ export interface Tracer extends SpanEventListener {
    */
   registerSpanEventListener(listener: SpanEventListener): void;
 
+  /**
+   * Unregisters an end span event listener.
+   * @param listener The listener to unregister.
+   */
+  unregisterSpanEventListener(listener: SpanEventListener): void;
+
   /** Clear the currentRootSpan from tracer instance */
   clearCurrentTrace(): void;
 

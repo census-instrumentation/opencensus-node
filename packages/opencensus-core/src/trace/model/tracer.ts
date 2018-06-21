@@ -88,7 +88,7 @@ export class Tracer implements types.Tracer {
     return this;
   }
 
-  /** Gets the list of event listners. */
+  /** Gets the list of event listeners. */
   get eventListeners(): types.SpanEventListener[] {
     return this.eventListenersLocal;
   }
@@ -171,8 +171,19 @@ export class Tracer implements types.Tracer {
    * Registers an end span event listener.
    * @param listener The listener to register.
    */
-  registerSpanEventListener(listner: types.SpanEventListener) {
-    this.eventListenersLocal.push(listner);
+  registerSpanEventListener(listener: types.SpanEventListener) {
+    this.eventListenersLocal.push(listener);
+  }
+
+  /**
+   * Unregisters an end span event listener.
+   * @param listener The listener to unregister.
+   */
+  unregisterSpanEventListener(listener: types.SpanEventListener) {
+    const index = this.eventListenersLocal.indexOf(listener, 0);
+    if (index > -1) {
+      this.eventListeners.splice(index, 1);
+    }
   }
 
   private notifyStartSpan(root: types.RootSpan) {

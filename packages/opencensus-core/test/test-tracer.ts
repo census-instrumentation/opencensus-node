@@ -89,16 +89,34 @@ describe('Tracer', () => {
       tracer.registerSpanEventListener(onEndSpan);
     });
 
-    it('should register a new OnEndSpanEventListener on listners list', () => {
-      const listner = tracer.eventListeners[0];
+    it('should register a new OnEndSpanEventListener on listeners list', () => {
+      const listener = tracer.eventListeners[0];
       assert.strictEqual(tracer.eventListeners.length, 1);
-      assert.strictEqual(listner, onEndSpan);
+      assert.strictEqual(listener, onEndSpan);
     });
 
     it('should return an OnEndSpanEventListener list', () => {
-      for (const listner of tracer.eventListeners) {
-        assert.ok(listner instanceof OnEndSpanClass);
+      for (const listener of tracer.eventListeners) {
+        assert.ok(listener instanceof OnEndSpanClass);
       }
+    });
+  });
+
+  /** Should unregister a OnEndSpanEventlistener */
+  describe('unregisterSpanEventListener()', () => {
+    let tracer: types.Tracer, onEndSpan: OnEndSpanClass;
+    before(() => {
+      tracer = new Tracer();
+      onEndSpan = new OnEndSpanClass();
+      tracer.registerSpanEventListener(onEndSpan);
+    });
+
+    it('should register a new OnEndSpanEventListener on listeners list', () => {
+      const listener = tracer.eventListeners[0];
+      assert.strictEqual(tracer.eventListeners.length, 1);
+      assert.strictEqual(listener, onEndSpan);
+      tracer.unregisterSpanEventListener(onEndSpan);
+      assert.strictEqual(tracer.eventListeners.length, 0);
     });
   });
 
