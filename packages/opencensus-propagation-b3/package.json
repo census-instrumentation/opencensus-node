@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/propagation-b3",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Opencensus propagation package for B3 format.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -45,12 +45,12 @@
     "mocha": "^5.0.4",
     "ncp": "^2.0.0",
     "nyc": "^11.7.1",
-    "rimraf": "^2.6.2",  
+    "rimraf": "^2.6.2",
     "ts-node": "^4.0.0",
     "typescript": "~2.7.2"
   },
   "dependencies": {
-    "@opencensus/opencensus-core": "^0.0.1",
+    "@opencensus/opencensus-core": "^0.0.2",
     "uuid": "^3.2.1"
   }
 }
