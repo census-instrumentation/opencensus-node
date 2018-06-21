@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/exporter-zpages",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Package Zpages implements a collection of HTML pages that display stats and trace data",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -52,8 +52,8 @@
     "typescript": "~2.6.1"
   },
   "dependencies": {
-    "@opencensus/opencensus-core": "^0.0.1",
-    "@opencensus/nodejs": "^0.0.1",
+    "@opencensus/nodejs": "^0.0.2",
+    "@opencensus/opencensus-core": "^0.0.2",
     "ejs": "^2.5.8",
     "express": "^4.16.3"
   }

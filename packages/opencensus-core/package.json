@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/opencensus-core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -48,9 +48,9 @@
     "gts": "^0.5.4",
     "mocha": "^5.0.4",
     "ncp": "^2.0.0",
+    "nyc": "11.6.0",
     "ts-node": "^4.0.0",
-    "typescript": "~2.6.1",
-    "nyc": "11.6.0"
+    "typescript": "~2.6.1"
   },
   "dependencies": {
     "continuation-local-storage": "^3.2.1",

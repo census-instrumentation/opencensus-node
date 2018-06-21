@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-http",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Opencensus http automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -50,12 +50,12 @@
     "ncp": "^2.0.0",
     "nock": "^9.2.6",
     "nyc": "^11.7.1",
-    "rimraf": "^2.6.2",  
+    "rimraf": "^2.6.2",
     "ts-node": "^4.0.0",
     "typescript": "~2.7.2"
   },
   "dependencies": {
-    "@opencensus/opencensus-core": "^0.0.1",
+    "@opencensus/opencensus-core": "^0.0.2",
     "end-of-stream": "^1.4.1",
     "semver": "^5.5.0",
     "shimmer": "^1.2.0",
