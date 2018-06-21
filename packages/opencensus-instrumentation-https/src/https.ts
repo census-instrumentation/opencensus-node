@@ -20,6 +20,7 @@ import {classes} from '@opencensus/opencensus-core';
 import {logger} from '@opencensus/opencensus-core';
 import * as http from 'http';
 import * as https from 'https';
+import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 
@@ -48,7 +49,12 @@ export class HttpsPlugin extends HttpPlugin {
           this.moduleName);
     }
 
-    shimmer.wrap(moduleExports, 'request', this.getPatchHttpsOutgoingRequest());
+    shimmer.wrap(
+        this.moduleExports, 'request', this.getPatchHttpsOutgoingRequest());
+    if (semver.satisfies(this.version, '>=8.0.0')) {
+      shimmer.wrap(
+          this.moduleExports, 'get', this.getPatchHttpsOutgoingRequest());
+    }
 
     return this.moduleExports;
   }
@@ -66,7 +72,8 @@ export class HttpsPlugin extends HttpPlugin {
           options.port = options.port || 443;
           options.agent = options.agent || https.globalAgent;
         }
-        return (plugin.patchOutgoingRequest())(original)(options, callback);
+        return (plugin.getPatchOutgoingRequestFunction())(original)(
+            options, callback);
       };
     };
   }
@@ -81,6 +88,9 @@ export class HttpsPlugin extends HttpPlugin {
           'emit');
     }
     shimmer.unwrap(this.moduleExports, 'request');
+    if (semver.satisfies(this.version, '>=8.0.0')) {
+      shimmer.unwrap(this.moduleExports, 'get');
+    }
   }
 }
 
