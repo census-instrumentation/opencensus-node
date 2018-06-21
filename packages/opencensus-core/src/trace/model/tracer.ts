@@ -123,7 +123,7 @@ export class CoreTracer implements types.Tracer {
             options.spanContext = null;
           }
         }
-        const aRoot = new RootSpan(this, options);
+        const aRoot = new RootSpan(this, options, this.logger);
         const sampleDecision: boolean = propagatedSample ?
             propagatedSample :
             this.sampler.shouldSample(aRoot.traceId);

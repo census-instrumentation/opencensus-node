@@ -17,6 +17,7 @@
 import * as uuid from 'uuid';
 
 import * as logger from '../../common/console-logger';
+import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 
 import {Span} from './span';
@@ -26,8 +27,8 @@ import * as types from './types';
 
 /** Defines a root span */
 export class RootSpan extends SpanBase implements types.RootSpan {
-  /** A tracer object */
-  private tracer: types.Tracer;
+  /** A eventListener object */
+  private eventListener: types.SpanEventListener;
   /** A list of child spans. */
   private spansLocal: types.Span[];
   /** It's trace ID. */
@@ -37,12 +38,15 @@ export class RootSpan extends SpanBase implements types.RootSpan {
 
   /**
    * Constructs a new RootSpanImpl instance.
-   * @param tracer A tracer object.
+   * @param eventListener A SpanEventListener object.
    * @param context A trace options object to build the root span.
+   * @param aLogger a logger instance
    */
-  constructor(tracer: types.Tracer, context?: types.TraceOptions) {
+  constructor(
+      eventListener: types.SpanEventListener, context?: types.TraceOptions,
+      alogger?: Logger) {
     super();
-    this.tracer = tracer;
+    this.eventListener = eventListener;
     this.traceIdLocal =
         context && context.spanContext && context.spanContext.traceId ?
         context.spanContext.traceId :
@@ -53,7 +57,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
     }
     this.spansLocal = [];
     this.kind = context && context.kind ? context.kind : null;
-    this.logger = tracer.logger || logger.logger();
+    this.logger = alogger || logger.logger();
   }
 
   /** Gets span list from rootspan instance. */
@@ -73,7 +77,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
         'starting %s  %o', this.className,
         {traceId: this.traceId, id: this.id, parentSpanId: this.parentSpanId});
 
-    this.tracer.onStartSpan(this);
+    this.eventListener.onStartSpan(this);
   }
 
   /** Ends a rootspan instance. */
@@ -86,7 +90,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
       }
     }
 
-    this.tracer.onEndSpan(this);
+    this.eventListener.onEndSpan(this);
   }
 
 
@@ -110,7 +114,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
           this.className, {id: this.id, name: this.name, kind: this.kind});
       return null;
     }
-    const newSpan = new Span(this);
+    const newSpan = new Span(this, this.logger);
     if (name) {
       newSpan.name = name;
     }
