@@ -20,8 +20,8 @@
  * Full details at https://cloud.google.com/trace/docs/support.
  */
 
-import * as crypto from 'crypto';
-import * as uuid from 'uuid';
+import crypto from 'crypto';
+import uuid from 'uuid';
 
 import {HeaderGetter, HeaderSetter, SpanContext} from './index';
 
