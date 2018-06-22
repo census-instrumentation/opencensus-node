@@ -72,7 +72,7 @@ export class InstanaTraceExporter implements types.Exporter {
    *
    * This Promise is meant as a problem indicator for tests only.
    */
-  publish(rootSpans: types.RootSpan[]): Promise<Error> {
+  publish(rootSpans: types.RootSpan[]): Promise<void> {
     try {
       return this
           .transmit(this.translateRootSpans(rootSpans))

@@ -25,7 +25,9 @@ export class NoopExporter implements types.Exporter {
   logger: loggerTypes.Logger;
   onStartSpan(root: modelTypes.RootSpan) {}
   onEndSpan(root: modelTypes.RootSpan) {}
-  publish(rootSpans: modelTypes.RootSpan[]) {}
+  publish(rootSpans: modelTypes.RootSpan[]) {
+    return Promise.resolve();
+  }
 }
 
 /** Format and sends span data to the console. */
@@ -72,5 +74,6 @@ export class ConsoleExporter implements types.Exporter {
           `${SPANS_STR.join('\n')}`);
       console.log(`${result}`);
     });
+    return Promise.resolve();
   }
 }

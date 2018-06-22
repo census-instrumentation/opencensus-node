@@ -74,8 +74,6 @@ export class RootSpan extends SpanBase implements types.RootSpan {
     this.tracer.onStartSpan(this);
   }
 
-  // TODO: review end() behavior if it should throw an error when it is called
-  // before start()
   /** Ends a rootspan instance. */
   end() {
     super.end();

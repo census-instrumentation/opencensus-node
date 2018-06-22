@@ -26,7 +26,7 @@ import * as types from './types';
  * Maps a name (key) representing a internal file module and its exports
  */
 export type ModuleExportsMapping = {
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   [key: string]: any;
 };
 
@@ -34,7 +34,7 @@ export type ModuleExportsMapping = {
 /** This class represent the base to patch plugin. */
 export abstract class BasePlugin implements types.Plugin {
   /** Exports from the nodejs module to be instrumented */
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   protected moduleExports: any;
   /** The module name */
   protected moduleName: string;
@@ -66,8 +66,8 @@ export abstract class BasePlugin implements types.Plugin {
    * @param version module version description
    * @param basedir module absolute path
    */
-  // tslint:disable:no-any
   private setPluginContext(
+      // tslint:disable-next-line:no-any
       moduleExports: any, tracer: modelTypes.Tracer, version: string,
       basedir?: string) {
     this.moduleExports = moduleExports;
@@ -77,7 +77,6 @@ export abstract class BasePlugin implements types.Plugin {
     this.logger = tracer.logger;
     this.internalFilesExports = this.loadInternalFiles();
   }
-
 
   /**
    * Method that enables the instrumentation patch.
@@ -91,9 +90,9 @@ export abstract class BasePlugin implements types.Plugin {
    * @param version version of the current instaled module to patch
    * @param basedir module absolute path
    */
-  enable(
-      // tslint:disable:no-any
-      moduleExports: any, tracer: modelTypes.Tracer, version: string,
+  enable<T>(
+      // tslint:disable-next-line:no-any
+      moduleExports: T, tracer: modelTypes.Tracer, version: string,
       basedir: string) {
     this.setPluginContext(moduleExports, tracer, version, basedir);
     return this.applyPatch();
@@ -108,10 +107,10 @@ export abstract class BasePlugin implements types.Plugin {
    * This method implements the GoF Template Method Pattern,
    * 'applyPatch' is the variant part, each instrumentation should
    * implement its own version, 'enable' method is the invariant.
-   * Wil be called when enable is called.
+   * It will be called when enable is called.
    *
    */
-  // tslint:disable:no-any
+  // tslint:disable-next-line:no-any
   protected abstract applyPatch(): any;
   protected abstract applyUnpatch(): void;
 

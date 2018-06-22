@@ -53,6 +53,7 @@ export class Tracer implements types.Tracer {
   constructor() {
     this.activeLocal = false;
     this.contextManager = cls.createNamespace();
+    this.clearCurrentTrace();
   }
 
   /** Gets the current root span. */
@@ -62,7 +63,9 @@ export class Tracer implements types.Tracer {
 
   /** Sets the current root span. */
   set currentRootSpan(root: types.RootSpan) {
-    this.contextManager.set('rootspan', root);
+    if (this.contextManager.active) {
+      this.contextManager.set('rootspan', root);
+    }
   }
 
   /** A propagation instance */
@@ -208,7 +211,6 @@ export class Tracer implements types.Tracer {
     }
   }
 
-  // TODO: reveiw clearCurrentTrace when using continuation-local-storage
   /** Clears the current root span. */
   clearCurrentTrace() {
     this.currentRootSpan = null;

@@ -27,10 +27,6 @@ const useAsyncHooks: boolean = semver.satisfies(
     process.version, '>=8');  //&&
                               // !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
 
-import * as Debug from 'debug';
-const debug = Debug('opencensus');
-debug('useAsyncHooks = %s', useAsyncHooks);
-
 const cls: typeof CLS = useAsyncHooks ? require('./cls-ah') : CLS;
 
 

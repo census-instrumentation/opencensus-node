@@ -37,7 +37,7 @@ class AsyncHooksNamespace implements CLSNamespace {
   }
 
   get active(): Context {
-    throw new Error('Not implemented');
+    return current;
   }
 
   createContext(): Context {

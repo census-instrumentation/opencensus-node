@@ -19,9 +19,6 @@
 
 import * as crypto from 'crypto';
 
-
-// TODO: rethink this snippet aproach
-
 // Use 6 bytes of randomness only as JS numbers are doubles not 64-bit ints.
 const SPAN_ID_RANDOM_BYTES = 6;
 

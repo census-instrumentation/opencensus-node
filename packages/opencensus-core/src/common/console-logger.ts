@@ -27,9 +27,6 @@ export class ConsoleLogger implements types.Logger {
   static LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
   level: string;
 
-
-  // TODO: reevaluate options to accept numbers as a parameter
-
   /**
    * Constructs a new ConsoleLogger instance
    * @param options A logger configuration object.
@@ -104,19 +101,15 @@ export class ConsoleLogger implements types.Logger {
   }
 }
 
-
-// TODO: reevaluate the need to create a new logger instance on every call to
-// logger();
-
 /**
- *  Function logger exported to others classes.
+ * Function logger exported to others classes. Inspired by:
+ * https://github.com/cainus/logdriver/blob/bba1761737ca72f04d6b445629848538d038484a/index.js#L50
  * @param options A logger options or strig to logger in console
  */
 // tslint:disable-next-line:no-any
-const logger: any = (options?: types.LoggerOptions|string|number) => {
-  const aLogger = new ConsoleLogger(options);
-  logger['logger'] = aLogger;
-  return aLogger;
-};
+const logger: any =
+    (options?: types.LoggerOptions|string|number): types.Logger => {
+      return new ConsoleLogger(options);
+    };
 
 export {logger};
