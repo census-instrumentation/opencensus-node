@@ -45,6 +45,7 @@
     "@types/shimmer": "^1.0.1",
     "@types/uuid": "^3.4.3",
     "gts": "^0.5.4",
+    "intercept-stdout": "^0.1.2",
     "mocha": "^5.0.4",
     "ncp": "^2.0.0",
     "nyc": "11.6.0",

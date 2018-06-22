@@ -25,8 +25,8 @@ export interface Exporter extends modelTypes.SpanEventListener {
    * Sends a list of root spans to the service.
    * @param rootSpans A list of root spans to publish.
    */
-  // tslint:disable-next-line:no-any
-  publish(rootSpans: modelTypes.RootSpan[]): Promise<any>|void;
+
+  publish(rootSpans: modelTypes.RootSpan[]): Promise<number|string|void>;
 }
 
 export type ExporterConfig = configTypes.BufferConfig;

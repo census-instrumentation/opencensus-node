@@ -102,14 +102,14 @@ export class ConsoleLogger implements types.Logger {
 }
 
 /**
- *  Function logger exported to others classes.
+ * Function logger exported to others classes. Inspired by:
+ * https://github.com/cainus/logdriver/blob/bba1761737ca72f04d6b445629848538d038484a/index.js#L50
  * @param options A logger options or strig to logger in console
  */
 // tslint:disable-next-line:no-any
-const logger: any = (options?: types.LoggerOptions|string|number) => {
-  const aLogger = new ConsoleLogger(options);
-  logger['logger'] = aLogger;
-  return aLogger;
-};
+const logger: any =
+    (options?: types.LoggerOptions|string|number): types.Logger => {
+      return new ConsoleLogger(options);
+    };
 
 export {logger};

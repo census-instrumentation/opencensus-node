@@ -162,7 +162,7 @@ export class JaegerTraceExporter implements types.Exporter {
     return this.flush();
   }
 
-  private flush() {
+  private flush(): Promise<number> {
     return new Promise((resolve, reject) => {
       try {
         this.sender.flush((numSpans: number, err?: string) => {

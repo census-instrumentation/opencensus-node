@@ -19,6 +19,7 @@ export type LogFunction = (message: any, ...args: any[]) => void;
 
 /** Defines an logger interface. */
 export interface Logger {
+  level: string;
   error: LogFunction;
   warn: LogFunction;
   info: LogFunction;

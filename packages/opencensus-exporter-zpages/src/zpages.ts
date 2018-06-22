@@ -135,7 +135,9 @@ export class ZpagesExporter implements types.Exporter {
    * Not used in this context.
    * @param spans
    */
-  publish(spans: types.Span[]) {}
+  publish(spans: types.Span[]) {
+    return Promise.resolve();
+  }
 
   /**
    * Start the Zpages HTTP Server.
