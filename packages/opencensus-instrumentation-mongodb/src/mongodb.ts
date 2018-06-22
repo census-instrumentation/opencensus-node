@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {BasePlugin, Func, Span} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import * as mongodb from 'mongodb';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
@@ -24,7 +23,7 @@ import * as shimmer from 'shimmer';
 export type MongoDB = typeof mongodb;
 
 /** MongoDB instrumentation plugin for Opencensus */
-export class MongoDBPlugin extends classes.BasePlugin {
+export class MongoDBPlugin extends BasePlugin {
   private readonly SERVER_FNS = ['insert', 'update', 'remove', 'auth'];
   private readonly CURSOR_FNS_FIRST = ['_find', '_getmore'];
   private readonly SPAN_MONGODB_QUERY_TYPE = 'db.mongodb.query';
@@ -75,7 +74,7 @@ export class MongoDBPlugin extends classes.BasePlugin {
   /** Creates spans for Command operations */
   private getPatchCommand() {
     const plugin = this;
-    return (original: types.Func<mongodb.Server>) => {
+    return (original: Func<mongodb.Server>) => {
       return function(
                  // tslint:disable-next-line:no-any
                  this: mongodb.Server, ns: string, command: any,
@@ -110,7 +109,7 @@ export class MongoDBPlugin extends classes.BasePlugin {
   /** Creates spans for Query operations */
   private getPatchQuery() {
     const plugin = this;
-    return (original: types.Func<mongodb.Server>) => {
+    return (original: Func<mongodb.Server>) => {
       // tslint:disable-next-line:no-any
       return function(this: mongodb.Server, ns: string, ...args: any[]):
           mongodb.Server {
@@ -130,7 +129,7 @@ export class MongoDBPlugin extends classes.BasePlugin {
   /** Creates spans for Cursor operations */
   private getPatchCursor() {
     const plugin = this;
-    return (original: types.Func<mongodb.Cursor>) => {
+    return (original: Func<mongodb.Cursor>) => {
       // tslint:disable-next-line:no-any
       return function(this: any, ...args: any[]): mongodb.Cursor {
         let resultHandler = args[0];
@@ -151,7 +150,7 @@ export class MongoDBPlugin extends classes.BasePlugin {
    * @param span The created span to end.
    * @param resultHandler A callback function.
    */
-  patchEnd(span: types.Span, resultHandler: Function): Function {
+  patchEnd(span: Span, resultHandler: Function): Function {
     // tslint:disable-next-line:no-any
     return function patchedEnd(this: any) {
       span.end();

@@ -123,6 +123,9 @@ export interface Span {
   /** Pointers from the current span to another span */
   links: Link[];
 
+  /** true if span is a RootSpan */
+  isRootSpan: boolean;
+
   /** Constructs a new SpanBaseModel instance. */
   readonly traceId: string;
 
@@ -201,12 +204,6 @@ export interface Span {
 export interface RootSpan extends Span {
   /** Get the span list from RootSpan instance */
   readonly spans: Span[];
-
-  /** Starts the RootSpan instance */
-  start(): void;
-
-  /** Ends the RootSpan instance */
-  end(): void;
 
   /** Starts a new Span instance in the RootSpan instance */
   startChildSpan(name: string, type: string): Span;

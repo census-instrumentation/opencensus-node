@@ -50,7 +50,7 @@
     "typescript": "~2.7.2"
   },
   "dependencies": {
-    "@opencensus/opencensus-core": "^0.0.2",
+    "@opencensus/core": "^0.0.2",
     "google-auth-library": "^1.5.0",
     "googleapis": "27.0.0"
   }

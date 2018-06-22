@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
 import {createRoutes} from './zpages-frontend/routes';
 
 /** Interface to Zpages options */
-export interface ZpagesExporterOptions extends types.ExporterConfig {
+export interface ZpagesExporterOptions extends ExporterConfig {
   /** Port number to Zpages server */
   port: number;
   /** Predefined span names to register on trace list */
@@ -30,15 +31,15 @@ export interface ZpagesExporterOptions extends types.ExporterConfig {
 }
 
 /** Class to ZpagesExporter */
-export class ZpagesExporter implements types.Exporter {
+export class ZpagesExporter implements Exporter {
   /** ZpagesExporter default options */
   static readonly defaultOptions = {port: 8080, startServer: true};
 
   private app: express.Application;
   private server: http.Server;
   private port: number;
-  private traces: Map<string, types.Span[]> = new Map();
-  private logger: types.Logger;
+  private traces: Map<string, Span[]> = new Map();
+  private logger: Logger;
 
   constructor(options: ZpagesExporterOptions) {
     /** create express app */
@@ -67,7 +68,7 @@ export class ZpagesExporter implements types.Exporter {
    * Is called whenever a span is started.
    * @param root the started span
    */
-  onStartSpan(root: types.RootSpan) {
+  onStartSpan(root: RootSpan) {
     this.sendTrace(root);
   }
 
@@ -75,7 +76,7 @@ export class ZpagesExporter implements types.Exporter {
    * Is called whenever a span is ended.
    * @param root the ended span
    */
-  onEndSpan(root: types.RootSpan) {
+  onEndSpan(root: RootSpan) {
     this.sendTrace(root);
   }
 
@@ -83,7 +84,7 @@ export class ZpagesExporter implements types.Exporter {
    * Send a trace to traces array
    * @param trace the rootSpan to be sent to the array list
    */
-  private sendTrace(trace: types.RootSpan) {
+  private sendTrace(trace: RootSpan) {
     /** If there is no status, put status 0 (OK) */
     if (!trace.status) {
       trace.status = 0;
@@ -104,7 +105,7 @@ export class ZpagesExporter implements types.Exporter {
    * Push a span to the array list
    * @param span the span to be push to the array list
    */
-  private pushSpan(span: types.Span): void {
+  private pushSpan(span: Span): void {
     if (this.traces.has(span.name)) {
       const spans = this.traces.get(span.name)!;
       // if a trace already in list, just update
@@ -126,7 +127,7 @@ export class ZpagesExporter implements types.Exporter {
    */
   private registerSpanNames(spanNames: string[]) {
     for (const name of spanNames) {
-      const span = {name} as types.Span;
+      const span = {name} as Span;
       this.traces.set(name, [span]);
     }
   }
@@ -135,7 +136,7 @@ export class ZpagesExporter implements types.Exporter {
    * Not used in this context.
    * @param spans
    */
-  publish(spans: types.Span[]) {
+  publish(spans: Span[]) {
     return Promise.resolve();
   }
 

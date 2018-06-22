@@ -23,6 +23,8 @@ import * as types from './types';
 /** Defines a Span. */
 export class Span extends SpanBase implements types.Span {
   private root: types.RootSpan;
+  /** set isRootSpan = true */
+  readonly isRootSpan = false;
 
   /**
    * Constructs a new SpanImpl instance.

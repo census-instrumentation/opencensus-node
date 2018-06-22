@@ -53,6 +53,8 @@ export abstract class SpanBase implements types.Span {
   kind: string = null;
   /** A final status for this span */
   status: number;
+  /** set isRootSpan  */
+  abstract get isRootSpan(): boolean;
 
   /** Constructs a new SpanBaseModel instance. */
   constructor() {

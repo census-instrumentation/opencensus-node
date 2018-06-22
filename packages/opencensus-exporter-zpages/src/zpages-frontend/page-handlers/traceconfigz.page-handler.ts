@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import {SamplerBuilder} from '@opencensus/core';
 import * as tracing from '@opencensus/nodejs';
-import {classes, types} from '@opencensus/opencensus-core';
 
 import {ZpagesExporter} from '../../zpages';
 
@@ -82,14 +82,14 @@ export class TraceConfigzPageHandler {
     if (query.change === 'restore_default') {
       const exporter = tracing.exporter as ZpagesExporter;
       tracing.tracer.sampler =
-          new classes.Sampler().probability(this.defaultConfig!.samplingRate);
+          SamplerBuilder.getSampler(this.defaultConfig!.samplingRate);
       return;
     }
 
     /** change the sampling probability value */
     if (query.samplingprobability) {
       tracing.tracer.sampler =
-          new classes.Sampler().probability(query.samplingprobability);
+          SamplerBuilder.getSampler(query.samplingprobability);
     }
   }
 

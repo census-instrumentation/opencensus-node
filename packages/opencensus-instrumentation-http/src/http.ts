@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {BasePlugin, Func, HeaderGetter, HeaderSetter, RootSpan, Span, Tracer} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import * as httpModule from 'http';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
@@ -29,7 +28,7 @@ export type HttpModule = typeof httpModule;
 export type RequestFunction = typeof httpModule.request;
 
 /** Http instrumentation plugin for Opencensus */
-export class HttpPlugin extends classes.BasePlugin {
+export class HttpPlugin extends BasePlugin {
   /**
    * Attributes Names according to Opencensus HTTP Specs
    * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/HTTP.md
@@ -116,7 +115,7 @@ export class HttpPlugin extends classes.BasePlugin {
         plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
         const propagation = plugin.tracer.propagation;
         const headers = request.headers;
-        const getter: types.HeaderGetter = {
+        const getter: HeaderGetter = {
           getHeader(name: string) {
             return headers[name];
           }
@@ -189,8 +188,8 @@ export class HttpPlugin extends classes.BasePlugin {
    * tracing.
    */
   protected getPatchOutgoingRequestFunction() {
-    return (original: types.Func<httpModule.ClientRequest>):
-               types.Func<httpModule.ClientRequest> => {
+    return (original: Func<httpModule.ClientRequest>): Func<
+               httpModule.ClientRequest> => {
       const plugin = this;
       return function outgoingRequest(
                  options, callback): httpModule.ClientRequest {
@@ -253,12 +252,12 @@ export class HttpPlugin extends classes.BasePlugin {
   private getMakeRequestTraceFunction(
       // tslint:disable-next-line:no-any
       request: httpModule.ClientRequest, options: httpModule.RequestOptions,
-      plugin: HttpPlugin): types.Func<httpModule.ClientRequest> {
-    return (span: types.Span): httpModule.ClientRequest => {
+      plugin: HttpPlugin): Func<httpModule.ClientRequest> {
+    return (span: Span): httpModule.ClientRequest => {
       plugin.logger.debug('makeRequestTrace');
 
       const headers = options.headers;
-      const setter: types.HeaderSetter = {
+      const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
         }

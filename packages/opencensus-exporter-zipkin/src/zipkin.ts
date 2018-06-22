@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import {prototype} from 'events';
 import * as http from 'http';
 import * as url from 'url';
 
-export interface ZipkinExporterOptions extends types.ExporterConfig {
+export interface ZipkinExporterOptions extends ExporterConfig {
   url: string;
   serviceName: string;
 }
@@ -40,16 +39,16 @@ interface TranslatedSpan {
 }
 
 /** Zipkin Exporter manager class */
-export class ZipkinTraceExporter implements types.Exporter {
+export class ZipkinTraceExporter implements Exporter {
   private zipkinUrl: url.UrlWithStringQuery;
   private serviceName: string;
-  buffer: classes.ExporterBuffer;
-  logger: types.Logger;
+  buffer: ExporterBuffer;
+  logger: Logger;
 
   constructor(options: ZipkinExporterOptions) {
     this.zipkinUrl = url.parse(options.url);
     this.serviceName = options.serviceName;
-    this.buffer = new classes.ExporterBuffer(this, options);
+    this.buffer = new ExporterBuffer(this, options);
     this.logger = options.logger || logger.logger();
   }
 
@@ -57,12 +56,12 @@ export class ZipkinTraceExporter implements types.Exporter {
    * Is called whenever a span is ended.
    * @param root the ended span
    */
-  onEndSpan(root: types.RootSpan) {
+  onEndSpan(root: RootSpan) {
     this.buffer.addToBuffer(root);
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: types.RootSpan) {}
+  onStartSpan(root: RootSpan) {}
 
   /**
    * Send a trace to zipkin service
@@ -116,7 +115,7 @@ export class ZipkinTraceExporter implements types.Exporter {
    * Mount a list (array) of spans translated to Zipkin format
    * @param rootSpans Rootspan array to be translated
    */
-  private mountSpanList(rootSpans: types.RootSpan[]): TranslatedSpan[] {
+  private mountSpanList(rootSpans: RootSpan[]): TranslatedSpan[] {
     const spanList: TranslatedSpan[] = [];
 
     for (const root of rootSpans) {
@@ -137,7 +136,7 @@ export class ZipkinTraceExporter implements types.Exporter {
    * @param span Span to be translated
    * @param rootSpan Only necessary if the span has rootSpan
    */
-  private translateSpan(span: types.Span|types.RootSpan): TranslatedSpan {
+  private translateSpan(span: Span|RootSpan): TranslatedSpan {
     const spanTraslated = {
       traceId: span.traceId,
       name: span.name,
@@ -160,7 +159,7 @@ export class ZipkinTraceExporter implements types.Exporter {
    * Send the rootSpans to zipkin service
    * @param rootSpans RootSpan array
    */
-  publish(rootSpans: types.RootSpan[]) {
+  publish(rootSpans: RootSpan[]) {
     const spanList = this.mountSpanList(rootSpans);
 
     return this.sendTraces(spanList).catch((err) => {

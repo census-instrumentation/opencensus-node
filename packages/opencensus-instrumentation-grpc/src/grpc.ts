@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {BasePlugin, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span} from '@opencensus/core';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
@@ -78,7 +78,7 @@ let Metadata: any;
 let GrpcClientModule: any;
 
 /** gRPC instrumentation plugin for Opencensus */
-export class GrpcPlugin extends classes.BasePlugin {
+export class GrpcPlugin extends BasePlugin {
   /**
    * Span grpc attributes
    */
@@ -89,7 +89,7 @@ export class GrpcPlugin extends classes.BasePlugin {
   static readonly ATTRIBUTE_GRPC_ERROR_MESSAGE = 'grpc.error_message';
 
 
-  protected readonly internalFileList: types.PluginInternalFiles = {
+  protected readonly internalFileList: PluginInternalFiles = {
     '0.13 - 1.6': {
       'client': 'src/node/src/client.js',
       'metadata': 'src/node/src/metadata.js'
@@ -164,7 +164,7 @@ export class GrpcPlugin extends classes.BasePlugin {
                 const self = this;
                 const propagation = plugin.tracer.propagation;
                 const headers = call.metadata.getMap();
-                const getter: types.HeaderGetter = {
+                const getter: HeaderGetter = {
                   getHeader(name: string) {
                     return headers[name] as string;
                   }
@@ -211,7 +211,7 @@ export class GrpcPlugin extends classes.BasePlugin {
    * Handler Unary and Client Stream Calls
    */
   private clientStreamAndUnaryHandler<RequestType, ResponseType>(
-      plugin: GrpcPlugin, rootSpan: types.RootSpan, call: ServerCallWithMeta,
+      plugin: GrpcPlugin, rootSpan: RootSpan, call: ServerCallWithMeta,
       callback: SendUnaryDataCallback,
       original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
     function patchedCallback(
@@ -244,7 +244,7 @@ export class GrpcPlugin extends classes.BasePlugin {
    * Handler Server Stream and Bidirectional Stream Calls
    */
   private serverStreamAndBidiHandler<RequestType, ResponseType>(
-      plugin: GrpcPlugin, rootSpan: types.RootSpan, call: ServerCallWithMeta,
+      plugin: GrpcPlugin, rootSpan: RootSpan, call: ServerCallWithMeta,
       original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
     let spanEnded = false;
     const endSpan = () => {
@@ -347,8 +347,7 @@ export class GrpcPlugin extends classes.BasePlugin {
      * Patches a callback so that the current span for this trace is also ended
      * when the callback is invoked.
      */
-    function patchedCallback(
-        span: types.Span, callback: SendUnaryDataCallback) {
+    function patchedCallback(span: Span, callback: SendUnaryDataCallback) {
       // tslint:disable-next-line:no-any
       const wrappedFn = (err: grpcTypes.ServiceError, res: any) => {
         if (err) {
@@ -371,7 +370,7 @@ export class GrpcPlugin extends classes.BasePlugin {
       return plugin.tracer.wrap(wrappedFn);
     }
 
-    return (span: types.Span) => {
+    return (span: Span) => {
       if (!span) {
         return original.apply(self, args);
       }
@@ -389,7 +388,7 @@ export class GrpcPlugin extends classes.BasePlugin {
 
       const metadata = this.getMetadata(original, args, span);
 
-      const setter: types.HeaderSetter = {
+      const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           metadata.set(name, value);
         }
@@ -445,7 +444,7 @@ export class GrpcPlugin extends classes.BasePlugin {
    *  https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/src/plugins/plugin-grpc.ts#L96)
    */
   // tslint:disable-next-line:no-any
-  private getMetadata(original: GrpcClientFunc, args: any[], span: types.Span):
+  private getMetadata(original: GrpcClientFunc, args: any[], span: Span):
       grpcTypes.Metadata {
     let metadata: grpcTypes.Metadata;
 

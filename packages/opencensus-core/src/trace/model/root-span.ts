@@ -32,6 +32,8 @@ export class RootSpan extends SpanBase implements types.RootSpan {
   private spansLocal: types.Span[];
   /** It's trace ID. */
   private traceIdLocal: string;
+  /** set isRootSpan = true */
+  readonly isRootSpan = true;
 
   /**
    * Constructs a new RootSpanImpl instance.

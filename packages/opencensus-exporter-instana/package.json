@@ -53,6 +53,6 @@
     "typescript": "~2.6.1"
   },
   "dependencies": {
-    "@opencensus/opencensus-core": "^0.0.2"
+    "@opencensus/core": "^0.0.2"
   }
 }

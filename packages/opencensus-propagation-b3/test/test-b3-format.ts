@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {HeaderGetter, HeaderSetter} from '@opencensus/core';
 import * as assert from 'assert';
 
 import {B3Format} from '../src/';
@@ -43,7 +41,7 @@ describe('B3Propagation', () => {
       headers[X_B3_SPAN_ID] = spanContext.spanId;
       headers[X_B3_SAMPLED] = spanContext.options;
 
-      const getter: types.HeaderGetter = {
+      const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
         }
@@ -59,12 +57,12 @@ describe('B3Propagation', () => {
       // disable-next-line to disable no-any check
       // tslint:disable-next-line
       const headers = {} as any;
-      const setter: types.HeaderSetter = {
+      const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
         }
       };
-      const getter: types.HeaderGetter = {
+      const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
         }

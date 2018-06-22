@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import * as os from 'os';
 
 import {Process, spanToThrift, Tag, ThriftUtils, UDPSender, Utils} from './jaeger-driver';
@@ -22,7 +23,7 @@ import {Process, spanToThrift, Tag, ThriftUtils, UDPSender, Utils} from './jaege
 /**
  * Options for Jaeger configuration
  */
-export interface JaegerTraceExporterOptions extends types.ExporterConfig {
+export interface JaegerTraceExporterOptions extends ExporterConfig {
   serviceName: string;
   tags?: Tag[];
   host?: string;
@@ -32,7 +33,7 @@ export interface JaegerTraceExporterOptions extends types.ExporterConfig {
 
 
 /** Format and sends span information to Jaeger */
-export class JaegerTraceExporter implements types.Exporter {
+export class JaegerTraceExporter implements Exporter {
   // Name of the tag used to report client version.
   static readonly JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY =
       'opencensus.exporter.jaeger.version';
@@ -43,9 +44,9 @@ export class JaegerTraceExporter implements types.Exporter {
   static readonly PROCESS_IP = 'ip';
 
   private process: Process;
-  private logger: types.Logger;
+  private logger: Logger;
   sender: typeof UDPSender;
-  queue: types.Span[] = [];
+  queue: Span[] = [];
   successCount = 0;
   /** Maximum size of a buffer. */
   private bufferSize: number;
@@ -84,7 +85,7 @@ export class JaegerTraceExporter implements types.Exporter {
    * Is called whenever a span is ended.
    * @param root the ended span
    */
-  onEndSpan(root: types.RootSpan) {
+  onEndSpan(root: RootSpan) {
     this.logger.debug('onEndSpan: adding rootSpan: %s', root.name);
 
     // UDPSender buffer is limited by maxPacketSize
@@ -110,10 +111,10 @@ export class JaegerTraceExporter implements types.Exporter {
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: types.RootSpan) {}
+  onStartSpan(root: RootSpan) {}
 
   // add span to local queue, which is limited by bufferSize
-  private addToBuffer(span: types.Span, numSpans: number) {
+  private addToBuffer(span: Span, numSpans: number) {
     // if UDPSender has flushed his own buffer
     if (numSpans > 0) {
       this.successCount += numSpans;
@@ -133,7 +134,7 @@ export class JaegerTraceExporter implements types.Exporter {
   }
 
   // add span to UPDSender buffer
-  private addSpanToSenderBuffer(span: types.Span) {
+  private addSpanToSenderBuffer(span: Span) {
     const thriftSpan = spanToThrift(span);
     return new Promise((resolve, reject) => {
       this.sender.append(thriftSpan, (numSpans: number, err?: string) => {
@@ -152,7 +153,7 @@ export class JaegerTraceExporter implements types.Exporter {
    * Publishes a list of root spans to Jaeger.
    * @param rootSpans
    */
-  publish(rootSpans: types.RootSpan[]) {
+  publish(rootSpans: RootSpan[]) {
     this.logger.debug('JeagerExport publishing');
     for (const root of rootSpans) {
       if (this.queue.indexOf(root) === -1) {

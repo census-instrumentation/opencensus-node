@@ -15,8 +15,31 @@
  */
 
 
-import * as logger from './common/console-logger';
-import * as classes from './index-classes';
-import * as types from './index-types';
+// types
+export * from './trace/types';
+export * from './trace/model/types';
+export * from './trace/config/types';
+export * from './trace/sampler/types';
+export * from './trace/instrumentation/types';
+export * from './trace/propagation/types';
+export * from './exporters/types';
+export * from './common/types';
 
-export {classes, logger, types};
+// classes
+
+// domain models impls
+export * from './trace/model/tracer';
+
+// sampler impl
+export * from './trace/sampler/sampler';
+
+// base instrumetation class
+export * from './trace/instrumentation/base-plugin';
+
+// console exporter and buffer impls
+export * from './exporters/exporter-buffer';
+export * from './exporters/console-exporter';
+
+// logger
+import * as logger from './common/console-logger';
+export {logger};

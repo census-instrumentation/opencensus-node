@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {RootSpan, TracerAgent, TracerConfig} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as mocha from 'mocha';
@@ -47,7 +46,7 @@ describe('Jaeger Exporter', () => {
   const dryrun = !OPENCENSUS_NETWORK_TESTS;
   let exporterOptions: JaegerTraceExporterOptions;
   let exporter: JaegerTraceExporter;
-  let tracer: classes.Tracer;
+  let tracer: TracerAgent;
 
 
   before(() => {
@@ -68,7 +67,7 @@ describe('Jaeger Exporter', () => {
     if (dryrun) {
       mockUDPSender(exporter);
     }
-    tracer = new classes.Tracer();
+    tracer = new TracerAgent();
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(exporter);
   });
