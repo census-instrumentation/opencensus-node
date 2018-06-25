@@ -24,7 +24,7 @@ const MAX_NUMBER = Number.MAX_VALUE;
 
 /**  Sampler that samples every trace. */
 export class AlwaysSampler implements Sampler {
-  description = 'always';
+  readonly description = 'always';
 
   shouldSample(traceId: string): boolean {
     return true;
@@ -33,7 +33,7 @@ export class AlwaysSampler implements Sampler {
 
 /** Sampler that samples no traces. */
 export class NeverSampler implements Sampler {
-  description = 'never';
+  readonly description = 'never';
 
   shouldSample(traceId: string): boolean {
     return false;
@@ -43,7 +43,7 @@ export class NeverSampler implements Sampler {
 /** Sampler that samples a given fraction of traces. */
 export class ProbabilitySampler implements Sampler {
   private idUpperBound: number;
-  description: string;
+  readonly description: string;
 
   /**
    * Constructs a new Probability Sampler instance.
