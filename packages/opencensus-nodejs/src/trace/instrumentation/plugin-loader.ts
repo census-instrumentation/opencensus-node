@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {Logger, Plugin, PluginNames, Tracer} from '@opencensus/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
@@ -28,17 +28,17 @@ import {Constants} from '../constants';
  */
 export class PluginLoader {
   /** The tracer */
-  private tracer: types.Tracer;
+  private tracer: Tracer;
   /** logger */
-  private logger: types.Logger;
+  private logger: Logger;
   /** A list of loaded plugins. */
-  plugins: types.Plugin[] = [];
+  plugins: Plugin[] = [];
 
   /**
    * Constructs a new PluginLoader instance.
    * @param tracer The tracer.
    */
-  constructor(logger: types.Logger, tracer: types.Tracer) {
+  constructor(logger: Logger, tracer: Tracer) {
     this.tracer = tracer;
     this.logger = logger;
   }
@@ -61,13 +61,12 @@ export class PluginLoader {
    * @param modulesToPatch A list of modules to patch.
    * @returns Plugin names.
    */
-  static defaultPluginsFromArray(modulesToPatch: string[]): types.PluginNames {
-    const plugins = modulesToPatch.reduce(
-        (plugins: types.PluginNames, moduleName: string) => {
+  static defaultPluginsFromArray(modulesToPatch: string[]): PluginNames {
+    const plugins =
+        modulesToPatch.reduce((plugins: PluginNames, moduleName: string) => {
           plugins[moduleName] = PluginLoader.defaultPackageName(moduleName);
           return plugins;
-        },
-        {} as types.PluginNames);
+        }, {} as PluginNames);
     return plugins;
   }
 
@@ -102,7 +101,7 @@ export class PluginLoader {
    * the first time the module is loaded.
    * @param pluginList A list of plugins.
    */
-  loadPlugins(pluginList: types.PluginNames) {
+  loadPlugins(pluginList: PluginNames) {
     // tslint:disable:no-any
     hook(Object.keys(pluginList), (exports, name, basedir) => {
       const version = this.getPackageVersion(name, basedir as string);
@@ -116,7 +115,7 @@ export class PluginLoader {
             'using package %s to patch %s', pluginList[name], name);
         // Expecting a plugin from module;
         try {
-          const plugin: types.Plugin = require(pluginList[name]).plugin;
+          const plugin: Plugin = require(pluginList[name]).plugin;
           this.plugins.push(plugin);
           moduleExports = plugin.enable(exports, this.tracer, version, basedir);
         } catch (e) {

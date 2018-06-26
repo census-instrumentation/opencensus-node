@@ -15,60 +15,44 @@
  */
 
 import {randomSpanId} from '../../internal/util';
-import * as types from './types';
+import {Sampler} from './types';
 
 
 const MIN_NUMBER = Number.MIN_VALUE;
 const MAX_NUMBER = Number.MAX_VALUE;
 
 
-/** This class represent the probability of a tracer. */
-export class Sampler implements types.Sampler {
+/**  Sampler that samples every trace. */
+export class AlwaysSampler implements Sampler {
+  readonly description = 'always';
+
+  shouldSample(traceId: string): boolean {
+    return true;
+  }
+}
+
+/** Sampler that samples no traces. */
+export class NeverSampler implements Sampler {
+  readonly description = 'never';
+
+  shouldSample(traceId: string): boolean {
+    return false;
+  }
+}
+
+/** Sampler that samples a given fraction of traces. */
+export class ProbabilitySampler implements Sampler {
   private idUpperBound: number;
-  description: string;
+  readonly description: string;
 
   /**
-   * Constructs a new Sampler instance.
+   * Constructs a new Probability Sampler instance.
    */
-  constructor() {}
-
-  /**
-   * Sets idUpperBound with MAX_NUMBER that is equivalent the probability be 1
-   * @returns a Sampler object
-   */
-  always(): Sampler {
-    this.description = 'always';
-    this.idUpperBound = MAX_NUMBER;
-    return this;
-  }
-
-  /**
-   * Sets idUpperBound with MIN_NUMBER that is equivalent the probability be 0
-   * @returns a Sampler object
-   */
-  never(): Sampler {
-    this.description = 'never';
-    this.idUpperBound = MIN_NUMBER;
-    return this;
-  }
-
-  /**
-   * Sets idUpperBound with the probability. If probability
-   * parameter is bigger then 1 set always. If probability parameter less
-   * than 0, set never.
-   * @param probability probability between 0 and 1
-   * @returns a Sampler object
-   */
-  probability(probability: number): Sampler {
-    if (probability >= 1.0) {
-      return this.always();
-    } else if (probability <= 0) {
-      return this.never();
-    }
+  constructor(probability: number) {
     this.description = `probability.(${probability})`;
     this.idUpperBound = probability * MAX_NUMBER;
-    return this;
   }
+
 
   /**
    * Checks if trace belong the sample.
@@ -86,5 +70,29 @@ export class Sampler implements types.Sampler {
     } else {
       return false;
     }
+  }
+}
+
+
+/** Builder class of Samplers */
+export class SamplerBuilder {
+  private static readonly ALWAYS = new AlwaysSampler();
+  private static readonly NEVER = new NeverSampler();
+
+  /**
+   * If probability parameter is bigger then 1 return AlwaysSampler instance.
+   * If probability parameter is less than 0 returns NeverSampler instance.
+   * Else returns a Probability Sampler
+   *
+   * @param probability probability between 0 and 1
+   * @returns a Sampler object
+   */
+  static getSampler(probability: number): Sampler {
+    if (probability >= 1.0) {
+      return SamplerBuilder.ALWAYS;
+    } else if (probability <= 0) {
+      return SamplerBuilder.NEVER;
+    }
+    return new ProbabilitySampler(probability);
   }
 }

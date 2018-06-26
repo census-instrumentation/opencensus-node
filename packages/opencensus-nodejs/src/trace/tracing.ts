@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import * as core from '@opencensus/core';
+import {Logger, logger} from '@opencensus/core';
+
 import * as extend from 'extend';
 
 import {defaultConfig} from './config/default-config';
@@ -22,31 +24,31 @@ import {PluginLoader} from './instrumentation/plugin-loader';
 
 
 /** Implements a Tracing. */
-export class Tracing implements types.Tracing {
+export class Tracing implements core.Tracing {
   /** A tracer object */
-  readonly tracer: types.Tracer;
+  readonly tracer: core.Tracer;
   /** A plugin loader object */
   private pluginLoader: PluginLoader;
   /** Plugin names */
-  private defaultPlugins: types.PluginNames;
+  private defaultPlugins: core.PluginNames;
   /** A configuration object to start the tracing */
-  private configLocal: types.Config = null;
+  private configLocal: core.Config = null;
   /** An object to log information to */
-  private logger: types.Logger = null;
+  private logger: core.Logger = null;
   /** Singleton instance */
-  private static singletonInstance: types.Tracing;
+  private static singletonInstance: core.Tracing;
   /** Indicates if the tracing is active */
   private activeLocal: boolean;
 
   /** Constructs a new TracingImpl instance. */
   constructor() {
-    this.tracer = new classes.Tracer();
+    this.tracer = new core.CoreTracer();
     this.defaultPlugins = PluginLoader.defaultPluginsFromArray(
         Constants.DEFAULT_INSTRUMENTATION_MODULES);
   }
 
   /** Gets the trancing instance. */
-  static get instance(): types.Tracing {
+  static get instance(): core.Tracing {
     return this.singletonInstance || (this.singletonInstance = new this());
   }
 
@@ -56,7 +58,7 @@ export class Tracing implements types.Tracing {
   }
 
   /** Gets config */
-  get config(): types.Config {
+  get config(): core.Config {
     return this.configLocal;
   }
 
@@ -65,7 +67,7 @@ export class Tracing implements types.Tracing {
    * @param userConfig A configuration object to start tracing.
    * @returns The started Tracing instance.
    */
-  start(userConfig?: types.Config): types.Tracing {
+  start(userConfig?: core.Config): core.Tracing {
     this.configLocal = extend(
         true, {}, defaultConfig, {plugins: this.defaultPlugins}, userConfig);
 
@@ -74,11 +76,10 @@ export class Tracing implements types.Tracing {
     this.configLocal.logger = this.logger;
     this.logger.debug('config: %o', this.configLocal);
     this.pluginLoader = new PluginLoader(this.logger, this.tracer);
-    this.pluginLoader.loadPlugins(
-        this.configLocal.plugins as types.PluginNames);
+    this.pluginLoader.loadPlugins(this.configLocal.plugins as core.PluginNames);
 
     if (!this.configLocal.exporter) {
-      const exporter = new classes.ConsoleExporter(this.configLocal);
+      const exporter = new core.ConsoleExporter(this.configLocal);
       this.registerExporter(exporter);
     } else {
       this.registerExporter(this.configLocal.exporter);
@@ -99,16 +100,15 @@ export class Tracing implements types.Tracing {
 
 
   /** Gets the exporter. */
-  get exporter(): types.Exporter {
-    return this.configLocal ? this.configLocal.exporter as types.Exporter :
-                              null;
+  get exporter(): core.Exporter {
+    return this.configLocal ? this.configLocal.exporter as core.Exporter : null;
   }
 
   /**
    * Registers an exporter to send the collected traces to.
    * @param exporter The exporter to send the traces to.
    */
-  registerExporter(exporter: types.Exporter): types.Tracing {
+  registerExporter(exporter: core.Exporter): core.Tracing {
     if (exporter) {
       if (this.configLocal.exporter) {
         this.unregisterExporter(this.configLocal.exporter);
@@ -128,7 +128,7 @@ export class Tracing implements types.Tracing {
    * Unregisters an exporter.
    * @param exporter The exporter to stop sending traces to.
    */
-  unregisterExporter(exporter: types.Exporter): types.Tracing {
+  unregisterExporter(exporter: core.Exporter): core.Tracing {
     this.tracer.unregisterSpanEventListener(exporter);
     this.configLocal.exporter = null;
     return this;

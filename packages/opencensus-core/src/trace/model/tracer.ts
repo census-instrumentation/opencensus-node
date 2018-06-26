@@ -19,7 +19,7 @@ import * as loggerTypes from '../../common/types';
 import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
 import {Propagation} from '../propagation/types';
-import {Sampler} from '../sampler/sampler';
+import {SamplerBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 
 import {RootSpan} from './root-span';
@@ -30,7 +30,7 @@ import * as types from './types';
 /**
  * This class represent a tracer.
  */
-export class Tracer implements types.Tracer {
+export class CoreTracer implements types.Tracer {
   /** Indicates if the tracer is active */
   private activeLocal: boolean;
   /** Manage context automatic propagation */
@@ -81,7 +81,7 @@ export class Tracer implements types.Tracer {
     this.activeLocal = true;
     this.config = config;
     this.logger = this.config.logger || logger.logger();
-    this.sampler = new Sampler().probability(config.samplingRate);
+    this.sampler = SamplerBuilder.getSampler(config.samplingRate);
     return this;
   }
 

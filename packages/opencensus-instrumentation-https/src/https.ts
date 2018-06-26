@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
+import {Func} from '@opencensus/core';
 import {HttpPlugin} from '@opencensus/instrumentation-http';
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
 import * as http from 'http';
 import * as https from 'https';
 import * as semver from 'semver';
@@ -61,8 +59,7 @@ export class HttpsPlugin extends HttpPlugin {
 
   /** Patches HTTPS outgoing requests */
   private getPatchHttpsOutgoingRequest() {
-    return (original: types.Func<http.ClientRequest>):
-               types.Func<http.ClientRequest> => {
+    return (original: Func<http.ClientRequest>): Func<http.ClientRequest> => {
       const plugin = this;
       return function httpsOutgoingRequest(
                  options, callback): http.ClientRequest {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
+import {Span} from '@opencensus/core';
 import * as express from 'express';
 
 import {ZpagesExporter} from '../zpages';
@@ -27,8 +27,7 @@ import {createTracezHandler} from './controllers/tracez.controller';
  * data.
  * @param traceMap A span data store.
  */
-export function createRoutes(traceMap: Map<string, types.Span[]>):
-    express.Router {
+export function createRoutes(traceMap: Map<string, Span[]>): express.Router {
   const router = express.Router();
 
   // Tracez Page

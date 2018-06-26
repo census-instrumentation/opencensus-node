@@ -19,11 +19,11 @@ import * as mocha from 'mocha';
 
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
-import {Tracer} from '../src/trace/model/tracer';
+import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link, MessageEvent, TraceOptions} from '../src/trace/model/types';
 
-const tracer = new Tracer();
+const tracer = new CoreTracer();
 
 describe('RootSpan', () => {
   /**
@@ -61,6 +61,7 @@ describe('RootSpan', () => {
       const span = root.startChildSpan('spanName', 'spanType');
       assert.strictEqual(root.spans.length, 1);
       assert.strictEqual(span, root.spans[0]);
+      assert.strictEqual(root.parentSpanId, null);
 
       for (const span of root.spans) {
         assert.ok(span instanceof Span);

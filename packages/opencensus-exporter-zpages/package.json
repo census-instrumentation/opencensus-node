@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@opencensus/nodejs": "^0.0.2",
-    "@opencensus/opencensus-core": "^0.0.2",
+    "@opencensus/core": "^0.0.2",
     "ejs": "^2.5.8",
     "express": "^4.16.3"
   }

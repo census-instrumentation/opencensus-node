@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+
+import * as core from '@opencensus/core';
+import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 
 import {defaultConfig} from '../src/trace/config/default-config';
@@ -25,7 +25,7 @@ import {Tracing} from '../src/trace/tracing';
 
 
 
-const NOOP_EXPORTER = new classes.NoopExporter();
+const NOOP_EXPORTER = new core.NoopExporter();
 describe('Tracing', () => {
   Constants.DEFAULT_INSTRUMENTATION_MODULES = ['http', 'https'];
 
@@ -47,7 +47,7 @@ describe('Tracing', () => {
 
   /** Should return a started tracing instance */
   describe('start()', () => {
-    let aTracing: types.Tracing;
+    let aTracing: core.Tracing;
     const tracing = new Tracing();
     // tslint:disable:no-any
     beforeEach(() => {
@@ -181,7 +181,7 @@ describe('Tracing', () => {
       const tracing = new Tracing();
       tracing.start();
       const tracer = tracing.tracer;
-      assert.ok(tracer instanceof classes.Tracer);
+      assert.ok(tracer instanceof core.CoreTracer);
     });
   });
 
@@ -191,7 +191,7 @@ describe('Tracing', () => {
       const tracing = new Tracing();
       tracing.start();
       const exporter = tracing.exporter;
-      assert.ok(exporter instanceof classes.ConsoleExporter);
+      assert.ok(exporter instanceof core.ConsoleExporter);
     });
   });
 
@@ -224,7 +224,7 @@ describe('Tracing', () => {
       tracing.registerExporter(exporter);
       assert.strictEqual(tracing.config.exporter, exporter);
       assert.strictEqual(tracing.tracer.eventListeners.length, 1);
-      const newExporter = new classes.ConsoleExporter(defaultConfig);
+      const newExporter = new core.ConsoleExporter(defaultConfig);
       tracing.registerExporter(newExporter);
       assert.strictEqual(tracing.config.exporter, newExporter);
       assert.strictEqual(tracing.tracer.eventListeners.length, 1);

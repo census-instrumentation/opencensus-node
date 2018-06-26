@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
+import {Func, HeaderGetter, HeaderSetter, Span, TraceOptions, Tracer} from '@opencensus/core';
 import {HttpPlugin} from '@opencensus/instrumentation-http';
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
 import * as http from 'http';
 import * as http2 from 'http2';
 import * as net from 'net';
@@ -67,8 +65,7 @@ export class Http2Plugin extends HttpPlugin {
 
   private getPatchConnectFunction() {
     const plugin = this;
-    return (original: ConnectFunction):
-               types.Func<http2.ClientHttp2Session> => {
+    return (original: ConnectFunction): Func<http2.ClientHttp2Session> => {
       return function patchedConnect(this: Http2Plugin, authority: string):
           http2.ClientHttp2Session {
             const client = original.apply(this, arguments);
@@ -87,7 +84,7 @@ export class Http2Plugin extends HttpPlugin {
   private getPatchRequestFunction() {
     const plugin = this;
     return (original: RequestFunction,
-            authority: string): types.Func<http2.ClientHttp2Stream> => {
+            authority: string): Func<http2.ClientHttp2Stream> => {
       return function patchedRequest(
                  this: http2.Http2Session,
                  headers: http2.OutgoingHttpHeaders): http2.ClientHttp2Stream {
@@ -125,12 +122,11 @@ export class Http2Plugin extends HttpPlugin {
 
   private getMakeHttp2RequestTraceFunction(
       request: http2.ClientHttp2Stream, headers: http2.OutgoingHttpHeaders,
-      authority: string,
-      plugin: Http2Plugin): types.Func<http2.ClientHttp2Stream> {
-    return (span: types.Span): http2.ClientHttp2Stream => {
+      authority: string, plugin: Http2Plugin): Func<http2.ClientHttp2Stream> {
+    return (span: Span): http2.ClientHttp2Stream => {
       if (!span) return request;
 
-      const setter: types.HeaderSetter = {
+      const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
         }
@@ -185,7 +181,7 @@ export class Http2Plugin extends HttpPlugin {
 
   private getPatchCreateServerFunction() {
     const plugin = this;
-    return (original: CreateServerFunction): types.Func<http2.Http2Server> => {
+    return (original: CreateServerFunction): Func<http2.Http2Server> => {
       return function patchedCreateServer(this: Http2Plugin):
           http2.Http2Server {
             const server = original.apply(this, arguments);
@@ -203,7 +199,7 @@ export class Http2Plugin extends HttpPlugin {
 
   private getPatchEmitFunction() {
     const plugin = this;
-    return (original: RequestFunction): types.Func<http2.ClientHttp2Stream> => {
+    return (original: RequestFunction): Func<http2.ClientHttp2Stream> => {
       return function patchedEmit(
                  this: http2.Http2Server, event: string,
                  stream: http2.ServerHttp2Stream,
@@ -217,13 +213,13 @@ export class Http2Plugin extends HttpPlugin {
           getHeader(name: string) {
             return headers[name];
           }
-        } as types.HeaderGetter;
+        } as HeaderGetter;
 
         const traceOptions = {
           name: headers[':path'],
           kind: 'SERVER',
           spanContext: propagation ? propagation.extract(getter) : null
-        } as types.TraceOptions;
+        } as TraceOptions;
 
         // Respond is called in a stream event. We wrap it to get the sent
         // status code.

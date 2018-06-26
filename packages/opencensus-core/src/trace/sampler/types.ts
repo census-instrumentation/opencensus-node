@@ -14,36 +14,13 @@
  * limitations under the License.
  */
 
-import {Logger} from '../../common/types';
-import {Exporter} from '../../exporters/types';
-import {PluginNames} from '../instrumentation/types';
 
-/** This interface represent the probability of a tracer. */
+/** This interface represent a sampler . */
 export interface Sampler {
   /**
-   * A Sampler description name
+   * A string that uniquely describes the sampling behavior of this instance.
    */
-  description: string;
-  /**
-   * Sets idUpperBound with MAX_NUMBER that is equivalent the probability be 1.
-   * @returns a Sampler object.
-   */
-  always(): Sampler;
-
-  /**
-   * Sets idUpperBound with MIN_NUMBER that is equivalent the probability be 0.
-   * @returns a Sampler object.
-   */
-  never(): Sampler;
-
-  /**
-   * Sets idUpperBound with the probability. If probability
-   * parameter is bigger then 1 set always. If probability parameter less
-   * than 0, set never.
-   * @param probability probability between 0 and 1.
-   * @returns a Sampler object.
-   */
-  probability(probability: number): Sampler;
+  readonly description: string;
 
   /**
    * Checks if trace belong the sample.

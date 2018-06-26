@@ -19,7 +19,7 @@ import * as mocha from 'mocha';
 
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
-import {Tracer} from '../src/trace/model/tracer';
+import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link, MessageEvent} from '../src/trace/model/types';
 
@@ -27,7 +27,7 @@ import {Annotation, Attributes, Link, MessageEvent} from '../src/trace/model/typ
 // TODO: we should evaluate a way to merge similar test cases between span and
 // rootspan
 
-const tracer = new Tracer();
+const tracer = new CoreTracer();
 
 describe('Span', () => {
   /**

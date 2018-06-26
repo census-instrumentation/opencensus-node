@@ -50,7 +50,7 @@
     "typescript": "~2.7.2"
   },
   "dependencies": {
-    "@opencensus/opencensus-core": "^0.0.2",
+    "@opencensus/core": "^0.0.2",
     "uuid": "^3.2.1"
   }
 }

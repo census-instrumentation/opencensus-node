@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanContext} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 
@@ -35,12 +36,11 @@ type TranslatedSpan = {
   endTime: Date
 };
 
-type ExporterBuffer = typeof classes.ExporterBuffer;
 
 /**
  * Options for stackdriver configuration
  */
-export interface StackdriverExporterOptions extends types.ExporterConfig {
+export interface StackdriverExporterOptions extends ExporterConfig {
   /**
    * projectId project id defined to stackdriver
    */
@@ -54,34 +54,34 @@ interface TracesWithCredentials {
 }
 
 /** Format and sends span information to Stackdriver */
-export class StackdriverTraceExporter implements types.Exporter {
+export class StackdriverTraceExporter implements Exporter {
   projectId: string;
-  exporterBuffer: classes.ExporterBuffer;
-  logger: types.Logger;
-  failBuffer: types.SpanContext[] = [];
+  exporterBuffer: ExporterBuffer;
+  logger: Logger;
+  failBuffer: SpanContext[] = [];
 
   constructor(options: StackdriverExporterOptions) {
     this.projectId = options.projectId;
     this.logger = options.logger || logger.logger();
-    this.exporterBuffer = new classes.ExporterBuffer(this, options);
+    this.exporterBuffer = new ExporterBuffer(this, options);
   }
 
   /**
    * Is called whenever a span is ended.
    * @param root the ended span
    */
-  onEndSpan(root: types.RootSpan) {
+  onEndSpan(root: RootSpan) {
     this.exporterBuffer.addToBuffer(root);
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: types.RootSpan) {}
+  onStartSpan(root: RootSpan) {}
 
   /**
    * Publishes a list of root spans to Stackdriver.
    * @param rootSpans
    */
-  publish(rootSpans: types.RootSpan[]) {
+  publish(rootSpans: RootSpan[]) {
     const stackdriverTraces =
         rootSpans.map(trace => this.translateTrace(trace));
 
@@ -101,8 +101,8 @@ export class StackdriverTraceExporter implements types.Exporter {
    * Translates root span data to Stackdriver's trace format.
    * @param root
    */
-  private translateTrace(root: types.RootSpan): TranslatedTrace {
-    const spanList = root.spans.map(span => this.translateSpan(span));
+  private translateTrace(root: RootSpan): TranslatedTrace {
+    const spanList = root.spans.map((span: Span) => this.translateSpan(span));
     spanList.push(this.translateSpan(root));
 
     return {projectId: this.projectId, traceId: root.traceId, spans: spanList};
@@ -112,7 +112,7 @@ export class StackdriverTraceExporter implements types.Exporter {
    * Translates span data to Stackdriver's span format.
    * @param span
    */
-  private translateSpan(span: types.Span): TranslatedSpan {
+  private translateSpan(span: Span): TranslatedSpan {
     return {
       name: span.name,
       kind: 'SPAN_KIND_UNSPECIFIED',

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {classes, types} from '@opencensus/opencensus-core';
+import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as mocha from 'mocha';
@@ -29,7 +29,7 @@ interface RequestResponse {
 }
 
 /** Default config for traces tests */
-const defaultConfig: types.TracerConfig = {
+const defaultConfig: TracerConfig = {
   samplingRate: 1
 };
 
@@ -53,13 +53,13 @@ describe('Instana Exporter', function() {
   describe('publish()', () => {
     it('should send traces to Instana agent', async () => {
       const exporter = new InstanaTraceExporter();
-      const tracer = new classes.Tracer();
+      const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
       return tracer
           .startRootSpan(
               {name: 'root-test'},
-              async (rootSpan: types.RootSpan) => {
+              async (rootSpan: RootSpan) => {
                 const span = rootSpan.startChildSpan('spanTest', 'spanType');
                 span.end();
                 rootSpan.end();

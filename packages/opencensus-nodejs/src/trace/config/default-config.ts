@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-
 import {Constants} from '../constants';
 
 /**

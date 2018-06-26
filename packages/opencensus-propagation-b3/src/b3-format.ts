@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
+
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 
-import {Tracer} from '../../opencensus-core/build/src/index-classes';
 
 const X_B3_TRACE_ID = 'x-b3-traceid';
 const X_B3_SPAN_ID = 'x-b3-spanid';
@@ -32,13 +30,13 @@ const NOT_SAMPLED_VALUE = 0x0;
 
 
 /** Propagates span context through B3 Format propagation. */
-export class B3Format implements types.Propagation {
+export class B3Format implements Propagation {
   /**
    * Gets the trace context from a request headers. If there is no trace context
    * in the headers, null is returned.
    * @param getter
    */
-  extract(getter: types.HeaderGetter): types.SpanContext {
+  extract(getter: HeaderGetter): SpanContext {
     if (getter) {
       let opt = getter.getHeader(X_B3_SAMPLED);
       if (opt instanceof Array) {
@@ -48,7 +46,7 @@ export class B3Format implements types.Propagation {
         traceId: getter.getHeader(X_B3_TRACE_ID),
         spanId: getter.getHeader(X_B3_SPAN_ID),
         options: isNaN(Number(opt)) ? undefined : Number(opt)
-      } as types.SpanContext;
+      } as SpanContext;
 
       return spanContext;
     }
@@ -60,7 +58,7 @@ export class B3Format implements types.Propagation {
    * @param setter
    * @param spanContext
    */
-  inject(setter: types.HeaderSetter, spanContext: types.SpanContext): void {
+  inject(setter: HeaderSetter, spanContext: SpanContext): void {
     if (setter) {
       setter.setHeader(X_B3_TRACE_ID, spanContext.traceId || 'undefined');
       setter.setHeader(X_B3_SPAN_ID, spanContext.spanId || 'undefined');
@@ -75,12 +73,12 @@ export class B3Format implements types.Propagation {
   /**
    * Generate SpanContexts
    */
-  generate(): types.SpanContext {
+  generate(): SpanContext {
     return {
       traceId: uuid.v4().split('-').join(''),
       // tslint:disable-next-line:ban Needed to parse hexadecimal.
       spanId: parseInt(crypto.randomBytes(6).toString('hex'), 16).toString(),
       options: SAMPLED_VALUE
-    } as types.SpanContext;
+    } as SpanContext;
   }
 }

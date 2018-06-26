@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as mocha from 'mocha';
@@ -44,7 +43,7 @@ describe('Stackdriver Exporter', function() {
       process.env.OPENCENSUS_NETWORK_TESTS as string;
   let exporterOptions: StackdriverExporterOptions;
   let exporter: StackdriverTraceExporter;
-  let tracer: classes.Tracer;
+  let tracer: CoreTracer;
 
 
   before(() => {
@@ -73,7 +72,7 @@ describe('Stackdriver Exporter', function() {
 
   beforeEach(() => {
     exporter = new StackdriverTraceExporter(exporterOptions);
-    tracer = new classes.Tracer();
+    tracer = new CoreTracer();
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(exporter);
     if (!dryrun) {
@@ -87,7 +86,7 @@ describe('Stackdriver Exporter', function() {
   describe('onEndSpan()', () => {
     it('should add a root span to an exporter buffer', () => {
       const rootSpanOptions = {name: 'sdBufferTestRootSpan'};
-      return tracer.startRootSpan(rootSpanOptions, (rootSpan) => {
+      return tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
         assert.strictEqual(exporter.exporterBuffer.getQueue().length, 0);
 
         const spanName = 'sdBufferTestChildSpan';
@@ -115,7 +114,7 @@ describe('Stackdriver Exporter', function() {
       }
 
       return tracer.startRootSpan(
-          {name: 'sdNoExportTestRootSpan'}, async (rootSpan) => {
+          {name: 'sdNoExportTestRootSpan'}, async (rootSpan: RootSpan) => {
             const span = tracer.startChildSpan('sdNoExportTestChildSpan');
             span.end();
             rootSpan.end();
@@ -141,11 +140,11 @@ describe('Stackdriver Exporter', function() {
         logger: logger.logger('debug')
       };
       const failExporter = new StackdriverTraceExporter(failExporterOptions);
-      const failTracer = new classes.Tracer();
+      const failTracer = new CoreTracer();
       failTracer.start({samplingRate: 1});
       failTracer.registerSpanEventListener(failExporter);
       return failTracer.startRootSpan(
-          {name: 'sdNoExportTestRootSpan'}, async (rootSpan) => {
+          {name: 'sdNoExportTestRootSpan'}, async (rootSpan: RootSpan) => {
             const span = failTracer.startChildSpan('sdNoExportTestChildSpan');
             span.end();
             rootSpan.end();
@@ -167,7 +166,7 @@ describe('Stackdriver Exporter', function() {
       }
 
       return tracer.startRootSpan(
-          {name: 'sdExportTestRootSpan'}, async (rootSpan) => {
+          {name: 'sdExportTestRootSpan'}, async (rootSpan: RootSpan) => {
             const span = tracer.startChildSpan('sdExportTestChildSpan');
             span.end();
             rootSpan.end();
@@ -189,7 +188,7 @@ describe('Stackdriver Exporter', function() {
       nocks.oauth2((body) => true);
 
       return tracer.startRootSpan(
-          {name: 'sdErrorExportTestRootSpan'}, (rootSpan) => {
+          {name: 'sdErrorExportTestRootSpan'}, (rootSpan: RootSpan) => {
             const span = tracer.startChildSpan('sdErrorExportTestChildSpan');
             span.end();
             rootSpan.end();

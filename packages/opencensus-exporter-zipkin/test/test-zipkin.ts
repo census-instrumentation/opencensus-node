@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
+import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as mocha from 'mocha';
@@ -48,7 +47,7 @@ const zipkinOptions = {
 } as ZipkinExporterOptions;
 
 /** Default config for traces tests */
-const defaultConfig: types.TracerConfig = {
+const defaultConfig: TracerConfig = {
   samplingRate: 1
 };
 
@@ -78,11 +77,11 @@ describe('Zipkin Exporter', function() {
   describe('onEndSpan()', () => {
     it('Should add spans to the exporter buffer', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
-      const tracer = new classes.Tracer();
+      const tracer = new CoreTracer();
       tracer.registerSpanEventListener(exporter);
       tracer.start(defaultConfig);
 
-      tracer.startRootSpan({name: 'root-test'}, (rootSpan: types.RootSpan) => {
+      tracer.startRootSpan({name: 'root-test'}, (rootSpan: RootSpan) => {
         const span = rootSpan.startChildSpan('spanTest', 'spanType');
         span.end();
         rootSpan.end();
@@ -95,11 +94,11 @@ describe('Zipkin Exporter', function() {
   describe('publish()', () => {
     it('should send traces to Zipkin service', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
-      const tracer = new classes.Tracer();
+      const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
       return tracer.startRootSpan(
-          {name: 'root-test'}, async (rootSpan: types.RootSpan) => {
+          {name: 'root-test'}, async (rootSpan: RootSpan) => {
             const span = rootSpan.startChildSpan('spanTest', 'spanType');
             span.end();
             rootSpan.end();
@@ -120,11 +119,11 @@ describe('Zipkin Exporter', function() {
          } as ZipkinExporterOptions;
 
          const exporter = new ZipkinTraceExporter(options);
-         const tracer = new classes.Tracer();
+         const tracer = new CoreTracer();
          tracer.start(defaultConfig);
 
          return tracer.startRootSpan(
-             {name: 'root-test'}, async (rootSpan: types.RootSpan) => {
+             {name: 'root-test'}, async (rootSpan: RootSpan) => {
                const span = rootSpan.startChildSpan('spanTest', 'spanType');
                span.end();
                rootSpan.end();

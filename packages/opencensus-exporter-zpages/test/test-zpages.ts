@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
+import {RootSpan, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import axios from 'axios';
 import * as http from 'http';
@@ -35,7 +35,7 @@ const options = {
 const zpagesServerUrl = 'http://localhost:' + options.port;
 
 /** Default config for traces tests */
-const defaultConfig: types.TracerConfig = {
+const defaultConfig: TracerConfig = {
   samplingRate: 0.2
 };
 
@@ -115,7 +115,7 @@ describe('Zpages Exporter', () => {
       tracing.registerExporter(zpages);
 
       tracing.tracer.startRootSpan(
-          {name: 'rootSpanTest'}, (rootSpan: types.RootSpan) => {
+          {name: 'rootSpanTest'}, (rootSpan: RootSpan) => {
             const span =
                 tracing.tracer.startChildSpan('spanNameTest', 'spanType');
             span.end();

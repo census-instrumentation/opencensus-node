@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
+import {logger} from '@opencensus/core';
 import {B3Format} from '@opencensus/propagation-b3';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
@@ -228,11 +229,11 @@ const grpcClient = {
       }
 };
 
-class RootSpanVerifier implements types.SpanEventListener {
-  endedRootSpans: types.RootSpan[] = [];
+class RootSpanVerifier implements SpanEventListener {
+  endedRootSpans: RootSpan[] = [];
 
-  onStartSpan(span: types.RootSpan): void {}
-  onEndSpan(root: types.RootSpan) {
+  onStartSpan(span: RootSpan): void {}
+  onEndSpan(root: RootSpan) {
     this.endedRootSpans.push(root);
   }
 }
@@ -241,7 +242,7 @@ class RootSpanVerifier implements types.SpanEventListener {
 describe('GrpcPlugin() ', function() {
   let server: grpcModule.Server;
   let client: TestGrpcClient;
-  const tracer = new classes.Tracer();
+  const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start({samplingRate: 1, propagation: new B3Format(), logger: log});
 
@@ -326,8 +327,7 @@ describe('GrpcPlugin() ', function() {
                                                        false;
 
   function assertSpan(
-      span: types.Span, spanName: string, kind: string,
-      status: grpcModule.status) {
+      span: Span, spanName: string, kind: string, status: grpcModule.status) {
     assert.strictEqual(span.name, spanName);
     assert.strictEqual(span.kind, kind);
     assert.strictEqual(
@@ -344,7 +344,7 @@ describe('GrpcPlugin() ', function() {
   }
 
   // Check if sourceSpan was propagated to targetSpan
-  function assertPropagation(sourceSpan: types.Span, targetSpan: types.Span) {
+  function assertPropagation(sourceSpan: Span, targetSpan: Span) {
     assert.strictEqual(targetSpan.traceId, sourceSpan.traceId);
     assert.strictEqual(targetSpan.parentSpanId, sourceSpan.id);
     assert.strictEqual(
@@ -388,8 +388,8 @@ describe('GrpcPlugin() ', function() {
                assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
                const options = {name: 'TestRootSpan'};
                const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
-               let serverRoot: types.RootSpan;
-               return tracer.startRootSpan(options, async root => {
+               let serverRoot: RootSpan;
+               return tracer.startRootSpan(options, async (root: RootSpan) => {
                  assert.strictEqual(root.name, options.name);
                  const args = [client, method.request];
                  await method.method.apply(this, args)
@@ -462,8 +462,8 @@ describe('GrpcPlugin() ', function() {
                assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
                const options = {name: 'TestRootSpan'};
                const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
-               let serverRoot: types.RootSpan;
-               return tracer.startRootSpan(options, async root => {
+               let serverRoot: RootSpan;
+               return tracer.startRootSpan(options, async (root: RootSpan) => {
                  assert.strictEqual(root.name, options.name);
                  const errRequest = (method.request instanceof Array) ?
                      method.request.slice(0, method.request.length) :

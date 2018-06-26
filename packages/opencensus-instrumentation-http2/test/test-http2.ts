@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
-import {classes} from '@opencensus/opencensus-core';
-import {logger} from '@opencensus/opencensus-core';
+
+import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
+import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http2 from 'http2';
 import * as mocha from 'mocha';
@@ -28,18 +28,18 @@ import {Http2Plugin} from '../src/';
 
 const VERSION = process.versions.node;
 
-class RootSpanVerifier implements types.SpanEventListener {
-  endedRootSpans: types.RootSpan[] = [];
+class RootSpanVerifier implements SpanEventListener {
+  endedRootSpans: RootSpan[] = [];
 
-  onStartSpan(root: types.RootSpan): void {}
-  onEndSpan(root: types.RootSpan) {
+  onStartSpan(root: RootSpan): void {}
+  onEndSpan(root: RootSpan) {
     this.endedRootSpans.push(root);
   }
 }
 
 function assertSpanAttributes(
-    span: types.Span, httpStatusCode: number, httpMethod: string,
-    hostName: string, path: string, userAgent: string) {
+    span: Span, httpStatusCode: number, httpMethod: string, hostName: string,
+    path: string, userAgent: string) {
   assert.strictEqual(
       span.status, Http2Plugin.convertTraceStatus(httpStatusCode));
   assert.strictEqual(
@@ -89,7 +89,7 @@ describe('Http2Plugin', () => {
   const authority = `http://${host}`;
 
   const log = logger.logger();
-  const tracer = new classes.Tracer();
+  const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start({samplingRate: 1, logger: log});
 
@@ -172,7 +172,7 @@ describe('Http2Plugin', () => {
       const requestOptions = {':method': 'GET', ':path': testPath};
       const options = {name: 'TestRootSpan'};
 
-      return tracer.startRootSpan(options, async root => {
+      return tracer.startRootSpan(options, async (root: RootSpan) => {
         await http2Request.get(client, requestOptions).then((result) => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
@@ -193,7 +193,7 @@ describe('Http2Plugin', () => {
            const requestOptions = {':method': 'GET', ':path': testPath};
            const options = {name: 'TestRootSpan'};
 
-           return tracer.startRootSpan(options, async root => {
+           return tracer.startRootSpan(options, async (root: RootSpan) => {
              await http2Request.get(client, requestOptions).then((result) => {
                assert.ok(root.name.indexOf('TestRootSpan') >= 0);
                assert.strictEqual(root.spans.length, 1);
@@ -215,7 +215,7 @@ describe('Http2Plugin', () => {
       const num = 5;
       const options = {name: 'TestRootSpan'};
 
-      return tracer.startRootSpan(options, async root => {
+      return tracer.startRootSpan(options, async (root: RootSpan) => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
           await http2Request.get(client, requestOptions).then((result) => {

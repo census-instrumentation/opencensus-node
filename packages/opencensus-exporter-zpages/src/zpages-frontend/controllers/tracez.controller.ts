@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
+import {Span} from '@opencensus/core';
 import * as express from 'express';
 
 import {TracezPageHandler} from './../page-handlers/tracez.page-handler';
@@ -23,7 +23,7 @@ import {TracezPageHandler} from './../page-handlers/tracez.page-handler';
  * Creates an Express middleware that renders the Tracez view.
  * @param traceMap A span data store.
  */
-export function createTracezHandler(traceMap: Map<string, types.Span[]>):
+export function createTracezHandler(traceMap: Map<string, Span[]>):
     express.Handler {
   return (req: express.Request, res: express.Response) => {
     const html = new TracezPageHandler(traceMap);

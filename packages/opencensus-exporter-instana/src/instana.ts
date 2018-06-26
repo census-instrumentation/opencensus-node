@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {classes, logger, types} from '@opencensus/opencensus-core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import {logger, Logger} from '@opencensus/core';
 import {request} from 'http';
 
 type InstanaSpan = {
@@ -29,19 +30,19 @@ type InstanaSpan = {
   data: {[s: string]: string;}
 };
 
-export interface InstanaExporterOptions extends types.ExporterConfig {
+export interface InstanaExporterOptions extends ExporterConfig {
   agentHost?: string;
   agentPort?: number;
   transmissionTimeout?: number;
 }
 
-export class InstanaTraceExporter implements types.Exporter {
+export class InstanaTraceExporter implements Exporter {
   agentHost: string;
   agentPort: number;
   transmissionTimeout: number;
 
-  exporterBuffer: classes.ExporterBuffer;
-  logger: types.Logger;
+  exporterBuffer: ExporterBuffer;
+  logger: Logger;
 
   constructor(options: InstanaExporterOptions = {}) {
     this.agentHost =
@@ -50,12 +51,12 @@ export class InstanaTraceExporter implements types.Exporter {
         options.agentPort || Number(process.env.INSTANA_AGENT_PORT) || 42699;
     this.transmissionTimeout = options.transmissionTimeout || 10000;
     this.logger = options.logger || logger.logger();
-    this.exporterBuffer = new classes.ExporterBuffer(this, options);
+    this.exporterBuffer = new ExporterBuffer(this, options);
   }
 
-  onStartSpan(root: types.RootSpan) {}
+  onStartSpan(root: RootSpan) {}
 
-  onEndSpan(root: types.RootSpan) {
+  onEndSpan(root: RootSpan) {
     this.exporterBuffer.addToBuffer(root);
   }
 
@@ -72,7 +73,7 @@ export class InstanaTraceExporter implements types.Exporter {
    *
    * This Promise is meant as a problem indicator for tests only.
    */
-  publish(rootSpans: types.RootSpan[]): Promise<void> {
+  publish(rootSpans: RootSpan[]): Promise<void> {
     try {
       return this
           .transmit(this.translateRootSpans(rootSpans))
@@ -85,7 +86,7 @@ export class InstanaTraceExporter implements types.Exporter {
     }
   }
 
-  private translateRootSpans(rootSpans: types.RootSpan[]): InstanaSpan[] {
+  private translateRootSpans(rootSpans: RootSpan[]): InstanaSpan[] {
     const result: InstanaSpan[] = [];
     return rootSpans.reduce((agg, rootSpan) => {
       agg.push(this.translateSpan(rootSpan));
@@ -93,7 +94,7 @@ export class InstanaTraceExporter implements types.Exporter {
     }, result);
   }
 
-  private translateSpan(span: types.Span): InstanaSpan {
+  private translateSpan(span: Span): InstanaSpan {
     return {
       spanId: span.id,
       // Do not report parentId as null. Instead, drop the field.

@@ -20,9 +20,9 @@ import * as mocha from 'mocha';
 import {ConsoleExporter, NoopExporter} from '../src/exporters/console-exporter';
 import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
-import {Tracer} from '../src/trace/model/tracer';
+import {CoreTracer} from '../src/trace/model/tracer';
 
-const tracer = new Tracer().start({});
+const tracer = new CoreTracer().start({});
 const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
 const defaultBufferConfig = {

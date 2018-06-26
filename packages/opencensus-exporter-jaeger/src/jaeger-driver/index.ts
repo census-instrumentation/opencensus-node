@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {types} from '@opencensus/opencensus-core';
+import {Span} from '@opencensus/core';
 import * as path from 'path';
 
 const indexPath = path.dirname(require.resolve('jaeger-client'));
@@ -47,7 +47,7 @@ export type SenderCallback = (numSpans: number, err?: string) => void;
  * Translate opencensus Span to Jeager Thrift Span
  * @param span
  */
-export function spanToThrift(span: types.Span) {
+export function spanToThrift(span: Span) {
   let spanTags = [];
   if (span.attributes) {
     const tags = [];
