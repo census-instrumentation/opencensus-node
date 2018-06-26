@@ -15,7 +15,7 @@
  */
 
 
-import {RootSpan, Span, SpanEventListener, TracerAgent, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http2 from 'http2';
@@ -89,7 +89,7 @@ describe('Http2Plugin', () => {
   const authority = `http://${host}`;
 
   const log = logger.logger();
-  const tracer = new TracerAgent();
+  const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start({samplingRate: 1, logger: log});
 

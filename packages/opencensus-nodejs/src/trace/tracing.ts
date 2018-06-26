@@ -42,7 +42,7 @@ export class Tracing implements core.Tracing {
 
   /** Constructs a new TracingImpl instance. */
   constructor() {
-    this.tracer = new core.TracerAgent();
+    this.tracer = new core.CoreTracer();
     this.defaultPlugins = PluginLoader.defaultPluginsFromArray(
         Constants.DEFAULT_INSTRUMENTATION_MODULES);
   }

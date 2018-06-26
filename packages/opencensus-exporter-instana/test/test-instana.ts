@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {RootSpan, TracerAgent, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as mocha from 'mocha';
@@ -53,7 +53,7 @@ describe('Instana Exporter', function() {
   describe('publish()', () => {
     it('should send traces to Instana agent', async () => {
       const exporter = new InstanaTraceExporter();
-      const tracer = new TracerAgent();
+      const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
       return tracer

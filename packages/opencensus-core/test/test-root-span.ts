@@ -19,11 +19,11 @@ import * as mocha from 'mocha';
 
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
-import {TracerAgent} from '../src/trace/model/tracer';
+import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link, MessageEvent, TraceOptions} from '../src/trace/model/types';
 
-const tracer = new TracerAgent();
+const tracer = new CoreTracer();
 
 describe('RootSpan', () => {
   /**

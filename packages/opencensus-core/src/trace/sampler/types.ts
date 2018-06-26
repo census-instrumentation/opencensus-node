@@ -18,9 +18,9 @@
 /** This interface represent a sampler . */
 export interface Sampler {
   /**
-   * A Sampler description name
+   * A string that uniquely describes the sampling behavior of this instance.
    */
-  description: string;
+  readonly description: string;
 
   /**
    * Checks if trace belong the sample.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {RootSpan, Span, SpanEventListener, TracerAgent, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import {B3Format} from '@opencensus/propagation-b3';
 import * as assert from 'assert';
@@ -242,7 +242,7 @@ class RootSpanVerifier implements SpanEventListener {
 describe('GrpcPlugin() ', function() {
   let server: grpcModule.Server;
   let client: TestGrpcClient;
-  const tracer = new TracerAgent();
+  const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start({samplingRate: 1, propagation: new B3Format(), logger: log});
 

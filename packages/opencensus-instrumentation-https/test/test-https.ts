@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {RootSpan, Span, SpanEventListener, TracerAgent, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
@@ -106,7 +106,7 @@ describe('HttpsPlugin', () => {
 
   let server: https.Server;
   const log = logger.logger();
-  const tracer = new TracerAgent();
+  const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start({samplingRate: 1, logger: log});
 

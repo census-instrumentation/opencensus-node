@@ -30,7 +30,7 @@ import * as types from './types';
 /**
  * This class represent a tracer.
  */
-export class TracerAgent implements types.Tracer {
+export class CoreTracer implements types.Tracer {
   /** Indicates if the tracer is active */
   private activeLocal: boolean;
   /** Manage context automatic propagation */

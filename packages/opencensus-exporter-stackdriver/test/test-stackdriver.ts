@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {RootSpan, TracerAgent, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
@@ -43,7 +43,7 @@ describe('Stackdriver Exporter', function() {
       process.env.OPENCENSUS_NETWORK_TESTS as string;
   let exporterOptions: StackdriverExporterOptions;
   let exporter: StackdriverTraceExporter;
-  let tracer: TracerAgent;
+  let tracer: CoreTracer;
 
 
   before(() => {
@@ -72,7 +72,7 @@ describe('Stackdriver Exporter', function() {
 
   beforeEach(() => {
     exporter = new StackdriverTraceExporter(exporterOptions);
-    tracer = new TracerAgent();
+    tracer = new CoreTracer();
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(exporter);
     if (!dryrun) {
@@ -140,7 +140,7 @@ describe('Stackdriver Exporter', function() {
         logger: logger.logger('debug')
       };
       const failExporter = new StackdriverTraceExporter(failExporterOptions);
-      const failTracer = new TracerAgent();
+      const failTracer = new CoreTracer();
       failTracer.start({samplingRate: 1});
       failTracer.registerSpanEventListener(failExporter);
       return failTracer.startRootSpan(

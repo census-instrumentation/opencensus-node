@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {logger, TracerAgent} from '@opencensus/core';
+import {CoreTracer, logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as path from 'path';
 
@@ -53,7 +53,7 @@ describe('Plugin Loader', () => {
 
   describe('PluginLoader', () => {
     const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
-    const tracer = new TracerAgent();
+    const tracer = new CoreTracer();
     tracer.start({logger: log});
 
     /** Should get the plugins to use. */

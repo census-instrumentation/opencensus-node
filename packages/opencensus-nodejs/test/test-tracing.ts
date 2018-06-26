@@ -181,7 +181,7 @@ describe('Tracing', () => {
       const tracing = new Tracing();
       tracing.start();
       const tracer = tracing.tracer;
-      assert.ok(tracer instanceof core.TracerAgent);
+      assert.ok(tracer instanceof core.CoreTracer);
     });
   });
 

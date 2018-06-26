@@ -18,10 +18,10 @@ import * as assert from 'assert';
 import * as mocha from 'mocha';
 
 import {RootSpan} from '../src/trace/model/root-span';
-import {TracerAgent} from '../src/trace/model/tracer';
+import {CoreTracer} from '../src/trace/model/tracer';
 import {SamplerBuilder} from '../src/trace/sampler/sampler';
 
-const tracer = new TracerAgent();
+const tracer = new CoreTracer();
 
 describe('Sampler', () => {
   /**
