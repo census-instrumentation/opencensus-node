@@ -16,10 +16,13 @@
 
 import {SamplerBuilder} from '@opencensus/core';
 import * as tracing from '@opencensus/nodejs';
+import * as ejs from 'ejs';
+import * as pkgDir from 'pkg-dir';
 
 import {ZpagesExporter} from '../../zpages';
 
-const ejs = require('ejs');
+// The directory to search for templates.
+const templatesDir = `${pkgDir.sync(__dirname)}/templates`;
 
 export interface TraceConfigzParams {
   change: string;
@@ -54,7 +57,7 @@ export class TraceConfigzPageHandler {
 
     /** template HTML */
     const traceConfigzFile =
-        ejs.fileLoader(__dirname + '/../templates/traceconfigz.ejs', 'utf8');
+        ejs.fileLoader(`${templatesDir}/traceconfigz.ejs`).toString();
     /** EJS render options */
     const options = {delimiter: '?'};
     /** Current sampling rate  */

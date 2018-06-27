@@ -15,10 +15,13 @@
  */
 
 import {RootSpan, Span} from '@opencensus/core';
+import * as ejs from 'ejs';
+import * as pkgDir from 'pkg-dir';
 
 import {LatencyBucketBoundaries} from '../latency-bucket-boundaries';
 
-const ejs = require('ejs');
+// The directory to search for templates.
+const templatesDir = `${pkgDir.sync(__dirname)}/templates`;
 
 export type TracezParams = {
   tracename: string; type: string;
@@ -165,14 +168,12 @@ export class TracezPageHandler {
    * @returns Output HTML
    */
   emitHtml(params: Partial<TracezParams>, json: boolean): string {
-    const tracezFile =
-        ejs.fileLoader(__dirname + '/../templates/tracez.ejs', 'utf8');
+    const tracezFile = ejs.fileLoader(`${templatesDir}/tracez.ejs`).toString();
     const summaryFile =
-        ejs.fileLoader(__dirname + '/../templates/summary.ejs', 'utf8');
+        ejs.fileLoader(`${templatesDir}/summary.ejs`).toString();
     const spanCellFile =
-        ejs.fileLoader(__dirname + '/../templates/span-cell.ejs', 'utf8');
-    const spansFile =
-        ejs.fileLoader(__dirname + '/../templates/spans.ejs', 'utf8');
+        ejs.fileLoader(`${templatesDir}/span-cell.ejs`).toString();
+    const spansFile = ejs.fileLoader(`${templatesDir}/spans.ejs`).toString();
     /** EJS render options */
     const options = {delimiter: '?'};
     /** Latency array */
