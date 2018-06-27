@@ -60,12 +60,14 @@ export function spanToThrift(span: Span) {
   const spanLogs = [];
   const unsigned = true;
   const length = span.spanContext.traceId.length;
+  const parentSpan = span.parentSpanId ? Utils.encodeInt64(span.parentSpanId) :
+                                         ThriftUtils.emptyBuffer;
 
   return {
     traceIdLow: Utils.encodeInt64(span.spanContext.traceId),
     traceIdHigh: ThriftUtils.emptyBuffer,
     spanId: Utils.encodeInt64(span.spanContext.spanId),
-    parentSpanId: span.parentSpanId || ThriftUtils.emptyBuffer,
+    parentSpanId: parentSpan,
     operationName: span.name,
     references: [],
     flags: span.spanContext.options || 0x1,
