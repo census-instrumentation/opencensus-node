@@ -131,7 +131,7 @@ describe('Plugin Loader', () => {
         const http = require(TEST_MODULES[2]);
         intercept((txt: string) => {
           assert.ok(txt.indexOf('error') >= 0);
-        });
+        })();
         assert.strictEqual(pluginLoader.plugins.length, 0);
       });
     });
