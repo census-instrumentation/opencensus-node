@@ -30,6 +30,7 @@
     "build/src/**/*.js",
     "build/src/**/*.d.ts",
     "doc",
+    "templates",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
