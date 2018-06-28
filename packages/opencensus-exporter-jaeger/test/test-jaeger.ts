@@ -23,7 +23,7 @@ import * as nock from 'nock';
 import * as shimmer from 'shimmer';
 
 import {JaegerTraceExporter, JaegerTraceExporterOptions} from '../src/';
-import {UDPSender} from '../src/jaeger-driver';
+import {spanToThrift, ThriftUtils, UDPSender} from '../src/jaeger-driver';
 
 const DEFAULT_BUFFER_TIMEOUT = 10;  // time in milliseconds
 
@@ -75,6 +75,19 @@ describe('Jaeger Exporter', () => {
     exporter.close();
   });
 
+  /* Should export spans to Jeager */
+  describe('test spans are valid', () => {
+    it('should encode as thrift', () => {
+      return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
+        const span = tracer.startChildSpan('child-s01');
+        span.end();
+        rootSpan.end();
+        const thriftSpan = spanToThrift(span);
+        const result = ThriftUtils._thrift.Span.rw.toBuffer(thriftSpan);
+        assert.strictEqual(result.err, null);
+      });
+    });
+  });
 
   /* Should export spans to Jeager */
   describe('publish()', () => {
