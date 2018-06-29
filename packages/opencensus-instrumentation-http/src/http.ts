@@ -256,10 +256,9 @@ export class HttpPlugin extends BasePlugin {
     return (span: Span): httpModule.ClientRequest => {
       plugin.logger.debug('makeRequestTrace');
 
-      const headers = options.headers;
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
-          headers[name] = value;
+          request.setHeader(name, value);
         }
       };
 
@@ -280,6 +279,7 @@ export class HttpPlugin extends BasePlugin {
         response.on('end', () => {
           plugin.logger.debug('outgoingRequest on end()');
           const method = response.method ? response.method : 'GET';
+          const headers = options.headers;
           const userAgent =
               headers ? (headers['user-agent'] || headers['User-Agent']) : null;
 
