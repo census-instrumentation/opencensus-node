@@ -22,27 +22,11 @@ import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
 
-const tracer = new CoreTracer().start({});
-const DEFAULT_BUFFER_SIZE = 3;
-const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
+const tracer = new CoreTracer().start({samplingRate: 1.0});
 const defaultBufferConfig = {
-  bufferSize: DEFAULT_BUFFER_SIZE,
-  bufferTimeout: DEFAULT_BUFFER_TIMEOUT
+  bufferSize: 3,
+  bufferTimeout: 20000  // time in milliseconds
 };
-
-const createRootSpans = (): RootSpan[] => {
-  const rootSpans = [];
-  for (let i = 0; i < DEFAULT_BUFFER_SIZE + 1; i++) {
-    const rootSpan = new RootSpan(tracer, {name: `rootSpan.${i}`});
-    rootSpan.start();
-    for (let j = 0; j < 10; j++) {
-      rootSpan.startChildSpan(`childSpan.${i}.${j}`, 'client');
-    }
-    rootSpans.push(rootSpan);
-  }
-  return rootSpans;
-};
-
 
 describe('NoopExporter', () => {
   /** Should do nothing when calling onEndSpan() */
@@ -60,11 +44,15 @@ describe('NoopExporter', () => {
     it('should do anything', () => {
       const exporter = new NoopExporter();
       const rootSpan = new RootSpan(tracer);
-      const queue: RootSpan[] = [];
-      queue.push(rootSpan);
+      const queue: RootSpan[] = [rootSpan];
 
-      exporter.publish(queue);
-      assert.ok(true);
+      exporter.publish(queue)
+          .then(() => {
+            assert.ok(true);
+          })
+          .catch((err: Error) => {
+            assert.fail(err.message);
+          });
     });
   });
 });
@@ -75,12 +63,11 @@ describe('ConsoleLogExporter', () => {
     it('should end a span', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
       tracer.registerSpanEventListener(exporter);
-      // const rootSpan = new RootSpan(tracer);
-      const rootSpans = createRootSpans();
-      for (const rootSpan of rootSpans) {
+
+      tracer.startRootSpan({name: 'testRootSpans'}, rootSpan => {
         rootSpan.end();
-      }
-      assert.ok(true);
+        assert.ok(exporter.buffer.getQueue().length > 0);
+      });
     });
   });
 
@@ -90,11 +77,19 @@ describe('ConsoleLogExporter', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpan(tracer);
       rootSpan.startChildSpan('name', 'type', rootSpan.traceId);
-      const queue: RootSpan[] = [];
-      queue.push(rootSpan);
+      const queue: RootSpan[] = [rootSpan];
 
-      exporter.publish(queue);
-      assert.ok(true);
+      exporter.publish(queue)
+          .then((result: string) => {
+            assert.ok(result.indexOf(rootSpan.traceId) >= 0);
+            assert.ok(result.indexOf(rootSpan.id) >= 0);
+            assert.ok(result.indexOf(rootSpan.name) >= 0);
+            assert.ok(result.indexOf(rootSpan.spans[0].name) >= 0);
+            assert.ok(result.indexOf(rootSpan.spans[0].id) >= 0);
+          })
+          .catch((err: Error) => {
+            assert.fail(err.message);
+          });
     });
   });
 });

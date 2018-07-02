@@ -33,8 +33,8 @@ export class NoopExporter implements types.Exporter {
 /** Format and sends span data to the console. */
 export class ConsoleExporter implements types.Exporter {
   /** Buffer object to store the spans. */
-  private buffer: ExporterBuffer;
   private logger: loggerTypes.Logger;
+  buffer: ExporterBuffer;
 
   /**
    * Constructs a new ConsoleLogExporter instance.
@@ -61,19 +61,19 @@ export class ConsoleExporter implements types.Exporter {
    * @param rootSpans
    */
   publish(rootSpans: modelTypes.RootSpan[]) {
+    const result: string[] = [];
     rootSpans.map((root) => {
       const ROOT_STR = `RootSpan: {traceId: ${root.traceId}, spanId: ${
           root.id}, name: ${root.name} }`;
       const SPANS_STR: string[] = root.spans.map(
           (span) => [`\t\t{spanId: ${span.id}, name: ${span.name}}`].join(
               '\n'));
-      const result: string[] = [];
 
       result.push(
           ROOT_STR + '\n\tChildSpans:\n' +
           `${SPANS_STR.join('\n')}`);
-      console.log(`${result}`);
     });
-    return Promise.resolve();
+    console.log(`${result}`);
+    return Promise.resolve(`${result}`);
   }
 }
