@@ -83,17 +83,16 @@ export class ConsoleStatsExporter implements types.StatsExporter {
    * @param view registered view
    * @param measure registered measure
    */
-  onRegisterView(view: View, measure: Measure) {
-    console.log(
-        `View registered: ${view.name}, Measure registered: ${measure.name}`);
+  onRegisterView(view: View) {
+    console.log(`View registered: ${view.name}, Measure registered: ${
+        view.measure.name}`);
   }
   /**
    * Event called when a measurement is recorded
    * @param view recorded view from measurement
    * @param measurement recorded measurement
    */
-  onRecord(view: View, measurement: Measurement) {
-    console.log(`Measurement recorded: ${measurement.measure.name}, value: ${
-        measurement.value}`);
+  onRecord(view: View) {
+    console.log(`Measurement recorded: ${view.measure.name}`);
   }
 }
