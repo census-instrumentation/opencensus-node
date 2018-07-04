@@ -1,5 +1,3 @@
-import {StatsExporter} from '../../exporters/types';
-
 /**
  * Copyright 2018, OpenCensus Authors
  *
@@ -16,63 +14,16 @@ import {StatsExporter} from '../../exporters/types';
  * limitations under the License.
  */
 
-/**  */
-export interface RegisteredViews { [key: string]: View; }
+import {Logger, MeasureManager} from '../..';
+import {StatsExporter} from '../../exporters/types';
 
-/**  */
-export interface RecordedMeasurements { [viewName: string]: Measurement[]; }
+import {CounterMetric} from './metrics/counter';
+import {GaugeMetric} from './metrics/gauge';
+import {HistogramMetric} from './metrics/histogram';
+import {Distribution, MetricDescriptor, MetricValues, SingleValue} from './metrics/types';
 
-/** */
-export interface HistogramBucket {
-  range: {min: number, max: number};
-  bucketCount: number;
-}
 
-/** Stats main class with manager actions */
-export interface Stats {
-  /**
-   * Register a exporter to stats instance
-   * @param exporter
-   */
-  registerExporter(exporter: StatsExporter): void;
-  /**
-   * Enable stats collection for the given View.
-   * @param view
-   */
-  registerView(view: View): void;
-  /**
-   * Returns the registered views
-   */
-  getRegisteredViews(): RegisteredViews;
-  /**
-   * Returns the recorded measurements
-   */
-  getRecordedMeasurements(): RecordedMeasurements;
-  /**
-   * Creates a new AggregationCount instance
-   */
-  createAggregationCount(): Aggregation;
-  /**
-   * Creates a new AggregationSum instance
-   */
-  createAggregationSum(): Aggregation;
-  /**
-   * Creates a new AggregationLastValue instance
-   */
-  createAggregationLastValue(): Aggregation;
-  /**
-   * Creates a new AggregationDistribution instance
-   * @param bucketBoundaries
-   */
-  createAggregationDistribution(bucketBoundaries: number[]): Aggregation;
-  /**
-   * Records values to measurements
-   * @param measurements
-   */
-  record(...measurements: Measurement[]): void;
-}
-
-/** */
+/** Tags are maps of names -> values */
 export interface Tags { [key: string]: string; }
 
 /**
@@ -93,9 +44,22 @@ export interface Measure {
    * Describes the unit used for the Measure. Follows the format described by
    * http://unitsofmeasure.org/ucum.html.
    */
-  unit: string;
+  unit: MeasureUnit;
   /** The type used for this Measure. */
   type: string;
+}
+
+/**
+ * Describes the unit used for the Measure. Should follows the format described
+ * by http://unitsofmeasure.org/ucum.html.
+ */
+export const enum MeasureUnit {
+  unit = '1',    // for general counts
+  byte = 'by',   // bytes
+  kbyte = 'kb',  // Kbytes
+  sec = 's',     // seconds - maybe should be only 's'
+  ms = 'ms',     // millisecond
+  ns = 'ns'      // nanosecond
 }
 
 /**
@@ -112,33 +76,47 @@ export interface View {
   /** The Measure to which this view is applied. */
   measure: Measure;
   /**
-   * An array of tags. These values associated with tags of this name form the
-   * basis by which individual stats will be aggregated (one aggregation per
-   * unique tag value). If none are provided, then all data is recorded in a
-   * single aggregation.
+   * An array of string representing columns labels or tag keys, concept similar
+   * to dimensions on multidimensional modeling. These values associated with
+   * those labels form the basis by which individual stats will be aggregated
+   * (one aggregation per unique tag/label value). If none are provided, then
+   * all data is recorded in a single aggregation.
    */
-  columns: Tags;
-  /** An Aggregation describes how data collected is aggregated */
-  aggregation: Aggregation;
+  columns: string[];
+  /**
+   * An Aggregation describes how data collected is aggregated.
+   * There are four aggregation types:
+   *  count, sum, lastValue and Distirbution (Histogram)
+   */
+  aggregation: AggregationType;
   /** The start time for this view */
-  startTime: Date;
-  /** The end time for this view */
-  endTime: Date;
+  startTime: number;
+  /**
+   * The end time for this view - represents the last time a value was recorded
+   */
+  endTime: number;
+  /** metric: mechanism underneath that will record and aggregate values. */
+  metric: CounterMetric|GaugeMetric|HistogramMetric;
+  /** true if the view was regitred */
+  registred: boolean;
+  /**
+   * Record a tagged/label value to the view, a number of times -
+   * for "label-less" counts incremented by 1, all parameters can be omitted.
+   */
+  recordValue(labelValues?: Tags|string[], value?: number, times?: number):
+      void;
+  /**  Returns a snapshot value of the view for all tags/labels values */
+  getSnapshotValues(): MetricValues;
+  /** Returns a snapshot value fo a specific tag/label value */
+  getSnapshotValue(labelValues?: Tags|string[]): SingleValue|Distribution;
+  /** Returns a MetricDescriptor for this view - Measure + Columns */
+  getMetricDescriptor(): MetricDescriptor;
+  /** Register a event listener */
+  registerEventListener(eventListener: ViewEventListener): void;
 }
 
-/** Determines how data collected is aggregated */
-export interface Aggregation {
-  /** Recorded measurements */
-  measurements: Measurement[];
-  /**
-   * Gets the aggregation value
-   */
-  getValue(): number|HistogramBucket[];
-  /**
-   * Gets the aggregation type
-   */
-  getType(): string;
-}
+/** A map of names -> Views  */
+export interface RegisteredViews { [key: string]: View; }
 
 /** Describes a data point to be collected for a Measure. */
 export interface Measurement {
@@ -146,4 +124,36 @@ export interface Measurement {
   measure: Measure;
   /** The recorded value */
   value: number;
+}
+
+/* Aggregation Type is the process of combining a certain set of values for a
+ * given Measure. Currently supports 4 types of basic aggregation: Count, Sun,
+ * LastValue, Distribution.
+ */
+export const enum AggregationType {
+  count = 0,
+  sum = 1,
+  lastValue = 2,
+  distribution = 3
+}
+
+/** A map of names -> Measures  */
+export type RegisteredMeasures = {
+  [key: string]: Measure;
+};
+
+/**
+ * EventListerner for a View
+ */
+export interface ViewEventListener {
+  /**
+   * Event called when a view is registered
+   * @param view registered view
+   */
+  onRegisterView(view: View): void;
+  /**
+   * Event called when a measurement is recorded
+   * @param view recorded view from measurement
+   */
+  onRecord(view: View): void;
 }
