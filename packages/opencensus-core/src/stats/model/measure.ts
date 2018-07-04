@@ -14,34 +14,68 @@
  * limitations under the License.
  */
 
-import {Measure} from './types';
+import {Measure, MeasureUnit, RegisteredMeasures} from './types';
+
 
 /** Measure class for double type */
-export class MeasureDouble implements Measure {
-  name: string;
-  description: string;
-  unit: string;
-  type: string;
+abstract class AbstractMeasure implements Measure {
+  readonly name: string;
+  readonly description: string;
+  readonly unit: MeasureUnit;
+  abstract get type(): string;
 
-  constructor(name: string, description: string, unit: string) {
+  constructor(name: string, description: string, unit: MeasureUnit) {
     this.name = name;
     this.description = description;
     this.unit = unit;
+  }
+}
+
+/** Measure class for double type */
+class MeasureDouble extends AbstractMeasure {
+  readonly type: string;
+  constructor(name: string, description: string, unit: MeasureUnit) {
+    super(name, description, unit);
     this.type = 'DOUBLE';
   }
 }
 
 /** Measure class for int64 type */
-export class MeasureInt64 implements Measure {
-  name: string;
-  description: string;
-  unit: string;
-  type: string;
-
-  constructor(name: string, description: string, unit: string) {
-    this.name = name;
-    this.description = description;
-    this.unit = unit;
+class MeasureInt64 extends AbstractMeasure {
+  readonly type: string;
+  constructor(name: string, description: string, unit: MeasureUnit) {
+    super(name, description, unit);
     this.type = 'INT64';
+  }
+}
+
+/**
+ * Simple Mesure Builder and Register
+ */
+export class MeasureManager {
+  private static registeredMeasures: RegisteredMeasures = {};
+
+  private static registerMeasure(measure: Measure) {
+    const existingMeasure = MeasureManager.registeredMeasures[measure.name];
+    if (existingMeasure) {
+      return;
+    }
+    MeasureManager.registeredMeasures[measure.name] = measure;
+  }
+
+  /** Factory method that createas a Measure of type DOUBLE */
+  static createMeasureDouble(
+      name: string, description: string, unit: MeasureUnit): Measure {
+    const newMesure = new MeasureDouble(name, description, unit);
+    MeasureManager.registerMeasure(newMesure);
+    return newMesure;
+  }
+
+  /** Factory method that createas a Measure of type INT64 */
+  static createMeasureInt64(
+      name: string, description: string, unit: MeasureUnit): Measure {
+    const newMesure = new MeasureInt64(name, description, unit);
+    MeasureManager.registerMeasure(newMesure);
+    return newMesure;
   }
 }
