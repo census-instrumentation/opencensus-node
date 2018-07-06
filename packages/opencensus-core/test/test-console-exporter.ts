@@ -24,14 +24,14 @@ import {CoreTracer} from '../src/trace/model/tracer';
 
 const tracer = new CoreTracer().start({samplingRate: 1.0});
 const defaultBufferConfig = {
-  bufferSize: 3,
+  bufferSize: 1,
   bufferTimeout: 20000  // time in milliseconds
 };
 
 describe('NoopExporter', () => {
   /** Should do nothing when calling onEndSpan() */
   describe('onEndSpan()', () => {
-    it('should do anything', () => {
+    it('should do nothing', () => {
       const exporter = new NoopExporter();
       const rootSpan = new RootSpan(tracer);
       exporter.onEndSpan(rootSpan);
@@ -41,18 +41,12 @@ describe('NoopExporter', () => {
 
   /** Should do anything when calling publish() */
   describe('publish()', () => {
-    it('should do anything', () => {
+    it('should do nothing', () => {
       const exporter = new NoopExporter();
       const rootSpan = new RootSpan(tracer);
       const queue: RootSpan[] = [rootSpan];
 
-      exporter.publish(queue)
-          .then(() => {
-            assert.ok(true);
-          })
-          .catch((err: Error) => {
-            assert.fail(err.message);
-          });
+      return exporter.publish(queue);
     });
   });
 });
@@ -61,12 +55,24 @@ describe('ConsoleLogExporter', () => {
   /** Should end a span */
   describe('onEndSpan()', () => {
     it('should end a span', () => {
-      const exporter = new ConsoleExporter(defaultBufferConfig);
-      tracer.registerSpanEventListener(exporter);
+      const intercept = require('intercept-stdout');
+      let capturedText = '';
+      const unhookIntercept = intercept((txt: string) => {
+        capturedText += txt;
+      });
 
-      tracer.startRootSpan({name: 'testRootSpans'}, rootSpan => {
-        rootSpan.end();
-        assert.ok(exporter.buffer.getQueue().length > 0);
+      const exporter = new ConsoleExporter(defaultBufferConfig);
+
+      const rootSpan1 = new RootSpan(tracer);
+      exporter.onEndSpan(rootSpan1);
+      assert.strictEqual(capturedText, '');
+
+      const rootSpan2 = new RootSpan(tracer);
+      exporter.onEndSpan(rootSpan2);
+      [rootSpan1, rootSpan2].map(rootSpan => {
+        assert.ok(capturedText.indexOf(rootSpan.traceId) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.id) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.name) >= 0);
       });
     });
   });
@@ -74,22 +80,25 @@ describe('ConsoleLogExporter', () => {
   /** Should publish the rootspan in queue */
   describe('publish()', () => {
     it('should publish the rootspans in queue', () => {
+      const intercept = require('intercept-stdout');
+      let capturedText = '';
+      const unhookIntercept = intercept((txt: string) => {
+        capturedText += txt;
+      });
+
       const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
       rootSpan.startChildSpan('name', 'type', rootSpan.traceId);
       const queue: RootSpan[] = [rootSpan];
 
-      exporter.publish(queue)
-          .then((result: string) => {
-            assert.ok(result.indexOf(rootSpan.traceId) >= 0);
-            assert.ok(result.indexOf(rootSpan.id) >= 0);
-            assert.ok(result.indexOf(rootSpan.name) >= 0);
-            assert.ok(result.indexOf(rootSpan.spans[0].name) >= 0);
-            assert.ok(result.indexOf(rootSpan.spans[0].id) >= 0);
-          })
-          .catch((err: Error) => {
-            assert.fail(err.message);
-          });
+      return exporter.publish(queue).then(() => {
+        assert.ok(capturedText.indexOf(rootSpan.traceId) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.id) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.name) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.spans[0].name) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.spans[0].id) >= 0);
+      });
     });
   });
 });
