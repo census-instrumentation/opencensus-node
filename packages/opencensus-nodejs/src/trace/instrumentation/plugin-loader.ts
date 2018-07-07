@@ -115,35 +115,31 @@ export class PluginLoader {
   loadPlugins(pluginList: PluginNames) {
     if (this.hookState === HookState.UNINITIALIZED) {
       hook(Object.keys(pluginList), (exports, name, basedir) => {
-        if (this.hookState === HookState.ENABLED) {
-          const version = this.getPackageVersion(name, basedir as string);
-          this.logger.info('trying loading %s.%s', name, version);
-          let moduleExports = exports;
-          if (!version) {
-            return moduleExports;
-          } else {
-            this.logger.debug('applying patch to %s@%s module', name, version);
-            this.logger.debug(
-                'using package %s to patch %s', pluginList[name], name);
-            // Expecting a plugin from module;
-            try {
-              const plugin: Plugin = require(pluginList[name]).plugin;
-              this.plugins.push(plugin);
-              moduleExports =
-                  plugin.enable(exports, this.tracer, version, basedir);
-            } catch (e) {
-              this.logger.error(
-                  'could not load plugin %s of module %s. Error: %s',
-                  pluginList[name], name, e.message);
-            }
-            return moduleExports;
-          }
-        } else {
+        if (this.hookState !== HookState.ENABLED) {
+          return exports;
+        }
+        const version = this.getPackageVersion(name, basedir as string);
+        this.logger.info('trying loading %s.%s', name, version);
+        if (!version) {
+          return exports;
+        }
+        this.logger.debug('applying patch to %s@%s module', name, version);
+        this.logger.debug(
+            'using package %s to patch %s', pluginList[name], name);
+        // Expecting a plugin from module;
+        try {
+          const plugin: Plugin = require(pluginList[name]).plugin;
+          this.plugins.push(plugin);
+          return plugin.enable(exports, this.tracer, version, basedir);
+        } catch (e) {
+          this.logger.error(
+              'could not load plugin %s of module %s. Error: %s',
+              pluginList[name], name, e.message);
           return exports;
         }
       });
-      this.hookState = HookState.ENABLED;
     }
+    this.hookState = HookState.ENABLED;
   }
 
 
