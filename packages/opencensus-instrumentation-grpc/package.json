@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.0.2",
-    "grpc": "^1.12.2",
+    "grpc": "~1.12.2",
     "lodash": "^4.17.10",
     "semver": "^5.5.0",
     "shimmer": "^1.2.0"

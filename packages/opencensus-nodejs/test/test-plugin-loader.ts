@@ -102,6 +102,7 @@ describe('Plugin Loader', () => {
         assert.strictEqual(pluginLoader.plugins.length, 1);
         assert.strictEqual(simpleModule.name(), 'patched-' + TEST_MODULES[0]);
         assert.strictEqual(simpleModule.value(), 101);
+        pluginLoader.unloadPlugins();
       });
 
       it('should load and patch extra plugin file', () => {
@@ -119,6 +120,7 @@ describe('Plugin Loader', () => {
         assert.strictEqual(
             loadInternalFileModule.extraName(), 'patched-' + extraModuleName);
         assert.strictEqual(loadInternalFileModule.extraValue(), 121);
+        pluginLoader.unloadPlugins();
       });
 
 
@@ -133,6 +135,7 @@ describe('Plugin Loader', () => {
           assert.ok(txt.indexOf('error') >= 0);
         })();
         assert.strictEqual(pluginLoader.plugins.length, 0);
+        pluginLoader.unloadPlugins();
       });
     });
 
@@ -154,7 +157,7 @@ describe('Plugin Loader', () => {
     });
 
     // Should load/unload end-user (non-default named) plugin.
-    describe('load/unload end-user pluging', () => {
+    describe('load/unload end-user plugin', () => {
       it('should load/unload patch/unpatch end-user plugins', () => {
         const pluginLoader = new PluginLoader(log, tracer);
         assert.strictEqual(pluginLoader.plugins.length, 0);

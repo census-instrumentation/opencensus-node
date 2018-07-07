@@ -21,6 +21,12 @@ import * as hook from 'require-in-the-middle';
 
 import {Constants} from '../constants';
 
+enum HookState {
+  UNINITIALIZED,
+  ENABLED,
+  DISABLED
+}
+
 /**
  * The PluginLoader class can load instrumentation plugins that
  * use a patch mechanism to enable automatic tracing for
@@ -33,6 +39,11 @@ export class PluginLoader {
   private logger: Logger;
   /** A list of loaded plugins. */
   plugins: Plugin[] = [];
+  /**
+   * A field that tracks whether the r-i-t-m hook has been loaded for the
+   * first time, as well as whether the hook body is enabled or not.
+   */
+  private hookState = HookState.UNINITIALIZED;
 
   /**
    * Constructs a new PluginLoader instance.
@@ -102,14 +113,16 @@ export class PluginLoader {
    * @param pluginList A list of plugins.
    */
   loadPlugins(pluginList: PluginNames) {
-    // tslint:disable:no-any
-    hook(Object.keys(pluginList), (exports, name, basedir) => {
-      const version = this.getPackageVersion(name, basedir as string);
-      this.logger.info('trying loading %s.%s', name, version);
-      let moduleExports = exports;
-      if (!version) {
-        return moduleExports;
-      } else {
+    if (this.hookState === HookState.UNINITIALIZED) {
+      hook(Object.keys(pluginList), (exports, name, basedir) => {
+        if (this.hookState !== HookState.ENABLED) {
+          return exports;
+        }
+        const version = this.getPackageVersion(name, basedir as string);
+        this.logger.info('trying loading %s.%s', name, version);
+        if (!version) {
+          return exports;
+        }
         this.logger.debug('applying patch to %s@%s module', name, version);
         this.logger.debug(
             'using package %s to patch %s', pluginList[name], name);
@@ -117,15 +130,16 @@ export class PluginLoader {
         try {
           const plugin: Plugin = require(pluginList[name]).plugin;
           this.plugins.push(plugin);
-          moduleExports = plugin.enable(exports, this.tracer, version, basedir);
+          return plugin.enable(exports, this.tracer, version, basedir);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s',
               pluginList[name], name, e.message);
+          return exports;
         }
-        return moduleExports;
-      }
-    });
+      });
+    }
+    this.hookState = HookState.ENABLED;
   }
 
 
@@ -135,6 +149,7 @@ export class PluginLoader {
       plugin.disable();
     }
     this.plugins = [];
+    this.hookState = HookState.DISABLED;
   }
 
   /**
