@@ -313,6 +313,14 @@ export class HttpPlugin extends BasePlugin {
         });
       });
 
+      request.on('error', error => {
+        span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ERROR_NAME, error.name);
+        span.addAttribute(
+            HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE, error.message);
+        span.status = TraceStatusCodes.UNKNOWN;
+        span.end();
+      });
+
       plugin.logger.debug('makeRequestTrace retun request');
       return request;
     };
