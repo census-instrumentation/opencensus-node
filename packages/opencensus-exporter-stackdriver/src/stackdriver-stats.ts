@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Aggregation, AggregationCount, AggregationDistribution, AggregationLastValue, AggregationSum, logger, Measure, MeasureDouble, MeasureInt64, Measurement, StatsExporter, Tags, View} from '@opencensus/core';
+import {AggregationType, Distribution, logger, Measure, Measurement, MetricValuesTypes, SingleValue, StatsExporter, Tags, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 
@@ -35,15 +35,14 @@ export class StackdriverStatsExporter implements StatsExporter {
   /**
    * Is called whenever a view is registered.
    * @param view The registered view.
-   * @param measure The measure associated with the view.
    */
-  onRegisterView(view: View, measure: Measure): Promise<MetricDescriptor> {
+  onRegisterView(view: View): Promise<MetricDescriptor> {
     return new Promise((resolve, reject) => {
       this.authorize()
           .then((authClient) => {
             const request = {
               name: `projects/${this.projectId}`,
-              resource: this.getMetricDescriptorData(view, measure),
+              resource: this.getMetricDescriptorData(view),
               auth: authClient
             };
 
@@ -55,7 +54,7 @@ export class StackdriverStatsExporter implements StatsExporter {
                   resolve(request.resource);
                 });
           })
-          .catch((err) => {
+          .catch((err: Error) => {
             throw (err);
           });
     });
@@ -64,19 +63,19 @@ export class StackdriverStatsExporter implements StatsExporter {
   /**
    * Is called whenever a measure is recorded.
    * @param view The view associated with the measure.
-   * @param measure The recorded measure.
    */
-  onRecord(view: View, measurement: Measurement): Promise<TimeSeries> {
+  onRecord(view: View): Promise<TimeSeries[]> {
+    const timeSeries: TimeSeries[] = [];
+    for (let i = 0; i < view.getSnapshotValues().length; i++) {
+      timeSeries.push(
+          this.getTimeSeriesData(view, view.getSnapshotValues()[i]));
+    }
     return new Promise((resolve, reject) => {
       this.authorize()
-          .then((authClient) => {
+          .then(authClient => {
             const request = {
               name: `projects/${this.projectId}`,
-              resource: {
-                timeSeries: [
-                  this.getTimeSeriesData(view, measurement),
-                ]
-              },
+              resource: {timeSeries},
               auth: authClient
             };
 
@@ -84,10 +83,10 @@ export class StackdriverStatsExporter implements StatsExporter {
               if (err) {
                 reject(err);
               }
-              resolve(request.resource.timeSeries[0]);
+              resolve(request.resource.timeSeries);
             });
           })
-          .catch((err) => {
+          .catch(err => {
             throw (err);
           });
     });
@@ -117,32 +116,40 @@ export class StackdriverStatsExporter implements StatsExporter {
   }
 
   /**
-   * Creates a Stackdriver TimeSeries from a given view and measurement.
+   * Creates a Stackdriver TimeSeries from a given view and metric value.
    * @param view The view to get TimeSeries information from.
-   * @param measurement The measurement to get TimeSeries information from.
+   * @param metricValue The metric value to get TimeSeries information from.
    */
-  private getTimeSeriesData(view: View, measurement: Measurement): TimeSeries {
+  private getTimeSeriesData(view: View, metricValue: SingleValue|Distribution):
+      TimeSeries {
     const resourceLabels:
         {[key: string]: string} = {project_id: this.projectId};
 
     let timeSeriesStartTime: string = null;
-    if (view.aggregation instanceof AggregationSum) {
-      timeSeriesStartTime = view.startTime.toISOString();
+    if (view.aggregation === AggregationType.sum) {
+      timeSeriesStartTime = (new Date(view.startTime)).toISOString();
     }
 
     let pointValue: {};
-    if (measurement.measure instanceof MeasureInt64) {
-      pointValue = {int64Value: measurement.value.toString()};
-    } else if (measurement.measure instanceof MeasureDouble) {
-      pointValue = {doubleValue: measurement.value};
+    if (view.measure.type === 'INT64') {
+      const measurementValue = metricValue as SingleValue;
+      pointValue = {int64Value: measurementValue.value.toString()};
+    } else if (view.aggregation === AggregationType.distribution) {
+      const measurementValue = metricValue as Distribution;
+      pointValue = {distributionValue: this.getDistribution(measurementValue)};
+    } else {
+      const measurementValue = metricValue as SingleValue;
+      pointValue = {doubleValue: measurementValue.value};
     }
 
     return {
-      metric:
-          {type: `custom.googleapis.com/${view.name}`, labels: view.columns},
+      metric: {
+        type: `custom.googleapis.com/${view.name}`,
+        labels: metricValue.tags
+      },
       resource: {type: 'global', labels: resourceLabels},
       metricKind: this.getMetricKind(view.aggregation),
-      valueType: this.getValueType(view.aggregation, measurement.measure),
+      valueType: this.getValueType(view),
       points: [{
         interval: {
           startTime: timeSeriesStartTime,
@@ -154,30 +161,44 @@ export class StackdriverStatsExporter implements StatsExporter {
   }
 
   /**
+   * Formats an OpenCensus' Distribution to Stackdriver's format.
+   * @param distribution The OpenCensus Distribution.
+   */
+  private getDistribution(distribution: Distribution) {
+    return {
+      count: distribution.count,
+      mean: distribution.mean,
+      sumOfSquaredDeviation: distribution.sumSquaredDeviations,
+      range: {min: distribution.min, max: distribution.max},
+      bucketOptions:
+          {explicitBuckets: distribution.boundaries.bucketBoundaries},
+      bucketCounts: distribution.buckets.map((bucket) => bucket.count)
+    };
+  }
+
+  /**
    * Creates a Stackdriver LabelDescriptor from given Tags.
    * @param tag The Tags to get TimeSeries information from.
    */
-  private getLabelDescriptor(tag: Tags): LabelDescriptor[] {
-    return Object.keys(tag).map(labelKey => {
-      return {key: labelKey, valueType: 'STRING', description: tag[labelKey]} as
+  private getLabelDescriptor(tags: string[]): LabelDescriptor[] {
+    return tags.map(labelKey => {
+      return {key: labelKey, valueType: 'STRING', description: ''} as
           LabelDescriptor;
     });
   }
 
   /**
-   * Creates a Stackdriver MetricDescriptor from a given view and measure.
+   * Creates a Stackdriver MetricDescriptor from a given view.
    * @param view The view to get MetricDescriptor information from.
-   * @param measure The measurement to get MetricDescriptor information from.
    */
-  private getMetricDescriptorData(view: View, measure: Measure):
-      MetricDescriptor {
+  private getMetricDescriptorData(view: View): MetricDescriptor {
     return {
       type: `custom.googleapis.com/${view.name}`,
-      description: view.description || measure.description,
-      displayName: measure.name,
+      description: view.description || view.measure.description,
+      displayName: view.measure.name,
       metricKind: this.getMetricKind(view.aggregation),
-      valueType: this.getValueType(view.aggregation, measure),
-      unit: measure.unit,
+      valueType: this.getValueType(view),
+      unit: view.measure.unit,
       labels: this.getLabelDescriptor(view.columns)
     } as MetricDescriptor;
   }
@@ -187,10 +208,10 @@ export class StackdriverStatsExporter implements StatsExporter {
    * @param aggregation The aggregation to get ValueType information from.
    * @param measure The measure to get ValueType information from.
    */
-  private getValueType(aggregation: Aggregation, measure: Measure): ValueType {
-    if (measure instanceof MeasureDouble) {
+  private getValueType(view: View): ValueType {
+    if (view.measure.type === 'DOUBLE') {
       return ValueType.DOUBLE;
-    } else if (aggregation instanceof AggregationDistribution) {
+    } else if (view.aggregation === AggregationType.distribution) {
       return ValueType.DISTRIBUTION;
     }
     return ValueType.INT64;
@@ -198,10 +219,11 @@ export class StackdriverStatsExporter implements StatsExporter {
 
   /**
    * Creates a Stackdriver MetricKind from a given aggregation.
-   * @param aggregation The aggregation to get MetricKind information from.
+   * @param aggregationType The aggregation type to get MetricKind information
+   * from.
    */
-  private getMetricKind(aggregation: Aggregation): MetricKind {
-    if (aggregation instanceof AggregationSum) {
+  private getMetricKind(aggregationType: AggregationType): MetricKind {
+    if (aggregationType === AggregationType.sum) {
       return MetricKind.CUMULATIVE;
     }
     return MetricKind.GAUGE;
