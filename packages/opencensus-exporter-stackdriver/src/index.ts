@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
-export * from './stackdriver';
+export * from './stackdriver-trace';
+export * from './stackdriver-stats';
+export * from './types';

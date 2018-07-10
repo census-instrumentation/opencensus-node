@@ -25,6 +25,7 @@ import {StackdriverExporterOptions, StackdriverTraceExporter} from '../src/';
 
 import * as nocks from './nocks';
 
+process.env.UV_THREADPOOL_SIZE = '10';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 let PROJECT_ID = 'fake-project-id';
 
@@ -75,6 +76,7 @@ describe('Stackdriver Exporter', function() {
     tracer = new CoreTracer();
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(exporter);
+    // nock.cleanAll();
     if (!dryrun) {
       process.env.GOOGLE_APPLICATION_CREDENTIALS =
           GOOGLE_APPLICATION_CREDENTIALS;
@@ -177,12 +179,11 @@ describe('Stackdriver Exporter', function() {
           });
     });
 
-
     it('should fail exporting by network error', async () => {
       nock('https://cloudtrace.googleapis.com')
           .persist()
           .intercept(
-              '/v1/projects/' + exporterOptions.projectId + '/traces', 'patch')
+              '/v1/projects/' + exporterOptions.projectId + '/traces', 'PATCH')
           .reply(443, 'Simulated Network Error');
 
       nocks.oauth2((body) => true);
