@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import {Exporter, ExporterConfig, logger, Logger, Measure, RootSpan, Span, StatsExporter, View} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
+
 import {createRoutes} from './zpages-frontend/routes';
 
 /** Interface to Zpages options */
@@ -30,8 +30,13 @@ export interface ZpagesExporterOptions extends ExporterConfig {
   startServer: boolean;
 }
 
+export interface StatsParams {
+  registeredViews: View[];
+  registeredMeasures: Measure[];
+}
+
 /** Class to ZpagesExporter */
-export class ZpagesExporter implements Exporter {
+export class ZpagesExporter implements Exporter, StatsExporter {
   /** ZpagesExporter default options */
   static readonly defaultOptions = {port: 8080, startServer: true};
 
@@ -40,6 +45,8 @@ export class ZpagesExporter implements Exporter {
   private port: number;
   private traces: Map<string, Span[]> = new Map();
   private logger: Logger;
+  private statsParams = {registeredViews: [], registeredMeasures: []} as
+      StatsParams;
 
   constructor(options: ZpagesExporterOptions) {
     /** create express app */
@@ -56,7 +63,7 @@ export class ZpagesExporter implements Exporter {
     }
 
     /** defining routes */
-    this.app.use(createRoutes(this.traces));
+    this.app.use(createRoutes(this.traces, this.statsParams));
 
     /** start the server if the startServer option is true */
     if (startServer) {
@@ -161,4 +168,21 @@ export class ZpagesExporter implements Exporter {
   stopServer(callback?: () => void) {
     this.server.close(callback);
   }
+
+  /**
+   *
+   * @param view
+   * @param measure
+   */
+  onRegisterView(view: View) {
+    this.statsParams.registeredViews.push(view);
+    this.statsParams.registeredMeasures.push(view.measure);
+  }
+
+  /**
+   *
+   * @param view
+   * @param measurement
+   */
+  onRecord(view: View) {}
 }

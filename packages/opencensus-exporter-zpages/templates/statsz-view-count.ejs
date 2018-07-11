@@ -1,0 +1,18 @@
+<table border="1" frame="box" cellspacing="0" cellpadding="2">
+    <thead>
+        <tr>
+            <? for (var tagKey in view.columns) { ?>
+                <th class="l1">TagKey: <?= tagKey ?></th>
+            <? } ?>
+            <th class="l1">Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <? for (var tagKey in view.columns) { ?>
+                <td align="center"><?= view.columns[tagKey] ?></td>
+            <? } ?>
+            <td align="center"><?= statsData.value ?></td>
+        </tr>
+    </tbody>
+</table>
