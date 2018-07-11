@@ -1,0 +1,35 @@
+<table width="100%" border="1">
+    <thead>
+        <tr>
+            <th class="l1">View Name</th>
+            <th class="l1">Description</th>
+            <th class="l1">Measure</th>
+            <th class="l1">Aggregation Type</th>
+            <th class="l1">Start Time</th>
+            <th class="l1">End Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><?= view.name ?></td>
+            <td><?= view.description ?></td>
+            <td><?= view.measure.name ?></td>
+            <? if (view.aggregation === 0) { ?>
+                <td>count</td>
+            <? } else if (view.aggregation === 1) { ?>
+                <td>sum</td>
+            <? } else if (view.aggregation === 2) { ?>
+                <td>last value</td>
+            <? } else if (view.aggregation === 3) { ?>
+                <td>distribution</td>
+            <? } ?>
+            <td><?= view.startTime && (new Date(view.startTime)).toISOString() ?></td>
+            <td><?= view.endTime && (new Date(view.endTime)).toISOString() ?></td>
+        </tr>
+    </tbody>
+</table>
+<p></p>
+<p class="directory-tr">Stats for View <?= view.name ?></p>
+<p></p>
+
+<?- stats_content ?>

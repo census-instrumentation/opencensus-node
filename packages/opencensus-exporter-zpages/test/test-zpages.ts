@@ -75,7 +75,8 @@ class ZpagesJSONClient {
 }
 
 /** Zpages tests */
-describe('Zpages Exporter', () => {
+describe('Zpages Exporter', function() {
+  this.timeout(0);
   const zpagesClient = new ZpagesJSONClient(`http://localhost:${options.port}`);
 
   /** Should create a ZpagesExporter instance with predefined span names */
@@ -193,6 +194,20 @@ describe('Zpages Exporter', () => {
 
     it('Should access trace config page', (done) => {
       http.get(zpagesServerUrl + '/traceconfigz', (res) => {
+            assert.strictEqual(res.statusCode, 200);
+            done();
+          }).on('error', done);
+    });
+
+    it('Should access stats page', (done) => {
+      http.get(zpagesServerUrl + '/statsz', (res) => {
+            assert.strictEqual(res.statusCode, 200);
+            done();
+          }).on('error', done);
+    });
+
+    it('Should access rpc page', (done) => {
+      http.get(zpagesServerUrl + '/rpcz', (res) => {
             assert.strictEqual(res.statusCode, 200);
             done();
           }).on('error', done);
