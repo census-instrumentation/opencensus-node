@@ -97,8 +97,8 @@ export interface View {
   endTime: number;
   /** metric: mechanism underneath that will record and aggregate values. */
   metric: CounterMetric|GaugeMetric|HistogramMetric;
-  /** true if the view was regitred */
-  registred: boolean;
+  /** true if the view was registered */
+  registered: boolean;
   /**
    * Record a tagged/label value to the view, a number of times -
    * for "label-less" counts incremented by 1, all parameters can be omitted.

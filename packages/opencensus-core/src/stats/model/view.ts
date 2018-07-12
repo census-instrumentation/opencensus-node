@@ -57,20 +57,20 @@ class BaseView implements View {
   private logger: Logger;
   /** local for endTime */
   private localEndTime: number;
-  /** local for registred */
-  private isRegistred = false;
+  /** local for registered */
+  private isRegistered = false;
   /** event listener */
   private eventListener: ViewEventListener;
 
   constructor(
-      measure: Measure, agregation: AggregationType, columns?: string[],
+      measure: Measure, aggregation: AggregationType, columns?: string[],
       bucketBoundaries?: number[], name?: string, description?: string,
       alogger?: Logger) {
     this.name = name || measure.name;
     this.description = description || measure.description;
     this.measure = measure;
     this.columns = columns || [];
-    this.aggregation = agregation;
+    this.aggregation = aggregation;
     this.bucketBoundaries = bucketBoundaries || [];
     this.logger = alogger || logger.logger();
   }
@@ -125,15 +125,15 @@ class BaseView implements View {
   }
 
   /**  Should be set to true by a ViewManager after register the view */
-  set registred(value: boolean) {
-    this.isRegistred = value;
-    if (this.isRegistred && this.eventListener) {
+  set registered(value: boolean) {
+    this.isRegistered = value;
+    if (this.isRegistered && this.eventListener) {
       this.eventListener.onRegisterView(this);
     }
   }
 
-  get registred(): boolean {
-    return this.isRegistred;
+  get registered(): boolean {
+    return this.isRegistered;
   }
 
   /**
@@ -144,7 +144,7 @@ class BaseView implements View {
       void {
     this.metric.labelValues(labelValues).record(value, times);
     this.localEndTime = Date.now();
-    if (this.isRegistred && this.eventListener) {
+    if (this.isRegistered && this.eventListener) {
       this.eventListener.onRecord(this);
     }
   }
@@ -193,7 +193,7 @@ export class ViewManager {
       return;
     }
     ViewManager.registeredViews[view.name] = view;
-    view.registred = true;
+    view.registered = true;
   }
 
   /** Gets registeredViews */
@@ -206,7 +206,7 @@ export class ViewManager {
     return ViewManager.registeredViews[name];
   }
 
-  /** Retuns all registred views associated with a measure */
+  /** Retuns all registered views associated with a measure */
   static getViews(measure: Measure): View[] {
     const result = Object.keys(ViewManager.registeredViews)
                        .map(key => ViewManager.registeredViews[key])
