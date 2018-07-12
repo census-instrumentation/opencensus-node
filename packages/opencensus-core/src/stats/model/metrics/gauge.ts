@@ -107,7 +107,7 @@ export class GaugeMetric extends BaseMetric<Gauge<number>> {
         timestamp: this.getRecorder(labelKey).timestamp,
         value: this.useSumAsValue ? this.getRecorder(labelKey).sum :
                                     this.getRecorder(labelKey).value,
-        type: MetricValuesTypes.single,
+        type: MetricValuesTypes.SINGLE,
         tags: JSON.parse(labelKey),
         labelKey
       };

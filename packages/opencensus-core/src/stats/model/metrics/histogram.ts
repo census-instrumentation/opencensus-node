@@ -174,7 +174,7 @@ export class HdrDefaultHistogram implements Histogram {
       boundaries: this.boundaries,
       buckets: this.getBuckets(),
       tags: {},
-      type: MetricValuesTypes.distribution,
+      type: MetricValuesTypes.DISTRIBUTION,
       labelKey: ''
     };
   }
