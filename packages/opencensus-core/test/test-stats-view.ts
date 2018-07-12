@@ -153,9 +153,9 @@ describe('ViewManager', function() {
         assert.strictEqual(Object.keys(ViewManager.registeredViews).length, 0);
         const args = [measure];
         view = method.method.apply(this, args);
-        assert.strictEqual(view.registred, false);
+        assert.strictEqual(view.registered, false);
         ViewManager.registerView(view);
-        assert.strictEqual(view.registred, true);
+        assert.strictEqual(view.registered, true);
         assert.strictEqual(Object.keys(ViewManager.registeredViews).length, 1);
         assert.strictEqual(ViewManager.getView(view.name), view);
         assert.strictEqual(ViewManager.getViews(measure)[0], view);

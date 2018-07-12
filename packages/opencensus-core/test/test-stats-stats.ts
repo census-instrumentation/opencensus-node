@@ -175,9 +175,9 @@ describe('Stats', () => {
         assert.strictEqual(Object.keys(stats.getRegisteredViews()).length, 0);
         const args = [measure];
         view = method.method.apply(stats, args);
-        assert.strictEqual(view.registred, false);
+        assert.strictEqual(view.registered, false);
         stats.registerView(view);
-        assert.strictEqual(view.registred, true);
+        assert.strictEqual(view.registered, true);
         assert.strictEqual(Object.keys(stats.getRegisteredViews()).length, 1);
         assert.strictEqual(stats.getViews(measure)[0], view);
         assert.strictEqual(stats.getView(view.name), view);
@@ -200,9 +200,9 @@ describe('Stats', () => {
         assert.strictEqual(Object.keys(stats.getRegisteredViews()).length, 0);
         const args = [measure];
         view = method.method.apply(stats, args);
-        assert.strictEqual(view.registred, false);
+        assert.strictEqual(view.registered, false);
         stats.registerView(view);
-        assert.strictEqual(view.registred, true);
+        assert.strictEqual(view.registered, true);
         stats.record(measure, [], 1);
         assert.strictEqual(exporter.registeredView, view);
         assert.strictEqual(exporter.recordedView, view);
