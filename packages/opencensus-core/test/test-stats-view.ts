@@ -128,7 +128,7 @@ describe('ViewManager', function() {
           const result = method.results[i];
           view.recordValue(method.labelValues, value);
           const recordValue = view.getSnapshotValue(method.labelValues);
-          if (recordValue.type === MetricValuesTypes.single) {
+          if (recordValue.type === MetricValuesTypes.SINGLE) {
             checkSnapshotSingleValue(recordValue as SingleValue, result);
           }
         }

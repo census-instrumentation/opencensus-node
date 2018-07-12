@@ -137,7 +137,7 @@ export interface Metric<R> {
    */
   labelValues(labelValues: Tags|string[]): R;
   /**
-   * Returns the metric record mechansim associated to the labelValue, if
+   * Returns the metric record mechanism associated to the labelValue, if
    * existed
    */
   getRecorder(labelValues?: Tags|string[]): R;
@@ -157,7 +157,7 @@ export type MetricDistributions = Distribution[];
 
 
 /**
- * Maps that contains all labelValues -> Mensuremnt of a Count or Gouge Metric
+ * Maps that contains all labelValues -> Measurement of a Count or Gauge Metric
  */
 export type MetricSingleValues = SingleValue[];
 
@@ -166,13 +166,13 @@ export type MetricValues = MetricSingleValues|MetricDistributions;
 
 /** Type of MetricValues */
 export const enum MetricValuesTypes {
-  single,
-  distribution
+  SINGLE,
+  DISTRIBUTION
 }
 
-/**  Config for metrics */
+/** Config for metrics */
 export interface MetricConfig {
-  /** Metric descripor  */
+  /** Metric descriptor */
   descriptor: MetricDescriptor;
   /**
    * Only for gauges-  if true the value returned from snapshots will be the
@@ -201,7 +201,7 @@ export type SimpleRange = {
 /** The bucket boundaries for a histogram. */
 export type HistogramBoundaries = {
   range: SimpleRange;
-  /** List of numbers defining the boundaries for a histogram.  */
+  /** List of numbers defining the boundaries for a histogram. */
   bucketBoundaries: number[];
 };
 

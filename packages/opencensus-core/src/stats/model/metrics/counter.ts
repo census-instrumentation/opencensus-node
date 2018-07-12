@@ -84,7 +84,7 @@ export class CounterMetric extends BaseMetric<Counter<number>> {
       const singleValue = {
         timestamp: this.getRecorder(labelKey).timestamp,
         value: this.getRecorder(labelKey).value,
-        type: MetricValuesTypes.single,
+        type: MetricValuesTypes.SINGLE,
         tags: JSON.parse(labelKey),
         labelKey
       };

@@ -72,7 +72,7 @@ describe('HistogramMetric', () => {
       assert.strictEqual(distribution.mean, 83);
       assert.strictEqual(distribution.sumSquaredDeviations, 654);
       assert.strictEqual(Object.keys(distribution.tags).length, 0);
-      assert.strictEqual(distribution.type, MetricValuesTypes.distribution);
+      assert.strictEqual(distribution.type, MetricValuesTypes.DISTRIBUTION);
     });
   });
 
@@ -110,7 +110,7 @@ describe('HistogramMetric', () => {
       assert.strictEqual(distribution.count, 1010);
       assert.strictEqual(distribution.tags.method, tagsGET.method);
       assert.strictEqual(distribution.tags.statusCode, tagsGET.statusCode);
-      assert.strictEqual(distribution.type, MetricValuesTypes.distribution);
+      assert.strictEqual(distribution.type, MetricValuesTypes.DISTRIBUTION);
       assert.strictEqual(
           metric.getRecorder(distribution.labelKey),
           metric.getRecorder(tagsGET));
