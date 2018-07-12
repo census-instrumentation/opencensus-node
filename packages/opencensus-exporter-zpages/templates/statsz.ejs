@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>StatsZ</title>
+    <link rel="shortcut icon" href="//www.opencensus.io/favicon.ico" />
+    <style>
+        h2 {
+            background-color: #eeeeff;
+        }
+
+        table {
+            background-color: #fff5ee;
+        }
+
+        thead {
+            background-color: #eee5de;
+        }
+
+        .directory-tr {
+            font-size: 150%
+        }
+    </style>
+</head>
+
+<body>
+    <h1>
+        <a href='?'>StatsZ</a>
+    </h1>
+    <p></p>
+    <h2>Views</h2>
+    <h3>Current Path:
+        <a href='?path='>/</a>
+        <? completePath = "" ?>
+        <? for(var part of path) { ?>
+            <? completePath = completePath + part + "/" ?>
+            <a href='?path=<?= completePath ?>'><?= part ?>/</a>
+        <? } ?>
+    </h3>
+
+        <?- table_content ?>
+
+        <p></p>
+        <h2>Measures with Views</h2>
+        <p>Below are the measures used in registered views.</p>
+        <p></p>
+        <table border="1" frame="box" cellspacing="0" cellpadding="2">
+            <thead>
+                <tr>
+                    <th class="l1">Measure</th>
+                    <th class="l1">Description</th>
+                    <th class="l1">Unit</th>
+                    <th class="l1">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+            <? for(var i = 0; i < registeredMeasures.length; ++i) { ?>
+                <tr>
+                    <td><b><?= registeredMeasures[i].name ?></b></td>
+                    <td><?= registeredMeasures[i].description ?></td>
+                    <td><?= registeredMeasures[i].unit ?></td>
+                    <td><?= registeredMeasures[i].type ?></td>
+                </tr>
+            <? } ?>
+            </tbody>
+        </table>
+        <p></p>
+</body>
+
+</html>

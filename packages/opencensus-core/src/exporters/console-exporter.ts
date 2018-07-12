@@ -15,6 +15,7 @@
  */
 
 import * as loggerTypes from '../common/types';
+import {Measure, Measurement, View} from '../stats/model/types';
 import * as modelTypes from '../trace/model/types';
 
 import {ExporterBuffer} from './exporter-buffer';
@@ -35,7 +36,6 @@ export class ConsoleExporter implements types.Exporter {
   /** Buffer object to store the spans. */
   private buffer: ExporterBuffer;
   private logger: loggerTypes.Logger;
-
   /**
    * Constructs a new ConsoleLogExporter instance.
    * @param config Exporter configuration object to create a console log
@@ -45,9 +45,7 @@ export class ConsoleExporter implements types.Exporter {
     this.buffer = new ExporterBuffer(this, config);
     this.logger = config.logger;
   }
-
   onStartSpan(root: modelTypes.RootSpan) {}
-
   /**
    * Event called when a span is ended.
    * @param root Ended span.
@@ -55,7 +53,6 @@ export class ConsoleExporter implements types.Exporter {
   onEndSpan(root: modelTypes.RootSpan) {
     this.buffer.addToBuffer(root);
   }
-
   /**
    * Sends the spans information to the console.
    * @param rootSpans
@@ -75,5 +72,26 @@ export class ConsoleExporter implements types.Exporter {
       console.log(`${result}`);
     });
     return Promise.resolve();
+  }
+}
+
+/** Exporter that receives stats data and shows in the log console. */
+export class ConsoleStatsExporter implements types.StatsExporter {
+  /**
+   * Event called when a view is registered
+   * @param view registered view
+   * @param measure registered measure
+   */
+  onRegisterView(view: View) {
+    console.log(`View registered: ${view.name}, Measure registered: ${
+        view.measure.name}`);
+  }
+  /**
+   * Event called when a measurement is recorded
+   * @param view recorded view from measurement
+   * @param measurement recorded measurement
+   */
+  onRecord(view: View) {
+    console.log(`Measurement recorded: ${view.measure.name}`);
   }
 }

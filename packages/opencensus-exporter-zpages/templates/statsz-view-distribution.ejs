@@ -1,0 +1,47 @@
+<table border="1" frame="box" cellspacing="0" cellpadding="2">
+    <thead>
+        <tr>
+            <? for (var tagKey of view.columns) { ?> 
+                <th class="l1">TagKey: <?= tagKey ?></th> 
+            <? } ?>
+            <th class="l1">Mean, By</th>
+            <th class="l1">Count</th>
+            <th class="l1">Max, By</th>
+            <th class="l1">Min, By</th>
+            <th class="l1">Sum of Squared Deviations</th>
+            <th class="l1">Histogram</th>
+        </tr>
+    </thead>
+    <tbody>
+        <? for (var data of statsData) { ?>
+            <tr>
+                <? for (var tagValue of data.tagValues) { ?>
+                    <td align="center"><?= tagValue ?></td>
+                <? } ?>
+                <td align="center"><?= data.mean ?></td>
+                <td align="center"><?= data.count ?></td>
+                <td align="center"><?= data.max ?></td>
+                <td align="center"><?= data.min ?></td>
+                <td align="center"><?= data.sumOfSquaredDeviations ?></td>
+                <td>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Range</th>
+                                <th>Bucket Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <? for (item of data.buckets) { ?>
+                                <tr>                        
+                                    <td>[<?= item.range.min ?>...<?= item.range.max ?>)</td>
+                                    <td><?= item.count ?></td>
+                                </tr>
+                            <? } ?>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        <? } ?>
+    </tbody>
+</table>
