@@ -22,32 +22,16 @@ import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
 
-const tracer = new CoreTracer().start({});
-const DEFAULT_BUFFER_SIZE = 3;
-const DEFAULT_BUFFER_TIMEOUT = 20000;  // time in milliseconds
+const tracer = new CoreTracer().start({samplingRate: 1.0});
 const defaultBufferConfig = {
-  bufferSize: DEFAULT_BUFFER_SIZE,
-  bufferTimeout: DEFAULT_BUFFER_TIMEOUT
+  bufferSize: 1,
+  bufferTimeout: 20000  // time in milliseconds
 };
-
-const createRootSpans = (): RootSpan[] => {
-  const rootSpans = [];
-  for (let i = 0; i < DEFAULT_BUFFER_SIZE + 1; i++) {
-    const rootSpan = new RootSpan(tracer, {name: `rootSpan.${i}`});
-    rootSpan.start();
-    for (let j = 0; j < 10; j++) {
-      rootSpan.startChildSpan(`childSpan.${i}.${j}`, 'client');
-    }
-    rootSpans.push(rootSpan);
-  }
-  return rootSpans;
-};
-
 
 describe('NoopExporter', () => {
   /** Should do nothing when calling onEndSpan() */
   describe('onEndSpan()', () => {
-    it('should do anything', () => {
+    it('should do nothing', () => {
       const exporter = new NoopExporter();
       const rootSpan = new RootSpan(tracer);
       exporter.onEndSpan(rootSpan);
@@ -57,14 +41,12 @@ describe('NoopExporter', () => {
 
   /** Should do anything when calling publish() */
   describe('publish()', () => {
-    it('should do anything', () => {
+    it('should do nothing', () => {
       const exporter = new NoopExporter();
       const rootSpan = new RootSpan(tracer);
-      const queue: RootSpan[] = [];
-      queue.push(rootSpan);
+      const queue: RootSpan[] = [rootSpan];
 
-      exporter.publish(queue);
-      assert.ok(true);
+      return exporter.publish(queue);
     });
   });
 });
@@ -73,28 +55,50 @@ describe('ConsoleLogExporter', () => {
   /** Should end a span */
   describe('onEndSpan()', () => {
     it('should end a span', () => {
+      const intercept = require('intercept-stdout');
+      let capturedText = '';
+      const unhookIntercept = intercept((txt: string) => {
+        capturedText += txt;
+      });
+
       const exporter = new ConsoleExporter(defaultBufferConfig);
-      tracer.registerSpanEventListener(exporter);
-      // const rootSpan = new RootSpan(tracer);
-      const rootSpans = createRootSpans();
-      for (const rootSpan of rootSpans) {
-        rootSpan.end();
-      }
-      assert.ok(true);
+
+      const rootSpan1 = new RootSpan(tracer);
+      exporter.onEndSpan(rootSpan1);
+      assert.strictEqual(capturedText, '');
+
+      const rootSpan2 = new RootSpan(tracer);
+      exporter.onEndSpan(rootSpan2);
+      [rootSpan1, rootSpan2].map(rootSpan => {
+        assert.ok(capturedText.indexOf(rootSpan.traceId) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.id) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.name) >= 0);
+      });
     });
   });
 
   /** Should publish the rootspan in queue */
   describe('publish()', () => {
     it('should publish the rootspans in queue', () => {
+      const intercept = require('intercept-stdout');
+      let capturedText = '';
+      const unhookIntercept = intercept((txt: string) => {
+        capturedText += txt;
+      });
+
       const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
       rootSpan.startChildSpan('name', 'type', rootSpan.traceId);
-      const queue: RootSpan[] = [];
-      queue.push(rootSpan);
+      const queue: RootSpan[] = [rootSpan];
 
-      exporter.publish(queue);
-      assert.ok(true);
+      return exporter.publish(queue).then(() => {
+        assert.ok(capturedText.indexOf(rootSpan.traceId) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.id) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.name) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.spans[0].name) >= 0);
+        assert.ok(capturedText.indexOf(rootSpan.spans[0].id) >= 0);
+      });
     });
   });
 });
