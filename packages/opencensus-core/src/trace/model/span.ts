@@ -15,6 +15,7 @@
  */
 
 import * as logger from '../../common/console-logger';
+import {Logger} from '../../common/types';
 
 import {SpanBase} from './span-base';
 import * as types from './types';
@@ -30,10 +31,10 @@ export class Span extends SpanBase implements types.Span {
    * Constructs a new SpanImpl instance.
    * @param root
    */
-  constructor(root: types.RootSpan) {
+  constructor(root: types.RootSpan, alogger?: Logger) {
     super();
     this.root = root;
-    this.logger = this.root.logger || logger.logger();
+    this.logger = alogger || logger.logger();
     this.parentSpanId = root.id;
   }
 

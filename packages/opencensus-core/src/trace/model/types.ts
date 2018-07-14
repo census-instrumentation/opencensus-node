@@ -105,9 +105,6 @@ export interface Span {
   /** Kind of span. */
   kind: string;
 
-  /** An object to log information to */
-  logger: loggerTypes.Logger;
-
   /** A final status for this span */
   status: number;
 

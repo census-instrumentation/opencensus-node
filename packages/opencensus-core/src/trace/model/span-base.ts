@@ -34,7 +34,7 @@ export abstract class SpanBase implements types.Span {
   /** The Span ID of this span */
   readonly id: string;
   /** An object to log information to */
-  logger: Logger;
+  protected logger: Logger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
   attributes: types.Attributes = {};
   /** A text annotation with a set of attributes. */
