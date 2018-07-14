@@ -59,13 +59,18 @@ export function spanToThrift(span: Span) {
 
   const spanLogs = [];
   const unsigned = true;
-  const length = span.spanContext.traceId.length;
   const parentSpan = span.parentSpanId ? Utils.encodeInt64(span.parentSpanId) :
                                          ThriftUtils.emptyBuffer;
 
+  const traceId =
+      `00000000000000000000000000000000${span.spanContext.traceId}`.slice(-32);
+
+  const high = traceId.slice(0, 16);
+  const low = traceId.slice(16);
+
   return {
-    traceIdLow: Utils.encodeInt64(span.spanContext.traceId),
-    traceIdHigh: ThriftUtils.emptyBuffer,
+    traceIdLow: Utils.encodeInt64(low),
+    traceIdHigh: Utils.encodeInt64(high),
     spanId: Utils.encodeInt64(span.spanContext.spanId),
     parentSpanId: parentSpan,
     operationName: span.name,
