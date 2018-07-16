@@ -161,7 +161,7 @@ export interface Span {
    * @param key Describes the value added.
    * @param value The result of an operation.
    */
-  addAttribute(key: string, value: string): void;
+  addAttribute(key: string, value: string|number|boolean): void;
 
   /**
    * Adds an annotation to the span.
