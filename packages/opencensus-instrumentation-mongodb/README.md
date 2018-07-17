@@ -1,7 +1,7 @@
-# OpenCensus MongoDB Instrumentation for Node.js
+# OpenCensus MongoDB Instrumentation Plugin for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus MongoDB Instrumentation allows the user to automatically collect trace data.
+OpenCensus MongoDB Instrumentation Plugin allows the user to automatically collect trace data.
 
 This project is still at an early stage of development. It's subject to change.
 

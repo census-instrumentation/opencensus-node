@@ -1,7 +1,7 @@
-# OpenCensus HTTP Instrumentation for Node.js
+# OpenCensus HTTP Instrumentation Plugin for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus HTTP Instrumentation allows the user to automatically collect trace data. This package is used by [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) to instrument HTTP for both servers and clients.
+OpenCensus HTTP Instrumentation Plugin allows the user to automatically collect trace data. This package is used by [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) to instrument HTTP for both servers and clients.
 
 This project is still at an early stage of development. It's subject to change.
 

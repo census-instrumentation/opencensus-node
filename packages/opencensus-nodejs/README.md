@@ -1,7 +1,7 @@
 # OpenCensus for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. Right now OpenCensus for Node.js supports custom tracing and automatic tracing for HTTP and HTTPS.
+OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. Right now OpenCensus for Node.js supports custom tracing and automatic tracing for HTTP, HTTPS, HTTP2 and MongoDB.
 
 The library is in alpha stage and the API is subject to change.
 
@@ -19,7 +19,7 @@ npm install @opencensus/nodejs
 
 ### Instrumenting an Application
 
-OpenCensus for Node.js has automatic instrumentation for [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md) and [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md) out of the box. This means that spans are automatically created for operations of those packages. To use it, simply start the tracing instance.
+OpenCensus for Node.js has automatic instrumentation for [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md), [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md), [HTTP2](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http2/README.md), [gRPC](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-grpc/README.md) and [MongoDB](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-mongodb/README.md) out of the box. This means that spans are automatically created for operations of those packages. To use it, simply start the tracing instance.
 
 ```javascript
 var tracing = require('@opencensus/nodejs');
@@ -69,12 +69,15 @@ Tracing has many options available to choose from. At `tracing.start()`, you can
 | [`plugin`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L68) | `PluginNames` | A list of trace instrumentations plugins to load |
 | [`exporter`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L70) | `Exporter` | An exporter object |
 
-## Plugins
+## Instrumentation Plugins
 
-OpenCensus can collect tracing data automatically using plugins. Users can also create and use their own plugins. Currently, OpenCensus supports automatic tracing for:
+OpenCensus can collect tracing data automatically using instrumentation plugins. Users can also create and use their own instrumentation plugins. Currently, OpenCensus supports automatic tracing for:
 
 - [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md)
 - [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md)
+- [HTTP2](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http2/README.md)
+- [gRPC](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-grpc/README.md)
+- [MongoDB](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-mongodb/README.md)
 
 ## Propagation
 
@@ -93,6 +96,52 @@ OpenCensus can export trace data to various backends. Currently, OpenCensus supp
 - [Jaeger](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-jaeger/README.md)
 
 If no exporter is registered in the tracing instance, as default, a console log exporter is used.
+
+## Stats
+
+### Creating Measures
+
+In stats collection, the first step is to create the measures your are interested in. For that, you'll need an instance of `Stats` and a list of tag keys.
+
+```typescript
+const stats = new Stats();
+const tagKeys = ['key1', 'key2'];
+
+const yourMeasureInt64 = stats.createMeasureInt64('your.domain/first/measure', 'description', MeasureUnit.unit);
+const yourMeasureDouble = stats.createMeasureDouble('your.domain/second/measure', 'description', MeasureUnit.unit);
+```
+
+### Creating Views
+
+Views aggregate measures in one of the following ways: `lastValue`, `sum`, `count` and `distribution`. To create views, simply do the following:
+```typescript
+// Define your bucket's limit for distribution views
+const buckets = [1, 10, 20, 30];
+const distributionView = stats.createDistribuitionView(yourMeasure, buckets, tagKeys, 'your.domain/path/to/view/distribution', 'view description');
+stats.registerView(distributionView);
+
+const lastValueView = stats.createLastValueView(yourMeasure, tagKeys, 'your.domain/path/to/view/last/value', 'view description');
+stats.registerView(lastValueView);
+
+const sumView = stats.createSumView(yourMeasure, tagKeys, 'your.domain/path/to/view/sum', 'view description');
+stats.registerView(sumView);
+
+const countView = stats.createCountView(yourMeasure, tagKeys, 'your.domain/path/to/view/count', 'view description');
+stats.registerView(countView);
+```
+
+Tags allows you to create multidimensional data by changing the value of a tag key. For example, one can create a view that aggregates the amount of bytes sent through an HTTP method, for that view, you can add a tag key called `http_status` that has values such as `ok` or `error`. By doing that, you are able to store two dimensions in one view.
+
+### Recording Values
+
+Once measures and views are created, a record can be made to a view by doing:
+
+```typescript
+// The tag labels should correspond to the tag keys in the view
+const tagLabels = ['value_for_key_1', 'value_for_key_2'];
+
+yourView.recordValue(tagLabels, 25);
+```
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>

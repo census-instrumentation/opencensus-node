@@ -1,7 +1,7 @@
 # OpenCensus Libraries for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. Right now OpenCensus for Node.js supports custom tracing and automatic tracing for HTTP and HTTPS. Please visit the [OpenCensus Node.js package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) for usage.
+OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. Right now OpenCensus for Node.js supports custom tracing and automatic tracing for HTTP, HTTPS HTTP2 and MongoDB. Please visit the [OpenCensus Node.js package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) for usage.
 
 The library is in alpha stage and the API is subject to change.
 
@@ -17,10 +17,13 @@ npm install @opencensus/nodejs
 
 ## Plugins
 
-OpenCensus can collect tracing data automatically using plugins. Users can also create and use their own plugins. Currently, OpenCensus supports automatic tracing for:
+OpenCensus can collect tracing data automatically using instrumentation plugins. Users can also create and use their own instrumentation plugins. Currently, OpenCensus supports automatic tracing for:
 
 - [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md)
 - [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md)
+- [HTTP2](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http2/README.md)
+- [gRPC](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-grpc/README.md)
+- [MongoDB](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-mongodb/README.md)
 
 ## Propagation
 
