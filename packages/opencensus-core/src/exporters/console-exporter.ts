@@ -15,7 +15,7 @@
  */
 
 import * as loggerTypes from '../common/types';
-import {Measure, Measurement, View} from '../stats/model/types';
+import {Measure, Measurement, View} from '../stats/types';
 import * as modelTypes from '../trace/model/types';
 
 import {ExporterBuffer} from './exporter-buffer';
@@ -77,7 +77,7 @@ export class ConsoleExporter implements types.Exporter {
 }
 
 /** Exporter that receives stats data and shows in the log console. */
-export class ConsoleStatsExporter implements types.StatsExporter {
+export class ConsoleStatsExporter implements types.StatsEventListener {
   /**
    * Event called when a view is registered
    * @param view registered view
@@ -92,7 +92,7 @@ export class ConsoleStatsExporter implements types.StatsExporter {
    * @param view recorded view from measurement
    * @param measurement recorded measurement
    */
-  onRecord(view: View) {
+  onRecord(view: View, measurement: Measurement) {
     console.log(`Measurement recorded: ${view.measure.name}`);
   }
 }

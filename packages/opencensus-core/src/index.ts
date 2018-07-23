@@ -42,18 +42,17 @@ export * from './exporters/console-exporter';
 
 // STATS CLASSES
 
-// domain models impls
-export * from './stats/model/metrics/counter';
-export * from './stats/model/metrics/gauge';
-export * from './stats/model/metrics/histogram';
-export * from './stats/model/metrics/metric';
-export * from './stats/model/measure';
-export * from './stats/model/view';
+// classes
 export * from './stats/stats';
+export * from './stats/view';
+export * from './stats/aggregation/count-aggregation';
+export * from './stats/aggregation/sum-aggregation';
+export * from './stats/aggregation/last-value-aggregation';
+export * from './stats/aggregation/distribution-aggregation';
 
 // interfaces
-export * from './stats/model/metrics/types';
-export * from './stats/model/types';
+export * from './stats/aggregation/types';
+export * from './stats/types';
 
 // logger
 import * as logger from './common/console-logger';

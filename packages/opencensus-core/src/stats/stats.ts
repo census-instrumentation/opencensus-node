@@ -14,176 +14,80 @@
  * limitations under the License.
  */
 
-import * as logger from '../common/console-logger';
-import {Logger} from '../common/types';
-import {ConsoleStatsExporter} from '../exporters/console-exporter';
-import {StatsExporter} from '../exporters/types';
+import {StatsEventListener} from '../exporters/types';
 
-import {MeasureManager} from './model/measure';
-import {AggregationType, Measure, MeasureUnit, RegisteredViews, Tags, View, ViewEventListener} from './model/types';
-import {ViewManager} from './model/view';
+import {AggregationType} from './aggregation/types';
+import {Measure, Measurement, MeasureUnit, View} from './types';
 
+export class Stats {
+  /** A list of Stats exporters */
+  private statsEventListeners: StatsEventListener[] = [];
+  /** A map of Measures (name) to their corresponding Views */
+  private registeredViews: {[key: string]: View[]};
 
-/** Manager the main stats actions */
-export class Stats implements ViewEventListener {
-  private logger: Logger;
-  /** A list of view event listeners */
-  private eventListenersLocal: ViewEventListener[] = [];
+  constructor() {}
 
-  constructor(userLogger?: Logger) {
-    this.logger = userLogger ? userLogger : logger.logger();
+  /**
+   * Registers a view to listen to new measurements in its measure. Prefer using
+   * the method createView() that creates an already registered view.
+   * @param view The view to be registered
+   */
+  registerView(view: View) {
+    // TODO: To be implemented
   }
 
   /**
-   * Registers an ViewEventListerner
+   * Creates and registers a view.
+   * @param name The view name
+   * @param measure The view measure
+   * @param aggregation The view aggregation type
+   * @param tagKeys The view columns (tag keys)
+   * @param description The view description
    */
-  registerViewEventListener(listener: ViewEventListener) {
-    if (listener === this) return;
-    const index = this.eventListenersLocal.indexOf(listener, 0);
-    if (index < 0) {
-      this.eventListenersLocal.push(listener);
-    }
+  createView(
+      name: string, measure: Measure, aggregation: AggregationType,
+      tagKeys: string[], description?: string): View {
+    // TODO: To be implemented
+    return null;
   }
 
   /**
-   * Unregisters an ViewEventListener.
+   * Registers an exporter to send stats data to a service.
+   * @param exporter An stats exporter
    */
-  unregisterSpanEventListener(listener: ViewEventListener) {
-    const index = this.eventListenersLocal.indexOf(listener, 0);
-    if (index > -1) {
-      this.eventListenersLocal.splice(index, 1);
-    }
+  registerExporter(exporter: StatsEventListener) {
+    // TODO: To be implemented
   }
 
   /**
-   * Enable stats collection for the given {@link View}.
-   * @param view
+   * Creates a measure of type Double.
+   * @param name The measure name
+   * @param unit The measure unit
+   * @param description The measure description
    */
-  registerView(view: View): void {
-    ViewManager.registerView(view);
-  }
-
-  /** Register stats exporter */
-  registerExporter(exporter: StatsExporter) {
-    this.registerViewEventListener(exporter);
-  }
-
-  /** Factory method that createas a Measure of type DOUBLE */
-  createMeasureDouble(name: string, description: string, unit: MeasureUnit):
+  createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
       Measure {
-    return MeasureManager.createMeasureDouble(name, description, unit);
+    // TODO: To be implemented
+    return null;
   }
 
-  /** Factory method that createas a Measure of type INT64 */
-  createMeasureInt64(name: string, description: string, unit: MeasureUnit):
+  /**
+   * Creates a measure of type Int64.
+   * @param name The measure name
+   * @param unit The measure unit
+   * @param description The measure description
+   */
+  createMeasureInt(name: string, unit: MeasureUnit, description?: string):
       Measure {
-    return MeasureManager.createMeasureInt64(name, description, unit);
-  }
-
-  /**  Factory method to create a view which aggregationType = count  */
-  createCountView(
-      measure: Measure, columns?: string[], name?: string,
-      description?: string): View {
-    const view = ViewManager.createCountView(
-        measure, columns, name, description, this.logger);
-    view.registerEventListener(this);
-    return view;
-  }
-
-  /**  Factory method to create a view which aggregationType = sum  */
-  createSumView(
-      measure: Measure, columns?: string[], name?: string,
-      description?: string): View {
-    const view = ViewManager.createSumView(
-        measure, columns, name, description, this.logger);
-    view.registerEventListener(this);
-    return view;
-  }
-
-  /**  Factory method to create a view which aggregationType = lastvalue  */
-  createLastValueView(
-      measure: Measure, columns?: string[], name?: string,
-      description?: string): View {
-    const view = ViewManager.createLastValueView(
-        measure, columns, name, description, this.logger);
-    view.registerEventListener(this);
-    return view;
-  }
-
-  /**  Factory method to create a view which aggregationType = distribution  */
-  createDistribuitionView(
-      measure: Measure, bucketBoundaries: number[], columns?: string[],
-      name?: string, description?: string): View {
-    const view = ViewManager.createDistribuitionView(
-        measure, bucketBoundaries, columns, name, description, this.logger);
-    view.registerEventListener(this);
-    return view;
+    // TODO: To be implemented
+    return null;
   }
 
   /**
-   * Returns the registered views
+   * Updates all views with the new measurements.
+   * @param measurements A list of measurements to record
    */
-  getRegisteredViews(): RegisteredViews {
-    return ViewManager.registeredViews;
-  }
-
-  /** Returns the view according to the name */
-  getView(name: string) {
-    const result = ViewManager.getView(name);
-    if (!result) {
-      this.logger.error('Could not find view: %s', name);
-    }
-    return result;
-  }
-
-  /** Returns the view according to the name */
-  getViews(measure: Measure) {
-    return ViewManager.getViews(measure);
-  }
-
-  /** Record a value to all views that it is associated with a measure */
-  record(measure: Measure, labelValues?: Tags|string[], value?: number) {
-    for (const view of ViewManager.getViews(measure)) {
-      view.recordValue(
-          labelValues,
-          (view.aggregation !== AggregationType.count) ? value : 1);
-    }
-  }
-
-  /** Clear view registers - unregister all current views   */
-  clearRegister() {
-    ViewManager.clearRegister();
-  }
-
-  /**
-   * Event called when a view is registered
-   */
-  onRegisterView(view: View): void {
-    this.notifyOnRegisterListners(view);
-  }
-
-  /**
-   * Event called when a measurement is recorded
-   */
-  onRecord(view: View): void {
-    this.notifyOnRecordListeners(view);
-  }
-
-  private notifyOnRegisterListners(view: View) {
-    this.logger.debug('starting to notify listeners to onRegisterView');
-    if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
-      for (const listener of this.eventListenersLocal) {
-        listener.onRegisterView(view);
-      }
-    }
-  }
-
-  private notifyOnRecordListeners(view: View) {
-    this.logger.debug('starting to notify listeners to onRecordView');
-    if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
-      for (const listener of this.eventListenersLocal) {
-        listener.onRecord(view);
-      }
-    }
+  record(measurements: Measurement[]) {
+    // TODO: To be implemented
   }
 }
