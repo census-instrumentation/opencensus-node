@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-
-import {Measure, Measurement, View, ViewEventListener} from '../stats/model/types';
+import {Measurement, View} from '../stats/types';
 import * as configTypes from '../trace/config/types';
 import * as modelTypes from '../trace/model/types';
 
@@ -28,7 +27,10 @@ export interface Exporter extends modelTypes.SpanEventListener {
   publish(rootSpans: modelTypes.RootSpan[]): Promise<number|string|void>;
 }
 
-/** Define a StatsExporter interface */
-export interface StatsExporter extends ViewEventListener {}
+/** Defines a StatsEventListener interface */
+export interface StatsEventListener {
+  onRegisterView(view: View): void;
+  onRecord(view: View, measurement: Measurement): void;
+}
 
 export type ExporterConfig = configTypes.BufferConfig;
