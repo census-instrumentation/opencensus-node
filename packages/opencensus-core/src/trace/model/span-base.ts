@@ -170,11 +170,13 @@ export abstract class SpanBase implements types.Span {
    * Adds a message event to the span.
    * @param type The type of message event.
    * @param id An identifier for the message event.
+   * @param timestamp A time in milliseconds. Defaults to Date.now()
    */
-  addMessageEvent(type: string, id: string) {
+  addMessageEvent(type: string, id: string, timestamp = 0) {
     this.messageEvents.push({
       'type': type,
       'id': id,
+      'timestamp': timestamp ? timestamp : Date.now(),
     } as types.MessageEvent);
   }
 

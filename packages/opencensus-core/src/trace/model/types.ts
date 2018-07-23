@@ -40,6 +40,8 @@ export interface Annotation {
 
 /** An event describing a message sent/received between Spans. */
 export interface MessageEvent {
+  /** A timestamp for the event. */
+  timestamp: number;
   /** Indicates whether the message was sent or received. */
   type: string;
   /** An identifier for the MessageEvent's message. */
@@ -187,8 +189,9 @@ export interface Span {
    * Adds a message event to the span.
    * @param type The type of message event.
    * @param id An identifier for the message event.
+   * @param timestamp A timestamp for this event.
    */
-  addMessageEvent(type: string, id: string): void;
+  addMessageEvent(type: string, id: string, timestamp?: number): void;
 
   /** Starts a span. */
   start(): void;
