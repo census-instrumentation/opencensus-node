@@ -32,7 +32,7 @@ export interface Attributes { [attributeKey: string]: string|number|boolean; }
 export interface Annotation {
   /** A user-supplied message describing the event. */
   description: string;
-  /** A timestamp that maks the event. */
+  /** A timestamp for the event event. */
   timestamp: number;
   /** A set of attributes on the annotation. */
   attributes: Attributes;
@@ -40,6 +40,8 @@ export interface Annotation {
 
 /** An event describing a message sent/received between Spans. */
 export interface MessageEvent {
+  /** A timestamp for the event. */
+  timestamp: number;
   /** Indicates whether the message was sent or received. */
   type: string;
   /** An identifier for the MessageEvent's message. */
@@ -166,11 +168,11 @@ export interface Span {
   /**
    * Adds an annotation to the span.
    * @param description Describes the event.
-   * @param timestamp A timestamp that maks the event.
    * @param attributes A set of attributes on the annotation.
+   * @param timestamp A timestamp for this event.
    */
   addAnnotation(
-      description: string, timestamp: number, attributes?: Attributes): void;
+      description: string, attributes?: Attributes, timestamp?: number): void;
 
   /**
    * Adds a link to the span.
@@ -187,8 +189,9 @@ export interface Span {
    * Adds a message event to the span.
    * @param type The type of message event.
    * @param id An identifier for the message event.
+   * @param timestamp A timestamp for this event.
    */
-  addMessageEvent(type: string, id: string): void;
+  addMessageEvent(type: string, id: string, timestamp?: number): void;
 
   /** Starts a span. */
   start(): void;

@@ -136,15 +136,15 @@ export abstract class SpanBase implements types.Span {
   /**
    * Adds an annotation to the span.
    * @param description Describes the event.
-   * @param timestamp A timestamp that maks the event.
    * @param attributes A set of attributes on the annotation.
+   * @param timestamp A time, in milliseconds. Defaults to Date.now()
    */
   addAnnotation(
-      description: string, timestamp: number, attributes?: types.Attributes) {
+      description: string, attributes?: types.Attributes, timestamp = 0) {
     this.annotations.push({
       'description': description,
-      'timestamp': timestamp,
       'attributes': attributes,
+      'timestamp': timestamp ? timestamp : Date.now(),
     } as types.Annotation);
   }
 
@@ -170,11 +170,13 @@ export abstract class SpanBase implements types.Span {
    * Adds a message event to the span.
    * @param type The type of message event.
    * @param id An identifier for the message event.
+   * @param timestamp A time in milliseconds. Defaults to Date.now()
    */
-  addMessageEvent(type: string, id: string) {
+  addMessageEvent(type: string, id: string, timestamp = 0) {
     this.messageEvents.push({
       'type': type,
       'id': id,
+      'timestamp': timestamp ? timestamp : Date.now(),
     } as types.MessageEvent);
   }
 
