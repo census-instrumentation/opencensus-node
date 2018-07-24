@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {AggregationData, AggregationType} from './aggregation/types';
-
 /** Tags are maps of names -> values */
 export interface Tags { [key: string]: string; }
 
@@ -47,25 +45,28 @@ export interface Measure {
  * by http://unitsofmeasure.org/ucum.html.
  */
 export const enum MeasureUnit {
-  unit = '1',    // for general counts
-  byte = 'by',   // bytes
-  kbyte = 'kb',  // Kbytes
-  sec = 's',     // seconds
-  ms = 'ms',     // millisecond
-  ns = 'ns'      // nanosecond
+  UNIT = '1',    // for general counts
+  BYTE = 'by',   // bytes
+  KBYTE = 'kb',  // Kbytes
+  SEC = 's',     // seconds
+  MS = 'ms',     // millisecond
+  NS = 'ns'      // nanosecond
 }
 
 /** Describes the types of a Measure. It can be Int64 or a Double type. */
 export const enum MeasureType {
-  int64 = 'INT64',
-  double = 'DOUBLE'
+  INT64 = 'INT64',
+  DOUBLE = 'DOUBLE'
 }
 
 /** Describes a data point to be collected for a Measure. */
 export interface Measurement {
   /** The measure to which the value is applied */
   readonly measure: Measure;
-  /** The recorded value */
+  /**
+   * The recorded value. If the measure has type INT64, value must be an integer
+   * up to Number.MAX_SAFE_INTERGER.
+   */
   readonly value: number;
   /** The tags to which the value is applied */
   readonly tags: Tags;
@@ -101,4 +102,90 @@ export interface View {
   getSnapshot(tags: Tags): AggregationData;
   /** Returns a list of all AggregationData in the view */
   getSnapshots(): AggregationData[];
+}
+
+/**
+ * Informs the type of the aggregation. It can be: count, sum, lastValue or
+ * distribution.
+ */
+export const enum AggregationType {
+  COUNT = 0,
+  SUM = 1,
+  LAST_VALUE = 2,
+  DISTRIBUTION = 3
+}
+
+/** Defines how data is collected and aggregated */
+export interface AggregationData {
+  /** The aggregation type of the aggregation data */
+  readonly type: AggregationType;
+  /** The tags/labels that this AggregationData collects and aggregates */
+  readonly tags: Tags;
+  /** The latest timestamp a new data point was recorded */
+  timestamp: number;
+}
+
+/**
+ * Data collected and aggregated with this AggregationData will be summed up.
+ */
+export interface SumData extends AggregationData {
+  /** The current accumulated value */
+  value: number;
+}
+
+/**
+ * This AggregationData counts the number of measurements recorded.
+ */
+export interface CountData extends AggregationData {
+  /** The current counted value */
+  value: number;
+}
+
+/**
+ * This AggregationData represents the last recorded value. This is useful when
+ * giving support to Gauges.
+ */
+export interface LastValueData extends AggregationData {
+  /** The last recorded value */
+  value: number;
+}
+
+/** This AggregationData contains a histogram of the collected values. */
+export interface DistributionData extends AggregationData {
+  /** The first timestamp a datapoint was added */
+  readonly startTime: number;
+  /** Get the total count of all recorded values in the histogram */
+  count: number;
+  /** Sum of all recorded values in the histogram */
+  sum: number;
+  /** Max value recorded in the histogram */
+  max: number;
+  /** Min value recorded in the histogram */
+  min: number;
+  /** Get the computed mean value of all recorded values in the histogram */
+  mean: number;
+  /**
+   * Get the computed standard deviation of all recorded values in the
+   * histogram
+   */
+  stdDeviation: number;
+  /**
+   * Get the computed sum of squared deviations of all recorded values in the
+   * histogram.
+   */
+  sumSquaredDeviations: number;
+  /** Bucket distribution of the histogram */
+  buckets: Bucket[];
+  /** The bucket boundaries for a histogram */
+  readonly bucketsBoundaries: number[];
+}
+
+/** A simple histogram bucket interface. */
+export interface Bucket {
+  /** Number of occurrences in the domain */
+  count: number;
+  /** The maximum bucket limit in domain */
+  readonly max: number;
+  /** The minimum bucket limit in domain */
+  readonly min: number;
 }

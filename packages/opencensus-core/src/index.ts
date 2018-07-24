@@ -45,13 +45,9 @@ export * from './exporters/console-exporter';
 // classes
 export * from './stats/stats';
 export * from './stats/view';
-export * from './stats/aggregation/count-aggregation';
-export * from './stats/aggregation/sum-aggregation';
-export * from './stats/aggregation/last-value-aggregation';
-export * from './stats/aggregation/distribution-aggregation';
+export * from './stats/recorder';
 
 // interfaces
-export * from './stats/aggregation/types';
 export * from './stats/types';
 
 // logger

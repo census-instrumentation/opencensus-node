@@ -16,8 +16,7 @@
 
 import {StatsEventListener} from '../exporters/types';
 
-import {AggregationType} from './aggregation/types';
-import {Measure, Measurement, MeasureUnit, View} from './types';
+import {AggregationType, Measure, Measurement, MeasureUnit, View} from './types';
 
 export class Stats {
   /** A list of Stats exporters */
@@ -33,7 +32,7 @@ export class Stats {
    * @param view The view to be registered
    */
   registerView(view: View) {
-    // TODO: To be implemented
+    throw new Error('Not Implemented');
   }
 
   /**
@@ -47,8 +46,7 @@ export class Stats {
   createView(
       name: string, measure: Measure, aggregation: AggregationType,
       tagKeys: string[], description?: string): View {
-    // TODO: To be implemented
-    return null;
+    throw new Error('Not Implemented');
   }
 
   /**
@@ -56,7 +54,7 @@ export class Stats {
    * @param exporter An stats exporter
    */
   registerExporter(exporter: StatsEventListener) {
-    // TODO: To be implemented
+    throw new Error('Not Implemented');
   }
 
   /**
@@ -67,20 +65,19 @@ export class Stats {
    */
   createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
       Measure {
-    // TODO: To be implemented
-    return null;
+    throw new Error('Not Implemented');
   }
 
   /**
-   * Creates a measure of type Int64.
+   * Creates a measure of type Int64. Values must be integers up to
+   * Number.MAX_SAFE_INTERGER.
    * @param name The measure name
    * @param unit The measure unit
    * @param description The measure description
    */
-  createMeasureInt(name: string, unit: MeasureUnit, description?: string):
+  createMeasureInt64(name: string, unit: MeasureUnit, description?: string):
       Measure {
-    // TODO: To be implemented
-    return null;
+    throw new Error('Not Implemented');
   }
 
   /**
@@ -88,6 +85,6 @@ export class Stats {
    * @param measurements A list of measurements to record
    */
   record(measurements: Measurement[]) {
-    // TODO: To be implemented
+    throw new Error('Not Implemented');
   }
 }

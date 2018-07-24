@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-import {Measurement, Tags} from '../types';
+import {AggregationData, Measurement} from './types';
 
-import {AggregationType, CountData} from './types';
-
-export class CountAggregation implements CountData {
-  /** The aggregation type of the aggregation data */
-  readonly type: AggregationType;
-  /** The tags/labels that this AggregationData collects and aggregates */
-  readonly tags: Tags;
-  /** The latest timestamp a new data point was recorded */
-  readonly timestamp: number;
-  /** The current counted value */
-  readonly value: number;
-
-  constructor() {}
-
-  addMeasurement(measurement: Measurement): void {
-    // TODO: To be implemented
+export class Recorder {
+  static addMeasurement(
+      aggregationData: AggregationData,
+      measurement: Measurement): AggregationData {
+    throw new Error('Not Implemented');
   }
 }
