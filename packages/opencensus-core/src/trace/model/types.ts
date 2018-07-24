@@ -32,7 +32,7 @@ export interface Attributes { [attributeKey: string]: string|number|boolean; }
 export interface Annotation {
   /** A user-supplied message describing the event. */
   description: string;
-  /** A timestamp that maks the event. */
+  /** A timestamp for the event event. */
   timestamp: number;
   /** A set of attributes on the annotation. */
   attributes: Attributes;
@@ -166,11 +166,11 @@ export interface Span {
   /**
    * Adds an annotation to the span.
    * @param description Describes the event.
-   * @param timestamp A timestamp that maks the event.
    * @param attributes A set of attributes on the annotation.
+   * @param timestamp A timestamp for this event.
    */
   addAnnotation(
-      description: string, timestamp: number, attributes?: Attributes): void;
+      description: string, attributes?: Attributes, timestamp?: number): void;
 
   /**
    * Adds a link to the span.

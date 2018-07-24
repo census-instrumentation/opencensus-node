@@ -207,7 +207,7 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
 
-      span.addAnnotation('description test', Date.now(), {} as Attributes);
+      span.addAnnotation('description test', {} as Attributes, Date.now());
 
       assert.ok(span.annotations.length > 0);
       assert.ok(instanceOfAnnotation(span.annotations[0]));
