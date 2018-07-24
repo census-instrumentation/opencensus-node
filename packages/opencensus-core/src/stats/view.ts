@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationData, AggregationType} from './aggregation/types';
-import {Measure, Tags, View} from './types';
+import {AggregationData, AggregationType, Measure, Tags, View} from './types';
 
 export class BaseView implements View {
   /**
@@ -51,7 +50,7 @@ export class BaseView implements View {
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
       tagKeys: string[], description?: string) {
-    // TODO: To be implemented
+    throw new Error('Not Implemented');
   }
 
   /**
@@ -59,13 +58,11 @@ export class BaseView implements View {
    * @param tags The desired data's tags
    */
   getSnapshot(tags: Tags): AggregationData {
-    // TODO: To be implemented
-    return null;
+    throw new Error('Not Implemented');
   }
 
   /** Returns a list of all AggregationData in the view */
   getSnapshots(): AggregationData[] {
-    // TODO: To be implemented
-    return null;
+    throw new Error('Not Implemented');
   }
 }
