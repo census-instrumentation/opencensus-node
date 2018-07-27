@@ -45,7 +45,8 @@ export class Recorder {
     distributionData.count += 1;
 
     const inletBucket = distributionData.buckets.find((bucket) => {
-      return bucket.min <= measurement.value && measurement.value < bucket.max;
+      return bucket.lowBoundary <= measurement.value &&
+          measurement.value < bucket.highBoundary;
     });
     inletBucket.count += 1;
 

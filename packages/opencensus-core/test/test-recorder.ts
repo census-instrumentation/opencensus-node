@@ -43,9 +43,11 @@ function assertDistributionData(
   assert.strictEqual(distributionData.sum, valuesSum);
 
   for (const bucket of distributionData.buckets) {
-    const expectedBucketCount =
-        values.filter(value => bucket.min <= value && value < bucket.max)
-            .length;
+    const expectedBucketCount = values
+                                    .filter(
+                                        value => bucket.lowBoundary <= value &&
+                                            value < bucket.highBoundary)
+                                    .length;
     assert.strictEqual(bucket.count, expectedBucketCount);
   }
 
@@ -156,11 +158,12 @@ describe('Recorder', () => {
         stdDeviation: 0,
         sumSquaredDeviations: 0,
         buckets: [
-          {max: 0, min: -Infinity, count: 0}, {max: 2, min: 0, count: 0},
-          {max: 4, min: 2, count: 0}, {max: 6, min: 4, count: 0},
-          {max: Infinity, min: 6, count: 0}
-        ],
-        bucketsBoundaries: [0, 2, 4, 6]
+          {highBoundary: 0, lowBoundary: -Infinity, count: 0},
+          {highBoundary: 2, lowBoundary: 0, count: 0},
+          {highBoundary: 4, lowBoundary: 2, count: 0},
+          {highBoundary: 6, lowBoundary: 4, count: 0},
+          {highBoundary: Infinity, lowBoundary: 6, count: 0}
+        ]
       };
 
       it(`should record measurements ${testCase.description} correctly`, () => {

@@ -176,8 +176,6 @@ export interface DistributionData extends AggregationData {
   sumSquaredDeviations: number;
   /** Bucket distribution of the histogram */
   buckets: Bucket[];
-  /** The bucket boundaries for a histogram */
-  readonly bucketsBoundaries: number[];
 }
 
 /** A simple histogram bucket interface. */
@@ -185,7 +183,7 @@ export interface Bucket {
   /** Number of occurrences in the domain */
   count: number;
   /** The maximum bucket limit in domain */
-  readonly max: number;
+  readonly highBoundary: number;
   /** The minimum bucket limit in domain */
-  readonly min: number;
+  readonly lowBoundary: number;
 }
