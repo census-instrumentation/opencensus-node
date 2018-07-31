@@ -80,11 +80,60 @@ describe('Jaeger Exporter', () => {
     it('should encode as thrift', () => {
       return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
         const span = tracer.startChildSpan('child-s01');
+        span.addAttribute('testBool', true);
+        span.addAttribute('testString', 'here');
+        span.addAttribute('testNum', 3.142);
+        span.addAnnotation('something happened', {
+          'error': true,
+        });
         span.end();
         rootSpan.end();
         const thriftSpan = spanToThrift(span);
         const result = ThriftUtils._thrift.Span.rw.toBuffer(thriftSpan);
         assert.strictEqual(result.err, null);
+
+        assert.strictEqual(thriftSpan.tags.length, 3);
+        let testBoolSeen = false;
+        let testStringSeen = false;
+        let testNumSeen = false;
+        thriftSpan.tags.forEach((tag) => {
+          if (tag.key === 'testBool' && tag.vType === 'BOOL' &&
+              tag.vBool === true) {
+            testBoolSeen = true;
+            return;
+          }
+          if (tag.key === 'testString' && tag.vType === 'STRING' &&
+              tag.vStr === 'here') {
+            testStringSeen = true;
+            return;
+          }
+          if (tag.key === 'testNum' && tag.vType === 'DOUBLE' &&
+              tag.vDouble === 3.142) {
+            testNumSeen = true;
+            return;
+          }
+        });
+
+        assert.strictEqual(true, testBoolSeen && testStringSeen && testNumSeen);
+
+        assert.strictEqual(thriftSpan.logs.length, 1);
+        thriftSpan.logs.forEach((log) => {
+          let descriptionSeen = false;
+          let errorSeen = false;
+          log.fields.forEach((field) => {
+            if (field.key === 'description' && field.vType === 'STRING' &&
+                field.vStr === 'something happened') {
+              descriptionSeen = true;
+              return;
+            }
+            if (field.key === 'error' && field.vType === 'BOOL' &&
+                field.vBool === true) {
+              errorSeen = true;
+              return;
+            }
+            assert.strictEqual(true, descriptionSeen && errorSeen);
+          });
+        });
       });
     });
   });

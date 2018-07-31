@@ -48,16 +48,40 @@ export type SenderCallback = (numSpans: number, err?: string) => void;
  * @param span
  */
 export function spanToThrift(span: Span) {
-  let spanTags = [];
+  const tags = [];
   if (span.attributes) {
-    const tags = [];
     Object.keys(span.attributes).forEach(key => {
       tags.push({'key': key, 'value': span.attributes[key]});
     });
-    spanTags = ThriftUtils.getThriftTags(tags);
   }
 
-  const spanLogs = [];
+  const logs = [];
+  if (span.messageEvents) {
+    span.messageEvents.forEach(msg => {
+      logs.push({
+        timestamp: msg.timestamp,
+        fields: [
+          {'key': 'message.id', 'value': msg.id},
+          {'key': 'message.type', 'value': msg.type}
+        ],
+      });
+    });
+  }
+
+  if (span.annotations) {
+    span.annotations.forEach(ann => {
+      const tags = [];
+      Object.keys(ann.attributes).forEach(key => {
+        tags.push({'key': key, 'value': ann.attributes[key]});
+      });
+      tags.push({'key': 'description', 'value': ann.description});
+      logs.push({
+        timestamp: ann.timestamp,
+        fields: tags,
+      });
+    });
+  }
+
   const unsigned = true;
   const parentSpan = span.parentSpanId ? Utils.encodeInt64(span.parentSpanId) :
                                          ThriftUtils.emptyBuffer;
@@ -67,6 +91,8 @@ export function spanToThrift(span: Span) {
 
   const high = traceId.slice(0, 16);
   const low = traceId.slice(16);
+  const spanTags = ThriftUtils.getThriftTags(tags);
+  const spanLogs = ThriftUtils.getThriftLogs(logs);
 
   return {
     traceIdLow: Utils.encodeInt64(low),
