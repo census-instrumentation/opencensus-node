@@ -71,9 +71,10 @@ export class JaegerTraceExporter implements Exporter {
     tags[JaegerTraceExporter.TRACER_HOSTNAME_TAG_KEY] = os.hostname();
     tags[JaegerTraceExporter.PROCESS_IP] = Utils.ipToInt(Utils.myIp());
 
+    const _tags = Utils.convertObjectToTags(tags);
     this.process = {
       serviceName: options.serviceName,
-      tags: options.tags ? ThriftUtils.getThriftTags(tags) : [],
+      tags: ThriftUtils.getThriftTags(_tags),
     };
     this.sender.setProcess(this.process);
   }
