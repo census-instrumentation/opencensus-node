@@ -28,7 +28,7 @@ export class BaseView implements View {
   readonly measure: Measure;
   /**
    * A map of stringified tags representing columns labels or tag keys, concept
-   * similar to dimensions on multidimensional modeling, to AggregationData.
+   * similar to dimensions on multidimensional modeling, to AggregationMetadata.
    * If no Tags are provided, then, all data is recorded in a single
    * aggregation.
    */
@@ -54,15 +54,10 @@ export class BaseView implements View {
   }
 
   /**
-   * Returns a snapshot of an AggregationData for that tags/labels values.
+   * Returns a snapshot of an AggregationMetadata for that tags/labels values.
    * @param tags The desired data's tags
    */
   getSnapshot(tags: Tags): AggregationData {
-    throw new Error('Not Implemented');
-  }
-
-  /** Returns a list of all AggregationData in the view */
-  getSnapshots(): AggregationData[] {
     throw new Error('Not Implemented');
   }
 }

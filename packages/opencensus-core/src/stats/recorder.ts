@@ -22,18 +22,16 @@ export class Recorder {
       measurement: Measurement): AggregationData {
     switch (aggregationData.type) {
       case AggregationType.DISTRIBUTION:
-        return this.addToDistribution(
-            aggregationData as DistributionData, measurement);
+        return this.addToDistribution(aggregationData, measurement);
 
       case AggregationType.SUM:
-        return this.addToSum(aggregationData as SumData, measurement);
+        return this.addToSum(aggregationData, measurement);
 
       case AggregationType.COUNT:
-        return this.addToCount(aggregationData as CountData, measurement);
+        return this.addToCount(aggregationData, measurement);
 
       default:
-        return this.addToLastValue(
-            aggregationData as LastValueData, measurement);
+        return this.addToLastValue(aggregationData, measurement);
     }
   }
 
