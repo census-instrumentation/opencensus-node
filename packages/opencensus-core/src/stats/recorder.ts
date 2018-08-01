@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationData, AggregationType, CountData, DistributionData, LastValueData, Measurement, SumData} from './types';
+import {AggregationData, AggregationType, CountData, DistributionData, LastValueData, Measurement, MeasureType, SumData} from './types';
 
 export class Recorder {
   static addMeasurement(
@@ -39,36 +39,37 @@ export class Recorder {
       distributionData: DistributionData,
       measurement: Measurement): DistributionData {
     distributionData.timestamp = Date.now();
+    const value = measurement.measure.type === MeasureType.DOUBLE ?
+        measurement.value :
+        Math.trunc(measurement.value);
 
     distributionData.count += 1;
 
     const inletBucket = distributionData.buckets.find((bucket) => {
-      return bucket.lowBoundary <= measurement.value &&
-          measurement.value < bucket.highBoundary;
+      return bucket.lowBoundary <= value && value < bucket.highBoundary;
     });
     inletBucket.count += 1;
 
-    if (measurement.value > distributionData.max) {
-      distributionData.max = measurement.value;
+    if (value > distributionData.max) {
+      distributionData.max = value;
     }
 
-    if (measurement.value < distributionData.min) {
-      distributionData.min = measurement.value;
+    if (value < distributionData.min) {
+      distributionData.min = value;
     }
 
     if (distributionData.count === 1) {
-      distributionData.mean = measurement.value;
+      distributionData.mean = value;
     }
 
-    distributionData.sum += measurement.value;
+    distributionData.sum += value;
 
     const oldMean = distributionData.mean;
     distributionData.mean = distributionData.mean +
-        (measurement.value - distributionData.mean) / distributionData.count;
+        (value - distributionData.mean) / distributionData.count;
     distributionData.sumSquaredDeviations =
         distributionData.sumSquaredDeviations +
-        (measurement.value - oldMean) *
-            (measurement.value - distributionData.mean);
+        (value - oldMean) * (value - distributionData.mean);
     distributionData.stdDeviation = Math.sqrt(
         distributionData.sumSquaredDeviations / distributionData.count);
 
@@ -77,7 +78,10 @@ export class Recorder {
 
   private static addToSum(sumData: SumData, measurement: Measurement): SumData {
     sumData.timestamp = Date.now();
-    sumData.value += measurement.value;
+    const value = measurement.measure.type === MeasureType.DOUBLE ?
+        measurement.value :
+        Math.trunc(measurement.value);
+    sumData.value += value;
     return sumData;
   }
 
@@ -91,7 +95,10 @@ export class Recorder {
   private static addToLastValue(
       lastValueData: LastValueData, measurement: Measurement): LastValueData {
     lastValueData.timestamp = Date.now();
-    lastValueData.value = measurement.value;
+    const value = measurement.measure.type === MeasureType.DOUBLE ?
+        measurement.value :
+        Math.trunc(measurement.value);
+    lastValueData.value = value;
     return lastValueData;
   }
 }

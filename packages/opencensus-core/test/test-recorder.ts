@@ -68,11 +68,10 @@ function assertDistributionData(
 }
 
 describe('Recorder', () => {
-  const measure: Measure = {
-    name: 'Test Measure',
-    type: MeasureType.DOUBLE,
-    unit: MeasureUnit.UNIT
-  };
+  const measures: Measure[] = [
+    {name: 'Test Measure 1', type: MeasureType.DOUBLE, unit: MeasureUnit.UNIT},
+    {name: 'Test Measure 2', type: MeasureType.INT64, unit: MeasureUnit.UNIT}
+  ];
   const tags: Tags = {testKey: 'testValue'};
   const testCases: RecorderTestCase[] = [
     {values: [1.1, 2.5, 3.2, 4.7, 5.2], description: 'with positive values'}, {
@@ -83,101 +82,133 @@ describe('Recorder', () => {
     {values: [1.1, -2.3, 3.2, -4.3, 5.2], description: 'with mixed values'}
   ];
 
-  describe('Add measurements to a Count Aggregation Data', () => {
-    for (const testCase of testCases) {
-      const countData: CountData =
-          {type: AggregationType.COUNT, tags, timestamp: Date.now(), value: 0};
+  for (const measure of measures) {
+    describe(
+        `Add measurements of type ${measure.type} to a Count Aggregation Data`,
+        () => {
+          for (const testCase of testCases) {
+            const countData: CountData = {
+              type: AggregationType.COUNT,
+              tags,
+              timestamp: Date.now(),
+              value: 0
+            };
 
-      it(`should record measurements ${testCase.description} correctly`, () => {
-        let count = 0;
-        for (const value of testCase.values) {
-          count++;
-          const measurement: Measurement = {measure, tags, value};
-          const updatedAggregationData =
-              Recorder.addMeasurement(countData, measurement) as CountData;
+            it(`should record measurements ${testCase.description} correctly`,
+               () => {
+                 let count = 0;
+                 for (const value of testCase.values) {
+                   count++;
+                   const measurement: Measurement = {measure, tags, value};
+                   const updatedAggregationData =
+                       Recorder.addMeasurement(countData, measurement) as
+                       CountData;
 
-          assert.strictEqual(updatedAggregationData.value, count);
-        }
-      });
-    }
-  });
+                   assert.strictEqual(updatedAggregationData.value, count);
+                 }
+               });
+          }
+        });
 
-  describe('Add measurements to a Last Value Aggregation Data', () => {
-    for (const testCase of testCases) {
-      const lastValueData: LastValueData = {
-        type: AggregationType.LAST_VALUE,
-        tags,
-        timestamp: Date.now(),
-        value: undefined
-      };
+    describe(
+        `Add measurements of type ${
+            measure.type} to a Last Value Aggregation Data`,
+        () => {
+          for (const testCase of testCases) {
+            const lastValueData: LastValueData = {
+              type: AggregationType.LAST_VALUE,
+              tags,
+              timestamp: Date.now(),
+              value: undefined
+            };
 
-      it(`should record measurements ${testCase.description} correctly`, () => {
-        for (const value of testCase.values) {
-          const measurement: Measurement = {measure, tags, value};
-          const updatedAggregationData =
-              Recorder.addMeasurement(lastValueData, measurement) as
-              LastValueData;
+            it(`should record measurements ${testCase.description} correctly`,
+               () => {
+                 for (const value of testCase.values) {
+                   const measurement: Measurement = {measure, tags, value};
+                   const lastValue = measure.type === MeasureType.DOUBLE ?
+                       value :
+                       Math.trunc(value);
 
-          assert.strictEqual(updatedAggregationData.value, value);
-        }
-      });
-    }
-  });
+                   const updatedAggregationData =
+                       Recorder.addMeasurement(lastValueData, measurement) as
+                       LastValueData;
+                   assert.strictEqual(updatedAggregationData.value, lastValue);
+                 }
+               });
+          }
+        });
 
-  describe('Add measurements to a Sum Aggregation Data', () => {
-    for (const testCase of testCases) {
-      const sumData: SumData =
-          {type: AggregationType.SUM, tags, timestamp: Date.now(), value: 0};
+    describe(
+        `Add measurements of type ${measure.type} to a Sum Aggregation Data`,
+        () => {
+          for (const testCase of testCases) {
+            const sumData: SumData = {
+              type: AggregationType.SUM,
+              tags,
+              timestamp: Date.now(),
+              value: 0
+            };
 
-      it(`should record measurements ${testCase.description} correctly`, () => {
-        let acc = 0;
-        for (const value of testCase.values) {
-          acc += value;
-          const measurement: Measurement = {measure, tags, value};
-          const updatedAggregationData =
-              Recorder.addMeasurement(sumData, measurement) as SumData;
+            it(`should record measurements ${testCase.description} correctly`,
+               () => {
+                 let acc = 0;
+                 for (const value of testCase.values) {
+                   acc += measure.type === MeasureType.DOUBLE ?
+                       value :
+                       Math.trunc(value);
+                   const measurement: Measurement = {measure, tags, value};
+                   const updatedAggregationData =
+                       Recorder.addMeasurement(sumData, measurement) as SumData;
 
-          assert.strictEqual(updatedAggregationData.value, acc);
-        }
-      });
-    }
-  });
+                   assert.strictEqual(updatedAggregationData.value, acc);
+                 }
+               });
+          }
+        });
 
-  describe('Add measurements to a Distribution Aggregation Data', () => {
-    for (const testCase of testCases) {
-      const distributionData: DistributionData = {
-        type: AggregationType.DISTRIBUTION,
-        tags,
-        timestamp: Date.now(),
-        startTime: Date.now(),
-        count: 0,
-        sum: 0,
-        max: Number.MIN_SAFE_INTEGER,
-        min: Number.MAX_SAFE_INTEGER,
-        mean: 0,
-        stdDeviation: 0,
-        sumSquaredDeviations: 0,
-        buckets: [
-          {highBoundary: 0, lowBoundary: -Infinity, count: 0},
-          {highBoundary: 2, lowBoundary: 0, count: 0},
-          {highBoundary: 4, lowBoundary: 2, count: 0},
-          {highBoundary: 6, lowBoundary: 4, count: 0},
-          {highBoundary: Infinity, lowBoundary: 6, count: 0}
-        ]
-      };
+    describe(
+        `Add measurements of type ${
+            measure.type} to a Distribution Aggregation Data`,
+        () => {
+          for (const testCase of testCases) {
+            const distributionData: DistributionData = {
+              type: AggregationType.DISTRIBUTION,
+              tags,
+              timestamp: Date.now(),
+              startTime: Date.now(),
+              count: 0,
+              sum: 0,
+              max: Number.MIN_SAFE_INTEGER,
+              min: Number.MAX_SAFE_INTEGER,
+              mean: 0,
+              stdDeviation: 0,
+              sumSquaredDeviations: 0,
+              buckets: [
+                {highBoundary: 0, lowBoundary: -Infinity, count: 0},
+                {highBoundary: 2, lowBoundary: 0, count: 0},
+                {highBoundary: 4, lowBoundary: 2, count: 0},
+                {highBoundary: 6, lowBoundary: 4, count: 0},
+                {highBoundary: Infinity, lowBoundary: 6, count: 0}
+              ]
+            };
 
-      it(`should record measurements ${testCase.description} correctly`, () => {
-        const sentValues = [];
-        for (const value of testCase.values) {
-          sentValues.push(value);
-          const measurement: Measurement = {measure, tags, value};
-          const updatedAggregationData =
-              Recorder.addMeasurement(distributionData, measurement) as
-              DistributionData;
+            it(`should record measurements ${testCase.description} correctly`,
+               () => {
+                 const sentValues = [];
+                 for (const value of testCase.values) {
+                   sentValues.push(
+                       measure.type === MeasureType.DOUBLE ? value :
+                                                             Math.trunc(value));
+                   const measurement: Measurement = {measure, tags, value};
+                   const updatedAggregationData =
+                       Recorder.addMeasurement(distributionData, measurement) as
+                       DistributionData;
 
-          assertDistributionData(distributionData, sentValues);
-        }
-      });
-    }
-  });
+                   assertDistributionData(distributionData, sentValues);
+                 }
+               });
+          }
+        });
+  }
 });
