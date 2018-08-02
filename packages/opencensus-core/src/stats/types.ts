@@ -117,14 +117,14 @@ export const enum AggregationType {
 export interface AggregationMetadata {
   /** The aggregation type of the aggregation data */
   readonly type: AggregationType;
-  /** The tags/labels that this AggregationMetadata collects and aggregates */
+  /** The tags/labels that this AggregationData collects and aggregates */
   readonly tags: Tags;
   /** The latest timestamp a new data point was recorded */
   timestamp: number;
 }
 
 /**
- * Data collected and aggregated with this AggregationMetadata will be summed
+ * Data collected and aggregated with this AggregationData will be summed
  * up.
  */
 export interface SumData extends AggregationMetadata {
@@ -134,7 +134,7 @@ export interface SumData extends AggregationMetadata {
 }
 
 /**
- * This AggregationMetadata counts the number of measurements recorded.
+ * This AggregationData counts the number of measurements recorded.
  */
 export interface CountData extends AggregationMetadata {
   type: AggregationType.COUNT;
@@ -143,7 +143,7 @@ export interface CountData extends AggregationMetadata {
 }
 
 /**
- * This AggregationMetadata represents the last recorded value. This is useful
+ * This AggregationData represents the last recorded value. This is useful
  * when giving support to Gauges.
  */
 export interface LastValueData extends AggregationMetadata {
@@ -152,7 +152,7 @@ export interface LastValueData extends AggregationMetadata {
   value: number;
 }
 
-/** This AggregationMetadata contains a histogram of the collected values. */
+/** This AggregationData contains a histogram of the collected values. */
 export interface DistributionData extends AggregationMetadata {
   type: AggregationType.DISTRIBUTION;
   /** The first timestamp a datapoint was added */

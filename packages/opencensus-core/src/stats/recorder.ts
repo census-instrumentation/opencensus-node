@@ -20,29 +20,28 @@ export class Recorder {
   static addMeasurement(
       aggregationData: AggregationData,
       measurement: Measurement): AggregationData {
-    switch (aggregationData.type) {
-      case AggregationType.DISTRIBUTION:
-        return this.addToDistribution(aggregationData, measurement);
-
-      case AggregationType.SUM:
-        return this.addToSum(aggregationData, measurement);
-
-      case AggregationType.COUNT:
-        return this.addToCount(aggregationData, measurement);
-
-      default:
-        return this.addToLastValue(aggregationData, measurement);
-    }
-  }
-
-  private static addToDistribution(
-      distributionData: DistributionData,
-      measurement: Measurement): DistributionData {
-    distributionData.timestamp = Date.now();
+    aggregationData.timestamp = Date.now();
     const value = measurement.measure.type === MeasureType.DOUBLE ?
         measurement.value :
         Math.trunc(measurement.value);
 
+    switch (aggregationData.type) {
+      case AggregationType.DISTRIBUTION:
+        return this.addToDistribution(aggregationData, value);
+
+      case AggregationType.SUM:
+        return this.addToSum(aggregationData, value);
+
+      case AggregationType.COUNT:
+        return this.addToCount(aggregationData, value);
+
+      default:
+        return this.addToLastValue(aggregationData, value);
+    }
+  }
+
+  private static addToDistribution(
+      distributionData: DistributionData, value: number): DistributionData {
     distributionData.count += 1;
 
     const inletBucket = distributionData.buckets.find((bucket) => {
@@ -76,28 +75,18 @@ export class Recorder {
     return distributionData;
   }
 
-  private static addToSum(sumData: SumData, measurement: Measurement): SumData {
-    sumData.timestamp = Date.now();
-    const value = measurement.measure.type === MeasureType.DOUBLE ?
-        measurement.value :
-        Math.trunc(measurement.value);
+  private static addToSum(sumData: SumData, value: number): SumData {
     sumData.value += value;
     return sumData;
   }
 
-  private static addToCount(countData: CountData, measurement: Measurement):
-      CountData {
-    countData.timestamp = Date.now();
+  private static addToCount(countData: CountData, value: number): CountData {
     countData.value += 1;
     return countData;
   }
 
-  private static addToLastValue(
-      lastValueData: LastValueData, measurement: Measurement): LastValueData {
-    lastValueData.timestamp = Date.now();
-    const value = measurement.measure.type === MeasureType.DOUBLE ?
-        measurement.value :
-        Math.trunc(measurement.value);
+  private static addToLastValue(lastValueData: LastValueData, value: number):
+      LastValueData {
     lastValueData.value = value;
     return lastValueData;
   }
