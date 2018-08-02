@@ -33,7 +33,8 @@ type TranslatedSpan = {
   kind: string,
   spanId: string,
   startTime: Date,
-  endTime: Date
+  endTime: Date,
+  labels: Record<string, string>
 };
 
 
@@ -118,7 +119,14 @@ export class StackdriverTraceExporter implements Exporter {
       kind: 'SPAN_KIND_UNSPECIFIED',
       spanId: span.id,
       startTime: span.startTime,
-      endTime: span.endTime
+      endTime: span.endTime,
+      labels: Object.keys(span.attributes)
+                  .reduce(
+                      (acc, k) => {
+                        acc[k] = String(span.attributes[k]);
+                        return acc;
+                      },
+                      {} as Record<string, string>)
     };
   }
 
