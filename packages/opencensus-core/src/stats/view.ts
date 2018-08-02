@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {AggregationData, AggregationType, Measure, Tags, View} from './types';
+import {Recorder} from './recorder';
+import {AggregationData, AggregationMetadata, AggregationType, Bucket, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
 
 export class BaseView implements View {
   /**
@@ -23,7 +24,7 @@ export class BaseView implements View {
    */
   readonly name: string;
   /** Describes the view, e.g. "RPC latency distribution" */
-  readonly description: string;
+  readonly description?: string;
   /** The Measure to which this view is applied. */
   readonly measure: Measure;
   /**
@@ -32,7 +33,11 @@ export class BaseView implements View {
    * If no Tags are provided, then, all data is recorded in a single
    * aggregation.
    */
-  private rows: {[key: string]: AggregationData};
+  private rows: {[key: string]: AggregationData} = {};
+  /**
+   * A list of tag keys that represents the possible column labels
+   */
+  private columns: string[];
   /**
    * An Aggregation describes how data collected is aggregated.
    * There are four aggregation types: count, sum, lastValue and distirbution.
@@ -40,17 +45,123 @@ export class BaseView implements View {
   readonly aggregation: AggregationType;
   /** The start time for this view */
   readonly startTime: number;
+  /** The bucket boundaries in a Distribution Aggregation */
+  private bucketBoudaries?: number[];
   /**
    * The end time for this view - represents the last time a value was recorded
    */
   endTime: number;
   /** true if the view was registered */
-  registered: boolean;
+  registered = false;
 
+  /**
+   * Creates a new View instance. This constructor is used by Stats. User should
+   * prefer using Stats.createView() instead.
+   * @param name The view name
+   * @param measure The view measure
+   * @param aggregation The view aggregation type
+   * @param tagsKeys The Tags' keys that view will have
+   * @param description The view description
+   * @param bucketBoudaries The view bucket boundaries for a distribution
+   * aggregation type
+   */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagKeys: string[], description?: string) {
-    throw new Error('Not Implemented');
+      tagsKeys: string[], description?: string, bucketBoudaries?: number[]) {
+    if (aggregation === AggregationType.DISTRIBUTION && !bucketBoudaries) {
+      throw new Error('No bucketBoundaries specified');
+    }
+    this.name = name;
+    this.description = description;
+    this.measure = measure;
+    this.columns = tagsKeys;
+    this.aggregation = aggregation;
+    this.startTime = Date.now();
+    this.bucketBoudaries = bucketBoudaries;
+  }
+
+  /**
+   * Records a measurement in the proper view's row. This method is used by
+   * Stats. User should prefer using Stats.record() instead.
+   *
+   * Measurements with measurement type INT64 will have its value truncated.
+   * @param measurement The measurement to record
+   */
+  recordMeasurement(measurement: Measurement) {
+    // Checks if measurements has all tags in views
+    for (const tagKey of this.columns) {
+      if (!Object.keys(measurement.tags).find((key) => key === tagKey)) {
+        return;
+      }
+    }
+
+    const encodedTags = this.encodeTags(measurement.tags);
+    if (!this.rows[encodedTags]) {
+      this.rows[encodedTags] = this.createAggregationData(measurement.tags);
+    }
+    Recorder.addMeasurement(this.rows[encodedTags], measurement);
+  }
+
+  /**
+   * Encodes a Tags object into a key sorted string.
+   * @param tags The tags to encode
+   */
+  private encodeTags(tags: Tags): string {
+    const encodedTags = Object.keys(tags).sort().reduce((strTags, tagKey) => {
+      return strTags + `${tagKey}:${tags[tagKey]},`;
+    }, '');
+    return `{${encodedTags}}`;
+  }
+
+  /**
+   * Creates an empty aggregation data for a given tags.
+   * @param tags The tags for that aggregation data
+   */
+  private createAggregationData(tags: Tags): AggregationData {
+    const aggregationMetadata = {tags, timestamp: Date.now()};
+
+    switch (this.aggregation) {
+      case AggregationType.DISTRIBUTION:
+        return {
+          ...aggregationMetadata,
+          type: AggregationType.DISTRIBUTION,
+          startTime: this.startTime,
+          count: 0,
+          sum: 0,
+          max: Number.MIN_SAFE_INTEGER,
+          min: Number.MAX_SAFE_INTEGER,
+          mean: null as number,
+          stdDeviation: null as number,
+          sumSquaredDeviations: null as number,
+          buckets: this.createBuckets(this.bucketBoudaries)
+        };
+      case AggregationType.SUM:
+        return {...aggregationMetadata, type: AggregationType.SUM, value: 0};
+      case AggregationType.COUNT:
+        return {...aggregationMetadata, type: AggregationType.COUNT, value: 0};
+      default:
+        return {
+          ...aggregationMetadata,
+          type: AggregationType.LAST_VALUE,
+          value: undefined
+        };
+    }
+  }
+
+  /**
+   * Creates empty Buckets, given a list of bucket boundaries.
+   * @param bucketBoundaries a list with the bucket boundaries
+   */
+  private createBuckets(bucketBoudaries: number[]): Bucket[] {
+    return bucketBoudaries.map((boundary, boundaryIndex) => {
+      return {
+        count: 0,
+        lowBoundary: boundaryIndex ? boundary : -Infinity,
+        highBoundary: (boundaryIndex === bucketBoudaries.length - 1) ?
+            Infinity :
+            bucketBoudaries[boundaryIndex + 1]
+      };
+    });
   }
 
   /**
@@ -58,6 +169,6 @@ export class BaseView implements View {
    * @param tags The desired data's tags
    */
   getSnapshot(tags: Tags): AggregationData {
-    throw new Error('Not Implemented');
+    return this.rows[this.encodeTags(tags)];
   }
 }
