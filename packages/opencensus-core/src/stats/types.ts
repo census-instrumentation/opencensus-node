@@ -100,8 +100,6 @@ export interface View {
   registered: boolean;
   /**  Returns a snapshot of an AggregationData for that tags/labels values */
   getSnapshot(tags: Tags): AggregationData;
-  /** Returns a list of all AggregationData in the view */
-  getSnapshots(): AggregationData[];
 }
 
 /**
@@ -116,7 +114,7 @@ export const enum AggregationType {
 }
 
 /** Defines how data is collected and aggregated */
-export interface AggregationData {
+export interface AggregationMetadata {
   /** The aggregation type of the aggregation data */
   readonly type: AggregationType;
   /** The tags/labels that this AggregationData collects and aggregates */
@@ -126,9 +124,11 @@ export interface AggregationData {
 }
 
 /**
- * Data collected and aggregated with this AggregationData will be summed up.
+ * Data collected and aggregated with this AggregationData will be summed
+ * up.
  */
-export interface SumData extends AggregationData {
+export interface SumData extends AggregationMetadata {
+  type: AggregationType.SUM;
   /** The current accumulated value */
   value: number;
 }
@@ -136,22 +136,25 @@ export interface SumData extends AggregationData {
 /**
  * This AggregationData counts the number of measurements recorded.
  */
-export interface CountData extends AggregationData {
+export interface CountData extends AggregationMetadata {
+  type: AggregationType.COUNT;
   /** The current counted value */
   value: number;
 }
 
 /**
- * This AggregationData represents the last recorded value. This is useful when
- * giving support to Gauges.
+ * This AggregationData represents the last recorded value. This is useful
+ * when giving support to Gauges.
  */
-export interface LastValueData extends AggregationData {
+export interface LastValueData extends AggregationMetadata {
+  type: AggregationType.LAST_VALUE;
   /** The last recorded value */
   value: number;
 }
 
 /** This AggregationData contains a histogram of the collected values. */
-export interface DistributionData extends AggregationData {
+export interface DistributionData extends AggregationMetadata {
+  type: AggregationType.DISTRIBUTION;
   /** The first timestamp a datapoint was added */
   readonly startTime: number;
   /** Get the total count of all recorded values in the histogram */
@@ -176,16 +179,16 @@ export interface DistributionData extends AggregationData {
   sumSquaredDeviations: number;
   /** Bucket distribution of the histogram */
   buckets: Bucket[];
-  /** The bucket boundaries for a histogram */
-  readonly bucketsBoundaries: number[];
 }
 
 /** A simple histogram bucket interface. */
 export interface Bucket {
   /** Number of occurrences in the domain */
   count: number;
-  /** The maximum bucket limit in domain */
-  readonly max: number;
-  /** The minimum bucket limit in domain */
-  readonly min: number;
+  /** The maximum possible value for a data point to fall in this bucket */
+  readonly highBoundary: number;
+  /** The minimum possible value for a data point to fall in this bucket */
+  readonly lowBoundary: number;
 }
+
+export type AggregationData = SumData|CountData|LastValueData|DistributionData;

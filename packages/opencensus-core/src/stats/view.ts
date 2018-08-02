@@ -60,9 +60,4 @@ export class BaseView implements View {
   getSnapshot(tags: Tags): AggregationData {
     throw new Error('Not Implemented');
   }
-
-  /** Returns a list of all AggregationData in the view */
-  getSnapshots(): AggregationData[] {
-    throw new Error('Not Implemented');
-  }
 }
