@@ -18,6 +18,12 @@ import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencen
 import {logger, Logger} from '@opencensus/core';
 import {request} from 'http';
 
+const spanKindTranslation: {[k: string]: string} = {
+  CLIENT: 'EXIT',
+  SERVER: 'ENTRY',
+  LOCAL: 'INTERMEDIATE',
+};
+
 type InstanaSpan = {
   spanId: string,
   parentId: string|undefined,
@@ -101,12 +107,10 @@ export class InstanaTraceExporter implements Exporter {
       parentId: span.parentSpanId ? span.parentSpanId : undefined,
       traceId: span.traceId.substring(0, 8),
       timestamp: span.startTime.getTime(),
-      // API requires an integer/long
-      duration: span.duration | 0,
+      duration: span.duration,
       name: span.name,
-      type: span.kind,
-      // No translatable counterpart in OpenCensus as of 2018-06-14
-      error: false,
+      type: spanKindTranslation[span.kind] || span.kind,
+      error: span.status != null && span.status !== 0,
       data: Object.keys(span.attributes)
                 .reduce(
                     (agg: {[k: string]: string}, key) => {
