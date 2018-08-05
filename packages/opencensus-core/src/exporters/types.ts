@@ -42,7 +42,7 @@ export interface StatsEventListener {
    * @param view The view related to the measurement
    * @param measurement The recorded measurement
    */
-  onRecord(view: View, measurement: Measurement): void;
+  onRecord(views: View[], measurement: Measurement): void;
 }
 
 export type ExporterConfig = configTypes.BufferConfig;

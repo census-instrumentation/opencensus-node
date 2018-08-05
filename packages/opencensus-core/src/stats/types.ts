@@ -111,6 +111,8 @@ export interface View {
    * @param tags The desired data's tags
    */
   getSnapshot(tags: Tags): AggregationData;
+  /** Gets the view's tag keys */
+  getColumns(): string[];
 }
 
 /**
