@@ -24,7 +24,7 @@ export class BaseView implements View {
    */
   readonly name: string;
   /** Describes the view, e.g. "RPC latency distribution" */
-  readonly description?: string;
+  readonly description: string;
   /** The Measure to which this view is applied. */
   readonly measure: Measure;
   /**
@@ -46,7 +46,7 @@ export class BaseView implements View {
   /** The start time for this view */
   readonly startTime: number;
   /** The bucket boundaries in a Distribution Aggregation */
-  private bucketBoudaries?: number[];
+  private bucketBoundaries?: number[];
   /**
    * The end time for this view - represents the last time a value was recorded
    */
@@ -62,13 +62,13 @@ export class BaseView implements View {
    * @param aggregation The view aggregation type
    * @param tagsKeys The Tags' keys that view will have
    * @param description The view description
-   * @param bucketBoudaries The view bucket boundaries for a distribution
+   * @param bucketBoundaries The view bucket boundaries for a distribution
    * aggregation type
    */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagsKeys: string[], description?: string, bucketBoudaries?: number[]) {
-    if (aggregation === AggregationType.DISTRIBUTION && !bucketBoudaries) {
+      tagsKeys: string[], description: string, bucketBoundaries?: number[]) {
+    if (aggregation === AggregationType.DISTRIBUTION && !bucketBoundaries) {
       throw new Error('No bucketBoundaries specified');
     }
     this.name = name;
@@ -77,7 +77,7 @@ export class BaseView implements View {
     this.columns = tagsKeys;
     this.aggregation = aggregation;
     this.startTime = Date.now();
-    this.bucketBoudaries = bucketBoudaries;
+    this.bucketBoundaries = bucketBoundaries;
   }
 
   /**
@@ -90,7 +90,7 @@ export class BaseView implements View {
   recordMeasurement(measurement: Measurement) {
     // Checks if measurements has all tags in views
     for (const tagKey of this.columns) {
-      if (!Object.keys(measurement.tags).find((key) => key === tagKey)) {
+      if (!Object.keys(measurement.tags).some((key) => key === tagKey)) {
         return;
       }
     }
@@ -133,7 +133,7 @@ export class BaseView implements View {
           mean: null as number,
           stdDeviation: null as number,
           sumSquaredDeviations: null as number,
-          buckets: this.createBuckets(this.bucketBoudaries)
+          buckets: this.createBuckets(this.bucketBoundaries)
         };
       case AggregationType.SUM:
         return {...aggregationMetadata, type: AggregationType.SUM, value: 0};
@@ -152,14 +152,14 @@ export class BaseView implements View {
    * Creates empty Buckets, given a list of bucket boundaries.
    * @param bucketBoundaries a list with the bucket boundaries
    */
-  private createBuckets(bucketBoudaries: number[]): Bucket[] {
-    return bucketBoudaries.map((boundary, boundaryIndex) => {
+  private createBuckets(bucketBoundaries: number[]): Bucket[] {
+    return bucketBoundaries.map((boundary, boundaryIndex) => {
       return {
         count: 0,
         lowBoundary: boundaryIndex ? boundary : -Infinity,
-        highBoundary: (boundaryIndex === bucketBoudaries.length - 1) ?
+        highBoundary: (boundaryIndex === bucketBoundaries.length - 1) ?
             Infinity :
-            bucketBoudaries[boundaryIndex + 1]
+            bucketBoundaries[boundaryIndex + 1]
       };
     });
   }

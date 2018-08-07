@@ -82,7 +82,7 @@ export interface View {
    */
   readonly name: string;
   /** Describes the view, e.g. "RPC latency distribution" */
-  readonly description?: string;
+  readonly description: string;
   /** The Measure to which this view is applied. */
   readonly measure: Measure;
   /**
