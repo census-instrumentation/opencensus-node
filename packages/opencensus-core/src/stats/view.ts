@@ -80,6 +80,11 @@ export class BaseView implements View {
     this.bucketBoundaries = bucketBoundaries;
   }
 
+  /** Gets the view's tag keys */
+  getColumns(): string[] {
+    return this.columns;
+  }
+
   /**
    * Records a measurement in the proper view's row. This method is used by
    * Stats. User should prefer using Stats.record() instead.

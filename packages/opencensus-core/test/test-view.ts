@@ -113,6 +113,17 @@ describe('BaseView', () => {
     }
   ];
 
+  describe('getColumns()', () => {
+    it('should access the given tag keys', () => {
+      const tagKeys = ['testKey1', 'testKey2'];
+      const view = new BaseView(
+          'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
+          'description test');
+
+      assert.strictEqual(view.getColumns(), tagKeys);
+    });
+  });
+
   describe('record()', () => {
     const measurementValues = [1.1, -2.3, 3.2, -4.3, 5.2];
     const bucketBoundaries = [0, 2, 4, 6];
