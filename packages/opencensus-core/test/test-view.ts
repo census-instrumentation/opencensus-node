@@ -124,7 +124,7 @@ describe('BaseView', () => {
     });
   });
 
-  describe('record()', () => {
+  describe('recordMeasurement()', () => {
     const measurementValues = [1.1, -2.3, 3.2, -4.3, 5.2];
     const bucketBoundaries = [0, 2, 4, 6];
     const emptyAggregation = {};
@@ -156,6 +156,16 @@ describe('BaseView', () => {
 
     it('should not record a measurement when it has wrong tag keys', () => {
       const measurement = {measure, tags: {testKey3: 'testValue'}, value: 10};
+      view.recordMeasurement(measurement);
+      assert.ok(!view.getSnapshot(measurement.tags));
+    });
+
+    it('should not record a measurement when tags are not valid', () => {
+      const measurement = {
+        measure,
+        tags: {testKey3: String.fromCharCode(30) + 'testValue'},
+        value: 10
+      };
       view.recordMeasurement(measurement);
       assert.ok(!view.getSnapshot(measurement.tags));
     });

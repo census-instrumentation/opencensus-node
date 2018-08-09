@@ -17,6 +17,12 @@
 import {Recorder} from './recorder';
 import {AggregationData, AggregationMetadata, AggregationType, Bucket, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
 
+const RECORD_SEPARATOR = String.fromCharCode(30);
+const UNIT_SEPARATOR = String.fromCharCode(31);
+
+// String that has only printable characters
+const invalidString = /[^\u0020-\u007e]/;
+
 export class BaseView implements View {
   /**
    * A string by which the View will be referred to, e.g. "rpc_latency". Names
@@ -93,7 +99,12 @@ export class BaseView implements View {
    * @param measurement The measurement to record
    */
   recordMeasurement(measurement: Measurement) {
-    // Checks if measurements has all tags in views
+    // Checks if measurement has valid tags
+    if (this.invalidTags(measurement.tags)) {
+      return;
+    }
+
+    // Checks if measurement has all tags in views
     for (const tagKey of this.columns) {
       if (!Object.keys(measurement.tags).some((key) => key === tagKey)) {
         return;
@@ -112,10 +123,22 @@ export class BaseView implements View {
    * @param tags The tags to encode
    */
   private encodeTags(tags: Tags): string {
-    const encodedTags = Object.keys(tags).sort().reduce((strTags, tagKey) => {
-      return strTags + `${tagKey}:${tags[tagKey]},`;
-    }, '');
-    return `{${encodedTags}}`;
+    return Object.keys(tags)
+        .sort()
+        .map(tagKey => {
+          return tagKey + UNIT_SEPARATOR + tags[tagKey];
+        })
+        .join(RECORD_SEPARATOR);
+  }
+
+  /**
+   * Checks if tag keys and values have only printable characters.
+   * @param tags The tags to be checked
+   */
+  private invalidTags(tags: Tags): boolean {
+    return Object.keys(tags).some(tagKey => {
+      return invalidString.test(tagKey) || invalidString.test(tags[tagKey]);
+    });
   }
 
   /**
