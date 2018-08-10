@@ -82,7 +82,7 @@ export interface View {
    */
   readonly name: string;
   /** Describes the view, e.g. "RPC latency distribution" */
-  readonly description?: string;
+  readonly description: string;
   /** The Measure to which this view is applied. */
   readonly measure: Measure;
   /**
@@ -98,7 +98,18 @@ export interface View {
   endTime: number;
   /** true if the view was registered */
   registered: boolean;
-  /**  Returns a snapshot of an AggregationData for that tags/labels values */
+  /**
+   * Records a measurement in the proper view's row. This method is used by
+   * Stats. User should prefer using Stats.record() instead.
+   *
+   * Measurements with measurement type INT64 will have its value truncated.
+   * @param measurement The measurement to record
+   */
+  recordMeasurement(measurement: Measurement): void;
+  /**
+   * Returns a snapshot of an AggregationData for that tags/labels values.
+   * @param tags The desired data's tags
+   */
   getSnapshot(tags: Tags): AggregationData;
 }
 
