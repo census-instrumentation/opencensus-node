@@ -27,7 +27,7 @@ import {spanToThrift, ThriftUtils, UDPSender} from '../src/jaeger-driver';
 
 const DEFAULT_BUFFER_TIMEOUT = 10;  // time in milliseconds
 
-import {Process} from '../src/jaeger-driver';
+import {ThriftProcess} from '../src/jaeger-driver';
 import {SenderCallback} from '../src/jaeger-driver';
 
 
@@ -179,9 +179,10 @@ function mockUDPSender(exporter: JaegerTraceExporter) {
 
 
 class MockedUDPSender extends UDPSender {
-  queue = [];
+  // tslint:disable-next-line:no-any
+  queue: any = [];
 
-  setProcess(process: Process): void {}
+  setProcess(process: ThriftProcess): void {}
 
   // tslint:disable-next-line:no-any
   append(span: any, callback?: SenderCallback): void {
