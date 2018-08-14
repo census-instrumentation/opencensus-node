@@ -32,7 +32,7 @@ function checkEnvironoment(): boolean {
   return false;
 }
 
-describe('Stackdriver Exporter', function() {
+describe('Stackdriver Trace Exporter', function() {
   this.timeout(0);
 
   const testLogger = logger.logger();
