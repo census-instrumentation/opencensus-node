@@ -107,10 +107,9 @@ describe('Jaeger Exporter', () => {
           return;
         }
       });
-      assert.strictEqual(
-          true,
+      assert.ok(
           testVersionSeen && testExporterVersionSeen && testHostnameSeen &&
-              testProcessIpSeen);
+          testProcessIpSeen);
     });
   });
 
@@ -153,7 +152,7 @@ describe('Jaeger Exporter', () => {
           }
         });
 
-        assert.strictEqual(true, testBoolSeen && testStringSeen && testNumSeen);
+        assert.ok(testBoolSeen && testStringSeen && testNumSeen);
 
         assert.strictEqual(thriftSpan.logs.length, 1);
         thriftSpan.logs.forEach((log) => {
@@ -170,7 +169,7 @@ describe('Jaeger Exporter', () => {
               errorSeen = true;
               return;
             }
-            assert.strictEqual(true, descriptionSeen && errorSeen);
+            assert.ok(descriptionSeen && errorSeen);
           });
         });
       });
