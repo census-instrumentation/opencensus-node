@@ -61,14 +61,10 @@ export class Stats {
       name: string, measure: Measure, aggregation: AggregationType,
       tagKeys: string[], description: string,
       bucketBoundaries?: number[]): View {
-    try {
-      const view = new BaseView(
-          name, measure, aggregation, tagKeys, description, bucketBoundaries);
-      this.registerView(view);
-      return view;
-    } catch (err) {
-      throw (err);
-    }
+    const view = new BaseView(
+        name, measure, aggregation, tagKeys, description, bucketBoundaries);
+    this.registerView(view);
+    return view;
   }
 
   /**
@@ -77,6 +73,12 @@ export class Stats {
    */
   registerExporter(exporter: StatsEventListener) {
     this.statsEventListeners.push(exporter);
+
+    for (const measureName of Object.keys(this.registeredViews)) {
+      for (const view of this.registeredViews[measureName]) {
+        exporter.onRegisterView(view);
+      }
+    }
   }
 
   /**

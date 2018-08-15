@@ -39,7 +39,7 @@ export interface StatsEventListener {
   onRegisterView(view: View): void;
   /**
    * Is called whenever a new measurement is recorded.
-   * @param view The view related to the measurement
+   * @param views The views related to the measurement
    * @param measurement The recorded measurement
    */
   onRecord(views: View[], measurement: Measurement): void;
