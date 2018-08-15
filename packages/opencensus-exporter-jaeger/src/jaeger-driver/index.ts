@@ -62,13 +62,25 @@ export type ThriftLog = {
   fields: ThriftTag[]
 };
 
+export enum ThriftReferenceType {
+  CHILD_OF = 'CHILD_OF',
+  FOLLOWS_FROM = 'FOLLOWS_FROM'
+}
+
+export type ThriftReference = {
+  traceIdLow: Buffer,
+  traceIdHigh: Buffer,
+  spanId: Buffer,
+  refType: ThriftReferenceType
+};
+
 export type ThriftSpan = {
-  traceIdLow: any,    // tslint:disable-line:no-any
-  traceIdHigh: any,   // tslint:disable-line:no-any
-  spanId: any,        // tslint:disable-line:no-any
-  parentSpanId: any,  // tslint:disable-line:no-any
+  traceIdLow: Buffer,
+  traceIdHigh: Buffer,
+  spanId: Buffer,
+  parentSpanId: string|Buffer,
   operationName: string,
-  references: any[],  // tslint:disable-line:no-any
+  references: ThriftReference[],
   flags: number,
   startTime: number,  // milliseconds
   duration: number,   // milliseconds
@@ -116,8 +128,9 @@ export function spanToThrift(span: Span): ThriftSpan {
   }
 
   const unsigned = true;
-  const parentSpan = span.parentSpanId ? Utils.encodeInt64(span.parentSpanId) :
-                                         ThriftUtils.emptyBuffer;
+  const parentSpan: string|Buffer = span.parentSpanId ?
+      Utils.encodeInt64(span.parentSpanId) :
+      ThriftUtils.emptyBuffer;
 
   const traceId =
       `00000000000000000000000000000000${span.spanContext.traceId}`.slice(-32);
@@ -133,7 +146,7 @@ export function spanToThrift(span: Span): ThriftSpan {
     spanId: Utils.encodeInt64(span.spanContext.spanId),
     parentSpanId: parentSpan,
     operationName: span.name,
-    references: [] as any,  // tslint:disable-line:no-any
+    references: [],
     flags: span.spanContext.options || 0x1,
     startTime:
         Utils.encodeInt64(span.startTime.getTime() * 1000),  // to microseconds
