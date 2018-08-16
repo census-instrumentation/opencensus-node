@@ -92,7 +92,7 @@ export class ConsoleStatsExporter implements types.StatsEventListener {
    * @param view recorded view from measurement
    * @param measurement recorded measurement
    */
-  onRecord(view: View, measurement: Measurement) {
-    console.log(`Measurement recorded: ${view.measure.name}`);
+  onRecord(views: View[], measurement: Measurement) {
+    console.log(`Measurement recorded: ${measurement.measure.name}`);
   }
 }

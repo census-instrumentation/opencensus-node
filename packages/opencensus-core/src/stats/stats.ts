@@ -16,13 +16,14 @@
 
 import {StatsEventListener} from '../exporters/types';
 
-import {AggregationType, Measure, Measurement, MeasureUnit, View} from './types';
+import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, View} from './types';
+import {BaseView} from './view';
 
 export class Stats {
   /** A list of Stats exporters */
   private statsEventListeners: StatsEventListener[] = [];
   /** A map of Measures (name) to their corresponding Views */
-  private registeredViews: {[key: string]: View[]};
+  private registeredViews: {[key: string]: View[]} = {};
 
   constructor() {}
 
@@ -32,7 +33,18 @@ export class Stats {
    * @param view The view to be registered
    */
   registerView(view: View) {
-    throw new Error('Not Implemented');
+    if (this.registeredViews[view.measure.name]) {
+      this.registeredViews[view.measure.name].push(view);
+    } else {
+      this.registeredViews[view.measure.name] = [view];
+    }
+
+    view.registered = true;
+
+    // Notifies all exporters
+    for (const exporter of this.statsEventListeners) {
+      exporter.onRegisterView(view);
+    }
   }
 
   /**
@@ -42,11 +54,17 @@ export class Stats {
    * @param aggregation The view aggregation type
    * @param tagKeys The view columns (tag keys)
    * @param description The view description
+   * @param bucketBoundaries The view bucket boundaries for a distribution
+   * aggregation type
    */
   createView(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagKeys: string[], description?: string): View {
-    throw new Error('Not Implemented');
+      tagKeys: string[], description: string,
+      bucketBoundaries?: number[]): View {
+    const view = new BaseView(
+        name, measure, aggregation, tagKeys, description, bucketBoundaries);
+    this.registerView(view);
+    return view;
   }
 
   /**
@@ -54,7 +72,13 @@ export class Stats {
    * @param exporter An stats exporter
    */
   registerExporter(exporter: StatsEventListener) {
-    throw new Error('Not Implemented');
+    this.statsEventListeners.push(exporter);
+
+    for (const measureName of Object.keys(this.registeredViews)) {
+      for (const view of this.registeredViews[measureName]) {
+        exporter.onRegisterView(view);
+      }
+    }
   }
 
   /**
@@ -65,7 +89,7 @@ export class Stats {
    */
   createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
       Measure {
-    throw new Error('Not Implemented');
+    return {name, unit, type: MeasureType.DOUBLE, description};
   }
 
   /**
@@ -77,14 +101,28 @@ export class Stats {
    */
   createMeasureInt64(name: string, unit: MeasureUnit, description?: string):
       Measure {
-    throw new Error('Not Implemented');
+    return {name, unit, type: MeasureType.INT64, description};
   }
 
   /**
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
    */
-  record(measurements: Measurement[]) {
-    throw new Error('Not Implemented');
+  record(...measurements: Measurement[]) {
+    for (const measurement of measurements) {
+      const views = this.registeredViews[measurement.measure.name];
+      if (!views) {
+        break;
+      }
+      // Updates all views
+      for (const view of views) {
+        view.recordMeasurement(measurement);
+      }
+
+      // Notifies all exporters
+      for (const exporter of this.statsEventListeners) {
+        exporter.onRecord(views, measurement);
+      }
+    }
   }
 }
