@@ -14,23 +14,23 @@
  * limitations under the License.
  -->
  
-<tr style="text-align: center">
-    <td colspan=1 align=left><b>Span Name</b></td>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
-    <td colspan=1 align="center"><b>Running</b></td>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
-    <td colspan=9 align="center"><b>Latency Samples</b></td>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
-    <td colspan=1 align="center"><b>Error Samples</b></td>
+<tr class="bgcolor">
+    <td colspan="1" class="head"><b>Span Name</b></td>
+    <td class="borderRW">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td colspan=1 class="head"><b>Running</b></td>
+    <td class="borderLW">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td colspan=9 class="head"><b>Latency Samples</b></td>
+    <td class="borderRW">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td colspan=1 class="head"><b>Error Samples</b></td>
 </tr>
-<tr style="text-align: center">
+<tr class="bgcolor">
     <td colspan=1></td>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+    <td class="borderRW">&nbsp;&nbsp;&nbsp;&nbsp;</td>
     <td colspan=1></td>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+    <td class="borderLW">&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <? for(var i = 0; i < latencyBucketNames.length; ++i) { ?>
-    <th colspan=1 align="center"><b><?= latencyBucketNames[i] ?></b></th>
+    <th colspan=1 class="centerW"><b><?= latencyBucketNames[i] ?></b></th>
 <? } ?>
-    <td>&nbsp;&nbsp;|&nbsp;&nbsp;</td>
+<td class="borderRW">&nbsp;&nbsp;&nbsp;&nbsp;</td>
     <td colspan=1></td>
 </tr>

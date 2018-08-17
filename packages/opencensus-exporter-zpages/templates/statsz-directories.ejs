@@ -1,0 +1,12 @@
+<table class="title" cellspacing="0" cellpadding="0">
+    <? for (var folderName in folders) { ?>                
+        <tr class="direct">
+            <? if (folders[folderName].isLastFolder) { ?>
+                <td>View: <a href="?path=<?= folders[folderName].path ?>"><?= folderName ?></a></td>
+            <? } else { ?>
+                <td>Directory:
+                    <a href="?path=<?= folders[folderName].path ?>"><?= folderName ?></a> (<?= folders[folderName].viewsCount ?> <?= folders[folderName].viewsCount > 1 ? "views" : "view" ?>)</td>
+            <? } ?>
+        </tr>
+    <? } ?>
+</table>

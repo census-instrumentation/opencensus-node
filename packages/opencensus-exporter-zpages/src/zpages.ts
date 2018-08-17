@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, RootSpan, Span, StatsEventListener, Tags, View} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
+
 import {createRoutes} from './zpages-frontend/routes';
 
 /** Interface to Zpages options */
@@ -30,8 +31,14 @@ export interface ZpagesExporterOptions extends ExporterConfig {
   startServer: boolean;
 }
 
+export interface StatsParams {
+  registeredViews: View[];
+  registeredMeasures: Measure[];
+  recordedData: {[key: string]: AggregationData[]};
+}
+
 /** Class to ZpagesExporter */
-export class ZpagesExporter implements Exporter {
+export class ZpagesExporter implements Exporter, StatsEventListener {
   /** ZpagesExporter default options */
   static readonly defaultOptions = {port: 8080, startServer: true};
 
@@ -40,6 +47,11 @@ export class ZpagesExporter implements Exporter {
   private port: number;
   private traces: Map<string, Span[]> = new Map();
   private logger: Logger;
+  private statsParams = {
+    registeredViews: [],
+    registeredMeasures: [],
+    recordedData: {}
+  } as StatsParams;
 
   constructor(options: ZpagesExporterOptions) {
     /** create express app */
@@ -56,7 +68,7 @@ export class ZpagesExporter implements Exporter {
     }
 
     /** defining routes */
-    this.app.use(createRoutes(this.traces));
+    this.app.use(createRoutes(this.traces, this.statsParams));
 
     /** start the server if the startServer option is true */
     if (startServer) {
@@ -65,7 +77,7 @@ export class ZpagesExporter implements Exporter {
   }
 
   /**
-   * Is called whenever a span is started.
+   * It's called whenever a span is started.
    * @param root the started span
    */
   onStartSpan(root: RootSpan) {
@@ -73,11 +85,46 @@ export class ZpagesExporter implements Exporter {
   }
 
   /**
-   * Is called whenever a span is ended.
+   * It's called whenever a span is ended.
    * @param root the ended span
    */
   onEndSpan(root: RootSpan) {
     this.sendTrace(root);
+  }
+
+  /**
+   * It's called whenever a view is registered
+   * @param view the registered view
+   */
+  onRegisterView(view: View): void {
+    // Adds the view to registeredViews array if it doesn't contain yet
+    if (!this.statsParams.registeredViews.find(v => v.name === view.name)) {
+      this.statsParams.registeredViews.push(view);
+    }
+    // Adds the measure to registeredMeasures array if it doesn't contain yet
+    if (!this.statsParams.registeredMeasures.find(
+            m => m.name === view.measure.name)) {
+      this.statsParams.registeredMeasures.push(view.measure);
+    }
+  }
+
+  /**
+   * It's called whenever a measurement is recorded
+   * @param views the view list where the measurement was recorded
+   * @param measurement the recorded measurement
+   */
+  onRecord(views: View[], measurement: Measurement): void {
+    views.map(view => {
+      const snapshot = view.getSnapshot(measurement.tags);
+      // Check if there is no data for the current view
+      if (!this.statsParams.recordedData[view.name]) {
+        this.statsParams.recordedData[view.name] = [snapshot];
+      } else if (!this.statsParams.recordedData[view.name].find(
+                     s => s === snapshot)) {
+        // Push the snapshot if it hasn't recoreded before
+        this.statsParams.recordedData[view.name].push(snapshot);
+      }
+    });
   }
 
   /**

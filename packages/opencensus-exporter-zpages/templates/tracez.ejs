@@ -20,12 +20,16 @@
 <head>
     <meta charset="utf-8">
     <title><?= title ?></title>
-    <link rel="shortcut icon" href="https://www.opencensus.io/favicon.ico"/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link rel="shortcut icon" href="https://opencensus.io/images/favicon.ico"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style>
+        <?- styles ?>
+    </style>
 </head>
 
 <body>
+<p class="header"><img class="oc" src="https://opencensus.io/img/logo-sm.svg">Open<span>Census</span></p>
 <h1 style="text-align: center"><?= title ?></h1>
 <table style="border-spacing: 0">
     <?- table_content ?>

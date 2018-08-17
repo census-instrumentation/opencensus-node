@@ -1,0 +1,156 @@
+<!--
+ * Copyright 2018 OpenCensus Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>RpcZ</title>
+    <link rel="shortcut icon" href="https://opencensus.io/images/favicon.ico"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style>
+        <?- styles ?>
+    </style>
+</head>
+
+<body>
+    <p class="header"><img class="oc" src="https://opencensus.io/img/logo-sm.svg">Open<span>Census</span></p>
+    <h1>RPC Stats</h1>
+    <p></p>
+    <h2><font size="+2">Sent</font></h2>
+    <table frame="box" cellspacing="0" cellpadding="2">
+        <tr bgcolor="#A94442">
+            <th></th>
+            <td></td>
+            <th class="borderLB" colspan=3>Count</th>
+            <th class="borderLB" colspan=3>Avg latency (ms)</th>
+            <th class="borderLB" colspan=3>Rate (rpc/s)</th>
+            <th class="borderLB" colspan=3>Input (kb/s)</th>
+            <th class="borderLB" colspan=3>Output (kb/s)</th>
+            <th class="borderLB" colspan=3>Errors</th>
+        </tr>
+        <tr bgcolor="#A94442">
+            <th align=left>Method</th>
+            <td bgcolor="#A94442">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+        </tr>
+        <? for(let i in zMeasuresSent) { ?>
+            <tr>
+                <td><b><?= `${i}` ?></b></td>
+                <td></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].count.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].count.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].count.tot}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].avgLatency.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].avgLatency.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].avgLatency.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].rate.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].rate.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].rate.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].input.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].input.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].input.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].output.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].output.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].output.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].errors.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].errors.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresSent[i].errors.tot}` ?></td>
+            </tr>
+        <? } ?>
+    </table>
+    <h2><font size="+2">Received</font></h2>
+    <table bgcolor="#fff5ee" frame=box cellspacing=0 cellpadding=2>
+        <tr bgcolor="#A94442">
+            <th></th>
+            <td></td>
+            <th class="borderLB" colspan=3>Count</th>
+            <th class="borderLB" colspan=3>Avg latency (ms)</th>
+            <th class="borderLB" colspan=3>Rate (rpc/s)</th>
+            <th class="borderLB" colspan=3>Input (kb/s)</th>
+            <th class="borderLB" colspan=3>Output (kb/s)</th>
+            <th class="borderLB" colspan=3>Errors</th>
+        </tr>
+        <tr bgcolor="#A94442">
+            <th align=left>Method</th>
+            <td bgcolor="#A94442">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+            <th class="borderLB" align="center">Min.</th>
+            <th class="borderLB" align="center">Hr.</th>
+            <th class="borderLB" align="center">Tot.</th>
+        </tr>
+        <? for(let i in zMeasuresReceived) { ?>
+            <tr>
+                <td><b><?= `${i}` ?></b></td>
+                <td></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].count.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].count.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].count.tot}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].avgLatency.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].avgLatency.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].avgLatency.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].rate.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].rate.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].rate.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].input.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].input.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].input.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].output.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].output.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].output.tot.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].errors.min.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].errors.hr.toFixed(FIXED_SIZE)}` ?></td>
+                <td class="borderLC"><?= `${zMeasuresReceived[i].errors.tot}` ?></td>
+            </tr>
+        <? } ?>
+    </table>
+</body>
+
+</html>
