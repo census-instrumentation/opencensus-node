@@ -63,9 +63,8 @@ export class TraceContextFormat implements Propagation {
         // single header.
         traceState = traceState.join(',');
       }
-      spanContext.traceState = typeof traceState === 'string' ?
-          traceState :
-          undefined;
+      spanContext.traceState =
+          typeof traceState === 'string' ? traceState : undefined;
 
       // Read headers
       let traceParent = getter.getHeader(TRACE_PARENT);
