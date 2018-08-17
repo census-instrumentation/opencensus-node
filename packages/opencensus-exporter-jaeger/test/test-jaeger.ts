@@ -27,7 +27,7 @@ import {spanToThrift, ThriftUtils, UDPSender} from '../src/jaeger-driver';
 
 const DEFAULT_BUFFER_TIMEOUT = 10;  // time in milliseconds
 
-import {Process} from '../src/jaeger-driver';
+import {ThriftProcess} from '../src/jaeger-driver';
 import {SenderCallback} from '../src/jaeger-driver';
 
 
@@ -75,6 +75,44 @@ describe('Jaeger Exporter', () => {
     exporter.close();
   });
 
+  describe('exporter configuration', () => {
+    it('should contain process information', () => {
+      const process: ThriftProcess = exporter.sender._process;
+
+      // Service name
+      assert.strictEqual(process.serviceName, 'opencensus-exporter-jaeger');
+
+      // Tags. Validate that both the user-given and default tags are present.
+      let testVersionSeen = false;
+      let testExporterVersionSeen = false;
+      let testHostnameSeen = false;
+      let testProcessIpSeen = false;
+      process.tags.forEach((tag) => {
+        if (tag.key === 'opencensus-exporter-jeager' &&
+            tag.vType === 'STRING' && tag.vStr === '0.0.1') {
+          testVersionSeen = true;
+          return;
+        }
+        if (tag.key ===
+            JaegerTraceExporter.JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY) {
+          testExporterVersionSeen = true;
+          return;
+        }
+        if (tag.key === JaegerTraceExporter.TRACER_HOSTNAME_TAG_KEY) {
+          testHostnameSeen = true;
+          return;
+        }
+        if (tag.key === JaegerTraceExporter.PROCESS_IP) {
+          testProcessIpSeen = true;
+          return;
+        }
+      });
+      assert.ok(
+          testVersionSeen && testExporterVersionSeen && testHostnameSeen &&
+          testProcessIpSeen);
+    });
+  });
+
   /* Should export spans to Jeager */
   describe('test spans are valid', () => {
     it('should encode as thrift', () => {
@@ -114,7 +152,7 @@ describe('Jaeger Exporter', () => {
           }
         });
 
-        assert.strictEqual(true, testBoolSeen && testStringSeen && testNumSeen);
+        assert.ok(testBoolSeen && testStringSeen && testNumSeen);
 
         assert.strictEqual(thriftSpan.logs.length, 1);
         thriftSpan.logs.forEach((log) => {
@@ -131,7 +169,7 @@ describe('Jaeger Exporter', () => {
               errorSeen = true;
               return;
             }
-            assert.strictEqual(true, descriptionSeen && errorSeen);
+            assert.ok(descriptionSeen && errorSeen);
           });
         });
       });
@@ -174,14 +212,27 @@ describe('Jaeger Exporter', () => {
 
 
 function mockUDPSender(exporter: JaegerTraceExporter) {
+  // Get the process of the current sender and pass to the mock sender. The
+  // process is constructed and attached to the sender at exporter construction
+  // time at initialization time, so there is no way to intercept the process.
+  const process: ThriftProcess = exporter.sender._process;
+
   exporter.sender = new MockedUDPSender();
+  exporter.sender.setProcess(process);
 }
 
 
 class MockedUDPSender extends UDPSender {
-  queue = [];
+  // tslint:disable-next-line:no-any
+  queue: any = [];
 
-  setProcess(process: Process): void {}
+  // Holds the initialized process information. Name matches the associated
+  // UDPSender property.
+  _process: ThriftProcess;
+
+  setProcess(process: ThriftProcess): void {
+    this._process = process;
+  }
 
   // tslint:disable-next-line:no-any
   append(span: any, callback?: SenderCallback): void {

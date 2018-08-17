@@ -30,32 +30,77 @@ export const Utils = requireJaegerClientModule('util');
 // tslint:disable-next-line:variable-name
 export const ThriftUtils = requireJaegerClientModule('thrift');
 
+export type TagValue = string|number|boolean;
+
 export type Tag = {
   key: string,
-  // tslint:disable-next-line:no-any
-  value: any
+  value: TagValue
 };
 
-export type Process = {
-  serviceName: string,
-  tags: Tag[]
+export type Log = {
+  timestamp: number,
+  fields: Tag[]
 };
 
 export type SenderCallback = (numSpans: number, err?: string) => void;
+
+export type ThriftProcess = {
+  serviceName: string,
+  tags: ThriftTag[]
+};
+
+export type ThriftTag = {
+  key: string,
+  vType: string,
+  vStr: string,
+  vDouble: number,
+  vBool: boolean
+};
+
+export type ThriftLog = {
+  timestamp: number,
+  fields: ThriftTag[]
+};
+
+export enum ThriftReferenceType {
+  CHILD_OF = 'CHILD_OF',
+  FOLLOWS_FROM = 'FOLLOWS_FROM'
+}
+
+export type ThriftReference = {
+  traceIdLow: Buffer,
+  traceIdHigh: Buffer,
+  spanId: Buffer,
+  refType: ThriftReferenceType
+};
+
+export type ThriftSpan = {
+  traceIdLow: Buffer,
+  traceIdHigh: Buffer,
+  spanId: Buffer,
+  parentSpanId: string|Buffer,
+  operationName: string,
+  references: ThriftReference[],
+  flags: number,
+  startTime: number,  // milliseconds
+  duration: number,   // milliseconds
+  tags: ThriftTag[],
+  logs: ThriftLog[],
+};
 
 /**
  * Translate opencensus Span to Jeager Thrift Span
  * @param span
  */
-export function spanToThrift(span: Span) {
-  const tags = [];
+export function spanToThrift(span: Span): ThriftSpan {
+  const tags: Tag[] = [];
   if (span.attributes) {
     Object.keys(span.attributes).forEach(key => {
       tags.push({'key': key, 'value': span.attributes[key]});
     });
   }
 
-  const logs = [];
+  const logs: Log[] = [];
   if (span.messageEvents) {
     span.messageEvents.forEach(msg => {
       logs.push({
@@ -70,7 +115,7 @@ export function spanToThrift(span: Span) {
 
   if (span.annotations) {
     span.annotations.forEach(ann => {
-      const tags = [];
+      const tags: Tag[] = [];
       Object.keys(ann.attributes).forEach(key => {
         tags.push({'key': key, 'value': ann.attributes[key]});
       });
@@ -83,16 +128,17 @@ export function spanToThrift(span: Span) {
   }
 
   const unsigned = true;
-  const parentSpan = span.parentSpanId ? Utils.encodeInt64(span.parentSpanId) :
-                                         ThriftUtils.emptyBuffer;
+  const parentSpan: string|Buffer = span.parentSpanId ?
+      Utils.encodeInt64(span.parentSpanId) :
+      ThriftUtils.emptyBuffer;
 
   const traceId =
       `00000000000000000000000000000000${span.spanContext.traceId}`.slice(-32);
 
   const high = traceId.slice(0, 16);
   const low = traceId.slice(16);
-  const spanTags = ThriftUtils.getThriftTags(tags);
-  const spanLogs = ThriftUtils.getThriftLogs(logs);
+  const spanTags: ThriftTag[] = ThriftUtils.getThriftTags(tags);
+  const spanLogs: ThriftLog[] = ThriftUtils.getThriftLogs(logs);
 
   return {
     traceIdLow: Utils.encodeInt64(low),

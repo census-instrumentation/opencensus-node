@@ -18,7 +18,7 @@ import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencen
 import {logger, Logger} from '@opencensus/core';
 import * as os from 'os';
 
-import {Process, spanToThrift, Tag, ThriftUtils, UDPSender, Utils} from './jaeger-driver';
+import {spanToThrift, Tag, TagValue, ThriftProcess, ThriftUtils, UDPSender, Utils} from './jaeger-driver';
 
 /**
  * Options for Jaeger configuration
@@ -43,7 +43,7 @@ export class JaegerTraceExporter implements Exporter {
   //  ip of the process.
   static readonly PROCESS_IP = 'ip';
 
-  private process: Process;
+  private process: ThriftProcess;
   private logger: Logger;
   sender: typeof UDPSender;
   queue: Span[] = [];
@@ -65,13 +65,17 @@ export class JaegerTraceExporter implements Exporter {
     this.bufferTimeout = options.bufferTimeout;
     this.bufferSize = options.bufferSize;
     this.sender = new UDPSender(options);
-    const tags = options.tags || [];
-    tags[JaegerTraceExporter.JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY] =
-        `opencensus-exporter-jaeger-${pjson.version}`;
-    tags[JaegerTraceExporter.TRACER_HOSTNAME_TAG_KEY] = os.hostname();
-    tags[JaegerTraceExporter.PROCESS_IP] = Utils.ipToInt(Utils.myIp());
+    const tags: Tag[] = options.tags || [];
 
-    const _tags = Utils.convertObjectToTags(tags);
+    const defaultTags: Record<string, TagValue> = {};
+    defaultTags[JaegerTraceExporter
+                    .JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY] =
+        `opencensus-exporter-jaeger-${pjson.version}`;
+    defaultTags[JaegerTraceExporter.TRACER_HOSTNAME_TAG_KEY] = os.hostname();
+    defaultTags[JaegerTraceExporter.PROCESS_IP] = Utils.ipToInt(Utils.myIp());
+
+    // Merge the user given tags and the default tags
+    const _tags: Tag[] = [...tags, ...Utils.convertObjectToTags(defaultTags)];
     this.process = {
       serviceName: options.serviceName,
       tags: ThriftUtils.getThriftTags(_tags),
