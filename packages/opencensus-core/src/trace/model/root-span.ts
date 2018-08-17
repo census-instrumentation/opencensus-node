@@ -30,8 +30,10 @@ export class RootSpan extends SpanBase implements types.RootSpan {
   private tracer: types.Tracer;
   /** A list of child spans. */
   private spansLocal: types.Span[];
-  /** It's trace ID. */
+  /** Its trace ID. */
   private traceIdLocal: string;
+  /** Its trace state. */
+  private traceStateLocal: types.TraceState;
   /** set isRootSpan = true */
   readonly isRootSpan = true;
 
@@ -50,6 +52,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
     this.name = context && context.name ? context.name : 'undefined';
     if (context && context.spanContext) {
       this.parentSpanId = context.spanContext.spanId || '';
+      this.traceStateLocal = context.spanContext.traceState;
     }
     this.spansLocal = [];
     this.kind = context && context.kind ? context.kind : null;
@@ -66,12 +69,20 @@ export class RootSpan extends SpanBase implements types.RootSpan {
     return this.traceIdLocal;
   }
 
+  /** Gets trace state from rootspan instance */
+  get traceState(): types.TraceState {
+    return this.traceStateLocal;
+  }
+
   /** Starts a rootspan instance. */
   start() {
     super.start();
-    this.logger.debug(
-        'starting %s  %o', this.className,
-        {traceId: this.traceId, id: this.id, parentSpanId: this.parentSpanId});
+    this.logger.debug('starting %s  %o', this.className, {
+      traceId: this.traceId,
+      id: this.id,
+      parentSpanId: this.parentSpanId,
+      traceState: this.traceState
+    });
 
     this.tracer.onStartSpan(this);
   }

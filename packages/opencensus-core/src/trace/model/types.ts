@@ -73,6 +73,8 @@ export interface TraceOptions {
   kind?: string;
 }
 
+export type TraceState = string;
+
 /** Defines the span context */
 export interface SpanContext {
   /** Trace ID */
@@ -81,6 +83,8 @@ export interface SpanContext {
   spanId: string;
   /** Options */
   options?: number;
+  /** TraceState */
+  traceState?: TraceState;
 }
 
 /** Defines an end span event listener */
@@ -128,8 +132,11 @@ export interface Span {
   /** true if span is a RootSpan */
   isRootSpan: boolean;
 
-  /** Constructs a new SpanBaseModel instance. */
+  /** Trace id asscoiated with span. */
   readonly traceId: string;
+
+  /** Trace state associated with span */
+  readonly traceState: TraceState;
 
   /** Indicates if span was started. */
   readonly started: boolean;
