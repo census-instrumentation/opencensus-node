@@ -69,6 +69,64 @@ Tracing has many options available to choose from. At `tracing.start()`, you can
 | [`plugin`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L68) | `PluginNames` | A list of trace instrumentations plugins to load |
 | [`exporter`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L70) | `Exporter` | An exporter object |
 
+## Stats
+
+### Collecting stats about your application
+
+OpenCensus Stats allows users to collect measurements an visualize them in many different formats. After instanciated stats, the user needs to define a measure and associate views with it, then, it is possible to record measurements.
+
+```javascript
+// Import and instanciate OpenCensus Stats
+var opencensus = require('@opencensus/core');
+var stats = new opencensus.Stats();
+
+// Defines a measure
+var measure = stats.createMeasureInt64(
+  'my/measure', opencensus.MeasureUnit.UNIT);
+// And associates a view with it
+var tags = {myTagKey: 'myTagValue'};
+var view = stats.createView(
+  'my/view', measure, opencensus.AggregationType.SUM, ['myTagKey'], 'my view');
+
+// Creates a measurement
+var measurement = {measure, tags, value: 10};
+// and records it
+stats.record(measurement);
+```
+
+Similarly for Typescript:
+
+```typescript
+// Import and instanciate OpenCensus Stats
+import {Stats, MeasureUnit, AggregationType} from '@opencensus/core';
+const stats = new Stats();
+
+// Defines a measure
+const measure = stats.createMeasureInt64('my/measure', MeasureUnit.UNIT);
+// And associates a view with it
+const tags = {myTagKey: 'myTagValue'};
+const view = stats.createView(
+  'my/view', measure, AggregationType.SUM, ['myTagKey'], 'my view');
+
+// Creates a measurement
+const measurement = {measure, tags, value: 10};
+// and records it
+stats.record(measurement);
+```
+
+Measures can be of type `Int64` or `DOUBLE`, created by calling `createMeasureInt64` and `createMeasureDouble` respectively. Its units can be:
+
+| MeasureUnit | Usage |
+| ----------- | ----- |
+| UNIT | for general counts |
+| BYTE | bytes |
+| KBYTE | Kbytes |
+| SEC | seconds |
+| MS | millisecond |
+| NS | nanosecond |
+
+Views can have agregations of type `SUM`, `LAST_VALUE`, `COUNT` and `DISTRIBUTION`. To know more about Stats core concepts, please visit: [https://opencensus.io/core-concepts/metrics/](https://opencensus.io/core-concepts/metrics/)
+
 ## Plugins
 
 OpenCensus can collect tracing data automatically using plugins. Users can also create and use their own plugins. Currently, OpenCensus supports automatic tracing for:
@@ -85,12 +143,12 @@ OpenCensus collects distributed tracing. It is able to do so by propagating span
 
 ## Exporters
 
-OpenCensus can export trace data to various backends. Currently, OpenCensus supports:
+OpenCensus can export trace and stats data to various backends. Currently, OpenCensus supports:
 
-- [Stackdriver](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-stackdriver/README.md)
-- [Zipkin](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-zipkin/README.md)
-- [Z-Pages](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-zpages/README.md)
-- [Jaeger](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-jaeger/README.md)
+- [Stackdriver](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-stackdriver/README.md) for trace and stats
+- [Zipkin](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-zipkin/README.md) for trace
+- [Z-Pages](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-zpages/README.md) for trace
+- [Jaeger](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-exporter-jaeger/README.md) for trace
 
 If no exporter is registered in the tracing instance, as default, a console log exporter is used.
 
