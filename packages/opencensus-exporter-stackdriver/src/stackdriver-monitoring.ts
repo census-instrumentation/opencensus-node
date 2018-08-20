@@ -47,7 +47,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
 
       return new Promise((resolve, reject) => {
         monitoring.projects.metricDescriptors.create(request, (err: Error) => {
-          this.logger.debug(request.resource);
+          this.logger.debug('sent metric descriptor', request.resource);
           err ? reject(err) : resolve();
         });
       });
@@ -73,7 +73,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
 
       return new Promise((resolve, reject) => {
         monitoring.projects.timeSeries.create(request, (err: Error) => {
-          this.logger.debug(request.resource.timeSeries);
+          this.logger.debug('sent time series', request.resource.timeSeries);
           err ? reject(err) : resolve();
         });
       });
@@ -144,7 +144,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
   }
 
   /**
-   * Formats an OpenCensus' Distribution to Stackdriver's format.
+   * Formats an OpenCensus Distribution to Stackdriver's format.
    * @param distribution The OpenCensus Distribution Data
    */
   private createDistribution(distribution: DistributionData): Distribution {
@@ -166,18 +166,15 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param buckets The bucket list to get the boundaries from
    */
   private getBucketBoundaries(buckets: Bucket[]): number[] {
-    return [...buckets.map(bucket => bucket.lowBoundary), Infinity].sort(
-        (boundary1, boundary2) => {
-          return boundary1 < boundary2 ? -1 : 1;
-        });
+    return [...buckets.map(bucket => bucket.lowBoundary), Infinity];
   }
 
+  /**
+   * Gets the count value for each bucket
+   * @param buckets The bucket list to get the count values from
+   */
   private getBucketCounts(buckets: Bucket[]): number[] {
-    return buckets
-        .sort((bucket1, bucket2) => {
-          return bucket1.lowBoundary < bucket2.lowBoundary ? -1 : 1;
-        })
-        .map(bucket => bucket.count);
+    return buckets.map(bucket => bucket.count);
   }
 
   /**

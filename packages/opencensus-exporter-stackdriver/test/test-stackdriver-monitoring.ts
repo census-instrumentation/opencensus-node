@@ -37,7 +37,7 @@ class ExporterTestLogger implements Logger {
   }
 
   // tslint:disable-next-line:no-any
-  debug(...args: any[]) {
+  debug(message: string, ...args: any[]) {
     this.debugBuffer.push(...args);
   }
 
