@@ -31,7 +31,7 @@ export interface BufferConfig {
 
 /** Defines tracer configuration parameters */
 export interface TracerConfig {
-  /** Determines the samplin rate. Ranges from 0.0 to 1.0 */
+  /** Determines the sampling rate. Ranges from 0.0 to 1.0 */
   samplingRate?: number;
   /** Determines the ignored (or blacklisted) URLs */
   ignoreUrls?: Array<string|RegExp>;
