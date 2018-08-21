@@ -23,7 +23,7 @@ import {TraceContextFormat} from '../src/';
 const TRACE_PARENT = 'traceparent';
 const TRACE_STATE = 'tracestate';
 
-const DEFAULT_OPTIONS = 0x1;
+const DEFAULT_OPTIONS = 0x0;
 
 const traceContextFormat = new TraceContextFormat();
 

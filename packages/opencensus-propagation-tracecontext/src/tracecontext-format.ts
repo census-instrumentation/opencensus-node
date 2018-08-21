@@ -27,7 +27,7 @@ const TRACE_STATE = 'tracestate';
 const REQUESTED_FLAG = 0x1;
 const RECORDED_FLAG = 0x2;
 
-const DEFAULT_OPTIONS = REQUESTED_FLAG;
+const DEFAULT_OPTIONS = 0x0;
 
 /**
  * Propagates span context through Trace Context format propagation.

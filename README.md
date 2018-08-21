@@ -28,6 +28,7 @@ OpenCensus collects distributed tracing. It is able to do so by propagating span
 
 - [B3 Propagation](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-propagation-b3/README.md)
 - [Stackdriver Propagation](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-propagation-stackdriver/README.md)
+- [Trace Context Propagation](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-propagation-tracecontext/README.md)
 
 ## Exporters
 
