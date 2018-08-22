@@ -33,7 +33,7 @@ var options = {
   url: 'your-zipkin-url',
   serviceName: 'your-application-name'
 }
-var exporter = new zipkin.Zipkin(options);
+var exporter = new zipkin.ZipkinTraceExporter(options);
 ```
 
 Similarly for Typescript:
