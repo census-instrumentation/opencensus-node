@@ -25,8 +25,8 @@ export function oauth2<T extends {} = {}>(validator?: (body: T) => boolean):
     nock.Scope {
   validator = validator || accept;
   return nock(/https:\/\/(accounts\.google\.com|www\.googleapis\.com)/)
+      .persist()
       .post(/\/oauth2.*token/, validator)
-      .once()
       .reply(200, {
         refresh_token: 'hello',
         access_token: 'goodbye',
@@ -74,7 +74,7 @@ export function patchTraces<T extends {} = {}>(
   validator = validator || accept;
   const interceptor =
       nock('https://cloudtrace.googleapis.com')
-          .intercept('/v1/projects/' + project + '/traces', 'PATCH', validator);
+          .patch('/v1/projects/' + project + '/traces', validator);
   let scope: nock.Scope;
   if (withError) {
     scope = interceptor.replyWithError(reply);
@@ -82,6 +82,40 @@ export function patchTraces<T extends {} = {}>(
     scope = interceptor.reply(reply);
   } else {
     scope = interceptor.reply(200);
+  }
+  return scope;
+}
+
+export function timeSeries<T extends {} = {}>(
+    project: string, validator?: (body: T) => boolean, reply?: () => string,
+    withError?: boolean) {
+  validator = validator || accept;
+  const interceptor =
+      nock('https://monitoring.googleapis.com')
+          .post('/v3/projects/' + project + '/timeSeries', validator);
+  let scope: nock.Scope;
+  if (withError) {
+    scope = interceptor.replyWithError(reply);
+  } else if (reply) {
+    scope = interceptor.reply(reply);
+  } else {
+    scope = interceptor.reply(200, reply);
+  }
+  return scope;
+}
+
+export function metricDescriptors<T extends {} = {}>(
+    project: string, validator?: (body: T) => boolean, reply?: () => string,
+    withError?: boolean) {
+  validator = validator || accept;
+  const interceptor =
+      nock('https://monitoring.googleapis.com')
+          .post('/v3/projects/' + project + '/metricDescriptors', validator);
+  let scope: nock.Scope;
+  if (withError) {
+    scope = interceptor.replyWithError(reply);
+  } else {
+    scope = interceptor.reply(200, reply);
   }
   return scope;
 }

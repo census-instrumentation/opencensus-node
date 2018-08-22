@@ -19,40 +19,10 @@ import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 
+import {StackdriverExporterOptions, TracesWithCredentials, TranslatedSpan, TranslatedTrace} from './types';
+
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
 const cloudTrace = google.cloudtrace('v1');
-
-type TranslatedTrace = {
-  projectId: string,
-  traceId: string,
-  spans: TranslatedSpan[]
-};
-
-type TranslatedSpan = {
-  name: string,
-  kind: string,
-  spanId: string,
-  startTime: Date,
-  endTime: Date,
-  labels: Record<string, string>
-};
-
-
-/**
- * Options for stackdriver configuration
- */
-export interface StackdriverExporterOptions extends ExporterConfig {
-  /**
-   * projectId project id defined to stackdriver
-   */
-  projectId: string;
-}
-
-interface TracesWithCredentials {
-  projectId: string;
-  resource: {traces: {}};
-  auth: JWT;
-}
 
 /** Format and sends span information to Stackdriver */
 export class StackdriverTraceExporter implements Exporter {

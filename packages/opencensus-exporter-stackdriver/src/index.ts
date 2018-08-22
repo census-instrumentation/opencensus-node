@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
-export * from './stackdriver';
+export * from './stackdriver-cloudtrace';
+export * from './stackdriver-monitoring';
+export * from './types';
