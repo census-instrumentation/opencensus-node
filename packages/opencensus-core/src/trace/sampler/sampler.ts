@@ -17,10 +17,11 @@
 import {randomSpanId} from '../../internal/util';
 import {Sampler} from './types';
 
-
-const MIN_NUMBER = Number.MIN_VALUE;
-const MAX_NUMBER = Number.MAX_VALUE;
-
+// We use 52-bits as our max number because it remains a javascript "safe
+// integer" for arithmetic and parsing while using the full hex range for
+// comparison to the lower order bytes on a traceId.
+const MAX_NUMBER = 0xfffffffffffff;
+const LOWER_BYTE_COUNT = 13;
 
 /**  Sampler that samples every trace. */
 export class AlwaysSampler implements Sampler {
@@ -61,7 +62,8 @@ export class ProbabilitySampler implements Sampler {
    * False if the traceId is not in probability.
    */
   shouldSample(traceId: string): boolean {
-    const LOWER_BYTES = traceId ? traceId.substring(16) : '0';
+    const LOWER_BYTES =
+        traceId ? ('0000000000000' + traceId).slice(-LOWER_BYTE_COUNT) : '0';
     // tslint:disable-next-line:ban Needed to parse hexadecimal.
     const LOWER_LONG = parseInt(LOWER_BYTES, 16);
 

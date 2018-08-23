@@ -36,7 +36,7 @@ const zpagesServerUrl = 'http://localhost:' + options.port;
 
 /** Default config for traces tests */
 const defaultConfig: TracerConfig = {
-  samplingRate: 0.2
+  samplingRate: 1.0
 };
 
 /**

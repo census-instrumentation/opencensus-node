@@ -31,16 +31,16 @@ describe('Sampler', () => {
     it('should return a always sampler for 1', () => {
       const root = new RootSpan(tracer);
       const sampler = SamplerBuilder.getSampler(1);
-      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'always');
-      assert.ok(samplerShouldSampler);
+      assert.ok(samplerShouldSample);
     });
     it('should return a always sampler for >1', () => {
       const root = new RootSpan(tracer);
       const sampler = SamplerBuilder.getSampler(100);
-      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'always');
-      assert.ok(samplerShouldSampler);
+      assert.ok(samplerShouldSample);
     });
   });
   /**
@@ -50,26 +50,56 @@ describe('Sampler', () => {
     it('should return a never sampler for 0', () => {
       const root = new RootSpan(tracer);
       const sampler = SamplerBuilder.getSampler(0);
-      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'never');
-      assert.ok(!samplerShouldSampler);
+      assert.ok(!samplerShouldSample);
     });
     it('should return a never sampler for negative value', () => {
       const root = new RootSpan(tracer);
       const sampler = SamplerBuilder.getSampler(-1);
-      const samplerShouldSampler = sampler.shouldSample(root.traceId);
+      const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'never');
-      assert.ok(!samplerShouldSampler);
+      assert.ok(!samplerShouldSample);
     });
   });
 
   describe('shouldSample() probability', () => {
     it('should return a probability sampler', () => {
-      const root = new RootSpan(tracer);
       const sampler = SamplerBuilder.getSampler(0.7);
       assert.ok(sampler.description.indexOf('probability') >= 0);
-      const samplerShouldSampler = sampler.shouldSample(root.traceId);
-      assert.ok(samplerShouldSampler ? samplerShouldSampler : true);
     });
+    it('should sample an empty traceId', () => {
+      const sampler = SamplerBuilder.getSampler(0.5);
+      const samplerShouldSample = sampler.shouldSample(null);
+      assert.ok(samplerShouldSample);
+    });
+    it('should accept and reject traces based on last 26 bytes of traceId',
+       () => {
+         const sampler = SamplerBuilder.getSampler(0.5);
+
+         const shouldSample = [
+           '11111111111111111110000000000000',
+           '1111111111111111111000ffffffffff',
+           '11111111111111111117ffffffffffff',
+         ];
+         shouldSample.forEach(traceId => {
+           const samplerShouldSample = sampler.shouldSample(traceId);
+           assert.ok(
+               samplerShouldSample,
+               `should have sampled but didn't: ${traceId}`);
+         });
+
+         const shouldNotSample = [
+           '11111111111111111118000000000000',
+           '11111111111111111118000fffffffff',
+           '1111111111111111111fffffffffffff',
+         ];
+         shouldNotSample.forEach(traceId => {
+           const samplerShouldSample = sampler.shouldSample(traceId);
+           assert.ok(
+               !samplerShouldSample,
+               `should not have sampled but did: ${traceId}`);
+         });
+       });
   });
 });
