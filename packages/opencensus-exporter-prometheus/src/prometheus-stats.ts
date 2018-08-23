@@ -88,39 +88,42 @@ export class PrometheusStatsExporter implements StatsEventListener {
     const metricName = this.getPrometheusMetricName(view);
     /** Get metric if already registered */
     let metric = this.registry.getSingleMetric(metricName);
-    // Create a new metric if there is no one
-    if (!metric) {
-      const metricObj = {
-        name: metricName,
-        help: view.description,
-        labelNames: view.getColumns(),
-      };
-      // Creating the metric based on aggregation type
-      switch (view.aggregation) {
-        case AggregationType.COUNT:
-          metric = new Counter(metricObj);
-          break;
-        case AggregationType.SUM:
-        case AggregationType.LAST_VALUE:
-          metric = new Gauge(metricObj);
-          break;
-        case AggregationType.DISTRIBUTION:
-          const distribution = {
-            name: metricName,
-            help: view.description,
-            labelNames: view.getColumns(),
-            buckets: this.getBoundaries(view, tags)
-          };
-          metric = new Histogram(distribution);
-          break;
-        default:
-          this.logger.error(
-              'Aggregation %s is not supported', view.aggregation);
-          return null;
-      }
-      this.registry.registerMetric(metric);
+    // Return metric if already registered
+    if (metric) {
+      return metric;
     }
 
+    // Create a new metric if there is no one
+    const metricObj = {
+      name: metricName,
+      help: view.description,
+      labelNames: view.getColumns()
+    };
+
+    // Creating the metric based on aggregation type
+    switch (view.aggregation) {
+      case AggregationType.COUNT:
+        metric = new Counter(metricObj);
+        break;
+      case AggregationType.SUM:
+      case AggregationType.LAST_VALUE:
+        metric = new Gauge(metricObj);
+        break;
+      case AggregationType.DISTRIBUTION:
+        const distribution = {
+          name: metricName,
+          help: view.description,
+          labelNames: view.getColumns(),
+          buckets: this.getBoundaries(view, tags)
+        };
+        metric = new Histogram(distribution);
+        break;
+      default:
+        this.logger.error('Aggregation %s is not supported', view.aggregation);
+        return null;
+    }
+
+    this.registry.registerMetric(metric);
     return metric;
   }
 
