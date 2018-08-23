@@ -42,7 +42,7 @@ const rootSpanOptions = { name: 'your root span' };
 tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan) => {
 
     // You can create as many child spans as needed
-    childSpan = tracing.tracer.startChildSpan(name: 'your child span');
+    childSpan = tracing.tracer.startChildSpan('name of your child span');
     // Do some operation...
     // Finish the child span at the end of it's operation
     childSpan.end();
