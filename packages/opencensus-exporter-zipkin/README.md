@@ -28,7 +28,8 @@ Instance the exporter on your application and pass the options. For javascript:
 var tracing = require('@opencensus/nodejs');
 var zipkin = require('@opencensus/exporter-zipkin');
 
-// Add your zipkin url and application name to the Zipkin options
+// Add your zipkin url (ex http://localhost:9411/api/v2/spans)
+// and application name to the Zipkin options
 var options = {
   url: 'your-zipkin-url',
   serviceName: 'your-application-name'
@@ -42,7 +43,8 @@ Similarly for Typescript:
 import * as tracing from '@opencensus/nodejs';
 import { Zipkin } from '@opencensus/exporter-zipkin';
 
-// Add your zipkin url and application name to the Zipkin options
+// Add your zipkin url (ex http://localhost:9411/api/v2/spans)
+// and application name to the Zipkin options
 const options = {
   url: 'your-zipkin-url',
   serviceName: 'your-application-name'
