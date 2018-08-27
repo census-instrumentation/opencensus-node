@@ -61,7 +61,7 @@ export class JaegerTraceExporter implements Exporter {
 
   constructor(options: JaegerTraceExporterOptions) {
     const pjson = require('../../package.json');
-    this.logger = options.logger || logger.logger('debug');
+    this.logger = options.logger || logger.logger();
     this.bufferTimeout = options.bufferTimeout;
     this.bufferSize = options.bufferSize;
     this.sender = new UDPSender(options);
