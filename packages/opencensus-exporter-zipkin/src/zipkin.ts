@@ -21,7 +21,7 @@ import * as http from 'http';
 import * as url from 'url';
 
 export interface ZipkinExporterOptions extends ExporterConfig {
-  url: string;
+  url?: string;
   serviceName: string;
 }
 
@@ -40,13 +40,15 @@ interface TranslatedSpan {
 
 /** Zipkin Exporter manager class */
 export class ZipkinTraceExporter implements Exporter {
+  static readonly DEFAULT_URL = 'http://localhost:9411/api/v2/spans';
   private zipkinUrl: url.UrlWithStringQuery;
   private serviceName: string;
   buffer: ExporterBuffer;
   logger: Logger;
 
   constructor(options: ZipkinExporterOptions) {
-    this.zipkinUrl = url.parse(options.url);
+    this.zipkinUrl = options.url && url.parse(options.url) ||
+        url.parse(ZipkinTraceExporter.DEFAULT_URL);
     this.serviceName = options.serviceName;
     this.buffer = new ExporterBuffer(this, options);
     this.logger = options.logger || logger.logger();
