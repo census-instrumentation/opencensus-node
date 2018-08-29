@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/propagation-stackdriver",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
