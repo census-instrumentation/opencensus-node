@@ -62,7 +62,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   }
 
   /**
-   * Not used because to register metrics it's necessary some information only
+   * Not used because registering metrics requires information that is
    * present in Measurement objects
    * @param view
    */
