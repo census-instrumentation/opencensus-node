@@ -65,6 +65,8 @@ export abstract class SpanBase implements types.Span {
   /** Gets the trace ID. */
   abstract get traceId(): string;
 
+  /** Gets the trace state */
+  abstract get traceState(): types.TraceState;
 
   /** Indicates if span was started. */
   get started(): boolean {
@@ -120,7 +122,8 @@ export abstract class SpanBase implements types.Span {
     return {
       traceId: this.traceId,
       spanId: this.id,
-      options: 0x1  // always traced
+      options: 0x1,  // always traced
+      traceState: this.traceState
     };
   }
 

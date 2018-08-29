@@ -42,12 +42,19 @@ export class Span extends SpanBase implements types.Span {
     return this.root.traceId;
   }
 
+  get traceState(): string {
+    return this.root.traceState;
+  }
+
   /** Starts the span instance. */
   start() {
     super.start();
-    this.logger.debug(
-        'starting span  %o',
-        {traceId: this.traceId, spanId: this.id, name: this.name});
+    this.logger.debug('starting span  %o', {
+      traceId: this.traceId,
+      spanId: this.id,
+      name: this.name,
+      traceState: this.traceState
+    });
   }
 
 
