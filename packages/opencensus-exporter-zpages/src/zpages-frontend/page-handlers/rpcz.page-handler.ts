@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CountData, DistributionData} from '@opencensus/core';
+import {AggregationType, CountData, DistributionData} from '@opencensus/core';
 
 import {StatsParams} from '../../zpages';
 
@@ -117,35 +117,35 @@ export class RpczPageHandler {
             zMeasures[method] = this.newEmptyZMeasure();
           }
 
-          // Fills the output columns for that method
-          if (view.name === DefaultViews.CLIENT_SENT_BYTES_PER_RPC ||
-              view.name === DefaultViews.SERVER_SENT_BYTES_PER_RPC) {
-            const distribution = snapshot as DistributionData;
-            zMeasures[method].output.tot += distribution.sum / 1024;
-            zMeasures[method].output.min =
-                this.getRate(
-                    zMeasures[method].output.tot, new Date(view.startTime)) *
-                60;
-            zMeasures[method].output.hr = zMeasures[method].output.min * 60;
+          if (snapshot.type === AggregationType.DISTRIBUTION) {
+            // Fills the output columns for that method
+            if (view.name === DefaultViews.CLIENT_SENT_BYTES_PER_RPC ||
+                view.name === DefaultViews.SERVER_SENT_BYTES_PER_RPC) {
+              zMeasures[method].output.tot += snapshot.sum / 1024;
+              zMeasures[method].output.min =
+                  this.getRate(
+                      zMeasures[method].output.tot, new Date(view.startTime)) *
+                  60;
+              zMeasures[method].output.hr = zMeasures[method].output.min * 60;
+            }
+
+            // Fills the input columns for that method
+            if (view.name === DefaultViews.CLIENT_RECEIVED_BYTES_PER_RPC ||
+                view.name === DefaultViews.SERVER_RECEIVED_BYTES_PER_RPC) {
+              zMeasures[method].input.tot += snapshot.sum / 1024;
+              zMeasures[method].input.min =
+                  this.getRate(
+                      zMeasures[method].input.tot, new Date(view.startTime)) *
+                  60;
+              zMeasures[method].input.hr = zMeasures[method].input.min * 60;
+            }
           }
 
-          // Fills the input columns for that method
-          if (view.name === DefaultViews.CLIENT_RECEIVED_BYTES_PER_RPC ||
-              view.name === DefaultViews.SERVER_RECEIVED_BYTES_PER_RPC) {
-            const distribution = snapshot as DistributionData;
-            zMeasures[method].input.tot += distribution.sum / 1024;
-            zMeasures[method].input.min =
-                this.getRate(
-                    zMeasures[method].input.tot, new Date(view.startTime)) *
-                60;
-            zMeasures[method].input.hr = zMeasures[method].input.min * 60;
-          }
-          if (view.name === DefaultViews.CLIENT_COMPLETED_RPCS ||
-              view.name === DefaultViews.SERVER_COMPLETED_RPCS) {
-            const singleValue = snapshot as CountData;
-
+          if (snapshot.type === AggregationType.COUNT &&
+              (view.name === DefaultViews.CLIENT_COMPLETED_RPCS ||
+               view.name === DefaultViews.SERVER_COMPLETED_RPCS)) {
             // Fills the count columns for that method
-            zMeasures[method].count.tot += singleValue.value;
+            zMeasures[method].count.tot += snapshot.value;
             zMeasures[method].count.min =
                 this.getRate(
                     zMeasures[method].count.tot, new Date(view.startTime)) *
@@ -164,7 +164,7 @@ export class RpczPageHandler {
                 (snapshot.tags['grpc_client_status'] !== 'OK' ||
                  snapshot.tags['grpc_server_status'] !== 'OK');
             if (error) {
-              zMeasures[method].errors.tot += singleValue.value;
+              zMeasures[method].errors.tot += snapshot.value;
               zMeasures[method].errors.min =
                   this.getRate(
                       zMeasures[method].errors.tot, new Date(view.startTime)) *
@@ -174,10 +174,10 @@ export class RpczPageHandler {
           }
 
           // Fills the avgLatency columns for that method
-          if (view.name === DefaultViews.CLIENT_ROUDTRIP_LATENCY ||
-              view.name === DefaultViews.SERVER_SERVER_LATENCY) {
-            const distribution = snapshot as DistributionData;
-            zMeasures[method].avgLatency.tot = distribution.mean;
+          if (snapshot.type === AggregationType.DISTRIBUTION &&
+              (view.name === DefaultViews.CLIENT_ROUDTRIP_LATENCY ||
+               view.name === DefaultViews.SERVER_SERVER_LATENCY)) {
+            zMeasures[method].avgLatency.tot = snapshot.mean;
             zMeasures[method].avgLatency.min =
                 this.getRate(
                     zMeasures[method].avgLatency.tot,

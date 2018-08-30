@@ -430,7 +430,7 @@ describe('Zpages Exporter', () => {
         assert.equal(bucket3.lowBoundary, 30);
         assert.equal(bucket3.highBoundary, 40);
 
-        // 40...Infinity)
+        // [40...Infinity)
         const bucket4 = snapshot.buckets[3];
         assert.equal(bucket4.count, 0);
         assert.equal(bucket4.lowBoundary, 40);

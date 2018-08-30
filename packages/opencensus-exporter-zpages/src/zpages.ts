@@ -77,7 +77,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
   }
 
   /**
-   * It's called whenever a span is started.
+   * Called whenever a span is started.
    * @param root the started span
    */
   onStartSpan(root: RootSpan) {
@@ -85,7 +85,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
   }
 
   /**
-   * It's called whenever a span is ended.
+   * Called whenever a span is ended.
    * @param root the ended span
    */
   onEndSpan(root: RootSpan) {
@@ -93,7 +93,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
   }
 
   /**
-   * It's called whenever a view is registered
+   * Called whenever a view is registered
    * @param view the registered view
    */
   onRegisterView(view: View): void {
@@ -109,7 +109,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
   }
 
   /**
-   * It's called whenever a measurement is recorded
+   * Called whenever a measurement is recorded
    * @param views the view list where the measurement was recorded
    * @param measurement the recorded measurement
    */
