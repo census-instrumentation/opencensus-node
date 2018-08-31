@@ -169,6 +169,8 @@ export class TracezPageHandler {
    */
   emitHtml(params: Partial<TracezParams>, json: boolean): string {
     const tracezFile = ejs.fileLoader(`${templatesDir}/tracez.ejs`).toString();
+    const stylesFile =
+        ejs.fileLoader(`${templatesDir}/styles.min.css`).toString();
     const summaryFile =
         ejs.fileLoader(`${templatesDir}/summary.ejs`).toString();
     const spanCellFile =
@@ -234,7 +236,8 @@ export class TracezPageHandler {
 
     /** Rendering the final HTML */
     if (json) {
-      return JSON.stringify({selectedTraces, spanCells}, null, 2);
+      const jsonObj = {selectedTraces, spanCells} as TracezData;
+      return JSON.stringify(jsonObj, null, 2);
     } else {
       /** HTML table summary */
       const renderedSummary =
@@ -249,8 +252,9 @@ export class TracezPageHandler {
               .join('');
       return ejs.render(
           tracezFile, {
+            styles: stylesFile,
             table_content: renderedSummary + renderedSpanCells,
-            title: 'TraceZ',
+            title: 'TraceZ Summary',
             selectedTraces: renderedSelectedTraces
           },
           options);

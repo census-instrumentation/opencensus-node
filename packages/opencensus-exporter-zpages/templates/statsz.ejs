@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>StatsZ</title>
+    <link rel="shortcut icon" href="https://opencensus.io/images/favicon.ico"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style>
+        <?- styles ?>
+    </style>
+</head>
+
+<body>
+    <p class="header"><img class="oc" src="https://opencensus.io/img/logo-sm.svg">Open<span>Census</span></p>
+    <h1>
+        <a href='?'>StatsZ</a>
+    </h1>
+    <p></p>
+    <h2>Views</h2>
+    <h3>Current Path:
+        <a href='?path='>/</a>
+        <? completePath = "" ?>
+        <? for(var part of path) { ?>
+            <? completePath = completePath + part + "/" ?>
+            <a href='?path=<?= completePath ?>'><?= part ?>/</a>
+        <? } ?>
+    </h3>
+
+        <?- table_content ?>
+
+        <p></p>
+        <h2>Measures with Views</h2>
+        <p>Below are the measures used in registered views.</p>
+        <p></p>
+        <table cellspacing="0" cellpadding="0">
+            <thead>
+                <tr>
+                    <th>Measure</th>
+                    <th class="borderL">Description</th>
+                    <th class="borderL">Unit</th>
+                    <th class="borderL">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+            <? for(var i = 0; i < registeredMeasures.length; ++i) { ?>
+                <tr>
+                    <td><b><?= registeredMeasures[i].name ?></b></td>
+                    <td class="borderLL"><?= registeredMeasures[i].description ?></td>
+                    <td class="borderLL"><?= registeredMeasures[i].unit ?></td>
+                    <td class="borderLL"><?= registeredMeasures[i].type ?></td>
+                </tr>
+            <? } ?>
+            </tbody>
+        </table>
+        <p></p>
+</body>
+
+</html>

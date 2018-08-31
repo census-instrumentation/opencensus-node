@@ -17,8 +17,10 @@
 import {Span} from '@opencensus/core';
 import * as express from 'express';
 
-import {ZpagesExporter} from '../zpages';
+import {StatsParams} from '../zpages';
 
+import {createRpczHandler} from './controllers/rpcz.controller';
+import {createStatszHandler} from './controllers/statsz.controller';
 import {createTraceConfigzHandler} from './controllers/traceconfigz.controller';
 import {createTracezHandler} from './controllers/tracez.controller';
 
@@ -26,8 +28,11 @@ import {createTracezHandler} from './controllers/tracez.controller';
  * Create a set of routes that consults the given TraceMap instance for span
  * data.
  * @param traceMap A span data store.
+ * @param statsParams An object with all registered views, registered measures
+ * and recorded data from stats
  */
-export function createRoutes(traceMap: Map<string, Span[]>): express.Router {
+export function createRoutes(
+    traceMap: Map<string, Span[]>, statsParams: StatsParams): express.Router {
   const router = express.Router();
 
   // Tracez Page
@@ -37,14 +42,10 @@ export function createRoutes(traceMap: Map<string, Span[]>): express.Router {
   router.get('/traceconfigz', createTraceConfigzHandler());
 
   // RPC Stats Page
-  router.get('/rpcz', (req: express.Request, res: express.Response) => {
-    res.status(200).send('working!');  // TODO
-  });
+  router.get('/rpcz', createRpczHandler(statsParams));
 
   // Stats Page
-  router.get('/statsz', (req: express.Request, res: express.Response) => {
-    res.status(200).send('working!');  // TODO
-  });
+  router.get('/statsz', createStatszHandler(statsParams));
 
   return router;
 }

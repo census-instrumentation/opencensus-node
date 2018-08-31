@@ -101,7 +101,6 @@ export class TraceConfigzPageHandler {
    * @returns the sampling probability
    */
   private static extractSamplingProbability(): number {
-    /**  */
     const samplingProbability = tracing.tracer.sampler.description;
     if (samplingProbability === 'always') {
       return 1;

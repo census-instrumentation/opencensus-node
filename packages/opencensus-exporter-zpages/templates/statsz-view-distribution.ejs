@@ -1,0 +1,49 @@
+<table cellspacing="0" cellpadding="0">
+    <thead>
+        <tr>
+            <? for (var tagKey of statsData[0].tagKeys) { ?>
+                <th class="borderRL">TagKey: <?= tagKey ?></th>                
+            <? } ?>
+            <th class="borderRL">Mean, By</th>
+            <th class="borderRL">Count</th>
+            <th class="borderRL">Max, By</th>
+            <th class="borderRL">Min, By</th>
+            <th class="borderRL">Sum of Squared Deviations</th>
+            <th class="borderRL">Histogram</th>
+        </tr>
+    </thead>
+    <tbody>
+        <? if (statsData[0].tagValues.length > 0) { ?>
+            <? for (var data of statsData) { ?>
+                <tr>
+                    <? for (var tagValue of data.tagValues) { ?>
+                        <td class="borderRL"><?= tagValue ?></td>
+                    <? } ?>  
+                    <td class="borderRL"><?= data.snapshot.mean ?></td>
+                    <td class="borderRL"><?= data.snapshot.count ?></td>
+                    <td class="borderRL"><?= data.snapshot.max ?></td>
+                    <td class="borderRL"><?= data.snapshot.min ?></td>
+                    <td class="borderRL"><?= data.snapshot.sumSquaredDeviations ?></td>
+                    <td class="borderRL">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Range</th>
+                                    <th>Bucket Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <? for (var item of data.snapshot.buckets) { ?>
+                                    <tr>                        
+                                        <td>[<?= item.lowBoundary ?>...<?= item.highBoundary ?>)</td>
+                                        <td><?= item.count ?></td>
+                                    </tr>
+                                <? } ?>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            <? } ?>
+        <? } ?>
+    </tbody>
+</table>
