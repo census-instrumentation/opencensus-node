@@ -22,11 +22,11 @@ npm install @opencensus/nodejs
 OpenCensus for Node.js has automatic instrumentation for [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md) and [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md) out of the box. This means that spans are automatically created for operations of those packages. To use it, simply start the tracing instance.
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
+import * as tracing from '@opencensus/nodejs';
 tracing.start();
 ```
 
-Similarly for Typescript:
+Similarly for TypeScript:
 
 ```typescript
 import * as tracing from '@opencensus/nodejs';
@@ -77,24 +77,23 @@ OpenCensus Stats allows users to collect measurements an visualize them in many 
 
 ```javascript
 // Import and instanciate OpenCensus Stats
-var opencensus = require('@opencensus/core');
-var stats = new opencensus.Stats();
+import {Stats, MeasureUnit, AggregationType} from '@opencensus/core';
+const stats = new Stats();
 
 // Defines a measure
-var measure = stats.createMeasureInt64(
-  'my/measure', opencensus.MeasureUnit.UNIT);
+const measure = stats.createMeasureInt64('my/measure', MeasureUnit.UNIT);
 // And associates a view with it
-var tags = {myTagKey: 'myTagValue'};
-var view = stats.createView(
-  'my/view', measure, opencensus.AggregationType.SUM, ['myTagKey'], 'my view');
+const tags = {myTagKey: 'myTagValue'};
+const view = stats.createView(
+  'my/view', measure, AggregationType.SUM, ['myTagKey'], 'my view');
 
 // Creates a measurement
-var measurement = {measure, tags, value: 10};
+const measurement = {measure, tags, value: 10};
 // and records it
 stats.record(measurement);
 ```
 
-Similarly for Typescript:
+Similarly for TypeScript:
 
 ```typescript
 // Import and instanciate OpenCensus Stats
@@ -118,12 +117,12 @@ Measures can be of type `Int64` or `DOUBLE`, created by calling `createMeasureIn
 
 | MeasureUnit | Usage |
 | ----------- | ----- |
-| UNIT | for general counts |
-| BYTE | bytes |
-| KBYTE | Kbytes |
-| SEC | seconds |
-| MS | millisecond |
-| NS | nanosecond |
+| `UNIT` | for general counts |
+| `BYTE` | bytes |
+| `KBYTE` | Kbytes |
+| `SEC` | seconds |
+| `MS` | millisecond |
+| `NS` | nanosecond |
 
 Views can have agregations of type `SUM`, `LAST_VALUE`, `COUNT` and `DISTRIBUTION`. To know more about Stats core concepts, please visit: [https://opencensus.io/core-concepts/metrics/](https://opencensus.io/core-concepts/metrics/)
 

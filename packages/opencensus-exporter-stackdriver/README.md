@@ -21,19 +21,19 @@ To use Stackdriver as your exporter, make sure you have enabled [Stackdriver Tra
 export GOOGLE_APPLICATION_CREDENTIALS=path/to/your/credential.json
 ```
 
-Instance the exporter on your application and pass your Project ID. For javascript:
+Instance the exporter on your application and pass your Project ID. For JavaScript:
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
-var stackdriver = require('@opencensus/exporter-stackdriver');
+import * as tracing from '@opencensus/nodejs';
+import { StackdriverTraceExporter } from '@opencensus/exporter-stackdriver';
 
 // Add your project id to the Stackdriver options
-var exporter = new stackdriver.StackdriverTraceExporter({projectId: "your-project-id"});
+const exporter = new StackdriverTraceExporter({projectId: "your-project-id"});
 
 tracing.registerExporter(exporter).start();
 ```
 
-Similarly for Typescript:
+Similarly for TypeScript:
 
 ```typescript
 import * as tracing from '@opencensus/nodejs';
@@ -41,6 +41,8 @@ import { StackdriverTraceExporter } from '@opencensus/exporter-stackdriver';
 
 // Add your project id to the Stackdriver options
 const exporter = new StackdriverTraceExporter({projectId: "your-project-id"});
+
+tracing.registerExporter(exporter).start();
 ```
 
 Now, register the exporter and start tracing.
@@ -63,31 +65,31 @@ To use Stackdriver as your exporter, make sure you have enabled [Stackdriver Mon
 export GOOGLE_APPLICATION_CREDENTIALS=path/to/your/credential.json
 ```
 
-Instance the exporter on your application passing your Project ID and register your exporter on Stats. For javascript:
+Instance the exporter on your application passing your Project ID and register your exporter on Stats. For JavaScript:
 
 ```javascript
-var opencensus = require('@opencensus/core');
-var stackdriver = require('@opencensus/exporter-stackdriver');
+import { Stats } from '@opencensus/core';
+import { StackdriverStatsExporter } from '@opencensus/exporter-stackdriver';
 
 // Add your project id to the Stackdriver options
-var exporter = new stackdriver.StackdriverStatsExporter({projectId: "your-project-id"});
+const exporter = new StackdriverStatsExporter({projectId: "your-project-id"});
 
 // Pass the created exporter to Stats
-var stats = new opencensus.Stats();
+const stats = new Stats();
 stats.registerExporter(exporter);
 ```
 
-Similarly for Typescript:
+Similarly for TypeScript:
 
 ```typescript
 import { Stats } from '@opencensus/core';
 import { StackdriverStatsExporter } from '@opencensus/exporter-stackdriver';
 
 // Add your project id to the Stackdriver options
-var exporter = new StackdriverStatsExporter({projectId: "your-project-id"});
+const exporter = new StackdriverStatsExporter({projectId: "your-project-id"});
 
 // Pass the created exporter to Stats
-var stats = new Stats();
+const stats = new Stats();
 stats.registerExporter(exporter);
 ```
 
