@@ -256,6 +256,11 @@ export class HttpPlugin extends BasePlugin {
     return (span: Span): httpModule.ClientRequest => {
       plugin.logger.debug('makeRequestTrace');
 
+      if (!span) {
+        plugin.logger.debug('makeRequestTrace span is null');
+        return request;
+      }
+
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           request.setHeader(name, value);
@@ -265,11 +270,6 @@ export class HttpPlugin extends BasePlugin {
       const propagation = plugin.tracer.propagation;
       if (propagation) {
         propagation.inject(setter, span.spanContext);
-      }
-
-      if (!span) {
-        plugin.logger.debug('makeRequestTrace span is null');
-        return request;
       }
 
       request.on('response', (response: httpModule.ClientResponse) => {
