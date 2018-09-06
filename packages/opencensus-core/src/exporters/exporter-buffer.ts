@@ -73,6 +73,10 @@ export class ExporterBuffer {
    * @param root RootSpan to be added in the buffer.
    */
   addToBuffer(root: modelTypes.RootSpan) {
+    if (!(root.spanContext.options & 1)) {
+      return this;
+    }
+
     this.queue.push(root);
     this.logger.debug('ExporterBuffer: added new rootspan');
 

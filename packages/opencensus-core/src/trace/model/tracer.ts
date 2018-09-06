@@ -119,20 +119,14 @@ export class CoreTracer implements types.Tracer {
             propagatedSample =
                 ((options.spanContext.options & this.IS_SAMPLED) !== 0);
           }
-          if (!propagatedSample) {
-            options.spanContext = null;
-          }
         }
-        const aRoot = new RootSpan(this, options);
+        const newRoot = new RootSpan(this, options);
         const sampleDecision: boolean = propagatedSample ?
             propagatedSample :
-            this.sampler.shouldSample(aRoot.traceId);
+            this.sampler.shouldSample(newRoot.traceId);
 
-        if (sampleDecision) {
-          this.currentRootSpan = aRoot;
-          aRoot.start();
-          newRoot = aRoot;
-        }
+        this.currentRootSpan = newRoot;
+        newRoot.start();
       } else {
         this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
       }
