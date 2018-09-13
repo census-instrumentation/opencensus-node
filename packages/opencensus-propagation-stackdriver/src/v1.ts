@@ -21,6 +21,7 @@
  */
 
 import crypto from 'crypto';
+import {decToHex, hexToDec} from 'hex2dec';
 import uuid from 'uuid';
 
 import {HeaderGetter, HeaderSetter, SpanContext} from './index';
@@ -39,13 +40,15 @@ export function parseContextFromHeader(str: string|string[]|
   }
   return {
     traceId: matches[1],
-    spanId: matches[2],
+    // strip 0x prefix from hex output from decToHex, and and pad so it's always
+    // a length-16 hex string
+    spanId: `0000000000000000${decToHex(matches[2]).slice(2)}`.slice(-16),
     options: isNaN(Number(matches[3])) ? undefined : Number(matches[3])
   };
 }
 
 export function serializeSpanContext(spanContext: SpanContext) {
-  let header = `${spanContext.traceId}/${spanContext.spanId}`;
+  let header = `${spanContext.traceId}/${hexToDec(spanContext.spanId)}`;
   if (spanContext.options) {
     header += `;o=${spanContext.options}`;
   }
@@ -77,6 +80,6 @@ const spanRandomBuffer = randomFillSync ?
 export function generate(): SpanContext {
   return {
     traceId: uuid.v4().split('-').join(''),
-    spanId: spanRandomBuffer().toString("hex")
+    spanId: spanRandomBuffer().toString('hex')
   };
 }
