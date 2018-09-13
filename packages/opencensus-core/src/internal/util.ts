@@ -19,8 +19,7 @@
 
 import * as crypto from 'crypto';
 
-// Use 6 bytes of randomness only as JS numbers are doubles not 64-bit ints.
-const SPAN_ID_RANDOM_BYTES = 6;
+const SPAN_ID_RANDOM_BYTES = 8;
 
 // Use the faster crypto.randomFillSync when available (Node 7+) falling back to
 // using crypto.randomBytes.
@@ -32,6 +31,5 @@ const spanRandomBuffer = randomFillSync ?
     () => randomBytes(SPAN_ID_RANDOM_BYTES);
 
 export function randomSpanId() {
-  // tslint:disable-next-line:ban Needed to parse hexadecimal.
-  return parseInt(spanRandomBuffer().toString('hex'), 16).toString();
+  return spanRandomBuffer().toString('hex');
 }

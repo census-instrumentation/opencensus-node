@@ -61,8 +61,7 @@ export function inject(setter: HeaderSetter, spanContext: SpanContext) {
       TRACE_CONTEXT_HEADER_NAME, serializeSpanContext(spanContext));
 }
 
-// Use 6 bytes of randomness only as JS numbers are doubles not 64-bit ints.
-const SPAN_ID_RANDOM_BYTES = 6;
+const SPAN_ID_RANDOM_BYTES = 8;
 
 // Use the faster crypto.randomFillSync when available (Node 7+) falling back to
 // using crypto.randomBytes.
@@ -78,7 +77,6 @@ const spanRandomBuffer = randomFillSync ?
 export function generate(): SpanContext {
   return {
     traceId: uuid.v4().split('-').join(''),
-    // tslint:disable-next-line:ban Needed to parse hexadecimal.
-    spanId: parseInt(spanRandomBuffer().toString('hex'), 16).toString()
+    spanId: spanRandomBuffer().toString("hex")
   };
 }
