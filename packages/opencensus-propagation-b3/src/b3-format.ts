@@ -76,8 +76,7 @@ export class B3Format implements Propagation {
   generate(): SpanContext {
     return {
       traceId: uuid.v4().split('-').join(''),
-      // tslint:disable-next-line:ban Needed to parse hexadecimal.
-      spanId: parseInt(crypto.randomBytes(6).toString('hex'), 16).toString(),
+      spanId: crypto.randomBytes(8).toString('hex'),
       options: SAMPLED_VALUE
     } as SpanContext;
   }

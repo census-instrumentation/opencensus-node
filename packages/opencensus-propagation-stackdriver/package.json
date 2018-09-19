@@ -36,6 +36,7 @@
     "typescript": "~2.8.0"
   },
   "dependencies": {
+    "hex2dec": "^1.0.1",
     "uuid": "^3.2.1"
   },
   "files": [
