@@ -30,6 +30,7 @@ export interface OCAgentExporterOptions extends ExporterConfig {
   serviceName: string;
   host?: string;
   port?: number;
+  credentials?: grpc.ChannelCredentials;
   attributes?: Record<string, string>;
 }
 
@@ -37,6 +38,7 @@ const DEFAULT_OPTIONS: OCAgentExporterOptions = {
   serviceName: 'Anonymous Service',
   host: 'localhost',
   port: 50051,
+  credentials: grpc.credentials.createInsecure(),
   logger: logger.logger()
 };
 
@@ -75,6 +77,8 @@ export class OCAgentExporter implements Exporter {
   private hostName: string;
   private processStartTimeMillis: number;
 
+  private activeLocal = false;
+
   constructor(options: OCAgentExporterOptions) {
     // Get the complete set of options from the defaults and inputs
     this._options = Object.assign({}, DEFAULT_OPTIONS, options);
@@ -101,7 +105,7 @@ export class OCAgentExporter implements Exporter {
       // opencensus.proto
       __dirname + '../../../src/protos',
       // google.proto
-      __dirname + '../../../node_modules/grpc-tools/bin'
+      __dirname + '../../../node_modules/google-proto-files'
     ];
     // tslint:disable-next-line:no-any
     const proto: any =
@@ -121,9 +125,38 @@ export class OCAgentExporter implements Exporter {
     const serverAddress = `${this._options.host}:${this._options.port}`;
     this.traceServiceClient =
         new proto.opencensus.proto.agent.trace.v1.TraceService(
-            serverAddress, grpc.credentials.createInsecure());
+            serverAddress, this._options.credentials);
+    this.start();
+  }
+
+  get active(): boolean {
+    return this.activeLocal;
+  }
+
+  /**
+   * Starts the exporter.
+   */
+  start() {
+    if (this.active) {
+      return;
+    }
+
+    this.activeLocal = true;
     this.connectToConfigStream();
     this.connectToExportStream();
+  }
+
+  /**
+   * Stops the exporter.
+   */
+  stop() {
+    if (!this.active) {
+      return;
+    }
+
+    this.configStream.end();
+    this.exportStream.end();
+    this.activeLocal = false;
   }
 
   /**
@@ -131,7 +164,11 @@ export class OCAgentExporter implements Exporter {
    * connected to or if the stream is broken at any point, we attempt to
    * reconnect.
    */
-  connectToExportStream() {
+  private connectToExportStream() {
+    if (!this.active) {
+      return;
+    }
+
     this.exportStream = this.traceServiceClient.export();
     this.exportStream.on(StreamEvent.Metadata, () => {
       this.logger.info('OCAgent: export stream connected');
@@ -166,7 +203,11 @@ export class OCAgentExporter implements Exporter {
    * connected to or if the stream is broken at any point, we attempt to
    * reconnect.
    */
-  connectToConfigStream() {
+  private connectToConfigStream() {
+    if (!this.active) {
+      return;
+    }
+
     this.configStream = this.traceServiceClient.config();
     this.configStream.on(StreamEvent.Data, this.updateLibraryConfig.bind(this));
     this.configStream.on(StreamEvent.Metadata, () => {
@@ -194,7 +235,7 @@ export class OCAgentExporter implements Exporter {
    * @param status grpc.StatusObject
    * @returns boolean
    */
-  shouldAttemptReconnect(status: grpc.StatusObject): boolean {
+  private shouldAttemptReconnect(status: grpc.StatusObject): boolean {
     switch (status.code) {
       case grpc.status.UNKNOWN:      // stream disconnected
       case grpc.status.UNAVAILABLE:  // stream could not be established
@@ -209,7 +250,7 @@ export class OCAgentExporter implements Exporter {
    * configuration.
    * @param update opencensus.proto.agent.trace.v1.UpdatedLibraryConfig
    */
-  updateLibraryConfig(
+  private updateLibraryConfig(
       update: opencensus.proto.agent.trace.v1.UpdatedLibraryConfig) {
     const {tracer} = tracing;
     if (tracer && update.config) {
@@ -258,7 +299,6 @@ export class OCAgentExporter implements Exporter {
         processStartTimeMillis: this.processStartTimeMillis,
         attributes: this._options.attributes
       });
-
 
       // Adapt and write each RootSpan to the agent through the export stream.
       // Any failed attempts will be caught by the connection, but the data

@@ -55,16 +55,16 @@ tracing.registerExporter(exporter).start();
 
 The following options are available through the construtor options.
 
-| Option          | Type                    | Description 
-|-----------------|-------------------------|-
-| `serviceName`   | string                  | Name of the service. Defaults to `Anonymous Service`.
-| `host`          | string                  | Host or ip of the agent. Defaults to `localhost`.
-| `port`          | number                  | Port of the agent. Defaults to `50051`.
-| `attributes`    | {[key: string]: string} | Map of key-value pairs to associate with the Node.
-| `bufferSize`    | number                  | Maximum size of the span buffer.
-| `bufferTimeout` | number                  | Max time (in milliseconds) for the buffer can wait before exporting spans.
-| `logger`        | Logger                  | Logger to use for output.
-
+Option          | Type                    | Description 
+----------------|-------------------------|-
+`serviceName`   | string                  | Name of the service. Defaults to `Anonymous Service`.
+`host`          | string                  | Host or ip of the agent. Defaults to `localhost`.
+`port`          | number                  | Port of the agent. Defaults to `50051`.
+`credentials`   | grpc.ChannelCredentials | Credentials to use for grpc connection to agent. Defaults to `grpc.credentials.createInsecure()`.
+`attributes`    | {[key: string]: string} | Map of key-value pairs to associate with the Node.
+`bufferSize`    | number                  | Maximum size of the span buffer.
+`bufferTimeout` | number                  | Max time (in milliseconds) for the buffer can wait before exporting spans.
+`logger`        | Logger                  | Logger to use for output.
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>

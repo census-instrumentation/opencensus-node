@@ -85,6 +85,10 @@ const spanKindToEnum =
  */
 const adaptAttributes =
     (attributes: Attributes): opencensus.proto.trace.v1.Span.Attributes => {
+      if (!attributes) {
+        return null;
+      }
+
       const attributeMap:
           Record<string, opencensus.proto.trace.v1.AttributeValue> = {};
 
@@ -108,9 +112,9 @@ const adaptAttributes =
             stringValue = {value: value as string, truncatedByteCount: null};
             break;
           }
-          default:
+          default: {
             // Unsupported type
-            break;
+          }
         }
 
         attributeMap[name] = {stringValue, intValue, boolValue};
@@ -254,6 +258,13 @@ const adaptLinks =
     };
 
 /**
+ * Adapts a boolean to a `google.protobuf.BoolValue` type.
+ * @param value boolean
+ * @returns google.protobuf.BoolValue
+ */
+const adaptBoolean = (value: boolean): google.protobuf.BoolValue => ({value});
+
+/**
  * Adapts a span to a `opencensus.proto.trace.v1.Span` type.
  * @param span Span
  * @returns opencensus.proto.trace.v1.Span
@@ -273,7 +284,7 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
     timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
     links: adaptLinks(span.links),
     status: adaptStatus(span.status),
-    sameProcessAsParentSpan: null,
+    sameProcessAsParentSpan: adaptBoolean(!span.remoteParent),
     childSpanCount: null,
   };
 };

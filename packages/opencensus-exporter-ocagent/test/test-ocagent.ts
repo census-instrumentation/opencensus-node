@@ -14,12 +14,446 @@
  * limitations under the License.
  */
 
+import * as protoLoader from '@grpc/proto-loader';
+import {Exporter, RootSpan, TraceOptions, Tracer, Tracing} from '@opencensus/core';
+import * as nodeTracing from '@opencensus/nodejs';
 import * as assert from 'assert';
+import {EventEmitter} from 'events';
+import * as grpc from 'grpc';
 import * as mocha from 'mocha';
+import * as uuid from 'uuid';
+
+import {OCAgentExporter} from '../src';
+import {opencensus} from '../src/types';
+
+const SERVER_HOST = 'localhost';
+const SERVER_PORT = 50052;
+
+
+type TraceServiceConfigStream = grpc.ServerDuplexStream<
+    opencensus.proto.agent.trace.v1.CurrentLibraryConfig,
+    opencensus.proto.agent.trace.v1.UpdatedLibraryConfig>;
+type TraceServiceExportStream = grpc.ServerDuplexStream<
+    opencensus.proto.agent.trace.v1.ExportTraceServiceRequest,
+    opencensus.proto.agent.trace.v1.ExportTraceServiceRequest>;
+
+
+enum MockServerEvent {
+  ServerStopped = 'server.stopped',
+  ConfigStreamConnected = 'config.connected',
+  ExportStreamConnected = 'export.connected',
+  ExportStreamMessageReceived = 'export.received',
+}
+
+class MockAgent extends EventEmitter {
+  private server: grpc.Server;
+  private configStream: TraceServiceConfigStream;
+  private exportStream: TraceServiceExportStream;
+
+  constructor(host: string, port: number) {
+    super();
+
+    this.server = new grpc.Server();
+    const traceServiceProtoPath =
+        'opencensus/proto/agent/trace/v1/trace_service.proto';
+    const includeDirs = [
+      __dirname + '../../../src/protos',
+      __dirname + '../../../node_modules/google-proto-files'
+    ];
+
+    // tslint:disable-next-line:no-any
+    const proto: any =
+        grpc.loadPackageDefinition(protoLoader.loadSync(traceServiceProtoPath, {
+          keepCase: false,
+          longs: String,
+          enums: String,
+          defaults: true,
+          oneofs: true,
+          includeDirs
+        }));
+
+    this.server.addService(
+        proto.opencensus.proto.agent.trace.v1.TraceService.service, {
+          config: (stream: TraceServiceConfigStream) => {
+            this.configStream = stream;
+            this.emit(MockServerEvent.ConfigStreamConnected);
+          },
+          export: (stream: TraceServiceExportStream) => {
+            this.exportStream = stream;
+            this.emit(MockServerEvent.ExportStreamConnected);
+            stream.on(
+                'data',
+                (message: opencensus.proto.agent.trace.v1
+                     .ExportTraceServiceRequest) => {
+                  this.emit(
+                      MockServerEvent.ExportStreamMessageReceived, message);
+                });
+          }
+        });
+
+    this.server.bind(
+        `${host}:${port}`, grpc.ServerCredentials.createInsecure());
+    this.server.start();
+  }
+
+  /**
+   * Sends a `ProbabilitySampler` configuration change with the given
+   * probability.
+   */
+  sendConfigurationChangeProbability(probablity: number) {
+    this.configStream.write(
+        {config: {probabilitySampler: {samplingProbability: probablity}}});
+  }
+
+  /**
+   * Sends a `ConstantSampler` configuration change with the given decision.
+   */
+  sendConfigurationChangeConstant(decision: boolean) {
+    this.configStream.write({config: {constantSampler: {decision}}});
+  }
+
+  /**
+   * Sends a `RateLimitedSampler` configuration change with the given decision.
+   */
+  sendConfigurationChangeRateLimited(qps: number) {
+    this.configStream.write({config: {rateLimitingSampler: {qps}}});
+  }
+
+  /**
+   * Shuts down the server
+   */
+  stop() {
+    this.server.forceShutdown();
+  }
+}
 
 describe('OpenCensus Agent Exporter', () => {
-  // TODO: Implement exporter tests
-  it('should...', () => {
-    assert.ok(true);
+  let server: MockAgent;
+  let ocAgentExporter: OCAgentExporter;
+  let tracing: Tracing;
+
+  const SERVICE_NAME = 'test-service';
+  const INITIAL_SAMPLER_PROBABILITY = 1.0;
+
+  beforeEach(() => {
+    server = new MockAgent(SERVER_HOST, SERVER_PORT);
+    ocAgentExporter = new OCAgentExporter({
+      serviceName: SERVICE_NAME,
+      host: SERVER_HOST,
+      port: SERVER_PORT,
+      bufferSize: 1,
+      bufferTimeout: 0
+    });
+    tracing = nodeTracing.start(
+        {exporter: ocAgentExporter, samplingRate: INITIAL_SAMPLER_PROBABILITY});
+  });
+
+  afterEach(() => {
+    tracing.stop();
+    ocAgentExporter.stop();
+    server.stop();
+  });
+
+  it('should publish spans to agent', (done) => {
+    const ROOT_SPAN_NAME = 'root-span';
+    const CHILD_SPAN_NAME = 'child-span';
+
+    // Create a rootSpan and one childSpan, then validate that those spans
+    // arrived at the server through the grpc stream.
+    tracing.tracer.startRootSpan(
+        {
+          name: ROOT_SPAN_NAME,
+          spanContext: {traceId: null, spanId: null, options: 0x1}
+        },
+        (rootSpan: RootSpan) => {
+          const childSpan = rootSpan.startChildSpan(CHILD_SPAN_NAME, '');
+
+          // When the stream is connected, we end both spans, which should
+          // trigger the spans to be sent to the agent.
+          server.once(MockServerEvent.ExportStreamConnected, () => {
+            childSpan.end();
+            rootSpan.end();
+          });
+
+          // When the stream receives data, validate that the two spans we just
+          // ended are present.
+          server.once(
+              MockServerEvent.ExportStreamMessageReceived,
+              (message: opencensus.proto.agent.trace.v1
+                   .ExportTraceServiceRequest) => {
+                let foundRootSpan = false;
+                let foundChildSpan = false;
+                message.spans.forEach(span => {
+                  switch (span.name.value) {
+                    case ROOT_SPAN_NAME: {
+                      foundRootSpan = true;
+                      break;
+                    }
+                    case CHILD_SPAN_NAME: {
+                      foundChildSpan = true;
+                      break;
+                    }
+                    default: { break; }
+                  }
+                });
+                assert.ok(foundRootSpan, 'could not find root span in message');
+                assert.ok(
+                    foundChildSpan, 'could not find child span in message');
+                done();
+              });
+        });
+  });
+
+  it('should receive probability sampler configuration changes from agent',
+     (done) => {
+       /**
+        * Have the server send a configuration change to use a probability
+        * sampler with the given probability, then validate that the current
+        * tracer sampler was updated correctly.
+        */
+       const runProbabilityTest = (testProbability: number): Promise<void> => {
+         server.sendConfigurationChangeProbability(testProbability);
+         return new Promise(resolve => {
+           setTimeout(() => {
+             const sampler = tracing.tracer.sampler.description;
+             // Validate sampler type
+             assert.ok(
+                 sampler.startsWith('probability'),
+                 `sampler ${sampler} is not of type 'probability'`);
+
+             // Validate set probability
+             assert.ok(
+                 sampler.endsWith(`(${testProbability})`),
+                 `sampler ${sampler} is not using probability ${
+                     testProbability}`);
+             resolve();
+           }, 15);
+         });
+       };
+
+       /**
+        * Have the server send a configuration change to use a constant sampler
+        * with the given decision, then validate that the current tracer sampler
+        * was updated correctly.
+        */
+       const runConstantTest = (decision: boolean): Promise<void> => {
+         server.sendConfigurationChangeConstant(decision);
+         const expectedSamplerDescription = decision ? 'always' : 'never';
+         return new Promise(resolve => {
+           setTimeout(() => {
+             const sampler = tracing.tracer.sampler.description;
+             // Validate sampler type
+             assert.ok(
+                 sampler === expectedSamplerDescription,
+                 `sampler ${sampler} is not of type ${
+                     expectedSamplerDescription}`);
+             resolve();
+           }, 10);
+         });
+       };
+
+       /**
+        * Have the server send a configuration change to use a rate limited
+        * sampler with the given decision, then validate that the current
+        * tracer sampler was not updated, because the rate limited sampler
+        * is currently unsupported.
+        */
+       const runRateLimitedTest = (qps: number): Promise<void> => {
+         // Expected is the current sampler
+         const expectedSamplerDescription = tracing.tracer.sampler.description;
+         server.sendConfigurationChangeRateLimited(qps);
+         return new Promise(resolve => {
+           setTimeout(() => {
+             const sampler = tracing.tracer.sampler.description;
+             assert.equal(
+                 sampler, expectedSamplerDescription,
+                 'rate limited sampler should not be applied');
+             resolve();
+           }, 10);
+         });
+       };
+
+       // Wait for the configuration stream to be connected, then run the test
+       // suite.
+       server.once(MockServerEvent.ConfigStreamConnected, async () => {
+         await runProbabilityTest(0.5);
+         await runConstantTest(true);
+         await runConstantTest(false);
+         await runRateLimitedTest(1.0);
+         done();
+       });
+     });
+
+  it('should adapt a span correctly', (done) => {
+    const hexId = (): string => {
+      return uuid.v4().split('-').join('');
+    };
+
+    const rootSpanOptions: TraceOptions = {
+      name: 'root',
+      kind: 'SERVER',
+      spanContext: {
+        traceId: null,
+        spanId: null,
+        traceState: 'foo=bar,baz=buzz',
+        options: 0x1
+      }
+    };
+
+    tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
+      // Status
+      rootSpan.status = 200;
+
+      // Attribute
+      rootSpan.addAttribute('my_attribute_string', 'bar2');
+      rootSpan.addAttribute('my_attribute_number', 456);
+      rootSpan.addAttribute('my_attribute_boolean', false);
+
+      // Annotation
+      rootSpan.addAnnotation(
+          'my_annotation', {myString: 'bar', myNumber: 123, myBoolean: true});
+
+      // Metric Event
+      const timeStamp = 123456789;
+      rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
+      rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
+      rootSpan.addMessageEvent(null, 'ffff', timeStamp);
+
+      // Links
+      rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN', {
+        'child_link_attribute_string': 'foo1',
+        'child_link_attribute_number': 123,
+        'child_link_attribute_boolean': true,
+      });
+      rootSpan.addLink('ffff', 'ffff', 'PARENT_LINKED_SPAN');
+      rootSpan.addLink('ffff', 'ffff', null);
+
+      server.on(
+          MockServerEvent.ExportStreamMessageReceived,
+          (message:
+               opencensus.proto.agent.trace.v1.ExportTraceServiceRequest) => {
+            assert.equal(message.spans.length, 1);
+            const span = message.spans[0];
+
+            // Name / Context
+            assert.equal(span.name.value, 'root');
+            assert.equal(span.kind, 'SERVER');
+            assert.deepEqual(
+                span.tracestate.entries,
+                [{key: 'foo', value: 'bar'}, {key: 'baz', value: 'buzz'}]);
+
+            // Status
+            assert.equal(span.status.code, 200);
+
+            // Attributes
+            assert.deepEqual(span.attributes.attributeMap, {
+              my_attribute_string: {
+                value: 'stringValue',
+                stringValue: {value: 'bar2', truncatedByteCount: 0}
+              },
+              my_attribute_number: {value: 'intValue', intValue: '456'},
+              my_attribute_boolean: {value: 'boolValue', boolValue: false}
+            });
+
+            // Time Events
+            assert.deepEqual(span.timeEvents, {
+              droppedAnnotationsCount: 0,
+              droppedMessageEventsCount: 0,
+              timeEvent: [
+                {
+                  value: 'annotation',
+                  time: null,
+                  annotation: {
+                    description:
+                        {value: 'my_annotation', truncatedByteCount: 0},
+                    attributes: {
+                      attributeMap: {
+                        myString: {
+                          value: 'stringValue',
+                          stringValue: {value: 'bar', truncatedByteCount: 0}
+                        },
+                        myNumber: {value: 'intValue', intValue: '123'},
+                        myBoolean: {value: 'boolValue', boolValue: true}
+                      },
+                      droppedAttributesCount: 0
+                    }
+                  }
+                },
+                {
+                  messageEvent: {
+                    compressedSize: '0',
+                    id: '65535',
+                    type: 'SENT',
+                    uncompressedSize: '0'
+                  },
+                  time: {seconds: '123456', nanos: 789000000},
+                  value: 'messageEvent'
+                },
+                {
+                  value: 'messageEvent',
+                  messageEvent: {
+                    compressedSize: '0',
+                    id: '65535',
+                    type: 'RECEIVED',
+                    uncompressedSize: '0'
+                  },
+                  time: {seconds: '123456', nanos: 789000000},
+                },
+                {
+                  value: 'messageEvent',
+                  messageEvent: {
+                    compressedSize: '0',
+                    id: '65535',
+                    type: 'TYPE_UNSPECIFIED',
+                    uncompressedSize: '0'
+                  },
+                  time: {seconds: '123456', nanos: 789000000},
+                }
+              ]
+            });
+
+            // Links
+            const buff = Buffer.from([255, 255]);
+            assert.deepEqual(span.links, {
+              droppedLinksCount: 0,
+              link: [
+                {
+                  type: 'CHILD_LINKED_SPAN',
+                  traceId: buff,
+                  spanId: buff,
+                  attributes: {
+                    droppedAttributesCount: 0,
+                    attributeMap: {
+                      child_link_attribute_string: {
+                        value: 'stringValue',
+                        stringValue: {value: 'foo1', truncatedByteCount: 0}
+                      },
+                      child_link_attribute_number:
+                          {value: 'intValue', intValue: '123'},
+                      child_link_attribute_boolean:
+                          {value: 'boolValue', boolValue: true}
+                    }
+                  }
+                },
+                {
+                  type: 'PARENT_LINKED_SPAN',
+                  traceId: buff,
+                  spanId: buff,
+                  attributes: null
+                },
+                {
+                  type: 'TYPE_UNSPECIFIED',
+                  traceId: buff,
+                  spanId: buff,
+                  attributes: null
+                }
+              ]
+            });
+
+            done();
+          });
+
+      rootSpan.end();
+    });
   });
 });
