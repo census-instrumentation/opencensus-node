@@ -15,7 +15,7 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {Exporter, RootSpan, TraceOptions, Tracer, Tracing} from '@opencensus/core';
+import {RootSpan, TraceOptions, Tracing} from '@opencensus/core';
 import * as nodeTracing from '@opencensus/nodejs';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
@@ -26,10 +26,9 @@ import * as uuid from 'uuid';
 import {OCAgentExporter} from '../src';
 import {opencensus} from '../src/types';
 
-const SERVER_HOST = 'localhost';
-const SERVER_PORT = 50052;
-
-
+/**
+ * Agent stream types.
+ */
 type TraceServiceConfigStream = grpc.ServerDuplexStream<
     opencensus.proto.agent.trace.v1.CurrentLibraryConfig,
     opencensus.proto.agent.trace.v1.UpdatedLibraryConfig>;
@@ -37,18 +36,22 @@ type TraceServiceExportStream = grpc.ServerDuplexStream<
     opencensus.proto.agent.trace.v1.ExportTraceServiceRequest,
     opencensus.proto.agent.trace.v1.ExportTraceServiceRequest>;
 
-
-enum MockServerEvent {
-  ServerStopped = 'server.stopped',
+/**
+ * Events emitted by the MockAgent.
+ */
+enum MockAgentEvent {
   ConfigStreamConnected = 'config.connected',
   ExportStreamConnected = 'export.connected',
   ExportStreamMessageReceived = 'export.received',
 }
 
+/**
+ * Mock implementation of a OpenCensus Agent. Starts a grpc TraceService server
+ * on the given `host` and `port`.
+ */
 class MockAgent extends EventEmitter {
   private server: grpc.Server;
   private configStream: TraceServiceConfigStream;
-  private exportStream: TraceServiceExportStream;
 
   constructor(host: string, port: number) {
     super();
@@ -76,17 +79,16 @@ class MockAgent extends EventEmitter {
         proto.opencensus.proto.agent.trace.v1.TraceService.service, {
           config: (stream: TraceServiceConfigStream) => {
             this.configStream = stream;
-            this.emit(MockServerEvent.ConfigStreamConnected);
+            this.emit(MockAgentEvent.ConfigStreamConnected);
           },
           export: (stream: TraceServiceExportStream) => {
-            this.exportStream = stream;
-            this.emit(MockServerEvent.ExportStreamConnected);
+            this.emit(MockAgentEvent.ExportStreamConnected);
             stream.on(
                 'data',
                 (message: opencensus.proto.agent.trace.v1
                      .ExportTraceServiceRequest) => {
                   this.emit(
-                      MockServerEvent.ExportStreamMessageReceived, message);
+                      MockAgentEvent.ExportStreamMessageReceived, message);
                 });
           }
         });
@@ -136,6 +138,9 @@ describe('OpenCensus Agent Exporter', () => {
   const INITIAL_SAMPLER_PROBABILITY = 1.0;
 
   beforeEach(() => {
+    const SERVER_HOST = 'localhost';
+    const SERVER_PORT = 50052;
+
     server = new MockAgent(SERVER_HOST, SERVER_PORT);
     ocAgentExporter = new OCAgentExporter({
       serviceName: SERVICE_NAME,
@@ -170,7 +175,7 @@ describe('OpenCensus Agent Exporter', () => {
 
           // When the stream is connected, we end both spans, which should
           // trigger the spans to be sent to the agent.
-          server.once(MockServerEvent.ExportStreamConnected, () => {
+          server.once(MockAgentEvent.ExportStreamConnected, () => {
             childSpan.end();
             rootSpan.end();
           });
@@ -178,7 +183,7 @@ describe('OpenCensus Agent Exporter', () => {
           // When the stream receives data, validate that the two spans we just
           // ended are present.
           server.once(
-              MockServerEvent.ExportStreamMessageReceived,
+              MockAgentEvent.ExportStreamMessageReceived,
               (message: opencensus.proto.agent.trace.v1
                    .ExportTraceServiceRequest) => {
                 let foundRootSpan = false;
@@ -275,7 +280,7 @@ describe('OpenCensus Agent Exporter', () => {
 
        // Wait for the configuration stream to be connected, then run the test
        // suite.
-       server.once(MockServerEvent.ConfigStreamConnected, async () => {
+       server.once(MockAgentEvent.ConfigStreamConnected, async () => {
          await runProbabilityTest(0.5);
          await runConstantTest(true);
          await runConstantTest(false);
@@ -329,7 +334,7 @@ describe('OpenCensus Agent Exporter', () => {
       rootSpan.addLink('ffff', 'ffff', null);
 
       server.on(
-          MockServerEvent.ExportStreamMessageReceived,
+          MockAgentEvent.ExportStreamMessageReceived,
           (message:
                opencensus.proto.agent.trace.v1.ExportTraceServiceRequest) => {
             assert.equal(message.spans.length, 1);
