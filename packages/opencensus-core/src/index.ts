@@ -55,3 +55,7 @@ export * from './stats/types';
 // logger
 import * as logger from './common/console-logger';
 export {logger};
+
+// version
+const version: string = require('../package.json').version;
+export { version };
