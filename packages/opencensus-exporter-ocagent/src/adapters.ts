@@ -53,10 +53,12 @@ const millisToTimestamp = (millis: Date|number): google.protobuf.Timestamp => {
  * @param hex string
  * @returns Uint8Array
  */
-const hexStringToUint8Array = (hex: string): Uint8Array => {
+const hexStringToUint8Array = (hex: string): Uint8Array|null => {
   if (!hex) return null;
+  const match = hex.match(/.{1,2}/g);
+  if (!match) return null;
   // tslint:disable-next-line:ban Needed to parse hexadecimal.
-  return new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  return new Uint8Array(match.map(byte => parseInt(byte, 16)));
 };
 
 /**
@@ -83,45 +85,45 @@ const spanKindToEnum =
  * @param attributes Attributes
  * @returns opencensus.proto.trace.v1.Span.Attributes
  */
-const adaptAttributes =
-    (attributes: Attributes): opencensus.proto.trace.v1.Span.Attributes => {
-      if (!attributes) {
-        return null;
+const adaptAttributes = (attributes: Attributes):
+                            opencensus.proto.trace.v1.Span.Attributes|null => {
+  if (!attributes) {
+    return null;
+  }
+
+  const attributeMap:
+      Record<string, opencensus.proto.trace.v1.AttributeValue> = {};
+
+  Object.getOwnPropertyNames(attributes).forEach((name) => {
+    const value = attributes[name];
+
+    let stringValue: opencensus.proto.trace.v1.TruncatableString|null = null;
+    let intValue: number|null = null;
+    let boolValue: boolean|null = null;
+
+    switch (typeof value) {
+      case 'number': {
+        intValue = value as number;
+        break;
       }
+      case 'boolean': {
+        boolValue = value as boolean;
+        break;
+      }
+      case 'string': {
+        stringValue = {value: value as string, truncatedByteCount: null};
+        break;
+      }
+      default: {
+        // Unsupported type
+      }
+    }
 
-      const attributeMap:
-          Record<string, opencensus.proto.trace.v1.AttributeValue> = {};
+    attributeMap[name] = {stringValue, intValue, boolValue};
+  });
 
-      Object.getOwnPropertyNames(attributes).forEach((name) => {
-        const value = attributes[name];
-
-        let stringValue: opencensus.proto.trace.v1.TruncatableString = null;
-        let intValue: number = null;
-        let boolValue: boolean = null;
-
-        switch (typeof value) {
-          case 'number': {
-            intValue = value as number;
-            break;
-          }
-          case 'boolean': {
-            boolValue = value as boolean;
-            break;
-          }
-          case 'string': {
-            stringValue = {value: value as string, truncatedByteCount: null};
-            break;
-          }
-          default: {
-            // Unsupported type
-          }
-        }
-
-        attributeMap[name] = {stringValue, intValue, boolValue};
-      });
-
-      return {attributeMap, droppedAttributesCount: null};
-    };
+  return {attributeMap, droppedAttributesCount: null};
+};
 
 /**
  * Adapts a string messageType value to a
@@ -209,7 +211,7 @@ const adaptStatus = (statusCode: number): opencensus.proto.trace.v1.Status => {
  */
 const adaptTraceState =
     (traceState: string): opencensus.proto.trace.v1.Span.Tracestate => {
-      const entries: opencensus.proto.trace.v1.Span.Tracestate.Entry[] =
+      const entries: opencensus.proto.trace.v1.Span.Tracestate.Entry[]|null =
           !traceState ? null : traceState.split(',').map(state => {
             const [key, value] = state.split('=');
             return {key, value};
@@ -309,7 +311,7 @@ export interface CreateNodeOptions {
   coreVersion: string;
   hostName: string;
   processStartTimeMillis: number;
-  attributes: Record<string, string>;
+  attributes: Record<string, string>|undefined;
 }
 
 /**

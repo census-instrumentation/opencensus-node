@@ -65,11 +65,11 @@ export class OCAgentExporter implements Exporter {
 
   // Connection objects
   private traceServiceClient: TraceServiceClient;
-  private configStream: TraceServiceConfigStream;
-  private exportStream: TraceServiceExportStream;
+  private configStream: TraceServiceConfigStream|undefined;
+  private exportStream: TraceServiceExportStream|undefined;
 
   // Resolved configuration options
-  private _options: OCAgentExporterOptions;
+  private config: OCAgentExporterOptions;
 
   // Node properties
   private exporterVersion: string;
@@ -81,11 +81,11 @@ export class OCAgentExporter implements Exporter {
 
   constructor(options: OCAgentExporterOptions) {
     // Get the complete set of options from the defaults and inputs
-    this._options = Object.assign({}, DEFAULT_OPTIONS, options);
-    this.logger = this._options.logger;
+    this.config = Object.assign({}, DEFAULT_OPTIONS, options);
+    this.logger = this.config.logger as Logger;
 
     // Create buffer
-    this.buffer = new ExporterBuffer(this, this._options);
+    this.buffer = new ExporterBuffer(this, this.config);
 
     /**
      * Get node properties
@@ -122,10 +122,10 @@ export class OCAgentExporter implements Exporter {
      * Connect to the trace service and connect to the config and export
      * streams.
      */
-    const serverAddress = `${this._options.host}:${this._options.port}`;
+    const serverAddress = `${this.config.host}:${this.config.port}`;
     this.traceServiceClient =
         new proto.opencensus.proto.agent.trace.v1.TraceService(
-            serverAddress, this._options.credentials);
+            serverAddress, this.config.credentials);
     this.start();
   }
 
@@ -154,8 +154,12 @@ export class OCAgentExporter implements Exporter {
       return;
     }
 
-    this.configStream.end();
-    this.exportStream.end();
+    if (this.configStream) {
+      this.configStream.end();
+    }
+    if (this.exportStream) {
+      this.exportStream.end();
+    }
     this.activeLocal = false;
   }
 
@@ -186,16 +190,14 @@ export class OCAgentExporter implements Exporter {
       if (this.shouldAttemptReconnect(status)) {
         this.logger.error(
             `OCAgent: export stream disconnected; attempting reconnect`);
-        this.exportStream.pause();
         setImmediate(() => this.connectToExportStream());
       }
     });
-    this.exportStream.on(
-        StreamEvent.Error,
-        (err) => {
-            // no-op: Swallow errors to keep the process alive. Not listening
-            // to this event will exit the process on an error.
-        });
+    this.exportStream.on(StreamEvent.Error, (err) => {
+      // no-op: Swallow errors to keep the process alive. Not listening
+      // to this event will exit the process on an error.
+      this.logger.error('OCAgent: export stream error', err);
+    });
   }
 
   /**
@@ -222,12 +224,11 @@ export class OCAgentExporter implements Exporter {
         setImmediate(() => this.connectToConfigStream());
       }
     });
-    this.configStream.on(
-        StreamEvent.Error,
-        () => {
-            // no-op: Swallow errors to keep the process alive. Not listening
-            // to this event will exit the process on an error.
-        });
+    this.configStream.on(StreamEvent.Error, (err) => {
+      // no-op: Swallow errors to keep the process alive. Not listening
+      // to this event will exit the process on an error.
+      this.logger.error('OCAgent: config stream error', err);
+    });
   }
 
   /**
@@ -271,7 +272,7 @@ export class OCAgentExporter implements Exporter {
         return;
       }
 
-      // If we have a valid probabily, create a new sampler
+      // If we have a valid probability, create a new sampler
       if (probability >= 0 && probability <= 1) {
         this.logger.info(
             `OCAgent: updating sampler probability=${probability}`);
@@ -290,21 +291,29 @@ export class OCAgentExporter implements Exporter {
     return new Promise((resolve, reject) => {
       this.logger.info(`OCAgent: publish rootSpans=${rootSpans.length}`);
 
+      if (!this.exportStream) {
+        this.logger.warn(
+            'OCAgent: Export stream not connected. Could not publish spans.');
+        return reject();
+      }
+
       // Create node details
       const node = createNode({
-        serviceName: this._options.serviceName,
+        serviceName: this.config.serviceName,
         exporterVersion: this.exporterVersion,
         coreVersion: this.coreVersion,
         hostName: this.hostName,
         processStartTimeMillis: this.processStartTimeMillis,
-        attributes: this._options.attributes
+        attributes: this.config.attributes
       });
 
       // Adapt and write each RootSpan to the agent through the export stream.
       // Any failed attempts will be caught by the connection, but the data
       // will be lost.
       rootSpans.forEach(rootSpan => {
-        this.exportStream.write({node, spans: adaptRootSpan(rootSpan)});
+        if (this.exportStream) {
+          this.exportStream.write({node, spans: adaptRootSpan(rootSpan)});
+        }
       });
 
       resolve();

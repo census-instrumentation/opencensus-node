@@ -26,6 +26,16 @@ import * as uuid from 'uuid';
 import {OCAgentExporter} from '../src';
 import {opencensus} from '../src/types';
 
+// Constants
+
+/**
+ * Amount of time to wait before validating a configuration change message was
+ * successfully processed.
+ */
+const CONFIG_CHANGE_TIMEOUT = 15;
+
+// Mock Agent
+
 /**
  * Agent stream types.
  */
@@ -51,7 +61,7 @@ enum MockAgentEvent {
  */
 class MockAgent extends EventEmitter {
   private server: grpc.Server;
-  private configStream: TraceServiceConfigStream;
+  private configStream: TraceServiceConfigStream|undefined;
 
   constructor(host: string, port: number) {
     super();
@@ -103,22 +113,28 @@ class MockAgent extends EventEmitter {
    * probability.
    */
   sendConfigurationChangeProbability(probablity: number) {
-    this.configStream.write(
-        {config: {probabilitySampler: {samplingProbability: probablity}}});
+    if (this.configStream) {
+      this.configStream.write(
+          {config: {probabilitySampler: {samplingProbability: probablity}}});
+    }
   }
 
   /**
    * Sends a `ConstantSampler` configuration change with the given decision.
    */
   sendConfigurationChangeConstant(decision: boolean) {
-    this.configStream.write({config: {constantSampler: {decision}}});
+    if (this.configStream) {
+      this.configStream.write({config: {constantSampler: {decision}}});
+    }
   }
 
   /**
    * Sends a `RateLimitedSampler` configuration change with the given decision.
    */
   sendConfigurationChangeRateLimited(qps: number) {
-    this.configStream.write({config: {rateLimitingSampler: {qps}}});
+    if (this.configStream) {
+      this.configStream.write({config: {rateLimitingSampler: {qps}}});
+    }
   }
 
   /**
@@ -128,6 +144,13 @@ class MockAgent extends EventEmitter {
     this.server.forceShutdown();
   }
 }
+
+/**
+ * Generate a hex id.
+ */
+const hexId = (): string => {
+  return uuid.v4().split('-').join('');
+};
 
 describe('OpenCensus Agent Exporter', () => {
   let server: MockAgent;
@@ -168,7 +191,7 @@ describe('OpenCensus Agent Exporter', () => {
     tracing.tracer.startRootSpan(
         {
           name: ROOT_SPAN_NAME,
-          spanContext: {traceId: null, spanId: null, options: 0x1}
+          spanContext: {traceId: hexId(), spanId: hexId(), options: 0x1}
         },
         (rootSpan: RootSpan) => {
           const childSpan = rootSpan.startChildSpan(CHILD_SPAN_NAME, '');
@@ -189,6 +212,8 @@ describe('OpenCensus Agent Exporter', () => {
                 let foundRootSpan = false;
                 let foundChildSpan = false;
                 message.spans.forEach(span => {
+                  if (!span || !span.name) return;
+
                   switch (span.name.value) {
                     case ROOT_SPAN_NAME: {
                       foundRootSpan = true;
@@ -232,7 +257,7 @@ describe('OpenCensus Agent Exporter', () => {
                  `sampler ${sampler} is not using probability ${
                      testProbability}`);
              resolve();
-           }, 15);
+           }, CONFIG_CHANGE_TIMEOUT);
          });
        };
 
@@ -248,12 +273,12 @@ describe('OpenCensus Agent Exporter', () => {
            setTimeout(() => {
              const sampler = tracing.tracer.sampler.description;
              // Validate sampler type
-             assert.ok(
-                 sampler === expectedSamplerDescription,
+             assert.equal(
+                 sampler, expectedSamplerDescription,
                  `sampler ${sampler} is not of type ${
                      expectedSamplerDescription}`);
              resolve();
-           }, 10);
+           }, CONFIG_CHANGE_TIMEOUT);
          });
        };
 
@@ -274,7 +299,7 @@ describe('OpenCensus Agent Exporter', () => {
                  sampler, expectedSamplerDescription,
                  'rate limited sampler should not be applied');
              resolve();
-           }, 10);
+           }, CONFIG_CHANGE_TIMEOUT);
          });
        };
 
@@ -290,16 +315,12 @@ describe('OpenCensus Agent Exporter', () => {
      });
 
   it('should adapt a span correctly', (done) => {
-    const hexId = (): string => {
-      return uuid.v4().split('-').join('');
-    };
-
     const rootSpanOptions: TraceOptions = {
       name: 'root',
       kind: 'SERVER',
       spanContext: {
-        traceId: null,
-        spanId: null,
+        traceId: hexId(),
+        spanId: hexId(),
         traceState: 'foo=bar,baz=buzz',
         options: 0x1
       }
@@ -322,7 +343,9 @@ describe('OpenCensus Agent Exporter', () => {
       const timeStamp = 123456789;
       rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
       rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
-      rootSpan.addMessageEvent(null, 'ffff', timeStamp);
+      // Use of `null` is to force a `TYPE_UNSPECIFIED` value
+      // tslint:disable-next-line:no-any
+      rootSpan.addMessageEvent(null as any, 'ffff', timeStamp);
 
       // Links
       rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN', {
@@ -331,7 +354,9 @@ describe('OpenCensus Agent Exporter', () => {
         'child_link_attribute_boolean': true,
       });
       rootSpan.addLink('ffff', 'ffff', 'PARENT_LINKED_SPAN');
-      rootSpan.addLink('ffff', 'ffff', null);
+      // Use of `null` is to force a `TYPE_UNSPECIFIED` value
+      // tslint:disable-next-line:no-any
+      rootSpan.addLink('ffff', 'ffff', null as any);
 
       server.on(
           MockAgentEvent.ExportStreamMessageReceived,
@@ -339,18 +364,39 @@ describe('OpenCensus Agent Exporter', () => {
                opencensus.proto.agent.trace.v1.ExportTraceServiceRequest) => {
             assert.equal(message.spans.length, 1);
             const span = message.spans[0];
+            if (!span) {
+              assert.fail('span is null or undefined');
+              return;
+            }
 
             // Name / Context
+            if (!span.name) {
+              assert.fail('span.name is null or undefined');
+              return;
+            }
             assert.equal(span.name.value, 'root');
             assert.equal(span.kind, 'SERVER');
+
+            if (!span.tracestate) {
+              assert.fail('span.tracestate is null or undefined');
+              return;
+            }
             assert.deepEqual(
                 span.tracestate.entries,
                 [{key: 'foo', value: 'bar'}, {key: 'baz', value: 'buzz'}]);
 
             // Status
+            if (!span.status) {
+              assert.fail('span.status is null or undefined');
+              return;
+            }
             assert.equal(span.status.code, 200);
 
             // Attributes
+            if (!span.attributes) {
+              assert.fail('span.attributes is null or undefined');
+              return;
+            }
             assert.deepEqual(span.attributes.attributeMap, {
               my_attribute_string: {
                 value: 'stringValue',
