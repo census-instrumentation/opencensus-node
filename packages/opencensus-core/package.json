@@ -9,7 +9,7 @@
     "test": "nyc -x '**/test/**' --reporter=html --reporter=text mocha 'build/test/**/*.js'",
     "clean": "rimraf build/*",
     "check": "gts check",
-    "compile": "tsc -p .",
+    "compile": "tsc -p . && cp package.json build/",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
