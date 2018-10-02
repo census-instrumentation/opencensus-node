@@ -44,7 +44,7 @@ export interface Measure {
  * Describes the unit used for the Measure. Should follows the format described
  * by http://unitsofmeasure.org/ucum.html.
  */
-export const enum MeasureUnit {
+export enum MeasureUnit {
   UNIT = '1',    // for general counts
   BYTE = 'by',   // bytes
   KBYTE = 'kb',  // Kbytes
@@ -54,7 +54,7 @@ export const enum MeasureUnit {
 }
 
 /** Describes the types of a Measure. It can be Int64 or a Double type. */
-export const enum MeasureType {
+export enum MeasureType {
   INT64 = 'INT64',
   DOUBLE = 'DOUBLE'
 }
@@ -119,7 +119,7 @@ export interface View {
  * Informs the type of the aggregation. It can be: count, sum, lastValue or
  * distribution.
  */
-export const enum AggregationType {
+export enum AggregationType {
   COUNT = 0,
   SUM = 1,
   LAST_VALUE = 2,
