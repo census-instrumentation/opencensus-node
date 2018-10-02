@@ -25,10 +25,13 @@ const monitoring = google.monitoring('v3');
 
 /** Format and sends Stats to Stackdriver */
 export class StackdriverStatsExporter implements StatsEventListener {
+  private delay: number;
   private projectId: string;
+  static readonly DELAY: number = 60000;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
+    this.delay = options.delay || StackdriverStatsExporter.DELAY;
     this.projectId = options.projectId;
     this.logger = options.logger || logger.logger();
   }
@@ -59,7 +62,11 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param views The views associated with the measure
    * @param measurement The measurement recorded
    */
-  onRecord(views: View[], measurement: Measurement) {
+  async onRecord(views: View[], measurement: Measurement) {
+    await new Promise(resolve => {
+      setTimeout(resolve, this.delay);
+    });
+
     const timeSeries = views.map(view => {
       return this.createTimeSeriesData(view, measurement);
     });

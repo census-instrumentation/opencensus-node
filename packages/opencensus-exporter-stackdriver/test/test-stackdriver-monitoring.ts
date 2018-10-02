@@ -173,7 +173,11 @@ describe('Stackdriver Stats Exporter', function() {
       }
     }
 
-    exporterOptions = {projectId: PROJECT_ID, logger: exporterTestLogger};
+    exporterOptions = {
+      delay: 0,
+      projectId: PROJECT_ID,
+      logger: exporterTestLogger
+    };
     exporter = new StackdriverStatsExporter(exporterOptions);
     stats.registerExporter(exporter);
 
