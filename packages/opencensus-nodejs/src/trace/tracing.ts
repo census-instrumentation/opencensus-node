@@ -47,7 +47,7 @@ export class Tracing implements core.Tracing {
         Constants.DEFAULT_INSTRUMENTATION_MODULES);
   }
 
-  /** Gets the trancing instance. */
+  /** Gets the tracing instance. */
   static get instance(): core.Tracing {
     return this.singletonInstance || (this.singletonInstance = new this());
   }

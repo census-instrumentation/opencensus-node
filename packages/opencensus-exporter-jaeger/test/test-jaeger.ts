@@ -54,7 +54,7 @@ describe('Jaeger Exporter', () => {
       serviceName: 'opencensus-exporter-jaeger',
       host: 'localhost',
       port: 6832,
-      tags: [{key: 'opencensus-exporter-jeager', value: '0.0.1'}],
+      tags: [{key: 'opencensus-exporter-jaeger', value: '0.0.1'}],
       bufferTimeout: DEFAULT_BUFFER_TIMEOUT,
       logger: testLogger,
       maxPacketSize: 1000
@@ -88,7 +88,7 @@ describe('Jaeger Exporter', () => {
       let testHostnameSeen = false;
       let testProcessIpSeen = false;
       process.tags.forEach((tag) => {
-        if (tag.key === 'opencensus-exporter-jeager' &&
+        if (tag.key === 'opencensus-exporter-jaeger' &&
             tag.vType === 'STRING' && tag.vStr === '0.0.1') {
           testVersionSeen = true;
           return;
@@ -113,7 +113,7 @@ describe('Jaeger Exporter', () => {
     });
   });
 
-  /* Should export spans to Jeager */
+  /* Should export spans to Jaeger */
   describe('test spans are valid', () => {
     it('should encode as thrift', () => {
       return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
@@ -176,9 +176,9 @@ describe('Jaeger Exporter', () => {
     });
   });
 
-  /* Should export spans to Jeager */
+  /* Should export spans to Jaeger */
   describe('publish()', () => {
-    it('should export spans to Jeager', () => {
+    it('should export spans to Jaeger', () => {
       return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
         const span = tracer.startChildSpan('child-s01');
         span.end();
