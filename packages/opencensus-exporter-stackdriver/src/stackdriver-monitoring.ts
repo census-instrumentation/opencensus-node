@@ -26,11 +26,15 @@ const monitoring = google.monitoring('v3');
 /** Format and sends Stats to Stackdriver */
 export class StackdriverStatsExporter implements StatsEventListener {
   private projectId: string;
+  // tslint:disable-next-line:no-any
+  private lastRequest: Promise<any> = Promise.resolve();
+  private requestTimeout: number;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
     this.projectId = options.projectId;
     this.logger = options.logger || logger.logger();
+    this.requestTimeout = options.requestTimeout || 1000;
   }
 
   /**
@@ -64,20 +68,21 @@ export class StackdriverStatsExporter implements StatsEventListener {
       return this.createTimeSeriesData(view, measurement);
     });
 
-    return this.authorize().then(authClient => {
-      const request = {
-        name: `projects/${this.projectId}`,
-        resource: {timeSeries},
-        auth: authClient
-      };
-
-      return new Promise((resolve, reject) => {
-        monitoring.projects.timeSeries.create(request, (err: Error) => {
-          this.logger.debug('sent time series', request.resource.timeSeries);
-          err ? reject(err) : resolve();
-        });
-      });
-    });
+    this.lastRequest = this.lastRequest.then(() => this.authorize())
+                           .then(authClient => {
+                             this.logger.debug('sent time series', timeSeries);
+                             return monitoring.projects.timeSeries.create({
+                               name: `projects/${this.projectId}`,
+                               resource: {timeSeries},
+                               auth: authClient
+                             });
+                           })
+                           .then(() => {
+                             return new Promise((resolve, reject) => {
+                               setTimeout(resolve, this.requestTimeout);
+                             });
+                           });
+    return this.lastRequest;
   }
 
   /**
@@ -152,7 +157,8 @@ export class StackdriverStatsExporter implements StatsEventListener {
       count: distribution.count.toString(),
       mean: distribution.mean,
       sumOfSquaredDeviation: distribution.sumSquaredDeviations,
-      range: {min: distribution.min, max: distribution.max},
+      // Distribution range is not yet supported
+      // range: {min: distribution.min, max: distribution.max},
       bucketOptions: {
         explicitBuckets:
             {bounds: this.getBucketBoundaries(distribution.buckets)}
