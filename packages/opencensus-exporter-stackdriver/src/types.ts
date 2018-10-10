@@ -85,7 +85,6 @@ export interface Distribution {
   count: string;
   mean: number;
   sumOfSquaredDeviation: number;
-  range: {min: number; max: number;};
   bucketOptions: {explicitBuckets: {bounds: number[];}};
   bucketCounts: number[];
 }
