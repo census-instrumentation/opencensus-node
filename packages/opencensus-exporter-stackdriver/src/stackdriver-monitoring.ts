@@ -152,7 +152,6 @@ export class StackdriverStatsExporter implements StatsEventListener {
       count: distribution.count.toString(),
       mean: distribution.mean,
       sumOfSquaredDeviation: distribution.sumSquaredDeviations,
-      range: {min: distribution.min, max: distribution.max},
       bucketOptions: {
         explicitBuckets:
             {bounds: this.getBucketBoundaries(distribution.buckets)}
