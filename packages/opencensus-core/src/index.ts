@@ -51,5 +51,5 @@ export * from './stats/recorder';
 export * from './stats/types';
 
 // logger
-import * as logger from './common/console-logger';
-export {logger};
+import { logger } from './common/console-logger';
+export { logger };
