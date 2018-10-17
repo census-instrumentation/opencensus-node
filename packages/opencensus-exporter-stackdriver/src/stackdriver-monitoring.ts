@@ -17,6 +17,7 @@
 import {AggregationType, Bucket, DistributionData, logger, Logger, Measurement, MeasureType, StatsEventListener, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
+import * as path from 'path';
 
 import {Distribution, LabelDescriptor, MetricDescriptor, MetricKind, Point, StackdriverExporterOptions, TimeSeries, ValueType} from './types';
 
@@ -27,12 +28,18 @@ const monitoring = google.monitoring('v3');
 export class StackdriverStatsExporter implements StatsEventListener {
   private delay: number;
   private projectId: string;
+  private metricPrefix: string;
+  static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
+      'custom.googleapis.com/opencensus';
   static readonly DELAY: number = 60000;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
-    this.delay = options.delay || StackdriverStatsExporter.DELAY;
+    this.delay =
+        options.delay != null ? options.delay : StackdriverStatsExporter.DELAY;
     this.projectId = options.projectId;
+    this.metricPrefix = options.metricPrefix ||
+        StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
     this.logger = options.logger || logger.logger();
   }
 
@@ -139,10 +146,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
     }
 
     return {
-      metric: {
-        type: `custom.googleapis.com/${view.name}`,
-        labels: measurement.tags
-      },
+      metric: {type: this.getMetricType(view.name), labels: measurement.tags},
       resource: {type: 'global', labels: resourceLabels},
       metricKind: this.createMetricKind(view.aggregation),
       valueType: this.createValueType(view),
@@ -184,6 +188,14 @@ export class StackdriverStatsExporter implements StatsEventListener {
   }
 
   /**
+   * Gets metric type
+   * @param name The view name
+   */
+  private getMetricType(name: string): string {
+    return path.join(this.metricPrefix, name);
+  }
+
+  /**
    * Creates a Stackdriver LabelDescriptor from given Tags.
    * @param tag The Tags to get TimeSeries information from.
    */
@@ -200,7 +212,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    */
   private createMetricDescriptorData(view: View): MetricDescriptor {
     return {
-      type: `custom.googleapis.com/${view.name}`,
+      type: this.getMetricType(view.name),
       description: view.description || view.measure.description,
       displayName: view.measure.name,
       metricKind: this.createMetricKind(view.aggregation),

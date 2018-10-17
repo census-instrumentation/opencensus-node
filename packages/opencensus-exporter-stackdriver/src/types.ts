@@ -42,6 +42,11 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    * projectId project id defined to stackdriver
    */
   projectId: string;
+  /**
+   * Prefix for metric overrides the OpenCensus prefix
+   * of a stackdriver metric. Optional
+   */
+  metricPrefix?: string;
 }
 
 export interface TracesWithCredentials {
