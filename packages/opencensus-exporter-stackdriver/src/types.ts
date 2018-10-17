@@ -36,6 +36,8 @@ export type TranslatedSpan = {
  * Options for stackdriver configuration
  */
 export interface StackdriverExporterOptions extends ExporterConfig {
+  /** Delay in milliseconds */
+  delay?: number;
   /**
    * projectId project id defined to stackdriver
    */
