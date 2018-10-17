@@ -43,14 +43,15 @@ export interface Measure {
 /**
  * Describes the unit used for the Measure. Should follows the format described
  * by http://unitsofmeasure.org/ucum.html.
+ * TODO: Refactor MeasureUnit entire project to more safe pattern.
  */
 export enum MeasureUnit {
-  UNIT = '1',    // for general counts
-  BYTE = 'by',   // bytes
-  KBYTE = 'kb',  // Kbytes
-  SEC = 's',     // seconds
-  MS = 'ms',     // millisecond
-  NS = 'ns'      // nanosecond
+  UNIT = <any>'1',    // for general counts
+  BYTE = <any>'by',   // bytes
+  KBYTE = <any>'kb',  // Kbytes
+  SEC = <any>'s',     // seconds
+  MS = <any>'ms',     // millisecond
+  NS = <any>'ns'      // nanosecond
 }
 
 /** Describes the types of a Measure. It can be Int64 or a Double type. */
