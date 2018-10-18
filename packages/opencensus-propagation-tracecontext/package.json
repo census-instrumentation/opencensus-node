@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/propagation-tracecontext",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "OpenCensus propagation package for TraceContext format.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -50,7 +50,7 @@
     "typescript": "~2.7.2"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.4",
+    "@opencensus/core": "^0.0.5",
     "uuid": "^3.2.1"
   }
 }
