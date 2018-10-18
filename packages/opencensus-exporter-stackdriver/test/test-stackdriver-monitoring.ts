@@ -19,6 +19,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as mocha from 'mocha';
 import * as nock from 'nock';
+import * as path from 'path';
 
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
 import {LabelDescriptor, MetricDescriptor, MetricKind, StackdriverExporterOptions, TimeSeries, ValueType} from '../src/types';
@@ -55,9 +56,11 @@ class ExporterTestLogger implements Logger {
  * Asserts MetricDescriptors' values given its originating view.
  * @param metricDescriptor The MetricDescriptor to be asserted.
  * @param view The originating view.
+ * @param prefix Optional metric prefix.
  */
 function assertMetricDescriptor(
-    metricDescriptor: MetricDescriptor, view: View) {
+    metricDescriptor: MetricDescriptor, view: View,
+    prefix: string = StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN) {
   let metricKind: MetricKind;
   if (view.aggregation === AggregationType.SUM) {
     metricKind = MetricKind.CUMULATIVE;
@@ -74,8 +77,7 @@ function assertMetricDescriptor(
     valueType = ValueType.INT64;
   }
 
-  assert.strictEqual(
-      metricDescriptor.type, `custom.googleapis.com/${view.name}`);
+  assert.strictEqual(metricDescriptor.type, `${prefix}/${view.name}`);
   assert.strictEqual(metricDescriptor.description, view.description);
   assert.strictEqual(metricDescriptor.displayName, view.measure.name);
   assert.strictEqual(metricDescriptor.metricKind, metricKind);
@@ -92,7 +94,8 @@ function assertMetricDescriptor(
  */
 function assertTimeSeries(
     timeSeries: TimeSeries, view: View, measurement: Measurement,
-    projectId: string) {
+    projectId: string,
+    prefix: string = StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN) {
   const resourceLabels: {[key: string]: string} = {project_id: projectId};
 
   let metricKind: MetricKind;
@@ -111,8 +114,7 @@ function assertTimeSeries(
     valueType = ValueType.INT64;
   }
 
-  assert.strictEqual(
-      timeSeries.metric.type, `custom.googleapis.com/${view.name}`);
+  assert.strictEqual(timeSeries.metric.type, `${prefix}/${view.name}`);
   assert.deepEqual(timeSeries.metric.labels, measurement.tags);
   assert.strictEqual(timeSeries.resource.type, 'global');
   assert.ok(timeSeries.resource.labels.project_id);
@@ -303,6 +305,35 @@ describe('Stackdriver Stats Exporter', function() {
             .catch((err: Error) => {
               assert.ok(err.message.indexOf('Permission denied') >= 0);
             });
+      });
+    });
+
+    describe('With metricPrefix option', () => {
+      exporterOptions = Object.assign({metricPrefix: 'test'}, exporterOptions);
+      exporter = new StackdriverStatsExporter(exporterOptions);
+      stats.registerExporter(exporter);
+
+      it(`should be reflected when onRegisterView is called`, async () => {
+        if (dryrun) {
+          nocks.metricDescriptors(PROJECT_ID, null, null, false);
+        }
+        await exporter.onRegisterView(viewMetricDescriptor).then(() => {
+          return assertMetricDescriptor(
+              exporterTestLogger.debugBuffer[0], viewMetricDescriptor,
+              exporterOptions.metricPrefix);
+        });
+      });
+
+      it(`should be reflected when onRecord is called`, async () => {
+        if (dryrun) {
+          nocks.timeSeries(PROJECT_ID, null, null, false);
+        }
+        viewTimeSeries.recordMeasurement(measurement);
+        await exporter.onRecord([viewTimeSeries], measurement).then(() => {
+          return assertTimeSeries(
+              exporterTestLogger.debugBuffer[0][0], viewTimeSeries, measurement,
+              PROJECT_ID, exporterOptions.metricPrefix);
+        });
       });
     });
 
