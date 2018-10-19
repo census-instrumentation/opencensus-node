@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/exporter-zpages",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A collection of HTML pages to display stats and trace data and allow library configuration control",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -39,7 +39,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@opencensus/nodejs": "^0.0.4",
+    "@opencensus/nodejs": "^0.0.5",
     "@types/ejs": "^2.6.0",
     "@types/express": "^4.11.1",
     "@types/extend": "^3.0.0",
@@ -55,7 +55,7 @@
     "typescript": "~2.6.1"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.4",
+    "@opencensus/core": "^0.0.5",
     "ejs": "^2.5.8",
     "express": "^4.16.3",
     "pkg-dir": "^3.0.0"
