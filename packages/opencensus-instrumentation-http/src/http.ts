@@ -54,7 +54,7 @@ export class HttpPlugin extends BasePlugin {
    * Patches HTTP incoming and outcoming request functions.
    */
   protected applyPatch() {
-    this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
+    this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
     shimmer.wrap(
         this.moduleExports, 'request', this.getPatchOutgoingRequestFunction());
