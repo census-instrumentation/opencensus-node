@@ -321,7 +321,7 @@ export class HttpPlugin extends BasePlugin {
         span.end();
       });
 
-      plugin.logger.debug('makeRequestTrace retun request');
+      plugin.logger.debug('makeRequestTrace return request');
       return request;
     };
   }
