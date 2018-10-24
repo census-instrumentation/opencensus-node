@@ -18,6 +18,7 @@ import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanContext} f
 import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
+import {hexToDec} from 'hex2dec';
 
 import {StackdriverExporterOptions, TracesWithCredentials, TranslatedSpan, TranslatedTrace} from './types';
 
@@ -87,7 +88,7 @@ export class StackdriverTraceExporter implements Exporter {
     return {
       name: span.name,
       kind: 'SPAN_KIND_UNSPECIFIED',
-      spanId: span.id,
+      spanId: hexToDec(span.id),
       startTime: span.startTime,
       endTime: span.endTime,
       labels: Object.keys(span.attributes)
