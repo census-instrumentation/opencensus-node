@@ -24,6 +24,7 @@ export * from './trace/instrumentation/types';
 export * from './trace/propagation/types';
 export * from './exporters/types';
 export * from './common/types';
+export * from './common/monitored-resource/types';
 
 // classes
 
@@ -39,6 +40,9 @@ export * from './trace/instrumentation/base-plugin';
 // console exporter and buffer impls
 export * from './exporters/exporter-buffer';
 export * from './exporters/console-exporter';
+
+// Monitored resource
+export * from './common/monitored-resource/util';
 
 // STATS CLASSES
 
