@@ -47,6 +47,8 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    * of a stackdriver metric. Optional
    */
   metricPrefix?: string;
+
+  onMetricUploadError?: (err: Error) => void;
 }
 
 export interface TracesWithCredentials {

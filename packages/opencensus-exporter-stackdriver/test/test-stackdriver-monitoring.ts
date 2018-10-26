@@ -161,6 +161,8 @@ describe('Stackdriver Stats Exporter', function() {
         'Value Type Double')
   ];
 
+  let onMetricUploadErrorBuffer = [] as Error[];
+
   before(() => {
     if (GOOGLE_APPLICATION_CREDENTIALS) {
       dryrun = !fs.existsSync(GOOGLE_APPLICATION_CREDENTIALS) &&
@@ -178,7 +180,10 @@ describe('Stackdriver Stats Exporter', function() {
     exporterOptions = {
       delay: 0,
       projectId: PROJECT_ID,
-      logger: exporterTestLogger
+      logger: exporterTestLogger,
+      onMetricUploadError: (err) => {
+        onMetricUploadErrorBuffer.push(err);
+      }
     };
     exporter = new StackdriverStatsExporter(exporterOptions);
     stats.registerExporter(exporter);
@@ -192,6 +197,7 @@ describe('Stackdriver Stats Exporter', function() {
   afterEach(() => {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = GOOGLE_APPLICATION_CREDENTIALS;
     exporterTestLogger.cleanAll();
+    onMetricUploadErrorBuffer = [];
   });
 
   /* Should create a Stackdriver Metric Descriptor */
@@ -222,11 +228,15 @@ describe('Stackdriver Stats Exporter', function() {
               Measurement = {measure: view.measure, value: 1, tags};
           view.recordMeasurement(measurement);
 
-          await exporter.onRecord([view], measurement).then(() => {
-            return assertTimeSeries(
-                exporterTestLogger.debugBuffer[1][0], view, measurement,
-                PROJECT_ID);
-          });
+          await exporter.onRecord([view], measurement)
+              .then(() => {
+                return new Promise((resolve) => setTimeout(resolve, 10));
+              })
+              .then(() => {
+                return assertTimeSeries(
+                    exporterTestLogger.debugBuffer[1][0], view, measurement,
+                    PROJECT_ID);
+              });
         });
       });
     });
@@ -262,11 +272,15 @@ describe('Stackdriver Stats Exporter', function() {
 
         viewTimeSeries.recordMeasurement(measurement);
 
-        await exporter.onRecord([viewTimeSeries], measurement).then(() => {
-          return assertTimeSeries(
-              exporterTestLogger.debugBuffer[0][0], viewTimeSeries, measurement,
-              PROJECT_ID);
-        });
+        await exporter.onRecord([viewTimeSeries], measurement)
+            .then(() => {
+              return new Promise((resolve) => setTimeout(resolve, 10));
+            })
+            .then(() => {
+              return assertTimeSeries(
+                  exporterTestLogger.debugBuffer[0][0], viewTimeSeries,
+                  measurement, PROJECT_ID);
+            });
       });
     });
 
@@ -329,11 +343,15 @@ describe('Stackdriver Stats Exporter', function() {
           nocks.timeSeries(PROJECT_ID, null, null, false);
         }
         viewTimeSeries.recordMeasurement(measurement);
-        await exporter.onRecord([viewTimeSeries], measurement).then(() => {
-          return assertTimeSeries(
-              exporterTestLogger.debugBuffer[0][0], viewTimeSeries, measurement,
-              PROJECT_ID, exporterOptions.metricPrefix);
-        });
+        await exporter.onRecord([viewTimeSeries], measurement)
+            .then(() => {
+              return new Promise((resolve) => setTimeout(resolve, 10));
+            })
+            .then(() => {
+              return assertTimeSeries(
+                  exporterTestLogger.debugBuffer[0][0], viewTimeSeries,
+                  measurement, PROJECT_ID, exporterOptions.metricPrefix);
+            });
       });
     });
 
@@ -345,25 +363,33 @@ describe('Stackdriver Stats Exporter', function() {
                 '/v3/projects/' + PROJECT_ID + '/metricDescriptors', 'POST')
             .reply(443, 'Simulated Network Error');
 
-        await exporter.onRegisterView(viewMetricDescriptor)
-            .catch((err: Error) => {
-              assert.ok(err.message.indexOf('Simulated Network Error') >= 0);
-            });
+        try {
+          await exporter.onRegisterView(viewMetricDescriptor);
+          assert.fail('.onRegisterView() not fail as expected');
+        } catch (err) {
+          assert.ok(err.message.indexOf('Simulated Network Error') >= 0);
+        }
       });
 
-      it('.onRecord() Should fail by network error', async () => {
-        nock('https://monitoring.googleapis.com')
-            .persist()
-            .intercept('/v3/projects/' + PROJECT_ID + '/timeSeries', 'POST')
-            .reply(443, 'Simulated Network Error');
+      it('.onRecord() Should not fail by network error, but trigger onMetricUploadError with error',
+         async () => {
+           nock('https://monitoring.googleapis.com')
+               .persist()
+               .intercept('/v3/projects/' + PROJECT_ID + '/timeSeries', 'POST')
+               .reply(443, 'Simulated Network Error');
 
-        viewTimeSeries.recordMeasurement(measurement);
+           viewTimeSeries.recordMeasurement(measurement);
 
-        await exporter.onRecord([viewTimeSeries], measurement)
-            .catch((err: Error) => {
-              assert.ok(err.message.indexOf('Simulated Network Error') >= 0);
-            });
-      });
+           try {
+             await exporter.onRecord([viewTimeSeries], measurement);
+             await new Promise(resolve => setTimeout(resolve, 10));
+             assert.ok(
+                 onMetricUploadErrorBuffer[0].message.indexOf(
+                     'Simulated Network Error') >= 0);
+           } catch (err) {
+             assert.fail(err);
+           }
+         });
     });
   });
 });
