@@ -169,10 +169,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
     const resourceLabels:
         {[key: string]: string} = {project_id: this.projectId};
 
-    // For non Sum Aggregations, the end time should be the same as the start
+    // For LAST_VALUE Aggregations, the end time should be the same as the start
     // time.
     const endTime = (new Date(aggregationData.timestamp)).toISOString();
-    const startTime = view.aggregation === AggregationType.SUM ?
+    const startTime = view.aggregation !== AggregationType.LAST_VALUE ?
         (new Date(view.startTime)).toISOString() :
         endTime;
 
@@ -281,7 +281,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * from.
    */
   private createMetricKind(aggregationType: AggregationType): MetricKind {
-    if (aggregationType === AggregationType.SUM) {
+    if (aggregationType !== AggregationType.LAST_VALUE) {
       return MetricKind.CUMULATIVE;
     }
     return MetricKind.GAUGE;

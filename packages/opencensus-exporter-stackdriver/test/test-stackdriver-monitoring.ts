@@ -99,7 +99,7 @@ function assertTimeSeries(
   const resourceLabels: {[key: string]: string} = {project_id: projectId};
 
   let metricKind: MetricKind;
-  if (view.aggregation === AggregationType.SUM) {
+  if (view.aggregation !== AggregationType.LAST_VALUE) {
     metricKind = MetricKind.CUMULATIVE;
   } else {
     metricKind = MetricKind.GAUGE;
