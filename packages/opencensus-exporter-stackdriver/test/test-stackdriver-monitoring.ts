@@ -161,8 +161,6 @@ describe('Stackdriver Stats Exporter', function() {
         'Value Type Double')
   ];
 
-  let onMetricUploadErrorBuffer = [] as Error[];
-
   before(() => {
     if (GOOGLE_APPLICATION_CREDENTIALS) {
       dryrun = !fs.existsSync(GOOGLE_APPLICATION_CREDENTIALS) &&
@@ -180,10 +178,7 @@ describe('Stackdriver Stats Exporter', function() {
     exporterOptions = {
       delay: 0,
       projectId: PROJECT_ID,
-      logger: exporterTestLogger,
-      onMetricUploadError: (err) => {
-        onMetricUploadErrorBuffer.push(err);
-      }
+      logger: exporterTestLogger
     };
     exporter = new StackdriverStatsExporter(exporterOptions);
     stats.registerExporter(exporter);
@@ -194,10 +189,13 @@ describe('Stackdriver Stats Exporter', function() {
     testLogger.debug('dryrun=%s', dryrun);
   });
 
+  after(() => {
+    exporter.close();
+  });
+
   afterEach(() => {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = GOOGLE_APPLICATION_CREDENTIALS;
     exporterTestLogger.cleanAll();
-    onMetricUploadErrorBuffer = [];
   });
 
   /* Should create a Stackdriver Metric Descriptor */
@@ -291,50 +289,71 @@ describe('Stackdriver Stats Exporter', function() {
             __dirname + '/fixtures/fakecredentials.json';
       }
 
-      const failExporterOptions = {
-        projectId: WRONG_PROJECT_ID,
-        logger: exporterTestLogger
-      };
-      const failExporter = new StackdriverStatsExporter(failExporterOptions);
+      it('.onRegisterView() Should fail by wrong projectId', (done) => {
+        nock('https://monitoring.googleapis.com')
+            .persist()
+            .intercept(
+                '/v3/projects/' + WRONG_PROJECT_ID + '/metricDescriptors',
+                'POST')
+            .reply(403, 'Permission denied');
 
-      it('.onRegisterView() Should fail by wrong projectId', async () => {
-        if (dryrun) {
-          nocks.metricDescriptors(WRONG_PROJECT_ID, null, null, false);
-        }
+        const failExporter =
+            new StackdriverStatsExporter({projectId: WRONG_PROJECT_ID});
+        stats.registerExporter(failExporter);
 
-        await failExporter.onRegisterView(viewMetricDescriptor)
-            .catch((err: Error) => {
-              assert.ok(err.message.indexOf('Permission denied') >= 0);
-            });
+        failExporter.onRegisterView(viewMetricDescriptor).catch((err) => {
+          assert.ok(err.message.indexOf('Permission denied') >= 0);
+          failExporter.close();
+          done();
+        });
       });
 
-      it('.onRecord() Should fail by wrong projectId', async () => {
-        if (dryrun) {
-          nocks.timeSeries(WRONG_PROJECT_ID, null, null, false);
-        }
+      it('.onRecord() Should not fail by wrong projectId, but trigger onMetricUploadError with error',
+         (done) => {
+           nock('https://monitoring.googleapis.com')
+               .persist()
+               .intercept(
+                   '/v3/projects/' + WRONG_PROJECT_ID + '/timeSeries', 'POST')
+               .reply(403, 'Permission denied');
 
-        viewTimeSeries.recordMeasurement(measurement);
-
-        await failExporter.onRecord([viewTimeSeries], measurement)
-            .catch((err: Error) => {
-              assert.ok(err.message.indexOf('Permission denied') >= 0);
-            });
-      });
+           const failExporter = new StackdriverStatsExporter({
+             delay: 0,
+             projectId: WRONG_PROJECT_ID,
+             onMetricUploadError: (err) => {
+               assert.ok(err.message.indexOf('Permission denied') >= 0);
+               failExporter.close();
+               done();
+             }
+           });
+           stats.registerExporter(failExporter);
+           viewTimeSeries.recordMeasurement(measurement);
+           failExporter.onRecord([viewTimeSeries], measurement);
+         });
     });
 
     describe('With metricPrefix option', () => {
-      exporterOptions = Object.assign({metricPrefix: 'test'}, exporterOptions);
-      exporter = new StackdriverStatsExporter(exporterOptions);
-      stats.registerExporter(exporter);
+      let prefixExporterOptions: StackdriverExporterOptions;
+      let prefixExporter: StackdriverStatsExporter;
+
+      before(() => {
+        prefixExporterOptions =
+            Object.assign(exporterOptions, {metricPrefix: 'test'});
+        prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
+        stats.registerExporter(prefixExporter);
+      });
+
+      after(() => {
+        prefixExporter.close();
+      });
 
       it(`should be reflected when onRegisterView is called`, async () => {
         if (dryrun) {
           nocks.metricDescriptors(PROJECT_ID, null, null, false);
         }
-        await exporter.onRegisterView(viewMetricDescriptor).then(() => {
+        await prefixExporter.onRegisterView(viewMetricDescriptor).then(() => {
           return assertMetricDescriptor(
               exporterTestLogger.debugBuffer[0], viewMetricDescriptor,
-              exporterOptions.metricPrefix);
+              prefixExporterOptions.metricPrefix);
         });
       });
 
@@ -343,52 +362,56 @@ describe('Stackdriver Stats Exporter', function() {
           nocks.timeSeries(PROJECT_ID, null, null, false);
         }
         viewTimeSeries.recordMeasurement(measurement);
-        await exporter.onRecord([viewTimeSeries], measurement)
+        await prefixExporter.onRecord([viewTimeSeries], measurement)
             .then(() => {
               return new Promise((resolve) => setTimeout(resolve, 10));
             })
             .then(() => {
               return assertTimeSeries(
                   exporterTestLogger.debugBuffer[0][0], viewTimeSeries,
-                  measurement, PROJECT_ID, exporterOptions.metricPrefix);
+                  measurement, PROJECT_ID, prefixExporterOptions.metricPrefix);
             });
       });
     });
 
     describe('With no network connection', () => {
-      it('.onRegisterView() Should fail by network error', async () => {
+      it('.onRegisterView() Should fail by network error', (done) => {
         nock('https://monitoring.googleapis.com')
             .persist()
             .intercept(
                 '/v3/projects/' + PROJECT_ID + '/metricDescriptors', 'POST')
             .reply(443, 'Simulated Network Error');
 
-        try {
-          await exporter.onRegisterView(viewMetricDescriptor);
-          assert.fail('.onRegisterView() not fail as expected');
-        } catch (err) {
+        const failExporter =
+            new StackdriverStatsExporter({projectId: PROJECT_ID});
+        stats.registerExporter(failExporter);
+
+        failExporter.onRegisterView(viewMetricDescriptor).catch((err) => {
           assert.ok(err.message.indexOf('Simulated Network Error') >= 0);
-        }
+          failExporter.close();
+          done();
+        });
       });
 
       it('.onRecord() Should not fail by network error, but trigger onMetricUploadError with error',
-         async () => {
+         (done) => {
            nock('https://monitoring.googleapis.com')
                .persist()
                .intercept('/v3/projects/' + PROJECT_ID + '/timeSeries', 'POST')
                .reply(443, 'Simulated Network Error');
 
+           const failExporter = new StackdriverStatsExporter({
+             delay: 0,
+             projectId: PROJECT_ID,
+             onMetricUploadError: (err) => {
+               assert.ok(err.message.indexOf('Simulated Network Error') >= 0);
+               failExporter.close();
+               done();
+             }
+           });
+           stats.registerExporter(failExporter);
            viewTimeSeries.recordMeasurement(measurement);
-
-           try {
-             await exporter.onRecord([viewTimeSeries], measurement);
-             await new Promise(resolve => setTimeout(resolve, 10));
-             assert.ok(
-                 onMetricUploadErrorBuffer[0].message.indexOf(
-                     'Simulated Network Error') >= 0);
-           } catch (err) {
-             assert.fail(err);
-           }
+           failExporter.onRecord([viewTimeSeries], measurement);
          });
     });
   });

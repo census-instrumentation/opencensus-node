@@ -41,8 +41,8 @@ export class StackdriverStatsExporter implements StatsEventListener {
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
-    this.delay =
-        options.delay != null ? options.delay : StackdriverStatsExporter.DELAY;
+    this.delay = options.delay !== undefined ? options.delay :
+                                               StackdriverStatsExporter.DELAY;
     this.projectId = options.projectId;
     this.metricPrefix = options.metricPrefix ||
         StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
@@ -124,6 +124,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
         });
       });
     });
+  }
+
+  close() {
+    clearInterval(this.timer);
   }
 
   private encodeTags(tags: Tags): string {
