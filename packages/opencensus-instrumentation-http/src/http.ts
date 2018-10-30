@@ -198,9 +198,11 @@ export class HttpPlugin extends BasePlugin {
         }
 
         // Makes sure the url is an url object
+        let pathname;
         if (typeof (options) === 'string') {
           options = url.parse(options);
           arguments[0] = options;
+          pathname = options.pathname;
         } else {
           // Do not trace ourselves
           if (options.headers &&
@@ -209,6 +211,8 @@ export class HttpPlugin extends BasePlugin {
                 'header with "x-opencensus-outgoing-request" - do not trace');
             return original.apply(this, arguments);
           }
+
+          pathname = url.parse(options.href).pathname;
         }
 
         const request = original.apply(this, arguments);
@@ -218,7 +222,7 @@ export class HttpPlugin extends BasePlugin {
         plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
           name:
-              `${request.method ? request.method : 'GET'} ${options.pathname}`,
+              `${request.method ? request.method : 'GET'} ${pathname}`,
           kind: 'CLIENT',
         };
 
