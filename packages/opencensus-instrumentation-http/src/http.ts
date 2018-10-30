@@ -221,8 +221,7 @@ export class HttpPlugin extends BasePlugin {
 
         plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
-          name:
-              `${request.method ? request.method : 'GET'} ${pathname}`,
+          name: `${request.method ? request.method : 'GET'} ${pathname}`,
           kind: 'CLIENT',
         };
 
