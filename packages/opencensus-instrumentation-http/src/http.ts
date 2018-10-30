@@ -212,7 +212,7 @@ export class HttpPlugin extends BasePlugin {
             return original.apply(this, arguments);
           }
 
-          pathname = url.parse(options.href).pathname;
+          pathname = url.parse(options.path).pathname;
         }
 
         const request = original.apply(this, arguments);
