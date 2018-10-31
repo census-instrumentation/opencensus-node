@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/exporter-prometheus",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "OpenCensus Exporter Prometheus allows user to send collected stats to Prometheus",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
