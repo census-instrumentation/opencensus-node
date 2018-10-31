@@ -86,7 +86,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param views The views associated with the measure
    * @param measurement The measurement recorded
    */
-  async onRecord(views: View[], measurement: Measurement) {
+  onRecord(views: View[], measurement: Measurement) {
     for (const view of views) {
       if (!this.viewToUpload[view.name]) {
         this.viewToUpload[view.name] = {view, tags: {}};
@@ -96,8 +96,8 @@ export class StackdriverStatsExporter implements StatsEventListener {
     }
   }
 
-  async uploadViews() {
-    const timeSeries = [] as TimeSeries[];
+  private uploadViews() {
+    const timeSeries: TimeSeries[] = [];
     for (const name of Object.keys(this.viewToUpload)) {
       const v = this.viewToUpload[name];
       for (const tagsKey of Object.keys(v.tags)) {
