@@ -96,6 +96,14 @@ export class StackdriverStatsExporter implements StatsEventListener {
     }
   }
 
+  /**
+   * Clear the interval timer to stop uploading metrics. It should be called
+   * whenever the exporter is not needed anymore.
+   */
+  close() {
+    clearInterval(this.timer);
+  }
+
   private uploadViews() {
     const timeSeries: TimeSeries[] = [];
     for (const name of Object.keys(this.viewToUpload)) {
@@ -124,10 +132,6 @@ export class StackdriverStatsExporter implements StatsEventListener {
         });
       });
     });
-  }
-
-  close() {
-    clearInterval(this.timer);
   }
 
   private encodeTags(tags: Tags): string {

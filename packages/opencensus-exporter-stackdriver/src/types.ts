@@ -48,6 +48,10 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    */
   metricPrefix?: string;
 
+  /**
+   * Is called whenever the exporter fails to upload metrics to stackdriver.
+   * Optional
+   */
   onMetricUploadError?: (err: Error) => void;
 }
 
