@@ -29,7 +29,7 @@ const UNIT_SEPARATOR = String.fromCharCode(31);
 
 /** Format and sends Stats to Stackdriver */
 export class StackdriverStatsExporter implements StatsEventListener {
-  private delay: number;
+  private period: number;
   private projectId: string;
   private metricPrefix: string;
   private viewToUpload:
@@ -37,12 +37,13 @@ export class StackdriverStatsExporter implements StatsEventListener {
   private timer: NodeJS.Timer;
   static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
       'custom.googleapis.com/opencensus';
-  static readonly DELAY: number = 60000;
+  static readonly PERIOD: number = 60000;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
-    this.delay = options.delay !== undefined ? options.delay :
-                                               StackdriverStatsExporter.DELAY;
+    this.period = options.period !== undefined ?
+        options.period :
+        StackdriverStatsExporter.PERIOD;
     this.projectId = options.projectId;
     this.metricPrefix = options.metricPrefix ||
         StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
@@ -57,7 +58,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
           options.onMetricUploadError(err);
         }
       }
-    }, this.delay);
+    }, this.period);
   }
 
   /**
