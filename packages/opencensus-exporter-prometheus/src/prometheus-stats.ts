@@ -17,7 +17,7 @@
 import {AggregationType, DistributionData, ExporterConfig, logger, Logger, Measurement, MeasureUnit, StatsEventListener, Tags, View} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
-import {Counter, Gauge, Histogram, Metric, Registry} from 'prom-client';
+import {collectDefaultMetrics, Counter, Gauge, Histogram, Metric, Registry} from 'prom-client';
 
 export interface PrometheusExporterOptions extends ExporterConfig {
   /** App prefix for metrics, if needed - default opencensus */
@@ -30,6 +30,11 @@ export interface PrometheusExporterOptions extends ExporterConfig {
   port?: number;
   /** Define if the Prometheus server will be started - default false */
   startServer?: boolean;
+  /**
+   * Define if the Prometheus client should collect recommended metrics
+   * (https://github.com/siimon/prom-client#default-metrics)
+   */
+  defaultMetricsCollectorIntervalMs?: number;
 }
 
 /** Format and sends Stats to Prometheus */
@@ -54,6 +59,13 @@ export class PrometheusStatsExporter implements StatsEventListener {
     this.port = options.port || PrometheusStatsExporter.DEFAULT_OPTIONS.port;
     this.prefix =
         options.prefix || PrometheusStatsExporter.DEFAULT_OPTIONS.prefix;
+
+    if (options.defaultMetricsCollectorIntervalMs) {
+      collectDefaultMetrics({
+        register: this.registry,
+        timeout: options.defaultMetricsCollectorIntervalMs
+      });
+    }
 
     /** Start the server if the startServer option is true */
     if (options.startServer) {
