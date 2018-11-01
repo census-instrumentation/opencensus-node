@@ -33,6 +33,7 @@ export class GcpMetadataConfig {
   static metadata: Record<string, string> = {};
   static readonly logger: loggerTypes.Logger = logger.logger();
   static promise: Promise<Record<string, string>>;
+  static readonly ID_KEY = 'instance/id';
 
   /**
    * Initializes metadata service once and load gcp metadata into map.
@@ -41,35 +42,36 @@ export class GcpMetadataConfig {
     if (GcpMetadataConfig.runned) {
       return GcpMetadataConfig.promise;
     }
+    let attributes: Record<string, string>;
+    if (GcpMetadataConfig.KUBERNETES_SERVICE_HOST in process.env) {
+      attributes = monitoredResourceAttributes.GKE;
+    } else {
+      attributes = monitoredResourceAttributes.GCE;
+    }
     GcpMetadataConfig.promise =
-        GcpMetadataConfig.getAttribute('instance_id').then(id => {
+        GcpMetadataConfig.getAttribute('instance/id').then(id => {
           if (isString(id)) {
             GcpMetadataConfig.metadata['instance_id'] = id;
             GcpMetadataConfig.runned = true;
-            return GcpMetadataConfig.getAttributes();
+            return GcpMetadataConfig.getAttributes(attributes);
           }
           return Promise.resolve(GcpMetadataConfig.metadata);
         });
     return GcpMetadataConfig.promise;
   }
 
-  private static getAttributes() {
-    let attributes;
-    if (GcpMetadataConfig.KUBERNETES_SERVICE_HOST in process.env) {
-      attributes = monitoredResourceAttributes.GKE;
-    } else {
-      attributes = monitoredResourceAttributes.GCE;
-    }
+  private static getAttributes(attributes: Record<string, string>) {
     const promises: Array<Promise<string>> = [];
     Object.keys(attributes)
         .filter(key => key !== 'instance_id')
         .forEach(key => {
-          promises.push(GcpMetadataConfig.getAttribute(key).then(value => {
-            if (value) {
-              GcpMetadataConfig.metadata[key] = value;
-            }
-            return value;
-          }));
+          promises.push(
+              GcpMetadataConfig.getAttribute(attributes[key]).then(value => {
+                if (value) {
+                  GcpMetadataConfig.metadata[key] = value;
+                }
+                return value;
+              }));
         });
     return Promise.all(promises)
         .then(() => GcpMetadataConfig.metadata)
@@ -80,10 +82,10 @@ export class GcpMetadataConfig {
    * Fetches the requested instance metadata entry.
    * @param name Attribute name relative to the computeMetadata/v1 prefix
    */
-  static getAttribute(name: string): Promise<string> {
+  static getAttribute(attribute: string): Promise<string> {
     const options = {
       host: GcpMetadataConfig.URL,
-      path: '/' + monitoredResourceAttributes.GKE[name],
+      path: '/' + attribute,
       port: GcpMetadataConfig.PORT,
       headers: GcpMetadataConfig.HEADER
     };

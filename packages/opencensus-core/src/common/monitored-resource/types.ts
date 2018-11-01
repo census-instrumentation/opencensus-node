@@ -64,8 +64,7 @@ export const monitoredResourceAttributes: Record<
 export type MonitoredResourceType =
     MonitoredResources.GCP_GKE_CONTAINER|
     MonitoredResources.GCP_GCE_INSTANCE|MonitoredResources.AWS_EC2_INSTANCE;
-export type MonitoredResourceMetadata =
-    Promise<Record<string, string>|string>|Record<string, string>|string;
+export type MonitoredResourceMetadata = Record<string, string>|string;
 
 export interface MonitoredResource {
   readonly type: MonitoredResourceType;
