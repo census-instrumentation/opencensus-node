@@ -18,7 +18,7 @@ import {CoreTracer, RootSpan} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
-import * as mocha from 'mocha';
+import {hexToDec} from 'hex2dec';
 import * as nock from 'nock';
 
 import {StackdriverExporterOptions, StackdriverTraceExporter, TranslatedTrace} from '../src/';
@@ -158,22 +158,23 @@ describe('Stackdriver Trace Exporter', function() {
     });
 
     it('should export traces to stackdriver', () => {
-      if (dryrun) {
-        nocks.oauth2(body => true);
-        nocks.patchTraces(
-            PROJECT_ID, (body: {traces: TranslatedTrace[]}): boolean => {
-              assert.strictEqual(body.traces.length, 1);
-              const {spans} = body.traces[0];
-              assert.strictEqual(spans.length, 2);
-              assert.ok(spans.every(
-                  span => RegExp('^[0-9]{15,20}$').test(span.spanId)));
-              return true;
-            }, null, false);
-      }
-
       return tracer.startRootSpan(
           {name: 'sdExportTestRootSpan'}, async (rootSpan: RootSpan) => {
             const span = tracer.startChildSpan('sdExportTestChildSpan');
+
+            if (dryrun) {
+              nocks.oauth2(body => true);
+              nocks.patchTraces(
+                  PROJECT_ID, (body: {traces: TranslatedTrace[]}): boolean => {
+                    assert.strictEqual(body.traces.length, 1);
+                    const {spans} = body.traces[0];
+                    assert.strictEqual(spans.length, 2);
+                    assert.strictEqual(hexToDec(rootSpan.id), spans[1].spanId);
+                    assert.strictEqual(hexToDec(span.id), spans[0].spanId);
+                    return true;
+                  }, null, false);
+            }
+
             span.end();
             rootSpan.end();
 
