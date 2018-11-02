@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, Bucket, DistributionData, logger, Logger, Measurement, MeasureType, StatsEventListener, View} from '@opencensus/core';
+import {AggregationType, Bucket, DistributionData, logger, Logger, Measurement, MeasureType, StatsEventListener, Tags, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 import * as path from 'path';
@@ -24,23 +24,41 @@ import {Distribution, LabelDescriptor, MetricDescriptor, MetricKind, Point, Stac
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
 const monitoring = google.monitoring('v3');
 
+const RECORD_SEPARATOR = String.fromCharCode(30);
+const UNIT_SEPARATOR = String.fromCharCode(31);
+
 /** Format and sends Stats to Stackdriver */
 export class StackdriverStatsExporter implements StatsEventListener {
-  private delay: number;
+  private period: number;
   private projectId: string;
   private metricPrefix: string;
+  private viewToUpload:
+      {[key: string]: {view: View; tags: {[key: string]: Tags;}}};
+  private timer: NodeJS.Timer;
   static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
       'custom.googleapis.com/opencensus';
-  static readonly DELAY: number = 60000;
+  static readonly PERIOD: number = 60000;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
-    this.delay =
-        options.delay != null ? options.delay : StackdriverStatsExporter.DELAY;
+    this.period = options.period !== undefined ?
+        options.period :
+        StackdriverStatsExporter.PERIOD;
     this.projectId = options.projectId;
     this.metricPrefix = options.metricPrefix ||
         StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
     this.logger = options.logger || logger.logger();
+    this.viewToUpload = {};
+
+    this.timer = setInterval(async () => {
+      try {
+        await this.uploadViews();
+      } catch (err) {
+        if (typeof options.onMetricUploadError === 'function') {
+          options.onMetricUploadError(err);
+        }
+      }
+    }, this.period);
   }
 
   /**
@@ -69,14 +87,37 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param views The views associated with the measure
    * @param measurement The measurement recorded
    */
-  async onRecord(views: View[], measurement: Measurement) {
-    await new Promise(resolve => {
-      setTimeout(resolve, this.delay);
-    });
+  onRecord(views: View[], measurement: Measurement) {
+    for (const view of views) {
+      if (!this.viewToUpload[view.name]) {
+        this.viewToUpload[view.name] = {view, tags: {}};
+      }
+      const tagsKey = this.encodeTags(measurement.tags);
+      this.viewToUpload[view.name].tags[tagsKey] = measurement.tags;
+    }
+  }
 
-    const timeSeries = views.map(view => {
-      return this.createTimeSeriesData(view, measurement);
-    });
+  /**
+   * Clear the interval timer to stop uploading metrics. It should be called
+   * whenever the exporter is not needed anymore.
+   */
+  close() {
+    clearInterval(this.timer);
+  }
+
+  private uploadViews() {
+    const timeSeries: TimeSeries[] = [];
+    for (const name of Object.keys(this.viewToUpload)) {
+      const v = this.viewToUpload[name];
+      for (const tagsKey of Object.keys(v.tags)) {
+        timeSeries.push(this.createTimeSeriesData(v.view, v.tags[tagsKey]));
+      }
+    }
+    this.viewToUpload = {};
+
+    if (timeSeries.length === 0) {
+      return Promise.resolve();
+    }
 
     return this.authorize().then(authClient => {
       const request = {
@@ -92,6 +133,15 @@ export class StackdriverStatsExporter implements StatsEventListener {
         });
       });
     });
+  }
+
+  private encodeTags(tags: Tags): string {
+    return Object.keys(tags)
+        .sort()
+        .map(tagKey => {
+          return tagKey + UNIT_SEPARATOR + tags[tagKey];
+        })
+        .join(RECORD_SEPARATOR);
   }
 
   /**
@@ -122,31 +172,30 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param view The view to get TimeSeries information from
    * @param measurement The measurement to get TimeSeries information from
    */
-  private createTimeSeriesData(view: View, measurement: Measurement):
-      TimeSeries {
-    const aggregationData = view.getSnapshot(measurement.tags);
+  private createTimeSeriesData(view: View, tags: Tags): TimeSeries {
+    const aggregationData = view.getSnapshot(tags);
 
     const resourceLabels:
         {[key: string]: string} = {project_id: this.projectId};
 
-    // For non Sum Aggregations, the end time should be the same as the start
+    // For LAST_VALUE Aggregations, the end time should be the same as the start
     // time.
     const endTime = (new Date(aggregationData.timestamp)).toISOString();
-    const startTime = view.aggregation === AggregationType.SUM ?
+    const startTime = view.aggregation !== AggregationType.LAST_VALUE ?
         (new Date(view.startTime)).toISOString() :
         endTime;
 
     let value;
-    if (view.measure.type === MeasureType.INT64) {
-      value = {int64Value: measurement.value.toString()};
-    } else if (aggregationData.type === AggregationType.DISTRIBUTION) {
+    if (aggregationData.type === AggregationType.DISTRIBUTION) {
       value = {distributionValue: this.createDistribution(aggregationData)};
+    } else if (view.measure.type === MeasureType.INT64) {
+      value = {int64Value: aggregationData.value.toString()};
     } else {
-      value = {doubleValue: measurement.value};
+      value = {doubleValue: aggregationData.value};
     }
 
     return {
-      metric: {type: this.getMetricType(view.name), labels: measurement.tags},
+      metric: {type: this.getMetricType(view.name), labels: tags},
       resource: {type: 'global', labels: resourceLabels},
       metricKind: this.createMetricKind(view.aggregation),
       valueType: this.createValueType(view),
@@ -241,7 +290,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * from.
    */
   private createMetricKind(aggregationType: AggregationType): MetricKind {
-    if (aggregationType === AggregationType.SUM) {
+    if (aggregationType !== AggregationType.LAST_VALUE) {
       return MetricKind.CUMULATIVE;
     }
     return MetricKind.GAUGE;
