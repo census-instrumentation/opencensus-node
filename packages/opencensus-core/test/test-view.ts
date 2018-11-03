@@ -127,17 +127,17 @@ describe('BaseView', () => {
   describe('recordMeasurement()', () => {
     const measurementValues = [1.1, -2.3, 3.2, -4.3, 5.2];
     const bucketBoundaries = [0, 2, 4, 6];
+    const negativeBucketBoundaries = [-4, -2, 0, 2, 4, 6];
     const emptyAggregation = {};
 
     for (const aggregationTestCase of aggregationTestCases) {
       const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
-      const view = new BaseView(
-          'test/view/name', measure, aggregationTestCase.aggregationType,
-          ['testKey1', 'testKey2'], 'description test', bucketBoundaries);
-
       it(`should record measurements on a View with ${
              aggregationTestCase.description} Aggregation Data type`,
          () => {
+           const view = new BaseView(
+               'test/view/name', measure, aggregationTestCase.aggregationType,
+               ['testKey1', 'testKey2'], 'description test', bucketBoundaries);
            const recordedValues = [];
            for (const value of measurementValues) {
              recordedValues.push(value);
@@ -148,6 +148,22 @@ describe('BaseView', () => {
                  aggregationTestCase.aggregationType);
            }
          });
+
+      it('should ignore negative bucket bounds', () => {
+        const view = new BaseView(
+            'test/view/name', measure, aggregationTestCase.aggregationType,
+            ['testKey1', 'testKey2'], 'description test',
+            negativeBucketBoundaries);
+        const recordedValues = [];
+        for (const value of measurementValues) {
+          recordedValues.push(value);
+          const measurement = {measure, tags, value};
+          view.recordMeasurement(measurement);
+          assertView(
+              view, measurement, recordedValues,
+              aggregationTestCase.aggregationType);
+        }
+      });
     }
 
     const view = new BaseView(

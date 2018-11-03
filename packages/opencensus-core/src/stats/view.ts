@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import * as logger from '../common/console-logger';
+import * as loggerTypes from '../common/types';
+
 import {Recorder} from './recorder';
 import {AggregationData, AggregationMetadata, AggregationType, Bucket, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
 
@@ -59,6 +62,8 @@ export class BaseView implements View {
   endTime: number;
   /** true if the view was registered */
   registered = false;
+  /** An object to log information to */
+  private logger: loggerTypes.Logger = logger.logger();
 
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
@@ -181,15 +186,55 @@ export class BaseView implements View {
    * @param bucketBoundaries a list with the bucket boundaries
    */
   private createBuckets(bucketBoundaries: number[]): Bucket[] {
-    return bucketBoundaries.map((boundary, boundaryIndex) => {
-      return {
-        count: 0,
-        lowBoundary: boundaryIndex ? boundary : -Infinity,
-        highBoundary: (boundaryIndex === bucketBoundaries.length - 1) ?
-            Infinity :
-            bucketBoundaries[boundaryIndex + 1]
-      };
-    });
+    const boundaries = bucketBoundaries.filter(Math.clz32);
+    const negative = bucketBoundaries.length - boundaries.length;
+    if (negative) {
+      this.logger.warn(`Dropping ${
+          negative} negative bucket boundaries, the values must be strictly > 0.`);
+    }
+    const result = boundaries.reduce((accumulator, boundary, index) => {
+      if (boundary >= 0) {
+        const nextBoundary = boundaries[index + 1];
+        this.validateBoundary(boundary, nextBoundary);
+        const bucket =
+            this.createBucket(boundary, nextBoundary, index, boundaries.length);
+        accumulator.push(bucket);
+      }
+      return accumulator;
+    }, []);
+    return result;
+  }
+
+  /**
+   * Checks boundaries order and duplicates
+   * @param current Boundary
+   * @param next Next boundary
+   */
+  private validateBoundary(current: number, next: number) {
+    if (next) {
+      if (current > next) {
+        this.logger.error('Bucket boundaries not sorted.');
+      }
+      if (current === next) {
+        this.logger.error('Bucket boundaries not unique.');
+      }
+    }
+  }
+
+  /**
+   * Creates empty buckeet boundary.
+   * @param current Current boundary
+   * @param next Next boundary
+   * @param position Index of boundary
+   * @param max Maximum length of boundaries
+   */
+  private createBucket(
+      current: number, next: number, position: number, max: number): Bucket {
+    return {
+      count: 0,
+      lowBoundary: position ? current : -Infinity,
+      highBoundary: (position === max - 1) ? Infinity : next
+    };
   }
 
   /**
