@@ -78,7 +78,6 @@ function assertView(
     aggregationType: AggregationType) {
   assert.strictEqual(view.aggregation, aggregationType);
   const aggregationData = view.getSnapshot(measurement.tags);
-
   switch (aggregationData.type) {
     case AggregationType.SUM:
       const acc = recordedValues.reduce((acc, cur) => acc + cur);
@@ -125,7 +124,8 @@ describe('BaseView', () => {
   });
 
   describe('recordMeasurement()', () => {
-    const measurementValues = [1.1, -2.3, 3.2, -4.3, 5.2];
+    const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
+    const negativeMeasurementValues = [1.1, -2.3, 3.2, -4.3, 5.2];
     const bucketBoundaries = [0, 2, 4, 6];
     const negativeBucketBoundaries = [-4, -2, 0, 2, 4, 6];
     const emptyAggregation = {};
@@ -141,6 +141,25 @@ describe('BaseView', () => {
            const recordedValues = [];
            for (const value of measurementValues) {
              recordedValues.push(value);
+             const measurement = {measure, tags, value};
+             view.recordMeasurement(measurement);
+             assertView(
+                 view, measurement, recordedValues,
+                 aggregationTestCase.aggregationType);
+           }
+         });
+
+      it(`should skip negative measurements on a View with ${
+             aggregationTestCase.description} Aggregation Data type`,
+         () => {
+           const view = new BaseView(
+               'test/view/name', measure, aggregationTestCase.aggregationType,
+               ['testKey1', 'testKey2'], 'description test', bucketBoundaries);
+           const recordedValues = [];
+           for (const value of negativeMeasurementValues) {
+             if (value > 0) {
+               recordedValues.push(value);
+             }
              const measurement = {measure, tags, value};
              view.recordMeasurement(measurement);
              assertView(

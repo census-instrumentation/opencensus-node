@@ -109,6 +109,12 @@ export class BaseView implements View {
       return;
     }
 
+    if (measurement.value < 0) {
+      this.logger.warn(
+          'Dropping values, value to record must be non-negative.');
+      return;
+    }
+
     // Checks if measurement has all tags in views
     for (const tagKey of this.columns) {
       if (!Object.keys(measurement.tags).some((key) => key === tagKey)) {
@@ -120,6 +126,7 @@ export class BaseView implements View {
     if (!this.rows[encodedTags]) {
       this.rows[encodedTags] = this.createAggregationData(measurement.tags);
     }
+
     Recorder.addMeasurement(this.rows[encodedTags], measurement);
   }
 
