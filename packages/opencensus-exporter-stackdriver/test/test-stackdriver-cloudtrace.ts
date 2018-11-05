@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import {CoreTracer, RootSpan} from '@opencensus/core';
+import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
-import * as mocha from 'mocha';
+import {hexToDec} from 'hex2dec';
 import * as nock from 'nock';
 
-import {StackdriverExporterOptions, StackdriverTraceExporter} from '../src/';
+import {StackdriverExporterOptions, StackdriverTraceExporter, TranslatedTrace} from '../src/';
 
 import * as nocks from './nocks';
 
@@ -44,7 +44,6 @@ describe('Stackdriver Trace Exporter', function() {
   let exporterOptions: StackdriverExporterOptions;
   let exporter: StackdriverTraceExporter;
   let tracer: CoreTracer;
-
 
   before(() => {
     if (GOOGLE_APPLICATION_CREDENTIALS) {
@@ -81,7 +80,6 @@ describe('Stackdriver Trace Exporter', function() {
     }
   });
 
-
   /* Should add spans to an exporter buffer */
   describe('onEndSpan()', () => {
     it('should add a root span to an exporter buffer', () => {
@@ -110,7 +108,7 @@ describe('Stackdriver Trace Exporter', function() {
     it('should fail exporting by authentication error', () => {
       process.env.GOOGLE_APPLICATION_CREDENTIALS = '';
       if (dryrun) {
-        nocks.oauth2((body) => true);
+        nocks.oauth2(body => true);
       }
 
       return tracer.startRootSpan(
@@ -119,7 +117,7 @@ describe('Stackdriver Trace Exporter', function() {
             span.end();
             rootSpan.end();
 
-            return exporter.publish([rootSpan]).then((result) => {
+            return exporter.publish([rootSpan]).then(result => {
               assert.ok(result.message.indexOf('authorize error') >= 0);
               assert.strictEqual(
                   exporter.failBuffer[0].traceId, rootSpan.spanContext.traceId);
@@ -132,7 +130,7 @@ describe('Stackdriver Trace Exporter', function() {
       if (dryrun) {
         process.env.GOOGLE_APPLICATION_CREDENTIALS =
             __dirname + '/fixtures/fakecredentials.json';
-        nocks.oauth2((body) => true);
+        nocks.oauth2(body => true);
         nocks.patchTraces(NOEXIST_PROJECT_ID, null, null, false);
       }
       const failExporterOptions = {
@@ -149,7 +147,7 @@ describe('Stackdriver Trace Exporter', function() {
             span.end();
             rootSpan.end();
 
-            return failExporter.publish([rootSpan]).then((result) => {
+            return failExporter.publish([rootSpan]).then(result => {
               assert.ok(result.message.indexOf('sendTrace error: ') >= 0);
 
               assert.strictEqual(
@@ -160,23 +158,31 @@ describe('Stackdriver Trace Exporter', function() {
     });
 
     it('should export traces to stackdriver', () => {
-      if (dryrun) {
-        nocks.oauth2((body) => true);
-        nocks.patchTraces(PROJECT_ID, null, null, false);
-      }
-
       return tracer.startRootSpan(
           {name: 'sdExportTestRootSpan'}, async (rootSpan: RootSpan) => {
             const span = tracer.startChildSpan('sdExportTestChildSpan');
+
+            if (dryrun) {
+              nocks.oauth2(body => true);
+              nocks.patchTraces(
+                  PROJECT_ID, (body: {traces: TranslatedTrace[]}): boolean => {
+                    assert.strictEqual(body.traces.length, 1);
+                    const {spans} = body.traces[0];
+                    assert.strictEqual(spans.length, 2);
+                    assert.strictEqual(hexToDec(rootSpan.id), spans[1].spanId);
+                    assert.strictEqual(hexToDec(span.id), spans[0].spanId);
+                    return true;
+                  }, null, false);
+            }
+
             span.end();
             rootSpan.end();
 
-            return exporter.publish([rootSpan]).then((result) => {
+            return exporter.publish([rootSpan]).then(result => {
               assert.ok(result.indexOf('sendTrace sucessfully') >= 0);
             });
           });
     });
-
 
     it('should fail exporting by network error', async () => {
       nock('https://cloudtrace.googleapis.com')
@@ -185,7 +191,7 @@ describe('Stackdriver Trace Exporter', function() {
               '/v1/projects/' + exporterOptions.projectId + '/traces', 'patch')
           .reply(443, 'Simulated Network Error');
 
-      nocks.oauth2((body) => true);
+      nocks.oauth2(body => true);
 
       return tracer.startRootSpan(
           {name: 'sdErrorExportTestRootSpan'}, (rootSpan: RootSpan) => {
@@ -193,7 +199,7 @@ describe('Stackdriver Trace Exporter', function() {
             span.end();
             rootSpan.end();
 
-            return exporter.publish([rootSpan]).then((result) => {
+            return exporter.publish([rootSpan]).then(result => {
               assert.ok(result.message.indexOf('Simulated Network Error') >= 0);
             });
           });
