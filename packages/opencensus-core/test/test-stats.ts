@@ -135,57 +135,49 @@ describe('Stats', () => {
   describe('record()', () => {
     let measure: Measure;
     const testExporter = new TestExporter();
-    let view;
-    let aggregationData: LastValueData;
+
     before(() => {
       measure = stats.createMeasureInt64(measureName, measureUnit);
     });
 
     beforeEach(() => {
       testExporter.clean();
-      stats.registerExporter(testExporter);
-      view = stats.createView(
-          viewName, measure, AggregationType.LAST_VALUE, tagKeys, description);
     });
 
     it('should record a single measurement', () => {
+      stats.registerExporter(testExporter);
+      const view = stats.createView(
+          viewName, measure, AggregationType.LAST_VALUE, tagKeys, description);
       const measurement = {measure, tags, value: 1};
+
       assert.strictEqual(testExporter.recordedMeasurements.length, 0);
+
       stats.record(measurement);
+      const aggregationData =
+          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
+
       assert.strictEqual(testExporter.recordedMeasurements.length, 1);
       assert.deepEqual(testExporter.recordedMeasurements[0], measurement);
-      aggregationData =
-          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement.value);
     });
 
-    it('should not record a single negative measurement', () => {
-      stats.registerExporter(testExporter);
-      const measurement = {measure, tags, value: -1};
-      stats.record(measurement);
-      assert.strictEqual(testExporter.recordedMeasurements.length, 0);
-    });
-
     it('should record multiple measurements', () => {
+      stats.registerExporter(testExporter);
+      const view = stats.createView(
+          viewName, measure, AggregationType.LAST_VALUE, tagKeys, description);
       const measurement1 = {measure, tags, value: 1};
       const measurement2 = {measure, tags, value: 1};
+
       assert.strictEqual(testExporter.recordedMeasurements.length, 0);
+
       stats.record(measurement1, measurement2);
+      const aggregationData =
+          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
+
       assert.strictEqual(testExporter.recordedMeasurements.length, 2);
       assert.deepEqual(testExporter.recordedMeasurements[0], measurement1);
       assert.deepEqual(testExporter.recordedMeasurements[1], measurement2);
-      aggregationData =
-          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement2.value);
-    });
-
-    it('should stop record on negative value of multiple measurement', () => {
-      const measurments = [
-        {measure, tags, value: 1}, {measure, tags, value: -1},
-        {measure, tags, value: 1}
-      ];
-      stats.record(...measurments);
-      assert.equal(testExporter.recordedMeasurements.length, 1);
     });
   });
 });

@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import * as defaultLogger from '../common/console-logger';
-import * as loggerTypes from '../common/types';
-
 import {Recorder} from './recorder';
 import {AggregationData, AggregationMetadata, AggregationType, Bucket, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
 
@@ -62,8 +59,6 @@ export class BaseView implements View {
   endTime: number;
   /** true if the view was registered */
   registered = false;
-  /** An object to log information to */
-  private logger: loggerTypes.Logger;
 
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
@@ -75,16 +70,13 @@ export class BaseView implements View {
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
    * aggregation type
-   * @param logger
    */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagsKeys: string[], description: string, bucketBoundaries?: number[],
-      logger = defaultLogger) {
+      tagsKeys: string[], description: string, bucketBoundaries?: number[]) {
     if (aggregation === AggregationType.DISTRIBUTION && !bucketBoundaries) {
       throw new Error('No bucketBoundaries specified');
     }
-    this.logger = logger.logger();
     this.name = name;
     this.description = description;
     this.measure = measure;
@@ -123,7 +115,6 @@ export class BaseView implements View {
     if (!this.rows[encodedTags]) {
       this.rows[encodedTags] = this.createAggregationData(measurement.tags);
     }
-
     Recorder.addMeasurement(this.rows[encodedTags], measurement);
   }
 
@@ -190,57 +181,15 @@ export class BaseView implements View {
    * @param bucketBoundaries a list with the bucket boundaries
    */
   private createBuckets(bucketBoundaries: number[]): Bucket[] {
-    let negative = 0;
-    const result = bucketBoundaries.reduce((accumulator, boundary, index) => {
-      if (boundary >= 0) {
-        const nextBoundary = bucketBoundaries[index + 1];
-        this.validateBoundary(boundary, nextBoundary);
-        const len = bucketBoundaries.length - negative;
-        const position = index - negative;
-        const bucket = this.createBucket(boundary, nextBoundary, position, len);
-        accumulator.push(bucket);
-      } else {
-        negative++;
-      }
-      return accumulator;
-    }, []);
-    if (negative) {
-      this.logger.warn(`Dropping ${
-          negative} negative bucket boundaries, the values must be strictly > 0.`);
-    }
-    return result;
-  }
-
-  /**
-   * Checks boundaries order and duplicates
-   * @param current Boundary
-   * @param next Next boundary
-   */
-  private validateBoundary(current: number, next: number) {
-    if (next) {
-      if (current > next) {
-        this.logger.error('Bucket boundaries not sorted.');
-      }
-      if (current === next) {
-        this.logger.error('Bucket boundaries not unique.');
-      }
-    }
-  }
-
-  /**
-   * Creates empty bucket boundary.
-   * @param current Current boundary
-   * @param next Next boundary
-   * @param position Index of boundary
-   * @param max Maximum length of boundaries
-   */
-  private createBucket(
-      current: number, next: number, position: number, max: number): Bucket {
-    return {
-      count: 0,
-      lowBoundary: position ? current : -Infinity,
-      highBoundary: (position === max - 1) ? Infinity : next
-    };
+    return bucketBoundaries.map((boundary, boundaryIndex) => {
+      return {
+        count: 0,
+        lowBoundary: boundaryIndex ? boundary : -Infinity,
+        highBoundary: (boundaryIndex === bucketBoundaries.length - 1) ?
+            Infinity :
+            bucketBoundaries[boundaryIndex + 1]
+      };
+    });
   }
 
   /**

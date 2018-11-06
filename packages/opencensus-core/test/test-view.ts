@@ -78,6 +78,7 @@ function assertView(
     aggregationType: AggregationType) {
   assert.strictEqual(view.aggregation, aggregationType);
   const aggregationData = view.getSnapshot(measurement.tags);
+
   switch (aggregationData.type) {
     case AggregationType.SUM:
       const acc = recordedValues.reduce((acc, cur) => acc + cur);
@@ -124,18 +125,19 @@ describe('BaseView', () => {
   });
 
   describe('recordMeasurement()', () => {
-    const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
+    const measurementValues = [1.1, -2.3, 3.2, -4.3, 5.2];
     const bucketBoundaries = [0, 2, 4, 6];
     const emptyAggregation = {};
-    const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
 
     for (const aggregationTestCase of aggregationTestCases) {
+      const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
+      const view = new BaseView(
+          'test/view/name', measure, aggregationTestCase.aggregationType,
+          ['testKey1', 'testKey2'], 'description test', bucketBoundaries);
+
       it(`should record measurements on a View with ${
              aggregationTestCase.description} Aggregation Data type`,
          () => {
-           const view = new BaseView(
-               'test/view/name', measure, aggregationTestCase.aggregationType,
-               ['testKey1', 'testKey2'], 'description test', bucketBoundaries);
            const recordedValues = [];
            for (const value of measurementValues) {
              recordedValues.push(value);
@@ -147,31 +149,6 @@ describe('BaseView', () => {
            }
          });
     }
-
-    it('should ignore negative bucket bounds', () => {
-      const negativeBucketBoundaries = [-Infinity, -4, -2, 0, 2, 4, 6];
-      const view = new BaseView(
-          'test/view/name', measure, AggregationType.DISTRIBUTION,
-          ['testKey1', 'testKey2'], 'description test',
-          negativeBucketBoundaries);
-      const recordedValues = [];
-      for (const value of measurementValues) {
-        recordedValues.push(value);
-        const measurement = {measure, tags, value};
-        view.recordMeasurement(measurement);
-      }
-      const data = view.getSnapshot(tags) as DistributionData;
-      const expectedBuckets = [
-        {count: 1, lowBoundary: -Infinity, highBoundary: 2},
-        {count: 2, lowBoundary: 2, highBoundary: 4},
-        {count: 2, lowBoundary: 4, highBoundary: 6},
-        {count: 0, lowBoundary: 6, highBoundary: Infinity}
-      ];
-      assert.equal(data.buckets.length, expectedBuckets.length);
-      expectedBuckets.forEach((bucket, index) => {
-        assert.deepStrictEqual(data.buckets[index], bucket);
-      });
-    });
 
     const view = new BaseView(
         'test/view/name', measure, AggregationType.LAST_VALUE,
