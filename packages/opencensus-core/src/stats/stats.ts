@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import * as defaultLogger from '../common/console-logger';
+import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
 
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, View} from './types';
@@ -24,8 +26,16 @@ export class Stats {
   private statsEventListeners: StatsEventListener[] = [];
   /** A map of Measures (name) to their corresponding Views */
   private registeredViews: {[key: string]: View[]} = {};
+  /** An object to log information to */
+  private logger: loggerTypes.Logger;
 
-  constructor() {}
+  /**
+   * Creates stats
+   * @param logger
+   */
+  constructor(logger = defaultLogger) {
+    this.logger = logger.logger();
+  }
 
   /**
    * Registers a view to listen to new measurements in its measure. Prefer using
@@ -110,6 +120,12 @@ export class Stats {
    */
   record(...measurements: Measurement[]) {
     for (const measurement of measurements) {
+      if (measurement.value < 0) {
+        this.logger.warn(`Dropping value ${
+            measurement.value}, value to record must be non-negative.`);
+        break;
+      }
+
       const views = this.registeredViews[measurement.measure.name];
       if (!views) {
         break;

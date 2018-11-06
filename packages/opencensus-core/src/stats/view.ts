@@ -74,8 +74,8 @@ export class BaseView implements View {
    * @param tagsKeys The Tags' keys that view will have
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
-   * @param defaultLogger
    * aggregation type
+   * @param logger
    */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
@@ -109,12 +109,6 @@ export class BaseView implements View {
   recordMeasurement(measurement: Measurement) {
     // Checks if measurement has valid tags
     if (this.invalidTags(measurement.tags)) {
-      return;
-    }
-
-    if (measurement.value < 0) {
-      this.logger.warn(
-          'Dropping values, value to record must be non-negative.');
       return;
     }
 
