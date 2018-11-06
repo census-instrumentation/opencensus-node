@@ -233,7 +233,7 @@ export class BaseView implements View {
   }
 
   /**
-   * Creates empty buckeet boundary.
+   * Creates empty bucket boundary.
    * @param current Current boundary
    * @param next Next boundary
    * @param position Index of boundary
