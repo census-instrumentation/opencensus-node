@@ -127,7 +127,7 @@ describe('BaseView', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const negativeMeasurementValues = [1.1, -2.3, 3.2, -4.3, 5.2];
     const bucketBoundaries = [0, 2, 4, 6];
-    const negativeBucketBoundaries = [-4, -2, 0, 2, 4, 6];
+    const negativeBucketBoundaries = [-Infinity, -4, -2, 0, 2, 4, 6];
     const emptyAggregation = {};
 
     for (const aggregationTestCase of aggregationTestCases) {

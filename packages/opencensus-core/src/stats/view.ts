@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as logger from '../common/console-logger';
+import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 
 import {Recorder} from './recorder';
@@ -63,7 +63,7 @@ export class BaseView implements View {
   /** true if the view was registered */
   registered = false;
   /** An object to log information to */
-  private logger: loggerTypes.Logger = logger.logger();
+  private logger: loggerTypes.Logger;
 
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
@@ -74,14 +74,16 @@ export class BaseView implements View {
    * @param tagsKeys The Tags' keys that view will have
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
+   * @param defaultLogger
    * aggregation type
    */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagsKeys: string[], description: string, bucketBoundaries?: number[]) {
+      tagsKeys: string[], description: string, bucketBoundaries?: number[], logger = defaultLogger) {
     if (aggregation === AggregationType.DISTRIBUTION && !bucketBoundaries) {
       throw new Error('No bucketBoundaries specified');
     }
+    this.logger = logger.logger();
     this.name = name;
     this.description = description;
     this.measure = measure;
@@ -193,22 +195,24 @@ export class BaseView implements View {
    * @param bucketBoundaries a list with the bucket boundaries
    */
   private createBuckets(bucketBoundaries: number[]): Bucket[] {
-    const boundaries = bucketBoundaries.filter(Math.clz32);
-    const negative = bucketBoundaries.length - boundaries.length;
+    let negative = 0;
+    const result = bucketBoundaries.reduce((accumulator, boundary, index) => {
+      if (boundary >= 0) {
+        const nextBoundary = bucketBoundaries[index + 1];
+        this.validateBoundary(boundary, nextBoundary);
+        const len = bucketBoundaries.length - negative;
+        const position = index - negative;
+        const bucket = this.createBucket(boundary, nextBoundary, position, len);
+        accumulator.push(bucket);
+      } else {
+        negative++;
+      }
+      return accumulator;
+    }, []);
     if (negative) {
       this.logger.warn(`Dropping ${
           negative} negative bucket boundaries, the values must be strictly > 0.`);
     }
-    const result = boundaries.reduce((accumulator, boundary, index) => {
-      if (boundary >= 0) {
-        const nextBoundary = boundaries[index + 1];
-        this.validateBoundary(boundary, nextBoundary);
-        const bucket =
-            this.createBucket(boundary, nextBoundary, index, boundaries.length);
-        accumulator.push(bucket);
-      }
-      return accumulator;
-    }, []);
     return result;
   }
 
