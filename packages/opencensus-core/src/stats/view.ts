@@ -79,7 +79,8 @@ export class BaseView implements View {
    */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagsKeys: string[], description: string, bucketBoundaries?: number[], logger = defaultLogger) {
+      tagsKeys: string[], description: string, bucketBoundaries?: number[],
+      logger = defaultLogger) {
     if (aggregation === AggregationType.DISTRIBUTION && !bucketBoundaries) {
       throw new Error('No bucketBoundaries specified');
     }
