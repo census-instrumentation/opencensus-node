@@ -44,10 +44,14 @@ export class Recorder {
       distributionData: DistributionData, value: number): DistributionData {
     distributionData.count += 1;
 
-    const inletBucket = distributionData.buckets.find((bucket) => {
-      return bucket.lowBoundary <= value && value < bucket.highBoundary;
-    });
-    inletBucket.count += 1;
+    let bucketIndex =
+        distributionData.buckets.findIndex(bucket => bucket > value);
+
+    if (bucketIndex < 0) {
+      bucketIndex = distributionData.buckets.length;
+    }
+
+    distributionData.bucketCounts[bucketIndex] += 1;
 
     if (value > distributionData.max) {
       distributionData.max = value;

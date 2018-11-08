@@ -46,6 +46,7 @@ export * from './exporters/console-exporter';
 export * from './stats/stats';
 export * from './stats/view';
 export * from './stats/recorder';
+export * from './stats/bucket-boundaries';
 
 // interfaces
 export * from './stats/types';

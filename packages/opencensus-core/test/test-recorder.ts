@@ -42,15 +42,6 @@ function assertDistributionData(
   assert.strictEqual(distributionData.count, values.length);
   assert.strictEqual(distributionData.sum, valuesSum);
 
-  for (const bucket of distributionData.buckets) {
-    const expectedBucketCount = values
-                                    .filter(
-                                        value => bucket.lowBoundary <= value &&
-                                            value < bucket.highBoundary)
-                                    .length;
-    assert.strictEqual(bucket.count, expectedBucketCount);
-  }
-
   const expectedMean = valuesSum / values.length;
   assert.ok(isAlmostEqual(distributionData.mean, expectedMean, EPSILON));
 
@@ -173,13 +164,8 @@ describe('Recorder', () => {
                    mean: 0,
                    stdDeviation: 0,
                    sumSquaredDeviations: 0,
-                   buckets: [
-                     {highBoundary: 0, lowBoundary: -Infinity, count: 0},
-                     {highBoundary: 2, lowBoundary: 0, count: 0},
-                     {highBoundary: 4, lowBoundary: 2, count: 0},
-                     {highBoundary: 6, lowBoundary: 4, count: 0},
-                     {highBoundary: Infinity, lowBoundary: 6, count: 0}
-                   ]
+                   buckets: [2, 4, 6],
+                   bucketCounts: [0, 0, 0, 0]
                  };
                  const sentValues = [];
                  for (const value of testCase.values) {

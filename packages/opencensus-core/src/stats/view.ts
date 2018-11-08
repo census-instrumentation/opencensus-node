@@ -17,8 +17,9 @@
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 
+import {BucketBoundaries} from './bucket-boundaries';
 import {Recorder} from './recorder';
-import {AggregationData, AggregationMetadata, AggregationType, Bucket, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
+import {AggregationData, AggregationMetadata, AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 const UNIT_SEPARATOR = String.fromCharCode(31);
@@ -55,7 +56,7 @@ export class BaseView implements View {
   /** The start time for this view */
   readonly startTime: number;
   /** The bucket boundaries in a Distribution Aggregation */
-  private bucketBoundaries?: number[];
+  private bucketBoundaries: BucketBoundaries;
   /**
    * The end time for this view - represents the last time a value was recorded
    */
@@ -91,7 +92,7 @@ export class BaseView implements View {
     this.columns = tagsKeys;
     this.aggregation = aggregation;
     this.startTime = Date.now();
-    this.bucketBoundaries = bucketBoundaries;
+    this.bucketBoundaries = new BucketBoundaries(bucketBoundaries);
   }
 
   /** Gets the view's tag keys */
@@ -156,7 +157,7 @@ export class BaseView implements View {
    */
   private createAggregationData(tags: Tags): AggregationData {
     const aggregationMetadata = {tags, timestamp: Date.now()};
-
+    const {buckets, bucketCounts} = this.bucketBoundaries;
     switch (this.aggregation) {
       case AggregationType.DISTRIBUTION:
         return {
@@ -170,7 +171,8 @@ export class BaseView implements View {
           mean: null as number,
           stdDeviation: null as number,
           sumSquaredDeviations: null as number,
-          buckets: this.createBuckets(this.bucketBoundaries)
+          buckets,
+          bucketCounts
         };
       case AggregationType.SUM:
         return {...aggregationMetadata, type: AggregationType.SUM, value: 0};
@@ -183,64 +185,6 @@ export class BaseView implements View {
           value: undefined
         };
     }
-  }
-
-  /**
-   * Creates empty Buckets, given a list of bucket boundaries.
-   * @param bucketBoundaries a list with the bucket boundaries
-   */
-  private createBuckets(bucketBoundaries: number[]): Bucket[] {
-    let negative = 0;
-    const result = bucketBoundaries.reduce((accumulator, boundary, index) => {
-      if (boundary >= 0) {
-        const nextBoundary = bucketBoundaries[index + 1];
-        this.validateBoundary(boundary, nextBoundary);
-        const len = bucketBoundaries.length - negative;
-        const position = index - negative;
-        const bucket = this.createBucket(boundary, nextBoundary, position, len);
-        accumulator.push(bucket);
-      } else {
-        negative++;
-      }
-      return accumulator;
-    }, []);
-    if (negative) {
-      this.logger.warn(`Dropping ${
-          negative} negative bucket boundaries, the values must be strictly > 0.`);
-    }
-    return result;
-  }
-
-  /**
-   * Checks boundaries order and duplicates
-   * @param current Boundary
-   * @param next Next boundary
-   */
-  private validateBoundary(current: number, next: number) {
-    if (next) {
-      if (current > next) {
-        this.logger.error('Bucket boundaries not sorted.');
-      }
-      if (current === next) {
-        this.logger.error('Bucket boundaries not unique.');
-      }
-    }
-  }
-
-  /**
-   * Creates empty bucket boundary.
-   * @param current Current boundary
-   * @param next Next boundary
-   * @param position Index of boundary
-   * @param max Maximum length of boundaries
-   */
-  private createBucket(
-      current: number, next: number, position: number, max: number): Bucket {
-    return {
-      count: 0,
-      lowBoundary: position ? current : -Infinity,
-      highBoundary: (position === max - 1) ? Infinity : next
-    };
   }
 
   /**

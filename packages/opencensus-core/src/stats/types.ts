@@ -192,16 +192,9 @@ export interface DistributionData extends AggregationMetadata {
   sumSquaredDeviations: number;
   /** Bucket distribution of the histogram */
   buckets: Bucket[];
+  /** Buckets count */
+  bucketCounts: number[];
 }
 
-/** A simple histogram bucket interface. */
-export interface Bucket {
-  /** Number of occurrences in the domain */
-  count: number;
-  /** The maximum possible value for a data point to fall in this bucket */
-  readonly highBoundary: number;
-  /** The minimum possible value for a data point to fall in this bucket */
-  readonly lowBoundary: number;
-}
-
+export type Bucket = number;
 export type AggregationData = SumData|CountData|LastValueData|DistributionData;

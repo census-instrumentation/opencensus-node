@@ -48,15 +48,6 @@ function assertDistributionData(
   assert.strictEqual(distributionData.count, values.length);
   assert.strictEqual(distributionData.sum, valuesSum);
 
-  for (const bucket of distributionData.buckets) {
-    const expectedBucketCount = values
-                                    .filter(
-                                        value => bucket.lowBoundary <= value &&
-                                            value < bucket.highBoundary)
-                                    .length;
-    assert.strictEqual(bucket.count, expectedBucketCount);
-  }
-
   const expectedMean = valuesSum / values.length;
   assert.ok(isAlmostEqual(distributionData.mean, expectedMean, EPSILON));
 
@@ -125,7 +116,7 @@ describe('BaseView', () => {
 
   describe('recordMeasurement()', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
-    const bucketBoundaries = [0, 2, 4, 6];
+    const bucketBoundaries = [2, 4, 6];
     const emptyAggregation = {};
     const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
 
@@ -161,16 +152,8 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
       const data = view.getSnapshot(tags) as DistributionData;
-      const expectedBuckets = [
-        {count: 1, lowBoundary: -Infinity, highBoundary: 2},
-        {count: 2, lowBoundary: 2, highBoundary: 4},
-        {count: 2, lowBoundary: 4, highBoundary: 6},
-        {count: 0, lowBoundary: 6, highBoundary: Infinity}
-      ];
-      assert.equal(data.buckets.length, expectedBuckets.length);
-      expectedBuckets.forEach((bucket, index) => {
-        assert.deepStrictEqual(data.buckets[index], bucket);
-      });
+      assert.deepStrictEqual(data.buckets, [2, 4, 6]);
+      assert.deepStrictEqual(data.bucketCounts, [1, 2, 2, 0]);
     });
 
     const view = new BaseView(
