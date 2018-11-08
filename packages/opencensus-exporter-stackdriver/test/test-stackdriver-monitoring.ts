@@ -239,6 +239,34 @@ describe('Stackdriver Stats Exporter', function() {
         });
       });
     });
+
+    it('Should create a distribution Time Series with bound 0 as first item',
+       async () => {
+         const view = new BaseView(
+             'test/valueTypeDouble', measureDouble,
+             AggregationType.DISTRIBUTION, tagKeys, 'Value Type Double',
+             [10, 25, 30]);
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+           nocks.timeSeries(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(view).then(async () => {
+           const measurement:
+               Measurement = {measure: view.measure, value: 1, tags};
+           view.recordMeasurement(measurement);
+
+           exporter.onRecord([view], measurement);
+
+           await new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
+             const timeSeries = exporterTestLogger.debugBuffer[1][0];
+             const {bucketOptions, bucketCounts} =
+                 timeSeries.points[0].value.distributionValue;
+             assert.deepStrictEqual(
+                 bucketOptions.explicitBuckets.bounds, [0, 10, 25, 30]);
+             assert.deepStrictEqual(bucketCounts, [0, 1, 0, 0, 0]);
+           });
+         });
+       });
   });
 
   /**

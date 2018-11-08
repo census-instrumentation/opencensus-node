@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, Bucket, DistributionData, logger, Logger, Measurement, MeasureType, StatsEventListener, Tags, View} from '@opencensus/core';
+import {AggregationType, DistributionData, logger, Logger, Measurement, MeasureType, StatsEventListener, Tags, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 import * as path from 'path';
@@ -212,28 +212,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
       count: distribution.count.toString(),
       mean: distribution.mean,
       sumOfSquaredDeviation: distribution.sumSquaredDeviations,
-      bucketOptions: {
-        explicitBuckets:
-            {bounds: this.getBucketBoundaries(distribution.buckets)}
-      },
-      bucketCounts: this.getBucketCounts(distribution.buckets)
+      bucketOptions: {explicitBuckets: {bounds: [0, ...distribution.buckets]}},
+      bucketCounts: [0, ...distribution.bucketCounts]
     };
-  }
-
-  /**
-   * Gets the bucket boundaries in an monotonicaly increasing order.
-   * @param buckets The bucket list to get the boundaries from
-   */
-  private getBucketBoundaries(buckets: Bucket[]): number[] {
-    return [...buckets.map(bucket => bucket.lowBoundary), Infinity];
-  }
-
-  /**
-   * Gets the count value for each bucket
-   * @param buckets The bucket list to get the count values from
-   */
-  private getBucketCounts(buckets: Bucket[]): number[] {
-    return buckets.map(bucket => bucket.count);
   }
 
   /**
