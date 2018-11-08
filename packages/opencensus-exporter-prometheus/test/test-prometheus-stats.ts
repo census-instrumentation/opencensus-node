@@ -138,7 +138,6 @@ describe('Prometheus Stats Exporter', () => {
           res.on('data', (chunk) => {
             const body = chunk.toString();
             const lines = body.split('\n');
-
             assert.equal(
                 lines[0],
                 '# HELP opencensus_distributionView_total A distribution aggregation example');
@@ -146,21 +145,24 @@ describe('Prometheus Stats Exporter', () => {
                 lines[1], '# TYPE opencensus_distributionView_total histogram');
             assert.equal(
                 lines[2],
-                'opencensus_distributionView_total_bucket{le="20",tagKey1="tagValue1"} 1');
+                'opencensus_distributionView_total_bucket{le="10",tagKey1="tagValue1"} 0');
             assert.equal(
                 lines[3],
-                'opencensus_distributionView_total_bucket{le="30",tagKey1="tagValue1"} 1');
+                'opencensus_distributionView_total_bucket{le="20",tagKey1="tagValue1"} 1');
             assert.equal(
                 lines[4],
-                'opencensus_distributionView_total_bucket{le="40",tagKey1="tagValue1"} 2');
+                'opencensus_distributionView_total_bucket{le="30",tagKey1="tagValue1"} 1');
             assert.equal(
                 lines[5],
-                'opencensus_distributionView_total_bucket{le="+Inf",tagKey1="tagValue1"} 2');
+                'opencensus_distributionView_total_bucket{le="40",tagKey1="tagValue1"} 2');
             assert.equal(
                 lines[6],
-                'opencensus_distributionView_total_sum{tagKey1="tagValue1"} 43');
+                'opencensus_distributionView_total_bucket{le="+Inf",tagKey1="tagValue1"} 2');
             assert.equal(
                 lines[7],
+                'opencensus_distributionView_total_sum{tagKey1="tagValue1"} 43');
+            assert.equal(
+                lines[8],
                 'opencensus_distributionView_total_count{tagKey1="tagValue1"} 2');
             done();
           });
