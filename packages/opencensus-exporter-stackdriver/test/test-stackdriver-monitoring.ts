@@ -127,6 +127,8 @@ function assertTimeSeries(
 
 describe('Stackdriver Stats Exporter', function() {
   this.timeout(0);
+  // CircleCI pre-empts the VM
+  const DELAY = 200;
 
   const testLogger = logger.logger();
   let dryrun = true;
@@ -228,11 +230,12 @@ describe('Stackdriver Stats Exporter', function() {
 
           exporter.onRecord([view], measurement);
 
-          await new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
-            return assertTimeSeries(
-                exporterTestLogger.debugBuffer[1][0], view, measurement,
-                PROJECT_ID);
-          });
+          await new Promise((resolve) => setTimeout(resolve, DELAY))
+              .then(() => {
+                return assertTimeSeries(
+                    exporterTestLogger.debugBuffer[1][0], view, measurement,
+                    PROJECT_ID);
+              });
         });
       });
     });
@@ -270,7 +273,7 @@ describe('Stackdriver Stats Exporter', function() {
 
         exporter.onRecord([viewTimeSeries], measurement);
 
-        await new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
+        await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
           return assertTimeSeries(
               exporterTestLogger.debugBuffer[0][0], viewTimeSeries, measurement,
               PROJECT_ID);
@@ -360,7 +363,7 @@ describe('Stackdriver Stats Exporter', function() {
         viewTimeSeries.recordMeasurement(measurement);
         prefixExporter.onRecord([viewTimeSeries], measurement);
 
-        await new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
+        await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
           return assertTimeSeries(
               exporterTestLogger.debugBuffer[0][0], viewTimeSeries, measurement,
               PROJECT_ID, prefixExporterOptions.metricPrefix);
