@@ -18,7 +18,9 @@ import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanContext} f
 import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
-import {hexToDec} from 'hex2dec';
+// TODO change to use import when types for hex2dec will be available
+const {hexToDec}: {[key: string]: (input: string) => string} =
+    require('hex2dec');
 
 import {StackdriverExporterOptions, TracesWithCredentials, TranslatedSpan, TranslatedTrace} from './types';
 
