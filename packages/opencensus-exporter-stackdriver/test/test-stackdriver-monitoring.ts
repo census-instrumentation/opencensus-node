@@ -330,43 +330,157 @@ describe('Stackdriver Stats Exporter', function() {
          });
     });
 
-    describe('With metricPrefix option', () => {
-      let prefixExporterOptions: StackdriverExporterOptions;
-      let prefixExporter: StackdriverStatsExporter;
+    describe('With prefix option', () => {
+      describe('should be reflected when onRegisterView is called', () => {
+        const {name} = viewMetricDescriptor;
+        let prefixExporter: StackdriverStatsExporter;
+        beforeEach(() => {
+          if (dryrun) {
+            nocks.metricDescriptors(PROJECT_ID, null, null, false);
+          }
+        });
 
-      before(() => {
-        prefixExporterOptions =
-            Object.assign(exporterOptions, {metricPrefix: 'test'});
-        prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
-        stats.registerExporter(prefixExporter);
-      });
+        afterEach(() => {
+          prefixExporter.close();
+        });
 
-      after(() => {
-        prefixExporter.close();
-      });
+        it('should use custom domain if prefix is undefined', async () => {
+          prefixExporter = new StackdriverStatsExporter(exporterOptions);
+          stats.registerExporter(prefixExporter);
+          await prefixExporter.onRegisterView(viewMetricDescriptor).then(() => {
+            const metricDescriptor: MetricDescriptor =
+                exporterTestLogger.debugBuffer[0];
+            assert.strictEqual(
+                metricDescriptor.type,
+                `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${name}`);
+          });
+        });
 
-      it(`should be reflected when onRegisterView is called`, async () => {
-        if (dryrun) {
-          nocks.metricDescriptors(PROJECT_ID, null, null, false);
-        }
-        await prefixExporter.onRegisterView(viewMetricDescriptor).then(() => {
-          return assertMetricDescriptor(
-              exporterTestLogger.debugBuffer[0], viewMetricDescriptor,
-              prefixExporterOptions.metricPrefix);
+        it('should use custom domain if prefix is null', async () => {
+          const prefixExporterOptions: StackdriverExporterOptions =
+              Object.assign({prefix: null}, exporterOptions);
+          prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
+          stats.registerExporter(prefixExporter);
+          await prefixExporter.onRegisterView(viewMetricDescriptor).then(() => {
+            const metricDescriptor: MetricDescriptor =
+                exporterTestLogger.debugBuffer[0];
+            assert.strictEqual(
+                metricDescriptor.type,
+                `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${name}`);
+          });
+        });
+
+        it('should use custom domain if prefix is empty', async () => {
+          const prefixExporterOptions: StackdriverExporterOptions =
+              Object.assign({prefix: ''}, exporterOptions);
+          prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
+          stats.registerExporter(prefixExporter);
+          await prefixExporter.onRegisterView(viewMetricDescriptor).then(() => {
+            const metricDescriptor: MetricDescriptor =
+                exporterTestLogger.debugBuffer[0];
+            assert.strictEqual(
+                metricDescriptor.type,
+                `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${name}`);
+          });
+        });
+
+        it('should use defined prefix', async () => {
+          const prefix = 'test';
+          const prefixExporterOptions: StackdriverExporterOptions =
+              Object.assign({prefix}, exporterOptions);
+          prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
+          stats.registerExporter(prefixExporter);
+          await prefixExporter.onRegisterView(viewMetricDescriptor).then(() => {
+            const metricDescriptor: MetricDescriptor =
+                exporterTestLogger.debugBuffer[0];
+            assert.strictEqual(metricDescriptor.type, `${prefix}/${name}`);
+          });
         });
       });
 
-      it(`should be reflected when onRecord is called`, async () => {
-        if (dryrun) {
-          nocks.timeSeries(PROJECT_ID, null, null, false);
-        }
-        viewTimeSeries.recordMeasurement(measurement);
-        prefixExporter.onRecord([viewTimeSeries], measurement);
+      describe('should be reflected when onRecord is called', () => {
+        let prefixExporter: StackdriverStatsExporter;
+        const {name} = viewTimeSeries;
 
-        await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
-          return assertTimeSeries(
-              exporterTestLogger.debugBuffer[0][0], viewTimeSeries, measurement,
-              PROJECT_ID, prefixExporterOptions.metricPrefix);
+        beforeEach(() => {
+          if (dryrun) {
+            nocks.timeSeries(PROJECT_ID, null, null, false);
+          }
+        });
+
+        afterEach(() => {
+          prefixExporter.close();
+        });
+
+        it('should use custom domain if prefix is undefined', async () => {
+          prefixExporter = new StackdriverStatsExporter(exporterOptions);
+          stats.registerExporter(prefixExporter);
+
+          viewTimeSeries.recordMeasurement(measurement);
+          prefixExporter.onRecord([viewTimeSeries], measurement);
+
+          await new Promise((resolve) => setTimeout(resolve, DELAY))
+              .then(() => {
+                const timeSeries = exporterTestLogger.debugBuffer[0][0];
+                assert.strictEqual(
+                    timeSeries.metric.type,
+                    `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                        name}`);
+              });
+        });
+
+        it('should use custom domain if prefix is null', async () => {
+          const prefixExporterOptions: StackdriverExporterOptions =
+              Object.assign({prefix: null}, exporterOptions);
+          prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
+          stats.registerExporter(prefixExporter);
+
+          viewTimeSeries.recordMeasurement(measurement);
+          prefixExporter.onRecord([viewTimeSeries], measurement);
+
+          await new Promise((resolve) => setTimeout(resolve, DELAY))
+              .then(() => {
+                const timeSeries = exporterTestLogger.debugBuffer[0][0];
+                assert.strictEqual(
+                    timeSeries.metric.type,
+                    `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                        name}`);
+              });
+        });
+
+        it('should use custom domain if prefix is empty', async () => {
+          const prefixExporterOptions: StackdriverExporterOptions =
+              Object.assign({prefix: ''}, exporterOptions);
+          prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
+          stats.registerExporter(prefixExporter);
+
+          viewTimeSeries.recordMeasurement(measurement);
+          prefixExporter.onRecord([viewTimeSeries], measurement);
+
+          await new Promise((resolve) => setTimeout(resolve, DELAY))
+              .then(() => {
+                const timeSeries = exporterTestLogger.debugBuffer[0][0];
+                assert.strictEqual(
+                    timeSeries.metric.type,
+                    `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                        name}`);
+              });
+        });
+
+        it('should use defined prefix', async () => {
+          const prefix = 'test';
+          const prefixExporterOptions: StackdriverExporterOptions =
+              Object.assign(exporterOptions, {prefix});
+          prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
+
+          viewTimeSeries.recordMeasurement(measurement);
+          prefixExporter.onRecord([viewTimeSeries], measurement);
+
+          await new Promise((resolve) => setTimeout(resolve, DELAY))
+              .then(() => {
+                const timeSeries = exporterTestLogger.debugBuffer[0][0];
+                assert.strictEqual(timeSeries.metric.type, `${prefix}/${name}`);
+              });
         });
       });
     });
