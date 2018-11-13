@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-grpc",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Opencensus grpc automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -39,7 +39,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@opencensus/propagation-b3": "^0.0.6",
+    "@opencensus/propagation-b3": "^0.0.7",
     "@types/end-of-stream": "^1.4.0",
     "@types/lodash": "^4.14.109",
     "@types/mocha": "^2.2.48",
@@ -60,7 +60,7 @@
     "typescript": "~2.7.2"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.6",
+    "@opencensus/core": "^0.0.7",
     "grpc": "~1.12.2",
     "lodash": "^4.17.10",
     "semver": "^5.5.0",
