@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ExporterConfig} from '@opencensus/core';
+import {Bucket, ExporterConfig} from '@opencensus/core';
 import {JWT} from 'google-auth-library';
 
 export type TranslatedTrace = {
@@ -101,7 +101,7 @@ export interface Distribution {
   count: string;
   mean: number;
   sumOfSquaredDeviation: number;
-  bucketOptions: {explicitBuckets: {bounds: number[];}};
+  bucketOptions: {explicitBuckets: {bounds: Bucket[];}};
   bucketCounts: number[];
 }
 

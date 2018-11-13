@@ -189,7 +189,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
    */
   private getBoundaries(view: View, tags: Tags): number[] {
     const data = view.getSnapshot(tags) as DistributionData;
-    return data.buckets.map(b => b.lowBoundary).filter(b => b !== -Infinity);
+    return data.buckets;
   }
 
   /**
