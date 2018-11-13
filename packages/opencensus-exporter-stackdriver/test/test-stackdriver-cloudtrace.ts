@@ -18,7 +18,9 @@ import {CoreTracer, RootSpan} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
-import {hexToDec} from 'hex2dec';
+// TODO change to use import when type package for hex2dec will be available
+const {hexToDec}: {[key: string]: (input: string) => string} =
+    require('hex2dec');
 import * as nock from 'nock';
 
 import {StackdriverExporterOptions, StackdriverTraceExporter, TranslatedTrace} from '../src/';

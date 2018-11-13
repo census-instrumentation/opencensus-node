@@ -49,7 +49,7 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    * Prefix for metric overrides the OpenCensus prefix
    * of a stackdriver metric. Optional
    */
-  metricPrefix?: string;
+  prefix?: string;
 
   /**
    * Is called whenever the exporter fails to upload metrics to stackdriver.

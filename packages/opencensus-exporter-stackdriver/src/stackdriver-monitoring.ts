@@ -45,8 +45,8 @@ export class StackdriverStatsExporter implements StatsEventListener {
         options.period :
         StackdriverStatsExporter.PERIOD;
     this.projectId = options.projectId;
-    this.metricPrefix = options.metricPrefix ||
-        StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
+    this.metricPrefix =
+        options.prefix || StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
     this.logger = options.logger || logger.logger();
     this.viewToUpload = {};
 
