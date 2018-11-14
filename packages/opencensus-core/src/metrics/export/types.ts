@@ -21,17 +21,10 @@ export interface Metric {
    * The descriptor of the Metric. This is an optimization for network wire
    * size, from data-model perspective a Metric contains always
    * a MetricDescriptor.
-   * (MetricDescriptor) In case of a streaming RPC can be sent only
+   * In case of a streaming RPC can be sent only
    * the first time a metric is reported to save network traffic.
-   * (string) In case of a streaming RPC this can be sent for metrics
-   * that already sent the MetricDescriptor once.
    */
-  readonly descriptor: MetricDescriptor|string;
-  /**
-   * In case of a streaming RPC this can be sent for metrics that already
-   * sent the MetricDescriptor once.
-   */
-  readonly name: string;
+  readonly descriptor: MetricDescriptor;
   /**
    * One or more timeseries for a single metric, where each timeseries has
    * one or more points.
