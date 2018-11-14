@@ -21,10 +21,12 @@ export interface Metric {
    * The descriptor of the Metric. This is an optimization for network wire
    * size, from data-model perspective a Metric contains always
    * a MetricDescriptor.
-   * In case of a streaming RPC can be sent only the first time a metric is
-   * reported to save network traffic.
+   * (MetricDescriptor) In case of a streaming RPC can be sent only
+   * the first time a metric is reported to save network traffic.
+   * (string) In case of a streaming RPC this can be sent for metrics
+   * that already sent the MetricDescriptor once.
    */
-  readonly metricDescriptor: MetricDescriptor;
+  readonly descriptor: MetricDescriptor|string;
   /**
    * In case of a streaming RPC this can be sent for metrics that already
    * sent the MetricDescriptor once.
@@ -158,16 +160,13 @@ export interface Point {
    * If not specified, the timestamp will be decided by the backend.
    */
   readonly timestamp: Timestamp;
-  /** A 64-bit integer. */
-  readonly int64Value: number;
-  /** A 64-bit double-precision floating-point number. */
-  readonly doubleValue: number;
-  /** A distribution value. */
-  readonly distributionValue: DistributionValue;
   /**
-   * A summary value. This is not recommended, since it cannot be aggregated.
+   * The actual point value.
+   * 64-bit integer or 64-bit double-precision floating-point number
+   * or distribution value
+   * or summary value. This is not recommended, since it cannot be aggregated.
    */
-  readonly summaryValue: SummaryValue;
+  readonly value: number|DistributionValue|SummaryValue;
 }
 
 /**
