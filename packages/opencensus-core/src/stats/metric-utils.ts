@@ -55,8 +55,8 @@ export class MetricUtils {
   }
 
   /**
-   * Gets a MetricDescriptor for given view data.
-   * @param view The view data to for which to build a metric descriptor
+   * Gets a MetricDescriptor for given view.
+   * @param view The view for which to build a metric descriptor
    */
   static viewToMetricDescriptor(view: View): MetricDescriptor {
     return {
@@ -69,7 +69,7 @@ export class MetricUtils {
   }
 
   /**
-   * Converts tags to label values.
+   * Converts tag values to label values.
    * @param tags
    */
   static tagValuesToLabelValues(tags: Tags): LabelValue[] {
