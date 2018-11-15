@@ -115,17 +115,25 @@ export class Stats {
   }
 
   /**
+   * Virifies whether all measurements has positive value
+   * @param measurements A list of measurements
+   */
+  private hasNegativeValue(measurements: Measurement[]): boolean {
+    return measurements.some(measurement => measurement.value < 0);
+  }
+
+  /**
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
    */
   record(...measurements: Measurement[]) {
-    for (const measurement of measurements) {
-      if (measurement.value < 0) {
-        this.logger.warn(`Dropping value ${
-            measurement.value}, value to record must be non-negative.`);
-        break;
-      }
+    if (this.hasNegativeValue(measurements)) {
+      this.logger.warn(`Dropping measurments ${measurements}, value to record
+          must be non-negative.`);
+      return;
+    }
 
+    for (const measurement of measurements) {
       const views = this.registeredViews[measurement.measure.name];
       if (!views) {
         break;

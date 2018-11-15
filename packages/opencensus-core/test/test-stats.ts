@@ -176,13 +176,14 @@ describe('Stats', () => {
       assert.strictEqual(aggregationData.value, measurement2.value);
     });
 
-    it('should stop record on negative value of multiple measurement', () => {
-      const measurments = [
-        {measure, tags, value: 1}, {measure, tags, value: -1},
-        {measure, tags, value: 1}
-      ];
-      stats.record(...measurments);
-      assert.equal(testExporter.recordedMeasurements.length, 1);
-    });
+    it('should skip whole multiple measurment if one of value is negative',
+       () => {
+         const measurments = [
+           {measure, tags, value: 1}, {measure, tags, value: -1},
+           {measure, tags, value: 1}
+         ];
+         stats.record(...measurments);
+         assert.equal(testExporter.recordedMeasurements.length, 0);
+       });
   });
 });
