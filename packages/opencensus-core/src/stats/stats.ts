@@ -25,7 +25,7 @@ export class Stats {
   /** A list of Stats exporters */
   private statsEventListeners: StatsEventListener[] = [];
   /** A map of Measures (name) to their corresponding Views */
-  private registeredViews: {[key: string]: View[]} = {};
+  private measurementMap: {[key: string]: View[]} = {};
   /** An object to log information to */
   private logger: loggerTypes.Logger;
 
@@ -43,10 +43,10 @@ export class Stats {
    * @param view The view to be registered
    */
   registerView(view: View) {
-    if (this.registeredViews[view.measure.name]) {
-      this.registeredViews[view.measure.name].push(view);
+    if (this.measurementMap[view.measure.name]) {
+      this.measurementMap[view.measure.name].push(view);
     } else {
-      this.registeredViews[view.measure.name] = [view];
+      this.measurementMap[view.measure.name] = [view];
     }
 
     view.registered = true;
@@ -84,8 +84,8 @@ export class Stats {
   registerExporter(exporter: StatsEventListener) {
     this.statsEventListeners.push(exporter);
 
-    for (const measureName of Object.keys(this.registeredViews)) {
-      for (const view of this.registeredViews[measureName]) {
+    for (const measureName of Object.keys(this.measurementMap)) {
+      for (const view of this.measurementMap[measureName]) {
         exporter.onRegisterView(view);
       }
     }
@@ -126,7 +126,7 @@ export class Stats {
         break;
       }
 
-      const views = this.registeredViews[measurement.measure.name];
+      const views = this.measurementMap[measurement.measure.name];
       if (!views) {
         break;
       }

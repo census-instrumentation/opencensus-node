@@ -19,11 +19,11 @@ import {BaseView, Stats, StatsEventListener} from '../src';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';
 
 class TestExporter implements StatsEventListener {
-  registeredViews: View[] = [];
+  measurementMap: View[] = [];
   recordedMeasurements: Measurement[] = [];
 
   onRegisterView(view: View) {
-    this.registeredViews.push(view);
+    this.measurementMap.push(view);
   }
 
   onRecord(views: View[], measurement: Measurement) {
@@ -31,7 +31,7 @@ class TestExporter implements StatsEventListener {
   }
 
   clean() {
-    this.registeredViews = [];
+    this.measurementMap = [];
     this.recordedMeasurements = [];
   }
 }
@@ -120,13 +120,13 @@ describe('Stats', () => {
           viewName, measure, AggregationType.LAST_VALUE, tagKeys, description);
 
       assert.ok(!view.registered);
-      assert.strictEqual(testExporter.registeredViews.length, 0);
+      assert.strictEqual(testExporter.measurementMap.length, 0);
 
       stats.registerView(view);
 
       assert.ok(view.registered);
-      assert.strictEqual(testExporter.registeredViews.length, 1);
-      assert.deepEqual(testExporter.registeredViews[0], view);
+      assert.strictEqual(testExporter.measurementMap.length, 1);
+      assert.deepEqual(testExporter.measurementMap[0], view);
     });
   });
 
@@ -152,7 +152,7 @@ describe('Stats', () => {
       assert.strictEqual(testExporter.recordedMeasurements.length, 1);
       assert.deepEqual(testExporter.recordedMeasurements[0], measurement);
       aggregationData =
-          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
+          testExporter.measurementMap[0].getSnapshot(tags) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement.value);
     });
 
@@ -172,7 +172,7 @@ describe('Stats', () => {
       assert.deepEqual(testExporter.recordedMeasurements[0], measurement1);
       assert.deepEqual(testExporter.recordedMeasurements[1], measurement2);
       aggregationData =
-          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
+          testExporter.measurementMap[0].getSnapshot(tags) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement2.value);
     });
 
