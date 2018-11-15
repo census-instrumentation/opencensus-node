@@ -135,16 +135,8 @@ export interface TimeSeries {
   readonly points: Point[];
 }
 
-/** Properties of a LabelValue. */
-export interface LabelValue {
-  /** The value for the label */
-  readonly value: string;
-  /**
-   * If false the value field is ignored and considered not set.
-   * This is used to differentiate a missing label from an empty string.
-   */
-  readonly hasValue: boolean;
-}
+/** The LabelValue type. null value indicates an unset. */
+export type LabelValue = string|null;
 
 /** A timestamped measurement. */
 export interface Point {
@@ -260,7 +252,7 @@ export interface Exemplar {
   /** The observation (sampling) time of the above value. */
   readonly timestamp: Timestamp;
   /** Contextual information about the example value. */
-  readonly attachments: ({[k: string]: string}|null);
+  readonly attachments: {[key: string]: string};
 }
 
 /**
