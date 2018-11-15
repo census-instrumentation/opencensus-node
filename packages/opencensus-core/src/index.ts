@@ -47,6 +47,7 @@ export * from './stats/stats';
 export * from './stats/view';
 export * from './stats/recorder';
 export * from './stats/bucket-boundaries';
+export * from './stats/metric-utils';
 
 // interfaces
 export * from './stats/types';
