@@ -198,7 +198,7 @@ export class HttpPlugin extends BasePlugin {
         }
 
         // Makes sure the url is an url object
-        let pathname = "";
+        let pathname = '';
         if (typeof (options) === 'string') {
           options = url.parse(options);
           arguments[0] = options;
@@ -214,7 +214,7 @@ export class HttpPlugin extends BasePlugin {
 
           try {
             pathname = options.pathname || url.parse(options.path).pathname;
-          } catch(e) {
+          } catch (e) {
           }
         }
 
