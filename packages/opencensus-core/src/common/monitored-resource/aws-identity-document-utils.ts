@@ -17,6 +17,7 @@
 import {get} from 'http';
 import * as logger from '../../common/console-logger';
 import * as loggerTypes from '../../common/types';
+import {monitoredResourceAttributes} from './types';
 
 /** Util methods for getting and parsing AWS instance identity document. */
 export class AwsIdentityDocumentUtils {
@@ -41,8 +42,12 @@ export class AwsIdentityDocumentUtils {
     }
     AwsIdentityDocumentUtils.promise =
         AwsIdentityDocumentUtils.getDocument().then(metadata => {
-          if (Object.keys(metadata).length) {
-            AwsIdentityDocumentUtils.metadata = metadata;
+          const data: Record<string, string> = {};
+          Object.keys(monitoredResourceAttributes.AWS).forEach(key => {
+            data[key] = metadata[key];
+          });
+          if (Object.keys(data).length) {
+            AwsIdentityDocumentUtils.metadata = data;
             AwsIdentityDocumentUtils.runned = true;
           }
           return metadata;
