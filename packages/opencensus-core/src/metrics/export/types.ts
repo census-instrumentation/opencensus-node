@@ -136,7 +136,10 @@ export interface TimeSeries {
 }
 
 /** The LabelValue type. null value indicates an unset. */
-export type LabelValue = string|null;
+export interface LabelValue {
+  /** The value for the label. */
+  readonly value: string|null;
+}
 
 /** A timestamped measurement. */
 export interface Point {

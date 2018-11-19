@@ -73,6 +73,8 @@ export class MetricUtils {
    * @param tags
    */
   static tagValuesToLabelValues(tags: Tags): LabelValue[] {
-    return Object.keys(tags).map(key => tags[key] as LabelValue);
+    return Object.keys(tags).map(key => {
+      return {value: tags[key]} as LabelValue;
+    });
   }
 }
