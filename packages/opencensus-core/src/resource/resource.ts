@@ -103,7 +103,7 @@ export class Resource {
    * prefixed by a domain namespace, e.g. “kubernetes.io/container”.
    */
   private static parseResourceType(rawEnvType: string): string {
-    if (rawEnvType && rawEnvType != null) {
+    if (rawEnvType) {
       if (!Resource.isValidAndNotEmpty(rawEnvType)) {
         throw new Error(`Type ${Resource.ERROR_MESSAGE_INVALID_CHARS}`);
       }
@@ -122,7 +122,7 @@ export class Resource {
    */
   private static parseResourceLabels(rawEnvLabels: string): StringMap {
     const labels: StringMap = {};
-    if (rawEnvLabels && rawEnvLabels != null) {
+    if (rawEnvLabels) {
       const rawLabels: string[] =
           rawEnvLabels.split(this.LABEL_LIST_SPLITTER, -1);
       for (const rawLabel of rawLabels) {
@@ -151,10 +151,10 @@ export class Resource {
    * a collision, first resource takes precedence.
    */
   private static merge(resource: Resource, otherResource: Resource): Resource {
-    if (resource == null) {
+    if (!resource) {
       return otherResource;
     }
-    if (otherResource == null) {
+    if (!otherResource) {
       return resource;
     }
     const mergedType: string = resource.getType() != null ?

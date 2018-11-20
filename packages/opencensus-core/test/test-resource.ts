@@ -90,4 +90,15 @@ describe('mergeResources()', () => {
     assert.equal(Object.keys(resource.getLabels()).length, 3);
     assert.deepEqual(resource.getLabels(), expectedLabels);
   });
+
+  it('merge resources with default, resource1 = undefined, resource2 = undefined',
+     () => {
+       const resources: Resource[] = [DEFAULT_RESOURCE_1, undefined, undefined];
+       const resource = Resource.mergeResources(resources);
+       const expectedLabels: {[key: string]: string} = {'a': '100'};
+
+       assert.equal(resource.getType(), 'default');
+       assert.equal(Object.keys(resource.getLabels()).length, 1);
+       assert.deepEqual(resource.getLabels(), expectedLabels);
+     });
 });
