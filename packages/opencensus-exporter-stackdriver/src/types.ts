@@ -72,13 +72,10 @@ export enum MetricKind {
 }
 
 export enum ValueType {
-  VALUE_TYPE_UNSPECIFIED,
-  BOOL,
-  INT64,
-  DOUBLE,
-  STRING,
-  DISTRIBUTION,
-  MONEY
+  VALUE_TYPE_UNSPECIFIED = 'VALUE_TYPE_UNSPECIFIED',
+  INT64 = 'INT64',
+  DOUBLE = 'DOUBLE',
+  DISTRIBUTION = 'DISTRIBUTION'
 }
 
 export interface LabelDescriptor {

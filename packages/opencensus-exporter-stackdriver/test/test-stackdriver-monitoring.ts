@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-import {AggregationType, BaseView, logger, Logger, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from '@opencensus/core';
+import {AggregationType, BaseView, logger, Logger, Measurement, MeasureType, MeasureUnit, Stats, View} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
-import * as mocha from 'mocha';
 import * as nock from 'nock';
-import * as path from 'path';
-
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
-import {LabelDescriptor, MetricDescriptor, MetricKind, StackdriverExporterOptions, TimeSeries, ValueType} from '../src/types';
-
+import {MetricDescriptor, MetricKind, StackdriverExporterOptions, TimeSeries, ValueType} from '../src/types';
 import * as nocks from './nocks';
 
 let PROJECT_ID = 'fake-project-id';
