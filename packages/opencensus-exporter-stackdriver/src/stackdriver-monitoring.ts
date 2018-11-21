@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, DistributionData, logger, Logger, Measurement, MeasureType, StatsEventListener, Tags, View} from '@opencensus/core';
+import {AggregationType, DistributionData, logger, Logger, Measure, Measurement, MeasureType, MeasureUnit, StatsEventListener, Tags, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 import * as path from 'path';
@@ -189,7 +189,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
     if (aggregationData.type === AggregationType.DISTRIBUTION) {
       value = {distributionValue: this.createDistribution(aggregationData)};
     } else if (view.measure.type === MeasureType.INT64) {
-      value = {int64Value: aggregationData.value.toString()};
+      value = {int64Value: aggregationData.value};
     } else {
       value = {doubleValue: aggregationData.value};
     }
@@ -198,7 +198,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       metric: {type: this.getMetricType(view.name), labels: tags},
       resource: {type: 'global', labels: resourceLabels},
       metricKind: this.createMetricKind(view.aggregation),
-      valueType: this.createValueType(view),
+      valueType: this.createValueType(view.aggregation, view.measure),
       points: [{interval: {startTime, endTime}, value}]
     };
   }
@@ -209,7 +209,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    */
   private createDistribution(distribution: DistributionData): Distribution {
     return {
-      count: distribution.count.toString(),
+      count: distribution.count,
       mean: distribution.mean,
       sumOfSquaredDeviation: distribution.sumSquaredDeviations,
       bucketOptions: {explicitBuckets: {bounds: [0, ...distribution.buckets]}},
@@ -246,23 +246,62 @@ export class StackdriverStatsExporter implements StatsEventListener {
       description: view.description || view.measure.description,
       displayName: view.measure.name,
       metricKind: this.createMetricKind(view.aggregation),
-      valueType: this.createValueType(view),
-      unit: view.measure.unit,
+      valueType: this.createValueType(view.aggregation, view.measure),
+      unit: this.createUnit(view.aggregation, view.measure),
       labels: this.createLabelDescriptor(view.getColumns())
     } as MetricDescriptor;
   }
+  /**
+   * Creates a Stackdriver unit from given aggregationType and measure.
+   *
+   * @param {AggregationType} aggregationType the aggregation type.
+   * @param {Measure} measure the view measure.
+   * @returns string
+   */
+  private createUnit(aggregationType: AggregationType, measure: Measure):
+      string {
+    if (aggregationType === AggregationType.COUNT) {
+      // If the aggregation type is count, which counts the number of recorded
+      // measurements, the unit must be "1", because this view does not apply to
+      // the recorded values.
+      return MeasureUnit.UNIT;
+    }
+    return measure.unit;
+  }
 
   /**
-   * Creates a Stackdriver ValueType from a given view.
-   * @param view The view to extract data from
+   * Creates a Stackdriver ValueType from a given aggregationType and measure.
+   *
+   * @param  {AggregationType} aggregationType the aggregation type.
+   * @param  {Measure} measure the view measure.
+   * @returns ValueType
    */
-  private createValueType(view: View): ValueType {
-    if (view.measure.type === MeasureType.INT64) {
+  private createValueType(aggregationType: AggregationType, measure: Measure):
+      ValueType {
+    if (aggregationType === AggregationType.COUNT) {
       return ValueType.INT64;
-    } else if (view.aggregation === AggregationType.DISTRIBUTION) {
+    } else if (aggregationType === AggregationType.SUM) {
+      switch (measure.type) {
+        case MeasureType.INT64:  // Sum INT64
+          return ValueType.INT64;
+        case MeasureType.DOUBLE:  // Sum Double
+          return ValueType.DOUBLE;
+        default:
+          throw new Error(`Unknown measure type: ${measure.type}`);
+      }
+    } else if (aggregationType === AggregationType.DISTRIBUTION) {
       return ValueType.DISTRIBUTION;
+    } else if (aggregationType === AggregationType.LAST_VALUE) {
+      switch (measure.type) {
+        case MeasureType.INT64:  // LastValue INT64
+          return ValueType.INT64;
+        case MeasureType.DOUBLE:  // LastValue Double
+          return ValueType.DOUBLE;
+        default:
+          throw new Error(`Unknown measure type ${measure.type}`);
+      }
     }
-    return ValueType.DOUBLE;
+    throw Error(`unsupported aggregation type: ${aggregationType}`);
   }
 
   /**

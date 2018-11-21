@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, BaseView, logger, Logger, Measurement, MeasureType, MeasureUnit, Stats, View} from '@opencensus/core';
+import {AggregationType, BaseView, logger, Logger, Measurement, MeasureUnit, Stats, View} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as nock from 'nock';
@@ -50,29 +50,17 @@ class ExporterTestLogger implements Logger {
 
 /**
  * Asserts MetricDescriptors' values given its originating view.
- * @param metricDescriptor The MetricDescriptor to be asserted.
- * @param view The originating view.
- * @param prefix Optional metric prefix.
+ *
+ * @param  {MetricDescriptor} metricDescriptor the MetricDescriptor to be asserted.
+ * @param  {View} view the originating view.
+ * @param  {MetricKind} metricKind the metricKind of metric.
+ * @param  {ValueType} valueType the valueType of metric.
+ * @param  {string=StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN} prefix Optional metric prefix.
  */
 function assertMetricDescriptor(
-    metricDescriptor: MetricDescriptor, view: View,
+    metricDescriptor: MetricDescriptor, view: View, metricKind: MetricKind,
+    valueType: ValueType,
     prefix: string = StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN) {
-  let metricKind: MetricKind;
-  if (view.aggregation === AggregationType.SUM) {
-    metricKind = MetricKind.CUMULATIVE;
-  } else {
-    metricKind = MetricKind.GAUGE;
-  }
-
-  let valueType: ValueType;
-  if (view.measure.type === MeasureType.DOUBLE) {
-    valueType = ValueType.DOUBLE;
-  } else if (view.aggregation === AggregationType.DISTRIBUTION) {
-    valueType = ValueType.DISTRIBUTION;
-  } else {
-    valueType = ValueType.INT64;
-  }
-
   assert.strictEqual(metricDescriptor.type, `${prefix}/${view.name}`);
   assert.strictEqual(metricDescriptor.description, view.description);
   assert.strictEqual(metricDescriptor.displayName, view.measure.name);
@@ -81,34 +69,22 @@ function assertMetricDescriptor(
   assert.strictEqual(metricDescriptor.unit, view.measure.unit);
 }
 
+
 /**
  * Asserts TimeSeries' values given its originating view.
- * @param TimeSeries The TimeSeries to be asserted.
- * @param view The originating view.
- * @param measurement The originating measurement.
- * @param projectId The project ID from the Stackdriver Monitoring.
+ * @param {TimeSeries} TimeSeries The TimeSeries to be asserted.
+ * @param {View} view The originating view.
+ * @param {Measurement} measurement The originating measurement.
+ * @param {string} projectId The project ID from the Stackdriver Monitoring.
+ * @param {MetricKind} metricKind the metricKind of metric.
+ * @param {ValueType} valueType the valueType of metric.
+ * @param {value} value the value of point.
  */
 function assertTimeSeries(
     timeSeries: TimeSeries, view: View, measurement: Measurement,
-    projectId: string,
+    projectId: string, metricKind: MetricKind, valueType: ValueType, value: {},
     prefix: string = StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN) {
   const resourceLabels: {[key: string]: string} = {project_id: projectId};
-
-  let metricKind: MetricKind;
-  if (view.aggregation !== AggregationType.LAST_VALUE) {
-    metricKind = MetricKind.CUMULATIVE;
-  } else {
-    metricKind = MetricKind.GAUGE;
-  }
-
-  let valueType: ValueType;
-  if (view.measure.type === MeasureType.DOUBLE) {
-    valueType = ValueType.DOUBLE;
-  } else if (view.aggregation === AggregationType.DISTRIBUTION) {
-    valueType = ValueType.DISTRIBUTION;
-  } else {
-    valueType = ValueType.INT64;
-  }
 
   assert.strictEqual(timeSeries.metric.type, `${prefix}/${view.name}`);
   assert.deepEqual(timeSeries.metric.labels, measurement.tags);
@@ -119,6 +95,7 @@ function assertTimeSeries(
   assert.strictEqual(timeSeries.metricKind, metricKind);
   assert.strictEqual(timeSeries.valueType, valueType);
   assert.ok(timeSeries.points.length > 0);
+  assert.deepStrictEqual(timeSeries.points[0].value, value);
 }
 
 describe('Stackdriver Stats Exporter', function() {
@@ -143,21 +120,31 @@ describe('Stackdriver Stats Exporter', function() {
       'opencensus.io/test/int64', MeasureUnit.UNIT, 'Measure Int64');
   const measureDouble = stats.createMeasureDouble(
       'opencensus.io/test/double', MeasureUnit.UNIT, 'Measure Double');
+  // constants for base views
+  const lastValueDoubleView = new BaseView(
+      'test/metricKindGauge', measureDouble, AggregationType.LAST_VALUE,
+      tagKeys, 'Value Type Double');
+  const lastValueINT64View = new BaseView(
+      'test/metricKindGauge', measureInt64, AggregationType.LAST_VALUE, tagKeys,
+      'Value Type INT64');
+  const sumDoubleView = new BaseView(
+      'test/metricKindCumulative', measureDouble, AggregationType.SUM, tagKeys,
+      'Value Type Double');
+  const sumINT64View = new BaseView(
+      'test/metricKindCumulative', measureInt64, AggregationType.SUM, tagKeys,
+      'Value Type INT64');
+  const countINT64View = new BaseView(
+      'test/metricKindGauge', measureInt64, AggregationType.COUNT, tagKeys,
+      'Value Type INT64');
+  const distributionDoubleView = new BaseView(
+      'test/valueTypeDouble', measureDouble, AggregationType.DISTRIBUTION,
+      tagKeys, 'Value Type Double', [10, 25, 30]);
 
-  const testViews = [
-    new BaseView(
-        'test/metricKindGauge', measureDouble, AggregationType.LAST_VALUE,
-        tagKeys, 'Metric Kind Gauge'),
-    new BaseView(
-        'test/metricKindCumulative', measureDouble, AggregationType.SUM,
-        tagKeys, 'Metric Kind Cumulative'),
-    new BaseView(
-        'test/valueTypeInt64', measureInt64, AggregationType.SUM, tagKeys,
-        'ValueTypeInt64'),
-    new BaseView(
-        'test/valueTypeDouble', measureDouble, AggregationType.SUM, tagKeys,
-        'Value Type Double')
-  ];
+  // constants for measurements
+  const measurement1:
+      Measurement = {measure: countINT64View.measure, value: 25, tags};
+  const measurement2:
+      Measurement = {measure: lastValueDoubleView.measure, value: 1.5, tags};
 
   before(() => {
     if (GOOGLE_APPLICATION_CREDENTIALS) {
@@ -198,70 +185,177 @@ describe('Stackdriver Stats Exporter', function() {
 
   /* Should create a Stackdriver Metric Descriptor */
   describe('Create Stackdriver Metric Descriptors', () => {
-    testViews.map((view) => {
-      it(`Should create a ${view.description} Metric Descriptor`, async () => {
-        if (dryrun) {
-          nocks.metricDescriptors(PROJECT_ID, null, null, false);
-        }
-        await exporter.onRegisterView(view).then(() => {
-          return assertMetricDescriptor(
-              exporterTestLogger.debugBuffer[0], view);
-        });
-      });
-    });
+    it(`Should create a MeasureDouble with Metric Kind Gauge Metric Descriptor`,
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(lastValueDoubleView).then(() => {
+           return assertMetricDescriptor(
+               exporterTestLogger.debugBuffer[0], lastValueDoubleView,
+               MetricKind.GAUGE, ValueType.DOUBLE);
+         });
+       });
+
+    it(`Should create a MeasureDouble with Metric Kind Cumulative Metric Descriptor`,
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(sumDoubleView).then(() => {
+           return assertMetricDescriptor(
+               exporterTestLogger.debugBuffer[0], sumDoubleView,
+               MetricKind.CUMULATIVE, ValueType.DOUBLE);
+         });
+       });
+
+    it(`Should create a MeasureInt64 with Metric Kind Cumulative Metric Descriptor`,
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(sumINT64View).then(() => {
+           return assertMetricDescriptor(
+               exporterTestLogger.debugBuffer[0], sumINT64View,
+               MetricKind.CUMULATIVE, ValueType.INT64);
+         });
+       });
+
+    it(`Should create a MeasureInt64 with Metric Kind Gauge Metric Descriptor`,
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(lastValueINT64View).then(() => {
+           return assertMetricDescriptor(
+               exporterTestLogger.debugBuffer[0], lastValueINT64View,
+               MetricKind.GAUGE, ValueType.INT64);
+         });
+       });
+
+    it(`Should create a distribution aggregation Metric Descriptor`,
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(distributionDoubleView).then(() => {
+           return assertMetricDescriptor(
+               exporterTestLogger.debugBuffer[0], distributionDoubleView,
+               MetricKind.CUMULATIVE, ValueType.DISTRIBUTION);
+         });
+       });
   });
 
   /* Should create a Stackdriver Time Series */
   describe('Create Stackdriver Time Series', () => {
-    testViews.map((view) => {
-      if (dryrun) {
-        nocks.metricDescriptors(PROJECT_ID, null, null, false);
-        nocks.timeSeries(PROJECT_ID, null, null, false);
-      }
-      it(`Should create a ${view.description} Time Series`, async () => {
-        await exporter.onRegisterView(view).then(async () => {
-          const measurement:
-              Measurement = {measure: view.measure, value: 1, tags};
-          view.recordMeasurement(measurement);
-
-          exporter.onRecord([view], measurement);
-
-          await new Promise((resolve) => setTimeout(resolve, DELAY))
-              .then(() => {
-                return assertTimeSeries(
-                    exporterTestLogger.debugBuffer[1][0], view, measurement,
-                    PROJECT_ID);
-              });
-        });
-      });
-    });
-
-    it('Should create a distribution Time Series with bound 0 as first item',
+    it(`Should create a doubleValue, lastvalue aggregation Time Series`,
        async () => {
-         const view = new BaseView(
-             'test/valueTypeDouble', measureDouble,
-             AggregationType.DISTRIBUTION, tagKeys, 'Value Type Double',
-             [10, 25, 30]);
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
            nocks.timeSeries(PROJECT_ID, null, null, false);
          }
-         await exporter.onRegisterView(view).then(async () => {
-           const measurement:
-               Measurement = {measure: view.measure, value: 1, tags};
-           view.recordMeasurement(measurement);
-
-           exporter.onRecord([view], measurement);
-
-           await new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
-             const timeSeries = exporterTestLogger.debugBuffer[1][0];
-             const {bucketOptions, bucketCounts} =
-                 timeSeries.points[0].value.distributionValue;
-             assert.deepStrictEqual(
-                 bucketOptions.explicitBuckets.bounds, [0, 10, 25, 30]);
-             assert.deepStrictEqual(bucketCounts, [0, 1, 0, 0, 0]);
-           });
+         await exporter.onRegisterView(lastValueDoubleView).then(async () => {
+           lastValueDoubleView.recordMeasurement(measurement2);
+           exporter.onRecord([lastValueDoubleView], measurement2);
+           await new Promise((resolve) => setTimeout(resolve, DELAY))
+               .then(() => {
+                 return assertTimeSeries(
+                     exporterTestLogger.debugBuffer[1][0], lastValueDoubleView,
+                     measurement2, PROJECT_ID, MetricKind.GAUGE,
+                     ValueType.DOUBLE, {doubleValue: 1.5});
+               });
          });
+       });
+
+    it(`Should create a int64Value, lastvalue aggregation Time Series`,
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+           nocks.timeSeries(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(lastValueINT64View).then(async () => {
+           lastValueINT64View.recordMeasurement(measurement1);
+           exporter.onRecord([lastValueINT64View], measurement1);
+           await new Promise((resolve) => setTimeout(resolve, DELAY))
+               .then(() => {
+                 return assertTimeSeries(
+                     exporterTestLogger.debugBuffer[1][0], lastValueINT64View,
+                     measurement1, PROJECT_ID, MetricKind.GAUGE,
+                     ValueType.INT64, {int64Value: 25});
+               });
+         });
+       });
+
+    it(`Should create a int64Value, sum aggregation Time Series`, async () => {
+      if (dryrun) {
+        nocks.metricDescriptors(PROJECT_ID, null, null, false);
+        nocks.timeSeries(PROJECT_ID, null, null, false);
+      }
+      await exporter.onRegisterView(sumINT64View).then(async () => {
+        sumINT64View.recordMeasurement(measurement1);
+        sumINT64View.recordMeasurement(measurement1);
+        sumINT64View.recordMeasurement(measurement1);
+        exporter.onRecord([sumINT64View], measurement1);
+        await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
+          return assertTimeSeries(
+              exporterTestLogger.debugBuffer[1][0], sumINT64View, measurement1,
+              PROJECT_ID, MetricKind.CUMULATIVE, ValueType.INT64,
+              {int64Value: 75});
+        });
+      });
+    });
+
+    it(`Should create a int64Value, count aggregation Time Series`,
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+           nocks.timeSeries(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(countINT64View).then(async () => {
+           countINT64View.recordMeasurement(measurement1);
+           countINT64View.recordMeasurement(measurement1);
+           countINT64View.recordMeasurement(measurement1);
+           countINT64View.recordMeasurement(measurement1);
+           exporter.onRecord([countINT64View], measurement1);
+           await new Promise((resolve) => setTimeout(resolve, DELAY))
+               .then(() => {
+                 return assertTimeSeries(
+                     exporterTestLogger.debugBuffer[1][0], countINT64View,
+                     measurement1, PROJECT_ID, MetricKind.CUMULATIVE,
+                     ValueType.INT64, {int64Value: 4});
+               });
+         });
+       });
+
+    it('Should create a distribution Time Series with bound 0 as first item',
+       async () => {
+         if (dryrun) {
+           nocks.metricDescriptors(PROJECT_ID, null, null, false);
+           nocks.timeSeries(PROJECT_ID, null, null, false);
+         }
+         await exporter.onRegisterView(distributionDoubleView)
+             .then(async () => {
+               distributionDoubleView.recordMeasurement(measurement1);
+               exporter.onRecord([distributionDoubleView], measurement1);
+
+               await new Promise((resolve) => setTimeout(resolve, 10))
+                   .then(() => {
+                     const timeSeries = exporterTestLogger.debugBuffer[1][0];
+                     assert.deepStrictEqual(
+                         timeSeries.points[0].value.distributionValue.count, 1);
+                     assert.deepStrictEqual(
+                         timeSeries.points[0].value.distributionValue.mean, 25);
+                     assert.deepStrictEqual(
+                         timeSeries.points[0]
+                             .value.distributionValue.sumOfSquaredDeviation,
+                         0);
+                     const {bucketOptions, bucketCounts} =
+                         timeSeries.points[0].value.distributionValue;
+                     assert.deepStrictEqual(
+                         bucketOptions.explicitBuckets.bounds, [0, 10, 25, 30]);
+                     assert.deepStrictEqual(bucketCounts, [0, 0, 0, 1, 0]);
+                   });
+             });
        });
   });
 
@@ -275,7 +369,6 @@ describe('Stackdriver Stats Exporter', function() {
     const viewTimeSeries = new BaseView(
         'test/timeSeriesSend', measureDouble, AggregationType.LAST_VALUE,
         tagKeys, 'Time Series Send');
-    const measurement = {measure: measureDouble, value: 100, tags};
 
     describe('With valid projectId', () => {
       it(`.onRegisterView() should be successfull`, async () => {
@@ -284,7 +377,8 @@ describe('Stackdriver Stats Exporter', function() {
         }
         await exporter.onRegisterView(viewMetricDescriptor).then(() => {
           return assertMetricDescriptor(
-              exporterTestLogger.debugBuffer[0], viewMetricDescriptor);
+              exporterTestLogger.debugBuffer[0], viewMetricDescriptor,
+              MetricKind.GAUGE, ValueType.DOUBLE);
         });
       });
 
@@ -292,15 +386,14 @@ describe('Stackdriver Stats Exporter', function() {
         if (dryrun) {
           nocks.timeSeries(PROJECT_ID, null, null, false);
         }
-
-        viewTimeSeries.recordMeasurement(measurement);
-
-        exporter.onRecord([viewTimeSeries], measurement);
+        viewTimeSeries.recordMeasurement(measurement1);
+        exporter.onRecord([viewTimeSeries], measurement1);
 
         await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
           return assertTimeSeries(
-              exporterTestLogger.debugBuffer[0][0], viewTimeSeries, measurement,
-              PROJECT_ID);
+              exporterTestLogger.debugBuffer[0][0], viewTimeSeries,
+              measurement1, PROJECT_ID, MetricKind.GAUGE, ValueType.DOUBLE,
+              {doubleValue: 25});
         });
       });
     });
@@ -349,8 +442,8 @@ describe('Stackdriver Stats Exporter', function() {
              }
            });
            stats.registerExporter(failExporter);
-           viewTimeSeries.recordMeasurement(measurement);
-           failExporter.onRecord([viewTimeSeries], measurement);
+           viewTimeSeries.recordMeasurement(measurement1);
+           failExporter.onRecord([viewTimeSeries], measurement1);
          });
     });
 
@@ -440,8 +533,8 @@ describe('Stackdriver Stats Exporter', function() {
           prefixExporter = new StackdriverStatsExporter(exporterOptions);
           stats.registerExporter(prefixExporter);
 
-          viewTimeSeries.recordMeasurement(measurement);
-          prefixExporter.onRecord([viewTimeSeries], measurement);
+          viewTimeSeries.recordMeasurement(measurement1);
+          prefixExporter.onRecord([viewTimeSeries], measurement1);
 
           await new Promise((resolve) => setTimeout(resolve, DELAY))
               .then(() => {
@@ -459,8 +552,8 @@ describe('Stackdriver Stats Exporter', function() {
           prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
           stats.registerExporter(prefixExporter);
 
-          viewTimeSeries.recordMeasurement(measurement);
-          prefixExporter.onRecord([viewTimeSeries], measurement);
+          viewTimeSeries.recordMeasurement(measurement1);
+          prefixExporter.onRecord([viewTimeSeries], measurement1);
 
           await new Promise((resolve) => setTimeout(resolve, DELAY))
               .then(() => {
@@ -478,8 +571,8 @@ describe('Stackdriver Stats Exporter', function() {
           prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
           stats.registerExporter(prefixExporter);
 
-          viewTimeSeries.recordMeasurement(measurement);
-          prefixExporter.onRecord([viewTimeSeries], measurement);
+          viewTimeSeries.recordMeasurement(measurement1);
+          prefixExporter.onRecord([viewTimeSeries], measurement1);
 
           await new Promise((resolve) => setTimeout(resolve, DELAY))
               .then(() => {
@@ -497,8 +590,8 @@ describe('Stackdriver Stats Exporter', function() {
               Object.assign(exporterOptions, {prefix});
           prefixExporter = new StackdriverStatsExporter(prefixExporterOptions);
 
-          viewTimeSeries.recordMeasurement(measurement);
-          prefixExporter.onRecord([viewTimeSeries], measurement);
+          viewTimeSeries.recordMeasurement(measurement1);
+          prefixExporter.onRecord([viewTimeSeries], measurement1);
 
           await new Promise((resolve) => setTimeout(resolve, DELAY))
               .then(() => {
@@ -545,8 +638,8 @@ describe('Stackdriver Stats Exporter', function() {
              }
            });
            stats.registerExporter(failExporter);
-           viewTimeSeries.recordMeasurement(measurement);
-           failExporter.onRecord([viewTimeSeries], measurement);
+           viewTimeSeries.recordMeasurement(measurement1);
+           failExporter.onRecord([viewTimeSeries], measurement1);
          });
     });
   });
