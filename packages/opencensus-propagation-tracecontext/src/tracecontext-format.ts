@@ -132,9 +132,10 @@ export class TraceContextFormat implements Propagation {
    * Context parts are based on section 2.2.2 of TraceContext spec.
    */
   generate(): SpanContext {
+    const buff = crypto.randomBytes(24).toString('hex');
     return {
-      traceId: crypto.randomBytes(16).toString('hex'),
-      spanId: crypto.randomBytes(8).toString('hex'),
+      traceId: buff.slice(0, 32),
+      spanId: buff.slice(32, 48),
       options: DEFAULT_OPTIONS,
       traceState: undefined
     };
