@@ -256,7 +256,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    *
    * @param {AggregationType} aggregationType the aggregation type.
    * @param {Measure} measure the view measure.
-   * @returns string
+   * @returns {string} unit.
    */
   private createUnit(aggregationType: AggregationType, measure: Measure):
       string {
@@ -274,7 +274,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    *
    * @param  {AggregationType} aggregationType the aggregation type.
    * @param  {Measure} measure the view measure.
-   * @returns ValueType
+   * @returns {ValueType} value type.
    */
   private createValueType(aggregationType: AggregationType, measure: Measure):
       ValueType {
