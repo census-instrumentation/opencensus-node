@@ -139,7 +139,7 @@ describe('Stackdriver Stats Exporter', function() {
 
   /* Should create a Stackdriver Metric Descriptor */
   describe('Create Stackdriver Metric Descriptors', () => {
-    it(`Should create a MeasureDouble with Metric Kind Gauge Metric Descriptor`,
+    it('Should create a MeasureDouble with Metric Kind Gauge Metric Descriptor',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
@@ -161,7 +161,7 @@ describe('Stackdriver Stats Exporter', function() {
          });
        });
 
-    it(`Should create a MeasureDouble with Metric Kind Cumulative Metric Descriptor`,
+    it('Should create a MeasureDouble with Metric Kind Cumulative Metric Descriptor',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
@@ -184,7 +184,7 @@ describe('Stackdriver Stats Exporter', function() {
          });
        });
 
-    it(`Should create a MeasureInt64 with Metric Kind Cumulative Metric Descriptor`,
+    it('Should create a MeasureInt64 with Metric Kind Cumulative Metric Descriptor',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
@@ -206,7 +206,7 @@ describe('Stackdriver Stats Exporter', function() {
          });
        });
 
-    it(`Should create a MeasureInt64 with Metric Kind Gauge Metric Descriptor`,
+    it('Should create a MeasureInt64 with Metric Kind Gauge Metric Descriptor',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
@@ -228,7 +228,7 @@ describe('Stackdriver Stats Exporter', function() {
          });
        });
 
-    it(`Should create a distribution aggregation Metric Descriptor`,
+    it('Should create a distribution aggregation Metric Descriptor',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
@@ -257,7 +257,7 @@ describe('Stackdriver Stats Exporter', function() {
 
   /* Should create a Stackdriver Time Series */
   describe('Create Stackdriver Time Series', () => {
-    it(`Should create a doubleValue, lastvalue aggregation Time Series`,
+    it('Should create a doubleValue, lastvalue aggregation Time Series',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
@@ -288,7 +288,7 @@ describe('Stackdriver Stats Exporter', function() {
          });
        });
 
-    it(`Should create a int64Value, lastvalue aggregation Time Series`,
+    it('Should create a int64Value, lastvalue aggregation Time Series',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
@@ -319,7 +319,7 @@ describe('Stackdriver Stats Exporter', function() {
          });
        });
 
-    it(`Should create a int64Value, sum aggregation Time Series`, async () => {
+    it('Should create a int64Value, sum aggregation Time Series', async () => {
       if (dryrun) {
         nocks.metricDescriptors(PROJECT_ID, null, null, false);
         nocks.timeSeries(PROJECT_ID, null, null, false);
@@ -348,7 +348,7 @@ describe('Stackdriver Stats Exporter', function() {
       });
     });
 
-    it(`Should create a int64Value, count aggregation Time Series`,
+    it('Should create a int64Value, count aggregation Time Series',
        async () => {
          if (dryrun) {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
