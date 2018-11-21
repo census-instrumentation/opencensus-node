@@ -25,9 +25,9 @@ const constants = {
   DEFAULT_BUFFER_TIMEOUT: 20000,
   /** Default list of target modules to be instrumented */
   DEFAULT_INSTRUMENTATION_MODULES,
-  /** Opencensus Scope */
+  /** OpenCensus Scope */
   OPENCENSUS_SCOPE: '@opencensus',
-  /** Defult prefix for instrumentation modules */
+  /** Default prefix for instrumentation modules */
   DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'instrumentation'
 };
 

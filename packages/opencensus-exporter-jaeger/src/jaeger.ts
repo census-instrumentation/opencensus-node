@@ -159,7 +159,7 @@ export class JaegerTraceExporter implements Exporter {
    * @param rootSpans
    */
   publish(rootSpans: RootSpan[]) {
-    this.logger.debug('JeagerExport publishing');
+    this.logger.debug('JaegerExport publishing');
     for (const root of rootSpans) {
       if (this.queue.indexOf(root) === -1) {
         this.onEndSpan(root);
@@ -194,7 +194,7 @@ export class JaegerTraceExporter implements Exporter {
 
   /** Start the buffer timeout, when finished calls flush method */
   private setBufferTimeout() {
-    this.logger.debug('JeagerExporter: set timeout');
+    this.logger.debug('JaegerExporter: set timeout');
     if (this.timeoutSet) {
       return;
     }

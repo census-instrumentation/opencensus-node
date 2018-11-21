@@ -23,16 +23,18 @@ export interface PrometheusExporterOptions extends ExporterConfig {
   /** App prefix for metrics, if needed - default opencensus */
   prefix?: string;
   /**
-   * Port number to Prometheus server
+   * Port number for Prometheus exporter server
    * Default registered port is 9464:
    * https://github.com/prometheus/prometheus/wiki/Default-port-allocations
    */
   port?: number;
-  /** Define if the Prometheus server will be started - default false */
+  /**
+   * Define if the Prometheus exporter server will be started - default false
+   */
   startServer?: boolean;
 }
 
-/** Format and sends Stats to Prometheus */
+/** Format and sends Stats to Prometheus exporter */
 export class PrometheusStatsExporter implements StatsEventListener {
   static readonly DEFAULT_OPTIONS = {
     port: 9464,
@@ -193,7 +195,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   }
 
   /**
-   * Start the Prometheus server
+   * Start the Prometheus exporter server
    */
   startServer(callback?: () => void) {
     const self = this;
@@ -212,7 +214,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   }
 
   /**
-   * Stop the Prometheus server
+   * Stop the Prometheus exporter server
    * @param callback
    */
   stopServer(callback?: () => void) {
