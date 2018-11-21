@@ -55,3 +55,6 @@ export * from './stats/types';
 // logger
 import * as logger from './common/console-logger';
 export {logger};
+
+// version
+export * from './common/version';

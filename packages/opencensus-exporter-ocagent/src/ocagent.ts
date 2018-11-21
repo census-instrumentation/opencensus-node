@@ -15,7 +15,7 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {Exporter, ExporterBuffer, ExporterConfig, logger, Logger, RootSpan, SamplerBuilder} from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, logger, Logger, RootSpan, SamplerBuilder, version as coreVersion} from '@opencensus/core';
 import * as tracing from '@opencensus/nodejs';
 import * as grpc from 'grpc';
 import * as os from 'os';
@@ -91,8 +91,7 @@ export class OCAgentExporter implements Exporter {
      * Get node properties
      */
     this.exporterVersion = require('../../package.json').version;
-    this.coreVersion =
-        require('../../node_modules/@opencensus/core/package.json').version;
+    this.coreVersion = coreVersion;
     this.hostName = os.hostname();
     this.processStartTimeMillis = Date.now() - (process.uptime() * 1000);
 
