@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {AggregationType, BaseView, logger, Logger, Measurement, MeasureUnit, Stats, View} from '@opencensus/core';
+import {AggregationType, BaseView, logger, Logger, Measurement, MeasureUnit, Stats} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as nock from 'nock';
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
-import {MetricDescriptor, MetricKind, StackdriverExporterOptions, TimeSeries, ValueType} from '../src/types';
+import {MetricDescriptor, MetricKind, StackdriverExporterOptions, ValueType} from '../src/types';
 import * as nocks from './nocks';
 
 let PROJECT_ID = 'fake-project-id';
@@ -46,56 +46,6 @@ class ExporterTestLogger implements Logger {
   info(...args: any[]) {}
   // tslint:disable-next-line:no-any
   silly(...args: any[]) {}
-}
-
-/**
- * Asserts MetricDescriptors' values given its originating view.
- *
- * @param  {MetricDescriptor} metricDescriptor the MetricDescriptor to be asserted.
- * @param  {View} view the originating view.
- * @param  {MetricKind} metricKind the metricKind of metric.
- * @param  {ValueType} valueType the valueType of metric.
- * @param  {string=StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN} prefix Optional metric prefix.
- */
-function assertMetricDescriptor(
-    metricDescriptor: MetricDescriptor, view: View, metricKind: MetricKind,
-    valueType: ValueType,
-    prefix: string = StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN) {
-  assert.strictEqual(metricDescriptor.type, `${prefix}/${view.name}`);
-  assert.strictEqual(metricDescriptor.description, view.description);
-  assert.strictEqual(metricDescriptor.displayName, view.measure.name);
-  assert.strictEqual(metricDescriptor.metricKind, metricKind);
-  assert.strictEqual(metricDescriptor.valueType, valueType);
-  assert.strictEqual(metricDescriptor.unit, view.measure.unit);
-}
-
-
-/**
- * Asserts TimeSeries' values given its originating view.
- * @param {TimeSeries} TimeSeries The TimeSeries to be asserted.
- * @param {View} view The originating view.
- * @param {Measurement} measurement The originating measurement.
- * @param {string} projectId The project ID from the Stackdriver Monitoring.
- * @param {MetricKind} metricKind the metricKind of metric.
- * @param {ValueType} valueType the valueType of metric.
- * @param {value} value the value of point.
- */
-function assertTimeSeries(
-    timeSeries: TimeSeries, view: View, measurement: Measurement,
-    projectId: string, metricKind: MetricKind, valueType: ValueType, value: {},
-    prefix: string = StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN) {
-  const resourceLabels: {[key: string]: string} = {project_id: projectId};
-
-  assert.strictEqual(timeSeries.metric.type, `${prefix}/${view.name}`);
-  assert.deepEqual(timeSeries.metric.labels, measurement.tags);
-  assert.strictEqual(timeSeries.resource.type, 'global');
-  assert.ok(timeSeries.resource.labels.project_id);
-  assert.strictEqual(
-      timeSeries.resource.labels.project_id, resourceLabels.project_id);
-  assert.strictEqual(timeSeries.metricKind, metricKind);
-  assert.strictEqual(timeSeries.valueType, valueType);
-  assert.ok(timeSeries.points.length > 0);
-  assert.deepStrictEqual(timeSeries.points[0].value, value);
 }
 
 describe('Stackdriver Stats Exporter', function() {
@@ -146,6 +96,10 @@ describe('Stackdriver Stats Exporter', function() {
   const measurement2:
       Measurement = {measure: lastValueDoubleView.measure, value: 1.5, tags};
 
+  // constants for resource information
+  const resourceLabels: {[key: string]: string} = {project_id: PROJECT_ID};
+  const resourceType = 'global';
+
   before(() => {
     if (GOOGLE_APPLICATION_CREDENTIALS) {
       dryrun = !fs.existsSync(GOOGLE_APPLICATION_CREDENTIALS) &&
@@ -191,9 +145,19 @@ describe('Stackdriver Stats Exporter', function() {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
          }
          await exporter.onRegisterView(lastValueDoubleView).then(() => {
-           return assertMetricDescriptor(
-               exporterTestLogger.debugBuffer[0], lastValueDoubleView,
-               MetricKind.GAUGE, ValueType.DOUBLE);
+           const metricDescriptor = exporterTestLogger.debugBuffer[0];
+           assert.strictEqual(
+               metricDescriptor.type,
+               `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                   lastValueDoubleView.name}`);
+           assert.strictEqual(
+               metricDescriptor.description, lastValueDoubleView.description);
+           assert.strictEqual(
+               metricDescriptor.displayName, lastValueDoubleView.measure.name);
+           assert.strictEqual(metricDescriptor.metricKind, MetricKind.GAUGE);
+           assert.strictEqual(metricDescriptor.valueType, ValueType.DOUBLE);
+           assert.strictEqual(
+               metricDescriptor.unit, lastValueDoubleView.measure.unit);
          });
        });
 
@@ -203,9 +167,20 @@ describe('Stackdriver Stats Exporter', function() {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
          }
          await exporter.onRegisterView(sumDoubleView).then(() => {
-           return assertMetricDescriptor(
-               exporterTestLogger.debugBuffer[0], sumDoubleView,
-               MetricKind.CUMULATIVE, ValueType.DOUBLE);
+           const metricDescriptor = exporterTestLogger.debugBuffer[0];
+           assert.strictEqual(
+               metricDescriptor.type,
+               `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                   sumDoubleView.name}`);
+           assert.strictEqual(
+               metricDescriptor.description, sumDoubleView.description);
+           assert.strictEqual(
+               metricDescriptor.displayName, sumDoubleView.measure.name);
+           assert.strictEqual(
+               metricDescriptor.metricKind, MetricKind.CUMULATIVE);
+           assert.strictEqual(metricDescriptor.valueType, ValueType.DOUBLE);
+           assert.strictEqual(
+               metricDescriptor.unit, sumDoubleView.measure.unit);
          });
        });
 
@@ -215,9 +190,19 @@ describe('Stackdriver Stats Exporter', function() {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
          }
          await exporter.onRegisterView(sumINT64View).then(() => {
-           return assertMetricDescriptor(
-               exporterTestLogger.debugBuffer[0], sumINT64View,
-               MetricKind.CUMULATIVE, ValueType.INT64);
+           const metricDescriptor = exporterTestLogger.debugBuffer[0];
+           assert.strictEqual(
+               metricDescriptor.type,
+               `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                   sumINT64View.name}`);
+           assert.strictEqual(
+               metricDescriptor.description, sumINT64View.description);
+           assert.strictEqual(
+               metricDescriptor.displayName, sumINT64View.measure.name);
+           assert.strictEqual(
+               metricDescriptor.metricKind, MetricKind.CUMULATIVE);
+           assert.strictEqual(metricDescriptor.valueType, ValueType.INT64);
+           assert.strictEqual(metricDescriptor.unit, sumINT64View.measure.unit);
          });
        });
 
@@ -227,9 +212,19 @@ describe('Stackdriver Stats Exporter', function() {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
          }
          await exporter.onRegisterView(lastValueINT64View).then(() => {
-           return assertMetricDescriptor(
-               exporterTestLogger.debugBuffer[0], lastValueINT64View,
-               MetricKind.GAUGE, ValueType.INT64);
+           const metricDescriptor = exporterTestLogger.debugBuffer[0];
+           assert.strictEqual(
+               metricDescriptor.type,
+               `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                   lastValueINT64View.name}`);
+           assert.strictEqual(
+               metricDescriptor.description, lastValueINT64View.description);
+           assert.strictEqual(
+               metricDescriptor.displayName, lastValueINT64View.measure.name);
+           assert.strictEqual(metricDescriptor.metricKind, MetricKind.GAUGE);
+           assert.strictEqual(metricDescriptor.valueType, ValueType.INT64);
+           assert.strictEqual(
+               metricDescriptor.unit, lastValueINT64View.measure.unit);
          });
        });
 
@@ -239,9 +234,23 @@ describe('Stackdriver Stats Exporter', function() {
            nocks.metricDescriptors(PROJECT_ID, null, null, false);
          }
          await exporter.onRegisterView(distributionDoubleView).then(() => {
-           return assertMetricDescriptor(
-               exporterTestLogger.debugBuffer[0], distributionDoubleView,
-               MetricKind.CUMULATIVE, ValueType.DISTRIBUTION);
+           const metricDescriptor = exporterTestLogger.debugBuffer[0];
+           assert.strictEqual(
+               metricDescriptor.type,
+               `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                   distributionDoubleView.name}`);
+           assert.strictEqual(
+               metricDescriptor.description,
+               distributionDoubleView.description);
+           assert.strictEqual(
+               metricDescriptor.displayName,
+               distributionDoubleView.measure.name);
+           assert.strictEqual(
+               metricDescriptor.metricKind, MetricKind.CUMULATIVE);
+           assert.strictEqual(
+               metricDescriptor.valueType, ValueType.DISTRIBUTION);
+           assert.strictEqual(
+               metricDescriptor.unit, distributionDoubleView.measure.unit);
          });
        });
   });
@@ -259,10 +268,22 @@ describe('Stackdriver Stats Exporter', function() {
            exporter.onRecord([lastValueDoubleView], measurement2);
            await new Promise((resolve) => setTimeout(resolve, DELAY))
                .then(() => {
-                 return assertTimeSeries(
-                     exporterTestLogger.debugBuffer[1][0], lastValueDoubleView,
-                     measurement2, PROJECT_ID, MetricKind.GAUGE,
-                     ValueType.DOUBLE, {doubleValue: 1.5});
+                 const timeSeries = exporterTestLogger.debugBuffer[1][0];
+                 assert.strictEqual(
+                     timeSeries.metric.type,
+                     `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                         lastValueDoubleView.name}`);
+                 assert.deepEqual(timeSeries.metric.labels, measurement2.tags);
+                 assert.strictEqual(timeSeries.resource.type, resourceType);
+                 assert.ok(timeSeries.resource.labels.project_id);
+                 assert.strictEqual(
+                     timeSeries.resource.labels.project_id,
+                     resourceLabels.project_id);
+                 assert.strictEqual(timeSeries.metricKind, MetricKind.GAUGE);
+                 assert.strictEqual(timeSeries.valueType, ValueType.DOUBLE);
+                 assert.ok(timeSeries.points.length > 0);
+                 assert.deepStrictEqual(
+                     timeSeries.points[0].value.doubleValue, 1.5);
                });
          });
        });
@@ -278,10 +299,22 @@ describe('Stackdriver Stats Exporter', function() {
            exporter.onRecord([lastValueINT64View], measurement1);
            await new Promise((resolve) => setTimeout(resolve, DELAY))
                .then(() => {
-                 return assertTimeSeries(
-                     exporterTestLogger.debugBuffer[1][0], lastValueINT64View,
-                     measurement1, PROJECT_ID, MetricKind.GAUGE,
-                     ValueType.INT64, {int64Value: 25});
+                 const timeSeries = exporterTestLogger.debugBuffer[1][0];
+                 assert.strictEqual(
+                     timeSeries.metric.type,
+                     `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                         lastValueINT64View.name}`);
+                 assert.deepEqual(timeSeries.metric.labels, measurement1.tags);
+                 assert.strictEqual(timeSeries.resource.type, resourceType);
+                 assert.ok(timeSeries.resource.labels.project_id);
+                 assert.strictEqual(
+                     timeSeries.resource.labels.project_id,
+                     resourceLabels.project_id);
+                 assert.strictEqual(timeSeries.metricKind, MetricKind.GAUGE);
+                 assert.strictEqual(timeSeries.valueType, ValueType.INT64);
+                 assert.ok(timeSeries.points.length > 0);
+                 assert.deepStrictEqual(
+                     timeSeries.points[0].value.int64Value, 25);
                });
          });
        });
@@ -297,10 +330,20 @@ describe('Stackdriver Stats Exporter', function() {
         sumINT64View.recordMeasurement(measurement1);
         exporter.onRecord([sumINT64View], measurement1);
         await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
-          return assertTimeSeries(
-              exporterTestLogger.debugBuffer[1][0], sumINT64View, measurement1,
-              PROJECT_ID, MetricKind.CUMULATIVE, ValueType.INT64,
-              {int64Value: 75});
+          const timeSeries = exporterTestLogger.debugBuffer[1][0];
+          assert.strictEqual(
+              timeSeries.metric.type,
+              `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                  sumINT64View.name}`);
+          assert.deepEqual(timeSeries.metric.labels, measurement1.tags);
+          assert.strictEqual(timeSeries.resource.type, resourceType);
+          assert.ok(timeSeries.resource.labels.project_id);
+          assert.strictEqual(
+              timeSeries.resource.labels.project_id, resourceLabels.project_id);
+          assert.strictEqual(timeSeries.metricKind, MetricKind.CUMULATIVE);
+          assert.strictEqual(timeSeries.valueType, ValueType.INT64);
+          assert.ok(timeSeries.points.length > 0);
+          assert.deepStrictEqual(timeSeries.points[0].value.int64Value, 75);
         });
       });
     });
@@ -319,10 +362,23 @@ describe('Stackdriver Stats Exporter', function() {
            exporter.onRecord([countINT64View], measurement1);
            await new Promise((resolve) => setTimeout(resolve, DELAY))
                .then(() => {
-                 return assertTimeSeries(
-                     exporterTestLogger.debugBuffer[1][0], countINT64View,
-                     measurement1, PROJECT_ID, MetricKind.CUMULATIVE,
-                     ValueType.INT64, {int64Value: 4});
+                 const timeSeries = exporterTestLogger.debugBuffer[1][0];
+                 assert.strictEqual(
+                     timeSeries.metric.type,
+                     `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                         countINT64View.name}`);
+                 assert.deepEqual(timeSeries.metric.labels, measurement1.tags);
+                 assert.strictEqual(timeSeries.resource.type, resourceType);
+                 assert.ok(timeSeries.resource.labels.project_id);
+                 assert.strictEqual(
+                     timeSeries.resource.labels.project_id,
+                     resourceLabels.project_id);
+                 assert.strictEqual(
+                     timeSeries.metricKind, MetricKind.CUMULATIVE);
+                 assert.strictEqual(timeSeries.valueType, ValueType.INT64);
+                 assert.ok(timeSeries.points.length > 0);
+                 assert.deepStrictEqual(
+                     timeSeries.points[0].value.int64Value, 4);
                });
          });
        });
@@ -376,9 +432,19 @@ describe('Stackdriver Stats Exporter', function() {
           nocks.metricDescriptors(PROJECT_ID, null, null, false);
         }
         await exporter.onRegisterView(viewMetricDescriptor).then(() => {
-          return assertMetricDescriptor(
-              exporterTestLogger.debugBuffer[0], viewMetricDescriptor,
-              MetricKind.GAUGE, ValueType.DOUBLE);
+          const metricDescriptor = exporterTestLogger.debugBuffer[0];
+          assert.strictEqual(
+              metricDescriptor.type,
+              `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                  viewMetricDescriptor.name}`);
+          assert.strictEqual(
+              metricDescriptor.description, viewMetricDescriptor.description);
+          assert.strictEqual(
+              metricDescriptor.displayName, viewMetricDescriptor.measure.name);
+          assert.strictEqual(metricDescriptor.metricKind, MetricKind.GAUGE);
+          assert.strictEqual(metricDescriptor.valueType, ValueType.DOUBLE);
+          assert.strictEqual(
+              metricDescriptor.unit, viewMetricDescriptor.measure.unit);
         });
       });
 
@@ -390,10 +456,24 @@ describe('Stackdriver Stats Exporter', function() {
         exporter.onRecord([viewTimeSeries], measurement1);
 
         await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
-          return assertTimeSeries(
-              exporterTestLogger.debugBuffer[0][0], viewTimeSeries,
-              measurement1, PROJECT_ID, MetricKind.GAUGE, ValueType.DOUBLE,
-              {doubleValue: 25});
+          // return assertTimeSeries(
+          //     exporterTestLogger.debugBuffer[0][0], viewTimeSeries,
+          //     measurement1, PROJECT_ID, MetricKind.GAUGE, ValueType.DOUBLE,
+          //     {doubleValue: 25});
+          const timeSeries = exporterTestLogger.debugBuffer[0][0];
+          assert.strictEqual(
+              timeSeries.metric.type,
+              `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                  viewTimeSeries.name}`);
+          assert.deepEqual(timeSeries.metric.labels, measurement1.tags);
+          assert.strictEqual(timeSeries.resource.type, resourceType);
+          assert.ok(timeSeries.resource.labels.project_id);
+          assert.strictEqual(
+              timeSeries.resource.labels.project_id, resourceLabels.project_id);
+          assert.strictEqual(timeSeries.metricKind, MetricKind.GAUGE);
+          assert.strictEqual(timeSeries.valueType, ValueType.DOUBLE);
+          assert.ok(timeSeries.points.length > 0);
+          assert.deepStrictEqual(timeSeries.points[0].value.doubleValue, 25);
         });
       });
     });
