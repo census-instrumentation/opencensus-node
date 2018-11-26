@@ -20,12 +20,25 @@ process.env.OC_RESOURCE_TYPE = 'k8s.io/container';
 process.env.OC_RESOURCE_LABELS =
     'k8s.io/pod/name="pod-xyz-123",k8s.io/container/name="c1",k8s.io/namespace/name="default"';
 
-import {Resource} from '../src/resource/resource';
+import {CoreResource} from '../src/resource/resource';
+import {Resource} from '../src/resource/types';
 
-const DEFAULT_RESOURCE = new Resource(null, {});
-const DEFAULT_RESOURCE_1 = new Resource('default', {'a': '100'});
-const RESOURCE_1 = new Resource('t1', {'a': '1', 'b': '2'});
-const RESOURCE_2 = new Resource('t2', {'a': '1', 'b': '3', 'c': '4'});
+const DEFAULT_RESOURCE: Resource = {
+  type: null,
+  labels: {}
+};
+const DEFAULT_RESOURCE_1: Resource = {
+  type: 'default',
+  labels: {'a': '100'}
+};
+const RESOURCE_1: Resource = {
+  type: 't1',
+  labels: {'a': '1', 'b': '2'}
+};
+const RESOURCE_2: Resource = {
+  type: 't2',
+  labels: {'a': '1', 'b': '3', 'c': '4'}
+};
 
 describe('Resource()', () => {
   afterEach(() => {
@@ -34,15 +47,15 @@ describe('Resource()', () => {
   });
 
   it('should return resource information from environment variables', () => {
-    const resource = Resource.createFromEnvironmentVariables();
-    const actualLabels = resource.getLabels();
+    const resource = CoreResource.createFromEnvironmentVariables();
+    const actualLabels = resource.labels;
     const expectedLabels: {[key: string]: string} = {
       'k8s.io/container/name': '"c1"',
       'k8s.io/namespace/name': '"default"',
       'k8s.io/pod/name': '"pod-xyz-123"'
     };
 
-    assert.strictEqual(resource.getType(), 'k8s.io/container');
+    assert.strictEqual(resource.type, 'k8s.io/container');
     assert.equal(Object.keys(actualLabels).length, 3);
     assert.deepEqual(actualLabels, expectedLabels);
   });
@@ -51,54 +64,54 @@ describe('Resource()', () => {
 describe('mergeResources()', () => {
   it('merge resources with default, resource1', () => {
     const resources: Resource[] = [DEFAULT_RESOURCE, RESOURCE_1];
-    const resource = Resource.mergeResources(resources);
+    const resource = CoreResource.mergeResources(resources);
     const expectedLabels: {[key: string]: string} = {'a': '1', 'b': '2'};
 
-    assert.equal(resource.getType(), 't1');
-    assert.equal(Object.keys(resource.getLabels()).length, 2);
-    assert.deepEqual(resource.getLabels(), expectedLabels);
+    assert.equal(resource.type, 't1');
+    assert.equal(Object.keys(resource.labels).length, 2);
+    assert.deepEqual(resource.labels, expectedLabels);
   });
 
   it('merge resources with default, resource1, resource2 = null', () => {
     const resources: Resource[] = [DEFAULT_RESOURCE, RESOURCE_1, null];
-    const resource = Resource.mergeResources(resources);
+    const resource = CoreResource.mergeResources(resources);
     const expectedLabels: {[key: string]: string} = {'a': '1', 'b': '2'};
 
-    assert.equal(resource.getType(), 't1');
-    assert.equal(Object.keys(resource.getLabels()).length, 2);
-    assert.deepEqual(resource.getLabels(), expectedLabels);
+    assert.equal(resource.type, 't1');
+    assert.equal(Object.keys(resource.labels).length, 2);
+    assert.deepEqual(resource.labels, expectedLabels);
   });
 
   it('merge resources with default, resource1 = null, resource2', () => {
     const resources: Resource[] = [DEFAULT_RESOURCE, null, RESOURCE_2];
-    const resource = Resource.mergeResources(resources);
+    const resource = CoreResource.mergeResources(resources);
     const expectedLabels:
         {[key: string]: string} = {'a': '1', 'b': '3', 'c': '4'};
 
-    assert.equal(resource.getType(), 't2');
-    assert.equal(Object.keys(resource.getLabels()).length, 3);
-    assert.deepEqual(resource.getLabels(), expectedLabels);
+    assert.equal(resource.type, 't2');
+    assert.equal(Object.keys(resource.labels).length, 3);
+    assert.deepEqual(resource.labels, expectedLabels);
   });
 
   it('merge resources with default1, resource1, resource2', () => {
     const resources: Resource[] = [DEFAULT_RESOURCE_1, RESOURCE_1, RESOURCE_2];
-    const resource = Resource.mergeResources(resources);
+    const resource = CoreResource.mergeResources(resources);
     const expectedLabels:
         {[key: string]: string} = {'a': '100', 'b': '2', 'c': '4'};
 
-    assert.equal(resource.getType(), 'default');
-    assert.equal(Object.keys(resource.getLabels()).length, 3);
-    assert.deepEqual(resource.getLabels(), expectedLabels);
+    assert.equal(resource.type, 'default');
+    assert.equal(Object.keys(resource.labels).length, 3);
+    assert.deepEqual(resource.labels, expectedLabels);
   });
 
   it('merge resources with default, resource1 = undefined, resource2 = undefined',
      () => {
        const resources: Resource[] = [DEFAULT_RESOURCE_1, undefined, undefined];
-       const resource = Resource.mergeResources(resources);
+       const resource = CoreResource.mergeResources(resources);
        const expectedLabels: {[key: string]: string} = {'a': '100'};
 
-       assert.equal(resource.getType(), 'default');
-       assert.equal(Object.keys(resource.getLabels()).length, 1);
-       assert.deepEqual(resource.getLabels(), expectedLabels);
+       assert.equal(resource.type, 'default');
+       assert.equal(Object.keys(resource.labels).length, 1);
+       assert.deepEqual(resource.labels, expectedLabels);
      });
 });

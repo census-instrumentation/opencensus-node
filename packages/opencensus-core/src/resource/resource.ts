@@ -15,6 +15,7 @@
  */
 
 import {StringUtils} from '../internal/string-utils';
+import {Resource} from './types';
 
 /**
  * Resource represents a resource, which capture identifying information about
@@ -23,43 +24,30 @@ import {StringUtils} from '../internal/string-utils';
  * environment and progressive population as signals propagate from the core
  * instrumentation library to a backend's exporter.
  */
-export class Resource {
-  /**
-   * The type identifier for the resource.
-   */
-  private readonly type: string|null;
-  /**
-   * A map of labels that describe the resource.
-   */
-  private readonly labels: StringMap;
-
+export class CoreResource {
+  // Type, label keys, and label values should not exceed 256 characters.
   private static readonly MAX_LENGTH = 255;
-  private static readonly LABEL_LIST_SPLITTER = ',';
+  private static readonly COMMA_SEPARATOR = ',';
   private static readonly LABEL_KEY_VALUE_SPLITTER = '=';
   private static readonly ENV_TYPE =
-      Resource.parseResourceType(process.env.OC_RESOURCE_TYPE);
+      CoreResource.parseResourceType(process.env.OC_RESOURCE_TYPE);
   private static readonly ENV_LABEL_MAP =
-      Resource.parseResourceLabels(process.env.OC_RESOURCE_LABELS);
+      CoreResource.parseResourceLabels(process.env.OC_RESOURCE_LABELS);
   private static readonly ERROR_MESSAGE_INVALID_CHARS =
       'should be a ASCII string with a length greater than 0 and not exceed ' +
-      Resource.MAX_LENGTH + ' characters.';
+      CoreResource.MAX_LENGTH + ' characters.';
   private static readonly ERROR_MESSAGE_INVALID_VALUE =
       'should be a ASCII string with a length not exceed ' +
-      Resource.MAX_LENGTH + ' characters.';
-
-  constructor(type: string, labels: StringMap) {
-    this.type = type;
-    this.labels = labels;
-  }
+      CoreResource.MAX_LENGTH + ' characters.';
 
   /**
    * Returns a Resource. This resource information is loaded from the
    * OC_RESOURCE_TYPE and OC_RESOURCE_LABELS environment variables.
    *
-   * @returns {Resource}
+   * @returns {Resource} The resource.
    */
   static createFromEnvironmentVariables(): Resource {
-    return new Resource(Resource.ENV_TYPE, Resource.ENV_LABEL_MAP);
+    return {type: CoreResource.ENV_TYPE, labels: CoreResource.ENV_LABEL_MAP};
   }
 
   /**
@@ -67,11 +55,11 @@ export class Resource {
    * their results. In case a type of label key is already set, the first set
    * value takes precedence.
    *
-   * @param  {Resource[]} resources the list of the resources.
-   * @returns {Resource}
+   * @param  {Resource[]} resources The list of the resources.
+   * @returns {Resource} The resource.
    */
   static mergeResources(resources: Resource[]): Resource {
-    let currentResource: Resource = null;
+    let currentResource: Resource;
     for (const resource of resources) {
       currentResource = this.merge(currentResource, resource);
     }
@@ -79,33 +67,18 @@ export class Resource {
   }
 
   /**
-   * Returns the type identifier for the resource.
-   *
-   * @returns {string}
-   */
-  getType(): string {
-    return this.type;
-  }
-
-  /**
-   * Returns a map of labels that describe the resource.
-   *
-   * @returns {StringMap}
-   */
-  getLabels(): StringMap {
-    return this.labels;
-  }
-
-  /**
    * Creates a resource type from the OC_RESOURCE_TYPE environment variable.
    *
    * <p>OC_RESOURCE_TYPE: A string that describes the type of the resource
    * prefixed by a domain namespace, e.g. “kubernetes.io/container”.
+   *
+   * @param  {string} rawEnvType The resource type.
+   * @returns {string} The sanitized resource type.
    */
   private static parseResourceType(rawEnvType: string): string {
     if (rawEnvType) {
-      if (!Resource.isValidAndNotEmpty(rawEnvType)) {
-        throw new Error(`Type ${Resource.ERROR_MESSAGE_INVALID_CHARS}`);
+      if (!CoreResource.isValidAndNotEmpty(rawEnvType)) {
+        throw new Error(`Type ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
       }
       return rawEnvType.trim();
     }
@@ -119,26 +92,34 @@ export class Resource {
    * source in more detail, e.g. “key1=val1,key2=val2”. Domain names and paths
    * are accepted as label keys. Values may be quoted or unquoted in general. If
    * a value contains whitespaces, =, or " characters, it must always be quoted.
+   *
+   * @param {string} rawEnvLabels The resource labels as a comma-seperated list
+   * of key/value pairs.
+   * @returns {[key: string]: string} The sanitized resource labels.
    */
-  private static parseResourceLabels(rawEnvLabels: string): StringMap {
-    const labels: StringMap = {};
+  private static parseResourceLabels(rawEnvLabels: string):
+      {[key: string]: string;} {
+    const labels: {[key: string]: string;} = {};
     if (rawEnvLabels) {
-      const rawLabels: string[] =
-          rawEnvLabels.split(this.LABEL_LIST_SPLITTER, -1);
+      const rawLabels: string[] = rawEnvLabels.split(this.COMMA_SEPARATOR, -1);
+      let key, value;
       for (const rawLabel of rawLabels) {
         const keyValuePair: string[] =
             rawLabel.split(this.LABEL_KEY_VALUE_SPLITTER, -1);
         if (keyValuePair.length !== 2) {
           continue;
         }
-        const key: string = keyValuePair[0].trim();
-        const value: string = keyValuePair[1].trim().replace('^"|"$', '');
-        if (!Resource.isValidAndNotEmpty(key)) {
-          throw new Error(`Label key ${Resource.ERROR_MESSAGE_INVALID_CHARS}`);
-        }
-        if (!Resource.isValid(value)) {
+        [key, value] = keyValuePair;
+        // Leading and trailing whitespaces are trimmed.
+        key = key.trim();
+        value = value.trim().split('^"|"$').join('');
+        if (!CoreResource.isValidAndNotEmpty(key)) {
           throw new Error(
-              `Label value ${Resource.ERROR_MESSAGE_INVALID_VALUE}`);
+              `Label key ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
+        }
+        if (!CoreResource.isValid(value)) {
+          throw new Error(
+              `Label value ${CoreResource.ERROR_MESSAGE_INVALID_VALUE}`);
         }
         labels[key] = value;
       }
@@ -149,6 +130,10 @@ export class Resource {
   /**
    * Returns a new, merged Resource by merging two resources. In case of
    * a collision, first resource takes precedence.
+   *
+   * @param {Resource} resource The resource object.
+   * @param {Resource} otherResource The resource object.
+   * @returns {Resource} A new, merged Resource.
    */
   private static merge(resource: Resource, otherResource: Resource): Resource {
     if (!resource) {
@@ -157,36 +142,33 @@ export class Resource {
     if (!otherResource) {
       return resource;
     }
-    const mergedType: string = resource.getType() != null ?
-        resource.getType() :
-        otherResource.getType();
-    const mergedLabelMap: StringMap = otherResource.getLabels();
-
-    const resourceLabels = resource.getLabels();
-    for (const key of Object.keys(resourceLabels)) {
-      const value = resourceLabels[key];
-      mergedLabelMap[key] = value;
-    }
-    return new Resource(mergedType, mergedLabelMap);
+    return {
+      type: resource.type || otherResource.type,
+      labels: Object.assign(otherResource.labels, resource.labels)
+    };
   }
 
 
   /**
    * Determines whether the given String is a valid printable ASCII string with
    * a length not exceed MAX_LENGTH characters.
+   *
+   * @param {string} str The String to be validated.
+   * @returns {boolean} Whether the String is valid.
    */
   private static isValid(name: string): boolean {
-    return name.length <= Resource.MAX_LENGTH &&
+    return name.length <= CoreResource.MAX_LENGTH &&
         StringUtils.isPrintableString(name);
   }
 
   /**
    * Determines whether the given String is a valid printable ASCII string with
    * a length greater than 0 and not exceed MAX_LENGTH characters.
+   *
+   * @param {string} str The String to be validated.
+   * @returns {boolean} Whether the String is valid and not empty.
    */
   private static isValidAndNotEmpty(name: string): boolean {
-    return name && name.length > 0 && Resource.isValid(name);
+    return name && name.length > 0 && CoreResource.isValid(name);
   }
 }
-
-export interface StringMap { [key: string]: string; }
