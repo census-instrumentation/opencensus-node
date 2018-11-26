@@ -27,8 +27,15 @@ import {Resource} from './types';
 export class CoreResource {
   // Type, label keys, and label values should not exceed 256 characters.
   private static readonly MAX_LENGTH = 255;
+
+  /**
+   * OC_RESOURCE_LABELS is a comma-separated list of labels (key and value are
+   * separated by '=') describing the source in more detail, e.g.
+   * “key1=val1,key2=val2”.
+   */
   private static readonly COMMA_SEPARATOR = ',';
   private static readonly LABEL_KEY_VALUE_SPLITTER = '=';
+
   private static readonly ENV_TYPE =
       CoreResource.parseResourceType(process.env.OC_RESOURCE_TYPE);
   private static readonly ENV_LABEL_MAP =
