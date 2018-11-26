@@ -15,13 +15,11 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
-import {Annotation, Attributes, Link, MessageEvent, TraceOptions} from '../src/trace/model/types';
+import {Annotation, Attributes, Link, TraceOptions} from '../src/trace/model/types';
 
 const tracer = new CoreTracer();
 
@@ -165,7 +163,7 @@ describe('RootSpan', () => {
     it('should end all spans inside rootspan', () => {
       const root = new RootSpan(tracer);
       root.start();
-      const span = root.startChildSpan('spanName', 'spanType');
+      root.startChildSpan('spanName', 'spanType');
       root.end();
 
       for (const span of root.spans) {

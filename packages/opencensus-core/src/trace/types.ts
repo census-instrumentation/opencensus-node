@@ -15,10 +15,8 @@
  */
 
 import * as exportersTypes from '../exporters/types';
-
 import * as configTypes from './config/types';
 import * as modelTypes from './model/types';
-import * as samplerTypes from './sampler/types';
 
 /** Main interface for tracing. */
 export interface Tracing {

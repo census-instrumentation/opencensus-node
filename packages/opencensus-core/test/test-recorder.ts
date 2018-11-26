@@ -15,8 +15,6 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import {Recorder} from '../src';
 import {AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, SumData, Tags} from '../src/stats/types';
 
@@ -176,8 +174,7 @@ describe('Recorder', () => {
                    const updatedAggregationData =
                        Recorder.addMeasurement(distributionData, measurement) as
                        DistributionData;
-
-                   assertDistributionData(distributionData, sentValues);
+                   assertDistributionData(updatedAggregationData, sentValues);
                  }
                });
           }

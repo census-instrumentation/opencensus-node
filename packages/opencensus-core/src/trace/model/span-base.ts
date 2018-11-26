@@ -16,7 +16,6 @@
 import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 import {randomSpanId} from '../../internal/util';
-
 import * as types from './types';
 
 
@@ -30,6 +29,7 @@ export abstract class SpanBase implements types.Span {
   /** Indicates if this span was ended */
   private endedLocal = false;
   /** Indicates if this span was forced to end */
+  // @ts-ignore
   private truncated = false;
   /** The Span ID of this span */
   readonly id: string;

@@ -15,22 +15,15 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
 
 import {BaseView} from '../src';
-import {AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, SumData, Tags, View} from '../src/stats/types';
+import {AggregationType, DistributionData, Measure, Measurement, MeasureType, MeasureUnit, Tags, View} from '../src/stats/types';
 
 /** The order of how close values must be to be considerated almost equal */
 const EPSILON = 6;
 
 interface AggregationTestCase {
   aggregationType: AggregationType;
-  description: string;
-}
-
-interface MeasurementsTestCase {
-  values: number[];
-  bucketBoundaries: number[];
   description: string;
 }
 
@@ -117,7 +110,6 @@ describe('BaseView', () => {
   describe('recordMeasurement()', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const bucketBoundaries = [2, 4, 6];
-    const emptyAggregation = {};
     const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
 
     for (const aggregationTestCase of aggregationTestCases) {

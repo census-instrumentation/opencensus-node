@@ -15,8 +15,6 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import {BaseView, Stats, StatsEventListener} from '../src';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';
 
@@ -135,7 +133,6 @@ describe('Stats', () => {
   describe('record()', () => {
     let measure: Measure;
     const testExporter = new TestExporter();
-    let view;
     let aggregationData: LastValueData;
     before(() => {
       measure = stats.createMeasureInt64(measureName, measureUnit);
@@ -144,7 +141,7 @@ describe('Stats', () => {
     beforeEach(() => {
       testExporter.clean();
       stats.registerExporter(testExporter);
-      view = stats.createView(
+      stats.createView(
           viewName, measure, AggregationType.LAST_VALUE, tagKeys, description);
     });
 
