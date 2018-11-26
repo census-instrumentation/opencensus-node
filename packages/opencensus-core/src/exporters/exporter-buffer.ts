@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as uuidv4 from 'uuid/v4';
 import * as logger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 import * as configTypes from '../trace/config/types';

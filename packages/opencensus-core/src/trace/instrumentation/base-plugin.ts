@@ -15,11 +15,8 @@
  */
 import * as path from 'path';
 import * as semver from 'semver';
-
-import {logger} from '../../common/console-logger';
 import {Logger} from '../../common/types';
 import * as modelTypes from '../model/types';
-
 import * as types from './types';
 
 /**

@@ -15,10 +15,7 @@
  */
 
 import * as uuid from 'uuid';
-
 import * as logger from '../../common/console-logger';
-import {Clock} from '../../internal/clock';
-
 import {Span} from './span';
 import {SpanBase} from './span-base';
 import * as types from './types';

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {randomSpanId} from '../../internal/util';
 import {Sampler} from './types';
 
 // We use 52-bits as our max number because it remains a javascript "safe

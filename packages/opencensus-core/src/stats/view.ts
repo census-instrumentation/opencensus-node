@@ -16,10 +16,9 @@
 
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
-
 import {BucketBoundaries} from './bucket-boundaries';
 import {Recorder} from './recorder';
-import {AggregationData, AggregationMetadata, AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
+import {AggregationData, AggregationType, Measure, Measurement, Tags, View} from './types';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 const UNIT_SEPARATOR = String.fromCharCode(31);
@@ -64,6 +63,7 @@ export class BaseView implements View {
   /** true if the view was registered */
   registered = false;
   /** An object to log information to */
+  // @ts-ignore
   private logger: loggerTypes.Logger;
 
   /**

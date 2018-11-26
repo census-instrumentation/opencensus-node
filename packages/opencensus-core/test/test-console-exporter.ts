@@ -15,10 +15,7 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import {ConsoleExporter, NoopExporter} from '../src/exporters/console-exporter';
-import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
 
@@ -57,7 +54,7 @@ describe('ConsoleLogExporter', () => {
     it('should end a span', () => {
       const intercept = require('intercept-stdout');
       let capturedText = '';
-      const unhookIntercept = intercept((txt: string) => {
+      intercept((txt: string) => {
         capturedText += txt;
       });
 
@@ -82,7 +79,7 @@ describe('ConsoleLogExporter', () => {
     it('should publish the rootspans in queue', () => {
       const intercept = require('intercept-stdout');
       let capturedText = '';
-      const unhookIntercept = intercept((txt: string) => {
+      intercept((txt: string) => {
         capturedText += txt;
       });
 
