@@ -23,23 +23,6 @@ process.env.OC_RESOURCE_LABELS =
 import {CoreResource} from '../src/resource/resource';
 import {Resource} from '../src/resource/types';
 
-const DEFAULT_RESOURCE: Resource = {
-  type: null,
-  labels: {}
-};
-const DEFAULT_RESOURCE_1: Resource = {
-  type: 'default',
-  labels: {'a': '100'}
-};
-const RESOURCE_1: Resource = {
-  type: 't1',
-  labels: {'a': '1', 'b': '2'}
-};
-const RESOURCE_2: Resource = {
-  type: 't2',
-  labels: {'a': '1', 'b': '3', 'c': '4'}
-};
-
 describe('Resource()', () => {
   afterEach(() => {
     delete process.env.OC_RESOURCE_TYPE;
@@ -62,6 +45,12 @@ describe('Resource()', () => {
 });
 
 describe('mergeResources()', () => {
+  const DEFAULT_RESOURCE: Resource = {type: null, labels: {}};
+  const DEFAULT_RESOURCE_1: Resource = {type: 'default', labels: {'a': '100'}};
+  const RESOURCE_1: Resource = {type: 't1', labels: {'a': '1', 'b': '2'}};
+  const RESOURCE_2:
+      Resource = {type: 't2', labels: {'a': '1', 'b': '3', 'c': '4'}};
+
   it('merge resources with default, resource1', () => {
     const resources: Resource[] = [DEFAULT_RESOURCE, RESOURCE_1];
     const resource = CoreResource.mergeResources(resources);

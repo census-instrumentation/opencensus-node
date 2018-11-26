@@ -69,7 +69,7 @@ export class CoreResource {
   /**
    * Creates a resource type from the OC_RESOURCE_TYPE environment variable.
    *
-   * <p>OC_RESOURCE_TYPE: A string that describes the type of the resource
+   * OC_RESOURCE_TYPE: A string that describes the type of the resource
    * prefixed by a domain namespace, e.g. “kubernetes.io/container”.
    *
    * @param  {string} rawEnvType The resource type.
@@ -88,7 +88,7 @@ export class CoreResource {
   /**
    * Creates a label map from the OC_RESOURCE_LABELS environment variable.
    *
-   * <p>OC_RESOURCE_LABELS: A comma-separated list of labels describing the
+   * OC_RESOURCE_LABELS: A comma-separated list of labels describing the
    * source in more detail, e.g. “key1=val1,key2=val2”. Domain names and paths
    * are accepted as label keys. Values may be quoted or unquoted in general. If
    * a value contains whitespaces, =, or " characters, it must always be quoted.
@@ -102,14 +102,13 @@ export class CoreResource {
     const labels: {[key: string]: string;} = {};
     if (rawEnvLabels) {
       const rawLabels: string[] = rawEnvLabels.split(this.COMMA_SEPARATOR, -1);
-      let key, value;
       for (const rawLabel of rawLabels) {
         const keyValuePair: string[] =
             rawLabel.split(this.LABEL_KEY_VALUE_SPLITTER, -1);
         if (keyValuePair.length !== 2) {
           continue;
         }
-        [key, value] = keyValuePair;
+        let [key, value] = keyValuePair;
         // Leading and trailing whitespaces are trimmed.
         key = key.trim();
         value = value.trim().split('^"|"$').join('');
@@ -144,7 +143,7 @@ export class CoreResource {
     }
     return {
       type: resource.type || otherResource.type,
-      labels: Object.assign(otherResource.labels, resource.labels)
+      labels: Object.assign({}, otherResource.labels, resource.labels)
     };
   }
 
