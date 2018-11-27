@@ -1,5 +1,5 @@
 # OpenCensus Prometheus Exporter for Node.js
-[![Gitter chat][gitter-image]][gitter-url]
+[![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url]
 
 The OpenCensus Prometheus Exporter allows the user to send collected stats with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to Prometheus.
 
@@ -9,43 +9,60 @@ This package is still at an early stage of development, and is subject to change
 
 Install OpenCensus Prometheus Exporter with:
 ```bash
-npm install @opencensus/nodejs
+npm install @opencensus/core
 npm install @opencensus/exporter-prometheus
 ```
 
 ## Usage
 
-Instance the exporter on your application. For javascript:
+Instance the exporter on your application. 
 
+For javascript:
 ```javascript
-var tracing = require('@opencensus/nodejs');
-var prometheus = require('@opencensus/exporter-prometheus');
+const { Stats } = require('@opencensus/core');
+const { PrometheusStatsExporter } = require('@opencensus/exporter-prometheus');
 
-var exporter = new prometheus.PrometheusTraceExporter();
-
-tracing.registerExporter(exporter).start();
+// Add your port and startServer to the Prometheus options
+const exporter = new PrometheusStatsExporter({
+  port: 9464,
+  startServer: false
+});
 ```
 
-Similarly for Typescript:
+Now, register the exporter.
 
+```javascript
+// Our Stats manager
+const stats = new Stats();
+
+// Pass the created exporter to Stats
+stats.registerExporter(exporter);
+
+// Run the server
+exporter.startServer(function callback() {
+  // Callback
+});
+```
+
+Similarly for Typescript (Since the source is written in TypeScript):
 ```typescript
-import * as tracing from '@opencensus/nodejs';
-import { PrometheusTraceExporter } from '@opencensus/exporter-prometheus';
+import { PrometheusStatsExporter } from '@opencensus/exporter-prometheus';
+import { Stats } from '@opencensus/core';
 
-const exporter = new PrometheusTraceExporter();
+// Add your port and startServer to the Prometheus options
+const options = {port: 9464, startServer: false};
+const exporter = new PrometheusStatsExporter(options);
+
+// Our Stats manager
+const stats = new Stats();
+
+// Pass the created exporter to Stats
+stats.registerExporter(exporter);
 ```
 
-Now, register the exporter and start tracing.
+Viewing your metrics:
 
-```javascript
-tracing.start({'exporter': exporter});
-```
-
-or
-
-```javascript
-tracing.registerExporter(exporter).start();
-```
+With the above you should now be able to navigate to the Prometheus UI at: <http://localhost:9464/metrics>
 
 ## Useful links
 - To learn more about Prometheus, visit: <https://prometheus.io/>
@@ -55,3 +72,10 @@ tracing.registerExporter(exporter).start();
 
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
 [gitter-url]: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[npm-url]: https://www.npmjs.com/package/@opencensus/exporter-prometheus
+[npm-img]: https://badge.fury.io/js/%40opencensus%2Fexporter-prometheus.svg
+[node-img]: https://img.shields.io/node/v/@opencensus/exporter-prometheus.svg
+
+## LICENSE 
+
+Apache License 2.0
