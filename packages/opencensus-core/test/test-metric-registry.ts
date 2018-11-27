@@ -34,9 +34,19 @@ describe('addInt64Gauge', () => {
       registry.addInt64Gauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory name parameter$/);
   });
+  it('should throw an error when the name is undefined', () => {
+    assert.throws(() => {
+      registry.addInt64Gauge(undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory name parameter$/);
+  });
   it('should throw an error when the description is null', () => {
     assert.throws(() => {
       registry.addInt64Gauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory description parameter$/);
+  });
+  it('should throw an error when the description is undefined', () => {
+    assert.throws(() => {
+      registry.addInt64Gauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory description parameter$/);
   });
   it('should throw an error when the unit is null', () => {
@@ -44,9 +54,20 @@ describe('addInt64Gauge', () => {
       registry.addInt64Gauge(METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
     }, /^Error: Missing mandatory unit parameter$/);
   });
+  it('should throw an error when the unit is undefined', () => {
+    assert.throws(() => {
+      registry.addInt64Gauge(
+          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
+    }, /^Error: Missing mandatory unit parameter$/);
+  });
   it('should throw an error when the labelKeys is null', () => {
     assert.throws(() => {
       registry.addInt64Gauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
+    }, /^Error: Missing mandatory labelKeys parameter$/);
+  });
+  it('should throw an error when the labelKeys is undefined', () => {
+    assert.throws(() => {
+      registry.addInt64Gauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
     }, /^Error: Missing mandatory labelKeys parameter$/);
   });
   it('should throw an error when the labelKey elements are NULL', () => {
@@ -63,9 +84,19 @@ describe('addDoubleGauge', () => {
       registry.addDoubleGauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory name parameter$/);
   });
+  it('should throw an error when the name is undefined', () => {
+    assert.throws(() => {
+      registry.addDoubleGauge(undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory name parameter$/);
+  });
   it('should throw an error when the description is null', () => {
     assert.throws(() => {
       registry.addDoubleGauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory description parameter$/);
+  });
+  it('should throw an error when the description is undefined', () => {
+    assert.throws(() => {
+      registry.addDoubleGauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory description parameter$/);
   });
   it('should throw an error when the unit is null', () => {
@@ -74,9 +105,20 @@ describe('addDoubleGauge', () => {
           METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
     }, /^Error: Missing mandatory unit parameter$/);
   });
+  it('should throw an error when the unit is undefined', () => {
+    assert.throws(() => {
+      registry.addDoubleGauge(
+          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
+    }, /^Error: Missing mandatory unit parameter$/);
+  });
   it('should throw an error when the labelKeys is null', () => {
     assert.throws(() => {
       registry.addDoubleGauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
+    }, /^Error: Missing mandatory labelKeys parameter$/);
+  });
+  it('should throw an error when the labelKeys is undefined', () => {
+    assert.throws(() => {
+      registry.addDoubleGauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
     }, /^Error: Missing mandatory labelKeys parameter$/);
   });
   it('should throw an error when the labelKey elements are NULL', () => {
@@ -93,9 +135,20 @@ describe('addDerivedInt64Gauge', () => {
       registry.addDerivedInt64Gauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory name parameter$/);
   });
+  it('should throw an error when the name is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedInt64Gauge(
+          undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory name parameter$/);
+  });
   it('should throw an error when the description is null', () => {
     assert.throws(() => {
       registry.addDerivedInt64Gauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory description parameter$/);
+  });
+  it('should throw an error when the description is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedInt64Gauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory description parameter$/);
   });
   it('should throw an error when the unit is null', () => {
@@ -104,10 +157,22 @@ describe('addDerivedInt64Gauge', () => {
           METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
     }, /^Error: Missing mandatory unit parameter$/);
   });
+  it('should throw an error when the unit is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedInt64Gauge(
+          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
+    }, /^Error: Missing mandatory unit parameter$/);
+  });
   it('should throw an error when the labelKeys is null', () => {
     assert.throws(() => {
       registry.addDerivedInt64Gauge(
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
+    }, /^Error: Missing mandatory labelKeys parameter$/);
+  });
+  it('should throw an error when the labelKeys is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedInt64Gauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
     }, /^Error: Missing mandatory labelKeys parameter$/);
   });
   it('should throw an error when the labelKey elements are NULL', () => {
@@ -125,9 +190,20 @@ describe('addDerivedDoubleGauge', () => {
           null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory name parameter$/);
   });
+  it('should throw an error when the name is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedDoubleGauge(
+          undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory name parameter$/);
+  });
   it('should throw an error when the description is null', () => {
     assert.throws(() => {
       registry.addDerivedDoubleGauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
+    }, /^Error: Missing mandatory description parameter$/);
+  });
+  it('should throw an error when the description is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedDoubleGauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
     }, /^Error: Missing mandatory description parameter$/);
   });
   it('should throw an error when the unit is null', () => {
@@ -136,10 +212,22 @@ describe('addDerivedDoubleGauge', () => {
           METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
     }, /^Error: Missing mandatory unit parameter$/);
   });
+  it('should throw an error when the unit is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedDoubleGauge(
+          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
+    }, /^Error: Missing mandatory unit parameter$/);
+  });
   it('should throw an error when the labelKeys is null', () => {
     assert.throws(() => {
       registry.addDerivedDoubleGauge(
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
+    }, /^Error: Missing mandatory labelKeys parameter$/);
+  });
+  it('should throw an error when the labelKeys is undefined', () => {
+    assert.throws(() => {
+      registry.addDerivedDoubleGauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
     }, /^Error: Missing mandatory labelKeys parameter$/);
   });
   it('should throw an error when the labelKey elements are NULL', () => {

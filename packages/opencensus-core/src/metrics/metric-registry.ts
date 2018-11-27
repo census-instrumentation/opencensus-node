@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {checkListElementNotNull, checkNotNull} from '../common/validations';
+import {validateArrayElementsNotNull, validateNotNull} from '../common/validations';
 import {MeasureUnit} from '../stats/types';
 import {LabelKey} from './export/types';
 
@@ -35,10 +35,11 @@ export class MetricRegistry {
   addInt64Gauge(
       name: string, description: string, unit: MeasureUnit,
       labelKeys: LabelKey[]): void {
-    checkNotNull(name, 'name');
-    checkNotNull(description, 'description');
-    checkNotNull(unit, 'unit');
-    checkListElementNotNull(checkNotNull(labelKeys, 'labelKeys'), 'labelKey');
+    validateNotNull(name, 'name');
+    validateNotNull(description, 'description');
+    validateNotNull(unit, 'unit');
+    validateArrayElementsNotNull(
+        validateNotNull(labelKeys, 'labelKeys'), 'labelKey');
     // TODO(mayurkale): Add Int64Gauge.
   }
 
@@ -55,10 +56,11 @@ export class MetricRegistry {
   addDoubleGauge(
       name: string, description: string, unit: MeasureUnit,
       labelKeys: LabelKey[]): void {
-    checkNotNull(name, 'name');
-    checkNotNull(description, 'description');
-    checkNotNull(unit, 'unit');
-    checkListElementNotNull(checkNotNull(labelKeys, 'labelKeys'), 'labelKey');
+    validateNotNull(name, 'name');
+    validateNotNull(description, 'description');
+    validateNotNull(unit, 'unit');
+    validateArrayElementsNotNull(
+        validateNotNull(labelKeys, 'labelKeys'), 'labelKey');
     // TODO(mayurkale): Add DoubleGauge.
   }
 
@@ -75,10 +77,11 @@ export class MetricRegistry {
   addDerivedInt64Gauge(
       name: string, description: string, unit: MeasureUnit,
       labelKeys: LabelKey[]): void {
-    checkNotNull(name, 'name');
-    checkNotNull(description, 'description');
-    checkNotNull(unit, 'unit');
-    checkListElementNotNull(checkNotNull(labelKeys, 'labelKeys'), 'labelKey');
+    validateNotNull(name, 'name');
+    validateNotNull(description, 'description');
+    validateNotNull(unit, 'unit');
+    validateArrayElementsNotNull(
+        validateNotNull(labelKeys, 'labelKeys'), 'labelKey');
     // TODO(mayurkale): Add Derived Int64Gauge.
   }
 
@@ -95,10 +98,11 @@ export class MetricRegistry {
   addDerivedDoubleGauge(
       name: string, description: string, unit: MeasureUnit,
       labelKeys: LabelKey[]): void {
-    checkNotNull(name, 'name');
-    checkNotNull(description, 'description');
-    checkNotNull(unit, 'unit');
-    checkListElementNotNull(checkNotNull(labelKeys, 'labelKeys'), 'labelKey');
+    validateNotNull(name, 'name');
+    validateNotNull(description, 'description');
+    validateNotNull(unit, 'unit');
+    validateArrayElementsNotNull(
+        validateNotNull(labelKeys, 'labelKeys'), 'labelKey');
     // TODO(mayurkale): Add Derived DoubleGauge.
   }
 }

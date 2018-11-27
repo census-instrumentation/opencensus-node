@@ -15,43 +15,31 @@
  */
 
 /**
- * Ensures that an object reference passed as a parameter to the calling
+ * Validates that an object reference passed as a parameter to the calling
  * method is not null.
  *
  * @param {T} reference An object reference.
  * @param {string} errorMessage The exception message to use if the check fails.
  * @returns {T} An object reference.
  */
-export function checkNotNull<T>(reference: T, errorMessage: string): T {
-  if (!reference) {
+export function validateNotNull<T>(reference: T, errorMessage: string): T {
+  if (reference === null || reference === undefined) {
     throw new Error(`Missing mandatory ${errorMessage} parameter`);
   }
   return reference;
 }
 
 /**
- * Ensures the truth of an expression involving one or more parameters to the
- * calling method.
- *
- * @param  {boolean} expression A boolean expression.
- * @param  {string} errorMessage The exception message to use if the check fails.
- */
-export function checkArgument(expression: boolean, errorMessage: string) {
-  if (!expression) {
-    throw new Error(`Invalid arguments: ${errorMessage}`);
-  }
-}
-
-/**
- * Throws an Error if any of the list elements is null.
+ * Validates that an array passed as a parameter doesn't contain null element.
  *
  * @param {T} list The argument list to check for null.
  * @param {string} errorMessage The exception message to use if the check fails.
  */
-export function checkListElementNotNull<T>(list: T[], errorMessage: string) {
-  for (const element of list) {
-    if (!element) {
+export function validateArrayElementsNotNull<T>(
+    array: T[], errorMessage: string) {
+  array.forEach((element) => {
+    if (element === null || element === undefined) {
       throw new Error(`${errorMessage} elements should not be a NULL`);
     }
-  }
+  });
 }
