@@ -95,7 +95,7 @@ export interface MetricDescriptor {
 }
 
 export interface Distribution {
-  count: string;
+  count: number;
   mean: number;
   sumOfSquaredDeviation: number;
   bucketOptions: {explicitBuckets: {bounds: Bucket[];}};
@@ -106,7 +106,7 @@ export interface Point {
   interval: {endTime: string, startTime: string};
   value: {
     boolValue?: boolean;
-    int64Value?: string;
+    int64Value?: number;
     doubleValue?: number;
     stringValue?: string;
     distributionValue?: Distribution;
