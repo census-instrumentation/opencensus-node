@@ -15,7 +15,8 @@
  */
 
 import {StringUtils} from '../internal/string-utils';
-import {Resource} from './types';
+
+import {Labels, Resource} from './types';
 
 /**
  * Resource represents a resource, which capture identifying information about
@@ -28,12 +29,10 @@ export class CoreResource {
   // Type, label keys, and label values should not exceed 256 characters.
   private static readonly MAX_LENGTH = 255;
 
-  /**
-   * OC_RESOURCE_LABELS is a comma-separated list of labels (key and value are
-   * separated by '=') describing the source in more detail, e.g.
-   * “key1=val1,key2=val2”.
-   */
+  // OC_RESOURCE_LABELS is a comma-separated list of labels.
   private static readonly COMMA_SEPARATOR = ',';
+
+  // OC_RESOURCE_LABELS contains key value pair separated by '='.
   private static readonly LABEL_KEY_VALUE_SPLITTER = '=';
 
   private static readonly ENV_TYPE =
@@ -102,11 +101,10 @@ export class CoreResource {
    *
    * @param {string} rawEnvLabels The resource labels as a comma-seperated list
    * of key/value pairs.
-   * @returns {[key: string]: string} The sanitized resource labels.
+   * @returns {Labels} The sanitized resource labels.
    */
-  private static parseResourceLabels(rawEnvLabels: string):
-      {[key: string]: string;} {
-    const labels: {[key: string]: string;} = {};
+  private static parseResourceLabels(rawEnvLabels: string): Labels {
+    const labels: Labels = {};
     if (rawEnvLabels) {
       const rawLabels: string[] = rawEnvLabels.split(this.COMMA_SEPARATOR, -1);
       for (const rawLabel of rawLabels) {

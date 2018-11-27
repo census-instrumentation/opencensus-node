@@ -25,5 +25,8 @@ export interface Resource {
    * A dictionary of labels with string keys and values that provide information
    * about the entity.
    */
-  readonly labels: {[key: string]: string;};
+  readonly labels: Labels;
 }
+
+/** Labels are maps of keys -> values */
+export interface Labels { [key: string]: string; }
