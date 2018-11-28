@@ -37,9 +37,8 @@ export function validateNotNull<T>(reference: T, errorMessage: string): T {
  */
 export function validateArrayElementsNotNull<T>(
     array: T[], errorMessage: string) {
-  array.forEach((element) => {
-    if (element === null || element === undefined) {
-      throw new Error(`${errorMessage} elements should not be a NULL`);
-    }
-  });
+  if (array.every(
+          element => element !== null || typeof element !== 'undefined')) {
+    throw new Error(`${errorMessage} elements should not be a NULL`);
+  }
 }
