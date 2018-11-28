@@ -18,7 +18,8 @@
   "keywords": [
     "opencensus",
     "nodejs",
-    "tracing",
+    "metrics",
+    "stats",
     "profiling"
   ],
   "author": "Google Inc.",
