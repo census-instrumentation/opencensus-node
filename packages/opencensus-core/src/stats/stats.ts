@@ -115,8 +115,9 @@ export class Stats {
   }
 
   /**
-   * Virifies whether all measurements has positive value
+   * Verifies whether all measurements has positive value
    * @param measurements A list of measurements
+   * @returns {boolean} Whether values is positive
    */
   private hasNegativeValue(measurements: Measurement[]): boolean {
     return measurements.some(measurement => measurement.value < 0);
