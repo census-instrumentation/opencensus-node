@@ -28,11 +28,14 @@ describe('hashLabelValues', () => {
   });
   it('should return hash for Value and null', () => {
     const hash = hashLabelValues(LABEL_VALUES_WITH_NULL);
-    assert.deepStrictEqual(hash, ',200');
+    assert.deepStrictEqual(hash, '200,');
   });
   it('should return same hash for interchanged labels', () => {
     assert.deepStrictEqual(
         hashLabelValues(LABEL_VALUES_1), hashLabelValues(LABEL_VALUES_2));
+  });
+  it('should return empty string for empty array', () => {
+    assert.deepStrictEqual(hashLabelValues([]), '');
   });
 });
 describe('initializeDefaultLabels', () => {

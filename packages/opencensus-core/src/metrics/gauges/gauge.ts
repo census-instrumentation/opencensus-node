@@ -22,7 +22,7 @@ import {hashLabelValues, initializeDefaultLabels} from '../utils';
 /**
  * Gauge metric
  */
-export class Gauge {
+export class Gauge implements types.Meter {
   private readonly metricDescriptor: MetricDescriptor;
   private labelKeysLength: number;
   private defaultLabelValues: LabelValue[];
@@ -115,13 +115,13 @@ export class Gauge {
     if (this.registeredPoints.size === 0) {
       return null;
     }
-    const hrtimeLocal = process.hrtime();
-    const timeSeriesList: TimeSeries[] = new Array();
-    this.registeredPoints.forEach((point: types.Point) => {
-      timeSeriesList.push(point.getTimeSeries(
-          {seconds: hrtimeLocal[0], nanos: hrtimeLocal[1]}));
-    });
-    return {descriptor: this.metricDescriptor, timeseries: timeSeriesList};
+    const [seconds, nanos] = process.hrtime();
+    return {
+      descriptor: this.metricDescriptor,
+      timeseries: Array.from(
+          this.registeredPoints,
+          ([_, point]) => point.getTimeSeries({seconds, nanos}))
+    };
   }
 }
 
@@ -162,8 +162,7 @@ export class PointEntry implements types.Point {
   getTimeSeries(timestamp: Timestamp): TimeSeries {
     return {
       labelValues: this.labelValues,
-      points: [{value: this.value, timestamp}],
-      startTimestamp: null
+      points: [{value: this.value, timestamp}]
     };
   }
 }

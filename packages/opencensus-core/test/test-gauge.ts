@@ -75,8 +75,7 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
-            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
+            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}]
           }]);
       // add value and create new timeseries.
       point.add(5);
@@ -88,13 +87,11 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(metric.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
-          points: [{value: 15, timestamp: {nanos: 1e7, seconds: 1000}}],
-          startTimestamp: null
+          points: [{value: 15, timestamp: {nanos: 1e7, seconds: 1000}}]
         },
         {
           labelValues: LABEL_VALUES_400,
-          points: [{value: -8, timestamp: {nanos: 1e7, seconds: 1000}}],
-          startTimestamp: null
+          points: [{value: -8, timestamp: {nanos: 1e7, seconds: 1000}}]
         }
       ]);
     });
@@ -108,8 +105,7 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
-            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
+            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}]
           }]);
       // create timeseries with same labels.
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
@@ -120,8 +116,7 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
-            points: [{value: 40, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
+            points: [{value: 40, timestamp: {nanos: 1e7, seconds: 1000}}]
           }]);
     });
   });
@@ -136,8 +131,7 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
+            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}]
           }]);
     });
     it('should return same timeseries for interchanged labels', () => {
@@ -169,8 +163,7 @@ describe('GAUGE_INT64', () => {
           metric.timeseries, [{
             labelValues:
                 [UNSET_LABEL_VALUE, UNSET_LABEL_VALUE, UNSET_LABEL_VALUE],
-            points: [{value: 200, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
+            points: [{value: 200, timestamp: {nanos: 1e7, seconds: 1000}}]
           }]);
     });
     it('should use previously created default timeseries', () => {
@@ -183,8 +176,7 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 300, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
+            points: [{value: 300, timestamp: {nanos: 1e7, seconds: 1000}}]
           }]);
       // get default timeseries again.
       const point1 = instance.getDefaultTimeSeries();
@@ -196,8 +188,7 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 700, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
+            points: [{value: 700, timestamp: {nanos: 1e7, seconds: 1000}}]
           }]);
     });
   });
@@ -278,7 +269,6 @@ describe('GAUGE_DOUBLE', () => {
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
             points: [{value: 10.34, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
           }]);
       // add value and create new timeseries.
       point.add(5.12);
@@ -289,13 +279,11 @@ describe('GAUGE_DOUBLE', () => {
       assert.deepStrictEqual(metric.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
-          points: [{value: 15.46, timestamp: {nanos: 1e7, seconds: 1000}}],
-          startTimestamp: null
+          points: [{value: 15.46, timestamp: {nanos: 1e7, seconds: 1000}}]
         },
         {
           labelValues: LABEL_VALUES_400,
-          points: [{value: -8.3, timestamp: {nanos: 1e7, seconds: 1000}}],
-          startTimestamp: null
+          points: [{value: -8.3, timestamp: {nanos: 1e7, seconds: 1000}}]
         }
       ]);
     });
@@ -310,7 +298,6 @@ describe('GAUGE_DOUBLE', () => {
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
             points: [{value: 12.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
           }]);
       // create timeseries with same labels.
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
@@ -322,7 +309,6 @@ describe('GAUGE_DOUBLE', () => {
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
             points: [{value: 42.28, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
           }]);
     });
   });
@@ -338,7 +324,6 @@ describe('GAUGE_DOUBLE', () => {
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
             points: [{value: 10.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
           }]);
     });
     it('should use previously created default timeseries', () => {
@@ -352,7 +337,6 @@ describe('GAUGE_DOUBLE', () => {
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
             points: [{value: 300.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
           }]);
       // get default timeseries again.
       const point1 = instance.getDefaultTimeSeries();
@@ -365,7 +349,6 @@ describe('GAUGE_DOUBLE', () => {
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
             points: [{value: 700.2, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
           }]);
     });
     it('should create same labelValues as labelKeys', () => {
@@ -386,7 +369,6 @@ describe('GAUGE_DOUBLE', () => {
             labelValues:
                 [UNSET_LABEL_VALUE, UNSET_LABEL_VALUE, UNSET_LABEL_VALUE],
             points: [{value: 10.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-            startTimestamp: null
           }]);
     });
   });

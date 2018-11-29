@@ -121,7 +121,7 @@ export interface TimeSeries {
    * interval (start_timestamp, timestamp]. If not specified, the backend can
    * use the previous recorded value.
    */
-  readonly startTimestamp: Timestamp;
+  readonly startTimestamp?: Timestamp;
   /**
    * The set of label values that uniquely identify this timeseries. Applies to
    * all points. The order of label values must match that of label keys in the
