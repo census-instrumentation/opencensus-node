@@ -70,11 +70,11 @@ export class Recorder {
     const oldMean = distributionData.mean;
     distributionData.mean = distributionData.mean +
         (value - distributionData.mean) / distributionData.count;
-    distributionData.sumSquaredDeviations =
-        distributionData.sumSquaredDeviations +
+    distributionData.sumOfSquaredDeviation =
+        distributionData.sumOfSquaredDeviation +
         (value - oldMean) * (value - distributionData.mean);
     distributionData.stdDeviation = Math.sqrt(
-        distributionData.sumSquaredDeviations / distributionData.count);
+        distributionData.sumOfSquaredDeviation / distributionData.count);
 
     return distributionData;
   }

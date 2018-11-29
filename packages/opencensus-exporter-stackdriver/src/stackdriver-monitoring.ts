@@ -211,7 +211,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
     return {
       count: distribution.count,
       mean: distribution.mean,
-      sumOfSquaredDeviation: distribution.sumSquaredDeviations,
+      sumOfSquaredDeviation: distribution.sumOfSquaredDeviation,
       bucketOptions: {explicitBuckets: {bounds: [0, ...distribution.buckets]}},
       bucketCounts: [0, ...distribution.bucketCounts]
     };
