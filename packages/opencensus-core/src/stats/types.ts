@@ -189,7 +189,7 @@ export interface DistributionData extends AggregationMetadata {
    * Get the computed sum of squared deviations of all recorded values in the
    * histogram.
    */
-  sumSquaredDeviations: number;
+  sumOfSquaredDeviation: number;
   /** Bucket distribution of the histogram */
   buckets: Bucket[];
   /** Buckets count */

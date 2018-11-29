@@ -170,7 +170,7 @@ export class BaseView implements View {
           min: Number.MAX_SAFE_INTEGER,
           mean: null as number,
           stdDeviation: null as number,
-          sumSquaredDeviations: null as number,
+          sumOfSquaredDeviation: null as number,
           buckets,
           bucketCounts
         };

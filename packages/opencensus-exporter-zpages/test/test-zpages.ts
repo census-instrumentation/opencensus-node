@@ -409,7 +409,7 @@ describe('Zpages Exporter', () => {
         assert.equal(snapshot.max, 22);
         assert.equal(snapshot.min, 11);
         assert.equal(snapshot.mean, 16.5);
-        assert.equal(snapshot.sumSquaredDeviations, 60.5);
+        assert.equal(snapshot.sumOfSquaredDeviation, 60.5);
       });
     });
   });

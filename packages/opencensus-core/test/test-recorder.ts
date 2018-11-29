@@ -47,7 +47,7 @@ function assertDistributionData(
       values.map(value => Math.pow(value - expectedMean, 2))
           .reduce((acc, curr) => acc + curr);
   assert.ok(isAlmostEqual(
-      distributionData.sumSquaredDeviations, expectedSumSquaredDeviations,
+      distributionData.sumOfSquaredDeviation, expectedSumSquaredDeviations,
       EPSILON));
 
   const expectedStdDeviation =
@@ -161,7 +161,7 @@ describe('Recorder', () => {
                    min: Number.MAX_SAFE_INTEGER,
                    mean: 0,
                    stdDeviation: 0,
-                   sumSquaredDeviations: 0,
+                   sumOfSquaredDeviation: 0,
                    buckets: [2, 4, 6],
                    bucketCounts: [0, 0, 0, 0]
                  };
