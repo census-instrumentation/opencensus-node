@@ -28,6 +28,20 @@ export class Gauge implements types.Meter {
   private defaultLabelValues: LabelValue[];
   private registeredPoints: Map<string, types.Point> = new Map();
 
+  private static readonly LABEL_VALUE = 'labelValue';
+  private static readonly LABEL_VALUES = 'labelValues';
+  private static readonly ERROR_MESSAGE_INVALID_SIZE =
+      'Label Keys and Label Values don\'t have same size';
+
+  /**
+   * Constructs a new Gauge instance.
+   *
+   * @param {string} name The name of the metric.
+   * @param {string} description The description of the metric.
+   * @param {string} unit The unit of the metric.
+   * @param {MetricDescriptorType} type The type of metric.
+   * @param {LabelKey[]} labelKeys The list of the label keys.
+   */
   constructor(
       name: string, description: string, unit: string,
       type: MetricDescriptorType, readonly labelKeys: LabelKey[]) {
@@ -49,7 +63,7 @@ export class Gauge implements types.Meter {
    */
   getOrCreateTimeSeries(labelValues: LabelValue[]): types.Point {
     validateArrayElementsNotNull(
-        validateNotNull(labelValues, 'labelValues'), 'labelValue');
+        validateNotNull(labelValues, Gauge.LABEL_VALUES), Gauge.LABEL_VALUE);
     return this.registerTimeSeries(labelValues);
   }
 
@@ -71,7 +85,7 @@ export class Gauge implements types.Meter {
    * @param {LabelValue[]} labelValues The list of label values.
    */
   removeTimeSeries(labelValues: LabelValue[]): void {
-    validateNotNull(labelValues, 'labelValues');
+    validateNotNull(labelValues, Gauge.LABEL_VALUES);
     this.registeredPoints.delete(hashLabelValues(labelValues));
   }
 
@@ -98,7 +112,7 @@ export class Gauge implements types.Meter {
       return this.registeredPoints.get(hash);
     }
     if (this.labelKeysLength !== labelValues.length) {
-      throw new Error('Label Keys and Label Values don\'t have same size');
+      throw new Error(Gauge.ERROR_MESSAGE_INVALID_SIZE);
     }
 
     const point = new PointEntry(labelValues);
