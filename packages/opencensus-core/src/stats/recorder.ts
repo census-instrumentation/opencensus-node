@@ -50,16 +50,7 @@ export class Recorder {
     if (bucketIndex < 0) {
       bucketIndex = distributionData.buckets.length;
     }
-
     distributionData.bucketCounts[bucketIndex] += 1;
-
-    if (value > distributionData.max) {
-      distributionData.max = value;
-    }
-
-    if (value < distributionData.min) {
-      distributionData.min = value;
-    }
 
     if (distributionData.count === 1) {
       distributionData.mean = value;

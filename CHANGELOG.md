@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Fix bugs related to Stackdriver Metrics Descriptor and TimeSeries.
 - Add Resource API.
 - Add Metrics API.
+- Remove support for `min`/`max` in the stats Distribution to make it compatible with Metrics.
 
 ## 0.0.7 - 2018-11-12
  **Contains API breaking changes for stats/metrics implementations**

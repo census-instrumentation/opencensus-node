@@ -35,8 +35,6 @@ function assertDistributionData(
     distributionData: DistributionData, values: number[]) {
   const valuesSum = values.reduce((acc, cur) => acc + cur);
 
-  assert.strictEqual(distributionData.max, Math.max(...values));
-  assert.strictEqual(distributionData.min, Math.min(...values));
   assert.strictEqual(distributionData.count, values.length);
   assert.strictEqual(distributionData.sum, valuesSum);
 
@@ -157,8 +155,6 @@ describe('Recorder', () => {
                    startTime: Date.now(),
                    count: 0,
                    sum: 0,
-                   max: Number.MIN_SAFE_INTEGER,
-                   min: Number.MAX_SAFE_INTEGER,
                    mean: 0,
                    stdDeviation: 0,
                    sumOfSquaredDeviation: 0,

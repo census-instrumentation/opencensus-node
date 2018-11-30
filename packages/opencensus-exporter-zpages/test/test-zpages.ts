@@ -406,8 +406,6 @@ describe('Zpages Exporter', () => {
         assert.equal(data.tagValues[0], tagValues[0]);
         assert.equal(data.tagValues[1], tagValues[1]);
         assert.equal(snapshot.count, 2);
-        assert.equal(snapshot.max, 22);
-        assert.equal(snapshot.min, 11);
         assert.equal(snapshot.mean, 16.5);
         assert.equal(snapshot.sumOfSquaredDeviation, 60.5);
       });

@@ -166,8 +166,6 @@ export class BaseView implements View {
           startTime: this.startTime,
           count: 0,
           sum: 0,
-          max: Number.MIN_SAFE_INTEGER,
-          min: Number.MAX_SAFE_INTEGER,
           mean: null as number,
           stdDeviation: null as number,
           sumOfSquaredDeviation: null as number,
