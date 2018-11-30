@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {Metric} from '../metrics/export/types';
+
 /** Tags are maps of names -> values */
 export interface Tags { [key: string]: string; }
 
@@ -113,6 +115,8 @@ export interface View {
   getSnapshot(tags: Tags): AggregationData;
   /** Gets the view's tag keys */
   getColumns(): string[];
+  /** Gets view`s metric */
+  getMetric(): Metric;
 }
 
 /**
@@ -193,7 +197,7 @@ export interface DistributionData extends AggregationMetadata {
   /** Bucket distribution of the histogram */
   buckets: Bucket[];
   /** Buckets count */
-  bucketCounts: number[];
+  bucketCounts?: number[];
 }
 
 export type Bucket = number;

@@ -266,15 +266,16 @@ export interface SummaryValue {
    * The total number of recorded values since start_time. Optional since
    * some systems don't expose this.
    */
-  readonly count: number;
+  readonly count?: number;
   /**
    * The total sum of recorded values since start_time. Optional since some
    * systems don't expose this. If count is zero then this field must be zero.
    * This field must be unset if the sum is not available.
    */
-  readonly sum: number;
+  readonly sum?: number;
   /** Values calculated over an arbitrary time window. */
-  readonly snapshot: Snapshot;
+  // TODO: Change it to required when Exemplar functionality will be added.
+  readonly snapshot?: Snapshot;
 }
 
 /**

@@ -16,7 +16,10 @@
 
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
+import {LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, SummaryValue, TimeSeries, Timestamp} from '../metrics/export/types';
+
 import {BucketBoundaries} from './bucket-boundaries';
+import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
 import {AggregationData, AggregationType, Measure, Measurement, Tags, View} from './types';
 
@@ -57,6 +60,11 @@ export class BaseView implements View {
   /** The bucket boundaries in a Distribution Aggregation */
   private bucketBoundaries: BucketBoundaries;
   /**
+   * Cache a MetricDescriptor to avoid converting View to MetricDescriptor
+   * in the future.
+   */
+  private metricDescriptor: MetricDescriptor;
+  /**
    * The end time for this view - represents the last time a value was recorded
    */
   endTime: number;
@@ -93,6 +101,7 @@ export class BaseView implements View {
     this.aggregation = aggregation;
     this.startTime = Date.now();
     this.bucketBoundaries = new BucketBoundaries(bucketBoundaries);
+    this.metricDescriptor = MetricUtils.viewToMetricDescriptor(this);
   }
 
   /** Gets the view's tag keys */
@@ -188,8 +197,57 @@ export class BaseView implements View {
   }
 
   /**
+   * Gets view`s metric
+   * @returns {Metric}
+   */
+  getMetric(): Metric {
+    const {type} = this.metricDescriptor;
+    let startTimestamp: Timestamp;
+
+    switch (type) {
+      case MetricDescriptorType.GAUGE_INT64:
+      case MetricDescriptorType.GAUGE_DOUBLE:
+        startTimestamp = null;
+        break;
+      default:
+        const [seconds, nanos] = process.hrtime();
+        startTimestamp = {seconds, nanos};
+    }
+
+    const timeseries: TimeSeries[] = [];
+
+    Object.keys(this.rows).forEach(key => {
+      const {tags} = this.rows[key];
+      const labelValues: LabelValue[] = MetricUtils.tagsToLabelValues(tags);
+      const point: Point = this.toPoint(startTimestamp, this.getSnapshot(tags));
+      timeseries.push({startTimestamp, labelValues, points: [point]});
+    });
+
+    return {descriptor: this.metricDescriptor, timeseries};
+  }
+
+  /**
+   * Converts snapshot to point
+   * @param timestamp The timestamp
+   * @param data The aggregated data
+   * @returns {Point}
+   */
+  private toPoint(timestamp: Timestamp, data: AggregationData): Point {
+    let value;
+    if (data.type === AggregationType.DISTRIBUTION) {
+      // TODO: Add examplar transition
+      value = Object.assign(
+          {bucketOptions: {explicit: {bounds: data.buckets}}}, data);
+    } else {
+      value = data as SummaryValue;
+    }
+    return {timestamp, value};
+  }
+
+  /**
    * Returns a snapshot of an AggregationData for that tags/labels values.
    * @param tags The desired data's tags
+   * @returns {AggregationData}
    */
   getSnapshot(tags: Tags): AggregationData {
     return this.rows[this.encodeTags(tags)];

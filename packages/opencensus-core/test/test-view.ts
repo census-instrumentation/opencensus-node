@@ -17,6 +17,7 @@
 import * as assert from 'assert';
 
 import {BaseView} from '../src';
+import {DistributionValue} from '../src/metrics/export/types';
 import {AggregationType, DistributionData, Measure, Measurement, MeasureType, MeasureUnit, Tags, View} from '../src/stats/types';
 
 /** The order of how close values must be to be considerated almost equal */
@@ -178,6 +179,59 @@ describe('BaseView', () => {
          view.recordMeasurement(measurement);
          assert.ok(!view.getSnapshot(measurement.tags));
        });
+  });
+
+  describe('getMetric()', () => {
+    const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
+    const buckets = [2, 4, 6];
+    const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
+    const aggregationType = AggregationType.DISTRIBUTION;
+    const view: View = new BaseView(
+        'test/view/name', measure, aggregationType, ['testKey1', 'testKey2'],
+        'description test', buckets);
+    for (const value of measurementValues) {
+      const measurement = {measure, tags, value};
+      view.recordMeasurement(measurement);
+    }
+    const {descriptor, timeseries} = view.getMetric();
+
+    it('should has descriptor', () => {
+      assert.ok(descriptor);
+      assert.deepStrictEqual(descriptor, {
+        description: 'description test',
+        labelKeys: [{key: 'testKey1'}, {key: 'testKey2'}],
+        name: 'test/view/name',
+        type: 6,
+        unit: '1',
+      });
+    });
+
+    const [{startTimestamp, labelValues, points}] = timeseries;
+
+    it('should has timeseries startTimestamp', () => {
+      assert.ok(startTimestamp);
+      assert.equal(typeof startTimestamp.nanos, 'number');
+      assert.equal(typeof startTimestamp.seconds, 'number');
+    });
+
+    it('should has labelValues', () => {
+      assert.ok(labelValues);
+      assert.deepStrictEqual(
+          labelValues, [{value: 'testValue'}, {value: 'testValue'}]);
+    });
+
+    it('should has point', () => {
+      assert.ok(points);
+      const [point] = points;
+      const {timestamp, value} = point;
+      assert.ok(timestamp);
+      assert.equal(typeof timestamp.nanos, 'number');
+      assert.equal(typeof timestamp.seconds, 'number');
+      assert.notEqual(typeof value, 'number');
+      assert.deepStrictEqual(
+          (value as DistributionValue).bucketOptions,
+          {explicit: {bounds: buckets}});
+    });
   });
 
   describe('getSnapshots()', () => {
