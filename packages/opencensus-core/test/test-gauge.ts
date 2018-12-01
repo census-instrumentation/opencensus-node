@@ -32,6 +32,7 @@ const UNSET_LABEL_VALUE: LabelValue = {
 };
 
 describe('GAUGE_INT64', () => {
+  const oldProcessHrtime = process.hrtime;
   let instance: Gauge;
   const expectedMetricDescriptor = {
     name: METRIC_NAME,
@@ -46,6 +47,11 @@ describe('GAUGE_INT64', () => {
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, LABEL_KEYS);
     process.hrtime = () => [1000, 1e7];
   });
+
+  afterEach(() => {
+    process.hrtime = oldProcessHrtime;
+  });
+
   describe('getOrCreateTimeSeries()', () => {
     it('should throw an error when the labelvalues are null', () => {
       assert.throws(() => {
@@ -227,6 +233,7 @@ describe('GAUGE_INT64', () => {
 });
 
 describe('GAUGE_DOUBLE', () => {
+  const oldProcessHrtime = process.hrtime;
   let instance: Gauge;
   const expectedMetricDescriptor = {
     name: METRIC_NAME,
@@ -235,10 +242,17 @@ describe('GAUGE_DOUBLE', () => {
     type: GAUGE_DOUBLE,
     labelKeys: LABEL_KEYS
   };
+
   beforeEach(() => {
     instance = new Gauge(
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, LABEL_KEYS);
+    process.hrtime = () => [1000, 1e7];
   });
+
+  afterEach(() => {
+    process.hrtime = oldProcessHrtime;
+  });
+
   describe('getOrCreateTimeSeries()', () => {
     it('should throw an error when the labelvalues are null', () => {
       assert.throws(() => {
