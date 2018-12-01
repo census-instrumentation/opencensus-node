@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-import {AggregationType, DistributionData, logger, Logger, Measure, Measurement, MeasureType, MeasureUnit, StatsEventListener, Tags, View} from '@opencensus/core';
+import {AggregationType, DistributionData, logger, Logger, Measure, Measurement, MeasureType, MeasureUnit, StatsEventListener, Tags, version, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 import * as path from 'path';
 
 import {Distribution, LabelDescriptor, MetricDescriptor, MetricKind, Point, StackdriverExporterOptions, TimeSeries, ValueType} from './types';
 
-google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
+google.options({
+  headers: {
+    'x-opencensus-outgoing-request': 0x1,
+    'User-Agent': 'opencensus-node/' + version
+  }
+});
 const monitoring = google.monitoring('v3');
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
