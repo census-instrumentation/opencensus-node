@@ -182,6 +182,8 @@ describe('BaseView', () => {
   });
 
   describe('getMetric()', () => {
+    const {hrtime} = process;
+    process.hrtime = () => [1000, 1e7];
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
     const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
@@ -194,6 +196,10 @@ describe('BaseView', () => {
       view.recordMeasurement(measurement);
     }
     const {descriptor, timeseries} = view.getMetric();
+
+    after(() => {
+      process.hrtime = hrtime;
+    });
 
     it('should has descriptor', () => {
       assert.ok(descriptor);
@@ -211,7 +217,9 @@ describe('BaseView', () => {
     it('should has timeseries startTimestamp', () => {
       assert.ok(startTimestamp);
       assert.equal(typeof startTimestamp.nanos, 'number');
+      assert.strictEqual(startTimestamp.nanos, 1e7);
       assert.equal(typeof startTimestamp.seconds, 'number');
+      assert.strictEqual(startTimestamp.seconds, 1000);
     });
 
     it('should has labelValues', () => {
@@ -226,7 +234,9 @@ describe('BaseView', () => {
       const {timestamp, value} = point;
       assert.ok(timestamp);
       assert.equal(typeof timestamp.nanos, 'number');
+      assert.strictEqual(timestamp.nanos, 1e7);
       assert.equal(typeof timestamp.seconds, 'number');
+      assert.strictEqual(timestamp.seconds, 1000);
       assert.notEqual(typeof value, 'number');
       assert.deepStrictEqual(
           (value as DistributionValue).bucketOptions,
