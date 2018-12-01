@@ -1,7 +1,7 @@
 /**
  * Copyright 2018, OpenCensus Authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 the "License";
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -14,30 +14,17 @@
  * limitations under the License.
  */
 
-import {Metric} from '../metrics/export/types';
-import {MetricProducer} from '../metrics/export/metric-producer';
-import {Stats} from './stats';
+import { Metric } from "./types";
 
 /**
  * A MetricProducer producer that can be registered for exporting using
  * MetricProducerManager.
  */
-export class MetricProducerForStats extends MetricProducer {
-  private statsManager: Stats;
-
-  /**
-   * @param statsManager The stats
-   */
-  constructor(statsManager: Stats) {
-    super();
-    this.statsManager = statsManager;
-  }
+export abstract class MetricProducer {
 
   /**
    * Gets a collection of produced Metric`s to be exported.
    * @returns {Metric[]} List of metrics
    */
-  getMetrics(): Metric[] {
-    return this.statsManager.getMetrics();
-  }
+  abstract getMetrics(): Metric[];
 }
