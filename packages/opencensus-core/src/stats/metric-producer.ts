@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {Metric} from '../metrics/export/types';
 import {MetricProducer} from '../metrics/export/metric-producer';
+import {Metric} from '../metrics/export/types';
+
 import {Stats} from './stats';
 
 /**

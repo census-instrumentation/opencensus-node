@@ -16,7 +16,7 @@
 
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
-import {LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, SummaryValue, TimeSeries, Timestamp} from '../metrics/export/types';
+import {LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
 
 import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
@@ -234,12 +234,19 @@ export class BaseView implements View {
    */
   private toPoint(timestamp: Timestamp, data: AggregationData): Point {
     let value;
+
     if (data.type === AggregationType.DISTRIBUTION) {
       // TODO: Add examplar transition
-      value = Object.assign(
-          {bucketOptions: {explicit: {bounds: data.buckets}}}, data);
+      const {count, sum, sumOfSquaredDeviation} = data;
+      value = {
+        count,
+        sum,
+        sumOfSquaredDeviation,
+        bucketOptions: {explicit: {bounds: data.buckets}},
+        buckets: data.bucketCounts
+      };
     } else {
-      value = data as SummaryValue;
+      value = data.value;
     }
     return {timestamp, value};
   }
