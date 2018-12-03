@@ -1,5 +1,5 @@
 # OpenCensus Core Node.js
-[![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] ![dependencies Status][dependencies-status] [![Downloads Stats][npm-downloads]][npm-url] ![Apache License][license-image]
+[![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] ![dependencies Status][dependencies-status] ![devDependencies Status][devdependencies-status] ![Apache License][license-image]
 
 OpenCensus for Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. It currently includes 3 apis: stats, tracing and tags.
 
@@ -58,14 +58,20 @@ const latencyView = stats.createView(
 Now we will record the desired metrics. To do so, we will use ```stats.record()``` and pass in measurements.
 
 ```javascript
-const endTime = new Date();
+const [_, startNanoseconds] = process.hrtime();
 const tags = {method: "repl", status: "OK"};
 
 stats.record({
   measure: mLatencyMs,
   tags,
-  value: (new Date()) - startTime.getTime()
+  value: sinceInMilliseconds(startNanoseconds)
 });
+
+
+function sinceInMilliseconds(startNanoseconds) {
+  const [_, endNanoseconds] = process.hrtime();
+  return (endNanoseconds - startNanoseconds) / 1e6;
+}
 ```
 
 See [Quickstart/Metrics](https://opencensus.io/quickstart/nodejs/metrics/) for a full example of registering and collecting metrics.
@@ -80,9 +86,10 @@ See [Quickstart/Metrics](https://opencensus.io/quickstart/nodejs/metrics/) for a
 [npm-url]: https://www.npmjs.com/package/@opencensus/core
 [npm-img]: https://badge.fury.io/js/%40opencensus%2Fcore.svg
 [node-img]: https://img.shields.io/node/v/@opencensus/core.svg
-[npm-downloads]: https://img.shields.io/npm/dm/@opencensus/core.svg?style=flat
 [license-image]: https://img.shields.io/badge/license-Apache_2.0-green.svg?style=flat
 [dependencies-status]: https://david-dm.org/census-instrumentation/opencensus-node/status.svg?path=packages/opencensus-core
+[devdependencies-status]:
+https://david-dm.org/census-instrumentation/opencensus-node/dev-status.svg?path=packages/opencensus-core
 
 ## LICENSE
 
