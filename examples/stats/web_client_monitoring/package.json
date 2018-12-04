@@ -1,0 +1,22 @@
+{
+  "name": "web-client-monitoring",
+  "description": "Example of saving web metrics",
+  "version": "0.0.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Google Inc.",
+  "engines": {
+    "node": ">=4.3.2"
+  },
+  "scripts": {
+    "deploy": "gcloud app deploy",
+    "start": "node app.js",
+    "lint": "npm run lint",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "@opencensus/core": "0.0.7",
+    "@opencensus/exporter-stackdriver": "0.0.7",
+    "express": "^4.16.3"
+  }
+}
