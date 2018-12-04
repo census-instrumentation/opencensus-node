@@ -1,5 +1,5 @@
 # OpenCensus Prometheus Exporter for Node.js
-[![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url]
+[![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] ![dependencies Status][dependencies-status] ![devDependencies Status][devdependencies-status] ![Apache License][license-image]
 
 The OpenCensus Prometheus Exporter allows the user to send collected stats with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to Prometheus.
 
@@ -75,6 +75,10 @@ With the above you should now be able to navigate to the Prometheus UI at: <http
 [npm-url]: https://www.npmjs.com/package/@opencensus/exporter-prometheus
 [npm-img]: https://badge.fury.io/js/%40opencensus%2Fexporter-prometheus.svg
 [node-img]: https://img.shields.io/node/v/@opencensus/exporter-prometheus.svg
+[license-image]: https://img.shields.io/badge/license-Apache_2.0-green.svg?style=flat
+[dependencies-status]: https://david-dm.org/census-instrumentation/opencensus-node/status.svg?path=packages/opencensus-exporter-prometheus
+[devdependencies-status]:
+https://david-dm.org/census-instrumentation/opencensus-node/dev-status.svg?path=packages/opencensus-exporter-prometheus
 
 ## LICENSE 
 
