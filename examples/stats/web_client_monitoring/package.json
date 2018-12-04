@@ -12,7 +12,6 @@
     "deploy": "gcloud app deploy",
     "start": "node app.js",
     "lint": "npm run lint",
-    "test": "mocha"
   },
   "dependencies": {
     "@opencensus/core": "0.0.7",

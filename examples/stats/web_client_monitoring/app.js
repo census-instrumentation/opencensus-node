@@ -37,7 +37,7 @@ assert(typeof project !== 'undefined' && project,
   "Please set environment variable GOOGLE_CLOUD_PROJECT to the project id.");
 console.log(`Sending metrics data to project: ${project}`);
 
-// Open Census setup
+// OpenCensus setup
 const stats = new Stats();
 const exporter = new StackdriverStatsExporter({projectId: project});
 stats.registerExporter(exporter);
