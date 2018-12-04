@@ -174,10 +174,6 @@ export interface DistributionData extends AggregationMetadata {
   count: number;
   /** Sum of all recorded values in the histogram */
   sum: number;
-  /** Max value recorded in the histogram */
-  max: number;
-  /** Min value recorded in the histogram */
-  min: number;
   /** Get the computed mean value of all recorded values in the histogram */
   mean: number;
   /**

@@ -36,8 +36,6 @@ function assertDistributionData(
     distributionData: DistributionData, values: number[]) {
   const valuesSum = values.reduce((acc, cur) => acc + cur);
 
-  assert.strictEqual(distributionData.max, Math.max(...values));
-  assert.strictEqual(distributionData.min, Math.min(...values));
   assert.strictEqual(distributionData.count, values.length);
   assert.strictEqual(distributionData.sum, valuesSum);
 
