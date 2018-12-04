@@ -17,6 +17,7 @@
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
+import {Metric} from '../metrics/export/types';
 
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, View} from './types';
 import {BaseView} from './view';
@@ -121,6 +122,22 @@ export class Stats {
    */
   private hasNegativeValue(measurements: Measurement[]): boolean {
     return measurements.some(measurement => measurement.value < 0);
+  }
+
+  /**
+   * Gets a collection of produced Metric`s to be exported.
+   * @returns {Metric[]} List of metrics
+   */
+  getMetrics(): Metric[] {
+    const metrics: Metric[] = [];
+
+    for (const measureName of Object.keys(this.registeredViews)) {
+      for (const view of this.registeredViews[measureName]) {
+        metrics.push(view.getMetric());
+      }
+    }
+
+    return metrics;
   }
 
   /**

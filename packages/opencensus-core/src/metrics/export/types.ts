@@ -274,7 +274,8 @@ export interface SummaryValue {
    */
   readonly sum: number;
   /** Values calculated over an arbitrary time window. */
-  readonly snapshot: Snapshot;
+  // TODO: Change it to required when Exemplar functionality will be added.
+  readonly snapshot?: Snapshot;
 }
 
 /**
