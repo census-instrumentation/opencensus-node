@@ -98,8 +98,8 @@ const lineLengthView = stats.createView(
 );
 
 // The begining of our REPL loop
-let startTime = new Date();
-let endTime;
+let [_, startNanoseconds] = process.hrtime();
+let endNanoseconds;
 
 // REPL is the read, evaluate, print and loop
 lineReader.on("line", function(line) {
@@ -109,7 +109,7 @@ lineReader.on("line", function(line) {
     console.log(processedLine); // Print
 
     // Registers the end of our REPL
-    endTime = new Date();
+    [_, endNanoseconds] = process.hrtime();
 
     const tags = { method: "repl", status: "OK" };
 
@@ -122,19 +122,19 @@ lineReader.on("line", function(line) {
     stats.record({
       measure: mLatencyMs,
       tags,
-      value: endTime.getTime() - startTime.getTime()
+      value: sinceInMilliseconds(endNanoseconds, startNanoseconds)
     });
   } catch (err) {
     const errTags = { method: "repl", status: "ERROR", error: err.message };
     stats.record({
       measure: mLatencyMs,
       errTags,
-      value: new Date() - startTime.getTime()
+      value: sinceInMilliseconds(endNanoseconds, startNanoseconds)
     });
   }
 
   // Restarts the start time for the REPL
-  startTime = endTime;
+  startNanoseconds = endNanoseconds;
 });
 
 /**
@@ -154,4 +154,13 @@ setTimeout(function() {
 function processLine(line) {
   // Currently, it just capitalizes it.
   return line.toUpperCase();
+}
+
+/**
+ * Converts to milliseconds.
+ * @param {number} endNanoseconds The end time of REPL.
+ * @param {number} startNanoseconds The start time of REPL.
+ */
+function sinceInMilliseconds(endNanoseconds, startNanoseconds) {
+  return (endNanoseconds - startNanoseconds) / 1e6;
 }
