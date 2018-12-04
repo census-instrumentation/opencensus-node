@@ -143,9 +143,10 @@ export class Gauge implements types.Meter {
  * The value of a single point in the Gauge.TimeSeries.
  */
 export class PointEntry implements types.Point {
+  private readonly labelValues: LabelValue[];
   private value = 0;
 
-  constructor(private readonly labelValues: LabelValue[]) {
+  constructor(labelValues: LabelValue[]) {
     this.labelValues = labelValues;
   }
 
