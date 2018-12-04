@@ -44,7 +44,7 @@ stats.registerExporter(exporter);
 const mDNSTimeMs = stats.createMeasureDouble("web_client/dnsTime",
                        MeasureUnit.MS,
                        "DNS lookup time");
-const mConnectTimeMs = stats.createMeasureDouble("web_client/connctTime",
+const mConnectTimeMs = stats.createMeasureDouble("web_client/connectTime",
                        MeasureUnit.MS,
                        "TLS negotiation time");
 const mLatencyMs = stats.createMeasureDouble("web_client/totalTime",

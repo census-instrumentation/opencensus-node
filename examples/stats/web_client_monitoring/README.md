@@ -1,6 +1,9 @@
 # Monitoring Web Metrics with OpenCenus and Stackdriver
-This example demonstrates instrumention of browser code in a web application for
-monitoring web metrics with a JavaScript module. 
+This example demonstrates instrumentation of browser code in a web application
+for monitoring web metrics with a JavaScript module. See the schematic diagram
+below for a graphical description.
+
+<img src='https://github.com/alexamies/opencensus-node/examples/stats/web_client_monitoring/schematic_diagram.png'/>
 
 ## Prerequisites
 Install [Node.js](https://nodejs.org) in your local development environment.
@@ -58,4 +61,6 @@ charts for the dashboard. Add the metrics collected to the chart. The metric
 names are listed in the app.js file. An example screenshot is shown below.
 You may want to use one chart for the (double value) timing data and one chart
 for the (integer value) click counts.
+
+<img src='https://github.com/alexamies/opencensus-node/examples/stats/web_client_monitoring/stackdriver_dashboard.png'/>
 
