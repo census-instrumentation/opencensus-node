@@ -215,6 +215,10 @@ describe('BaseView', () => {
       }
       const {descriptor, timeseries} = view.getMetric();
 
+      before(() => {
+        process.hrtime = () => [1000, 1e7];
+      });
+
       describe(
           `Aggregation type: ${aggregationTestCase.aggregationType}`, () => {
             it('should has descriptor', () => {

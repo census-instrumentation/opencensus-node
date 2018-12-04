@@ -3,13 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
-- Enforce `--noUnusedLocals` Compiler Options on opencensus-core package.
+- Enforce `--noUnusedLocals` Compiler Options on [opencensus-core] package.
 - Fix bugs related to Stackdriver Metrics Descriptor and TimeSeries.
 - Add Resource API.
 - Add Metrics API.
 - Remove support for `min`/`max` in the stats Distribution to make it compatible with Metrics.
 - Add Gauges (`DoubleGauge`, `LongGauge`) APIs.
-- Remove default prefix from Prometheus exporter. This could be a breaking change if you have Prometheus metrics from OpenCensus Prometheus exporter of previous versions, please point to the new metrics with no prefix instead.
+- Remove default prefix from [exporter-prometheus]. This could be a breaking change if you have Prometheus metrics from OpenCensus Prometheus exporter of previous versions, please point to the new metrics with no prefix instead.
 
 ## 0.0.7 - 2018-11-12
  **Contains API breaking changes for stats/metrics implementations**

@@ -16,11 +16,8 @@
 
 import {AggregationType, Measure, MeasureUnit, Stats} from '@opencensus/core';
 import * as assert from 'assert';
-import axios from 'axios';
 import * as http from 'http';
-import * as mocha from 'mocha';
-
-import {PrometheusExporterOptions, PrometheusStatsExporter} from '../src/';
+import {PrometheusStatsExporter} from '../src/';
 
 describe('Prometheus Stats Exporter', () => {
   const options = {port: 9464, startServer: false};
@@ -185,6 +182,51 @@ describe('Prometheus Stats Exporter', () => {
          stats.record(measurement);
        }, /^Error: le is a reserved label keyword$/);
      });
+
+  afterEach((done) => {
+    exporter.stopServer(done);
+  });
+});
+
+describe('Prometheus Stats Exporter with prefix option', () => {
+  const options = {port: 9464, startServer: false, prefix: 'opencensus'};
+  const prometheusServerUrl = `http://localhost:${options.port}/metrics`;
+  const tags = {le: 'tagValue1'};
+  const tagKeys = Object.keys(tags);
+  let exporter: PrometheusStatsExporter;
+  let measure: Measure;
+  let stats: Stats;
+
+  beforeEach((done) => {
+    stats = new Stats();
+    measure = stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+    exporter = new PrometheusStatsExporter(options);
+    stats.registerExporter(exporter);
+    exporter.startServer(done);
+  });
+
+  it('should create a count aggregation with le labels', (done) => {
+    stats.createView(
+        'test/key-1', measure, AggregationType.COUNT, tagKeys,
+        'A count aggregation example', null);
+    const measurement = {measure, tags, value: 2};
+    const measurement2 = {measure, tags, value: 3};
+    stats.record(measurement, measurement2);
+
+    http.get(prometheusServerUrl, (res) => {
+          res.on('data', (chunk) => {
+            const body = chunk.toString();
+            const lines = body.split('\n');
+
+            assert.equal(
+                lines[0],
+                '# HELP opencensus_test_key_1 A count aggregation example');
+            assert.equal(lines[1], '# TYPE opencensus_test_key_1 counter');
+            assert.equal(lines[2], 'opencensus_test_key_1{le="tagValue1"} 2');
+            done();
+          });
+        }).on('error', done);
+  });
 
   afterEach((done) => {
     exporter.stopServer(done);

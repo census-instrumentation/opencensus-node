@@ -183,7 +183,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   }
 
   /**
-   * Throws an error labels contains "le" label name in histogram label names.
+   * Throws an error labels contain "le" label name in histogram label names.
    */
   private validateDisallowedLeLabelForHistogram(labels: string[]): void {
     labels.forEach(label => {
