@@ -15,87 +15,202 @@
  */
 
 import * as assert from 'assert';
-
-import {AggregationType, Measure, MeasureType, MeasureUnit, Stats, Tags, View} from '../src';
-import {MetricDescriptorType} from '../src/metrics/export/types';
+import {AggregationType, Measurement, MeasureUnit, Stats, Tags, View} from '../src';
+import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
 import {MetricProducerForStats} from '../src/stats/metric-producer';
 
 describe('Metric producer for stats', () => {
-  interface AggregationTestCase {
-    aggregationType: AggregationType;
-    description: string;
-    metricDescriptorType: MetricDescriptorType;
-  }
-  const aggregationTestCases: AggregationTestCase[] = [
-    {
-      aggregationType: AggregationType.SUM,
-      description: 'Sum',
-      metricDescriptorType: MetricDescriptorType.CUMULATIVE_DOUBLE
-    },
-    {
-      aggregationType: AggregationType.COUNT,
-      description: 'Count',
-      metricDescriptorType: MetricDescriptorType.CUMULATIVE_INT64
-    },
-    {
-      aggregationType: AggregationType.LAST_VALUE,
-      description: 'Last Value',
-      metricDescriptorType: MetricDescriptorType.GAUGE_DOUBLE
-    },
-    {
-      aggregationType: AggregationType.DISTRIBUTION,
-      description: 'Distribution',
-      metricDescriptorType: MetricDescriptorType.CUMULATIVE_DISTRIBUTION
-    }
-  ];
-  const measure: Measure = {
-    name: 'Test Measure',
-    type: MeasureType.DOUBLE,
-    unit: MeasureUnit.UNIT
-  };
+  const {hrtime} = process;
+  const mockedTime: Timestamp = {nanos: 1e7, seconds: 1000};
 
-  let stats: Stats;
-  let metricProducerForStats: MetricProducerForStats;
-
-  beforeEach(() => {
-    stats = new Stats();
-    metricProducerForStats = new MetricProducerForStats(stats);
+  before(() => {
+    process.hrtime = () => [1000, 1e7];
   });
 
-  describe('Metric producer', () => {
-    const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
+  after(() => {
+    process.hrtime = hrtime;
+  });
+
+  const stats = new Stats();
+  const metricProducerForStats = new MetricProducerForStats(stats);
+
+  // constants for view name
+  const viewName1 = 'test/view/name1';
+  const viewName2 = 'test/view/name2';
+  const viewName3 = 'test/view/name2';
+  const description = 'test description';
+
+  const measureDouble = stats.createMeasureDouble(
+      'opencensus.io/test/double', MeasureUnit.UNIT, 'Measure Double');
+  const tags: Tags = {testKey1: 'testValue1', testKey2: 'testValue2'};
+  const labelKeys: LabelKey[] = [
+    {'key': 'testKey1', 'description': ''},
+    {'key': 'testKey2', 'description': ''}
+  ];
+  const labelValues: LabelValue[] =
+      [{'value': 'testValue1'}, {'value': 'testValue2'}];
+  const measurement1: Measurement = {measure: measureDouble, value: 25, tags};
+  const measurement2: Measurement = {measure: measureDouble, value: 300, tags};
+
+  // expected constants
+  const expectedMetricDescriptor1 = {
+    name: viewName1,
+    description,
+    labelKeys,
+    unit: MeasureUnit.UNIT,
+    type: MetricDescriptorType.CUMULATIVE_DOUBLE,
+  };
+  const expectedTimeSeries1 = [{
+    labelValues,
+    points: [{value: 25, timestamp: mockedTime}],
+    startTimestamp: mockedTime
+  }];
+  const expectedMetricDescriptor2 = {
+    name: viewName2,
+    description,
+    labelKeys,
+    unit: MeasureUnit.UNIT,
+    type: MetricDescriptorType.CUMULATIVE_INT64,
+  };
+  const expectedTimeSeries2 = [{
+    labelValues,
+    points: [{value: 1, timestamp: mockedTime}],
+    startTimestamp: mockedTime
+  }];
+  const expectedMetricDescriptor3 = {
+    name: viewName3,
+    description,
+    labelKeys,
+    unit: MeasureUnit.UNIT,
+    type: MetricDescriptorType.GAUGE_DOUBLE,
+  };
+  const expectedTimeSeries3 =
+      [{labelValues, points: [{value: 300, timestamp: mockedTime}]}];
+  const expectedMetricDescriptor4 = {
+    name: viewName3,
+    description,
+    labelKeys,
+    unit: MeasureUnit.UNIT,
+    type: MetricDescriptorType.CUMULATIVE_DISTRIBUTION,
+  };
+  const expectedTimeSeries4 = [{
+    labelValues,
+    points: [{
+      value: {
+        'bucketOptions': {'explicit': {'bounds': [2, 4, 6]}},
+        'buckets': [1, 2, 2, 0],
+        'count': 5,
+        'sum': 16.099999999999998,
+        'sumOfSquaredDeviation': 10.427999999999997
+      },
+      timestamp: mockedTime
+    }],
+    startTimestamp: mockedTime
+  }];
+
+  it('should add sum stats', () => {
+    const view: View = stats.createView(
+        viewName1, measureDouble, AggregationType.SUM, Object.keys(tags),
+        description);
+    view.recordMeasurement(measurement1);
+
+    const metrics = metricProducerForStats.getMetrics();
+
+    assert.strictEqual(metrics.length, 1);
+    const [{
+      descriptor: actualMetricDescriptor1,
+      timeseries: actualTimeSeries1
+    }] = metrics;
+    assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
+    assert.strictEqual(actualTimeSeries1.length, 1);
+    assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+  });
+
+  it('should add count stats',
+     () => {
+       const view: View = stats.createView(
+           viewName2, measureDouble, AggregationType.COUNT, Object.keys(tags),
+           description);
+       view.recordMeasurement(measurement1);
+
+       let metrics = metricProducerForStats.getMetrics();
+
+       assert.strictEqual(metrics.length, 2);
+       const
+        [{descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1},
+         {descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2}] =
+            metrics;
+       assert.deepStrictEqual(
+           actualMetricDescriptor1, expectedMetricDescriptor1);
+       assert.strictEqual(actualTimeSeries1.length, 1);
+       assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+       assert.deepStrictEqual(
+           actualMetricDescriptor2, expectedMetricDescriptor2);
+       assert.strictEqual(actualTimeSeries2.length, 1);
+       assert.deepStrictEqual(actualTimeSeries2, expectedTimeSeries2);
+
+       // update count view
+       view.recordMeasurement(measurement2);
+       metrics = metricProducerForStats.getMetrics();
+       assert.deepStrictEqual(metrics[1].timeseries[0].points[0].value, 2);
+     });
+
+  it('should add lastValue stats', () => {
+    const view: View = stats.createView(
+        viewName3, measureDouble, AggregationType.LAST_VALUE, Object.keys(tags),
+        description);
+    view.recordMeasurement(measurement1);
+    view.recordMeasurement(measurement2);
+
+    const metrics = metricProducerForStats.getMetrics();
+
+    assert.strictEqual(metrics.length, 3);
+    const
+        [{descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1},
+         {descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2},
+         {descriptor: actualMetricDescriptor3, timeseries: actualTimeSeries3}] =
+            metrics;
+    assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
+    assert.strictEqual(actualTimeSeries1.length, 1);
+    assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+    assert.deepStrictEqual(actualMetricDescriptor2, expectedMetricDescriptor2);
+    assert.strictEqual(actualTimeSeries2.length, 1);
+    assert.deepStrictEqual(actualMetricDescriptor3, expectedMetricDescriptor3);
+    assert.strictEqual(actualTimeSeries3.length, 1);
+    assert.deepStrictEqual(actualTimeSeries3, expectedTimeSeries3);
+  });
+
+  it('should add distribution stats', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
 
-    describe('getMetrics()', () => {
-      // Detailed coverage in test-viev.ts
-      for (const aggregation of aggregationTestCases) {
-        it(`should return list of metrics for ${
-               aggregation.aggregationType} aggregation`,
-           () => {
-             const view: View = stats.createView(
-                 'test/view/name', measure, aggregation.aggregationType,
-                 Object.keys(tags), 'test description', buckets);
-             for (const value of measurementValues) {
-               const measurement = {measure, tags, value};
-               view.recordMeasurement(measurement);
-             }
+    const view: View = stats.createView(
+        viewName3, measureDouble, AggregationType.DISTRIBUTION,
+        Object.keys(tags), description, buckets);
+    for (const value of measurementValues) {
+      const measurement: Measurement = {measure: measureDouble, value, tags};
+      view.recordMeasurement(measurement);
+    }
 
-             const metrics = metricProducerForStats.getMetrics();
+    const metrics = metricProducerForStats.getMetrics();
 
-             assert.strictEqual(metrics.length, 1);
-             const [{descriptor, timeseries}] = metrics;
-
-             assert.deepStrictEqual(descriptor, {
-               name: 'test/view/name',
-               description: 'test description',
-               'labelKeys': [{'key': 'testKey1'}, {'key': 'testKey2'}],
-               unit: MeasureUnit.UNIT,
-               type: aggregation.metricDescriptorType,
-             });
-             assert.strictEqual(timeseries.length, 1);
-           });
-      }
-    });
+    assert.strictEqual(metrics.length, 4);
+    const
+        [{descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1},
+         {descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2},
+         {descriptor: actualMetricDescriptor3, timeseries: actualTimeSeries3},
+         {descriptor: actualMetricDescriptor4, timeseries: actualTimeSeries4}] =
+            metrics;
+    assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
+    assert.strictEqual(actualTimeSeries1.length, 1);
+    assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+    assert.deepStrictEqual(actualMetricDescriptor2, expectedMetricDescriptor2);
+    assert.strictEqual(actualTimeSeries2.length, 1);
+    assert.deepStrictEqual(actualMetricDescriptor3, expectedMetricDescriptor3);
+    assert.strictEqual(actualTimeSeries3.length, 1);
+    assert.deepStrictEqual(actualTimeSeries3, expectedTimeSeries3);
+    assert.deepStrictEqual(actualMetricDescriptor4, expectedMetricDescriptor4);
+    assert.strictEqual(actualTimeSeries4.length, 1);
+    assert.deepStrictEqual(actualTimeSeries4, expectedTimeSeries4);
   });
 });

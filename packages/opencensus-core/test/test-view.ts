@@ -225,7 +225,10 @@ describe('BaseView', () => {
               assert.ok(descriptor);
               assert.deepStrictEqual(descriptor, {
                 description: 'description test',
-                labelKeys: [{key: 'testKey1'}, {key: 'testKey2'}],
+                labelKeys: [
+                  {key: 'testKey1', description: ''},
+                  {key: 'testKey2', description: ''}
+                ],
                 name: 'test/view/name',
                 type: aggregationTestCase.metricDescriptorType,
                 unit: '1',
@@ -237,13 +240,13 @@ describe('BaseView', () => {
             if (aggregationTestCase.metricDescriptorType ===
                 MetricDescriptorType.GAUGE_INT64) {
               it('GAUGE_INT64 shouldnt has timeseries startTimestamp', () => {
-                assert.strictEqual(startTimestamp, null);
+                assert.strictEqual(startTimestamp, undefined);
               });
             } else if (
                 aggregationTestCase.metricDescriptorType ===
                 MetricDescriptorType.GAUGE_DOUBLE) {
               it('GAUGE_DOUBLE shouldnt has timeseries startTimestamp', () => {
-                assert.strictEqual(startTimestamp, null);
+                assert.strictEqual(startTimestamp, undefined);
               });
             } else {
               it('shouldnt has timeseries startTimestamp', () => {
@@ -363,7 +366,7 @@ describe('BaseView', () => {
         assert.ok(points);
         const [point] = points;
         const {timestamp, value} = point;
-        assert.strictEqual(timestamp, null);
+        assert.deepStrictEqual(timestamp, {nanos: 1e7, seconds: 1000});
         assert.equal(typeof value, 'number');
         assert.strictEqual(
             value, measurementValues[measurementValues.length - 1]);
