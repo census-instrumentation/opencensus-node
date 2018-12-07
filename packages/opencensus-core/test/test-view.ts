@@ -278,7 +278,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);
@@ -315,7 +315,7 @@ describe('BaseView', () => {
             view.recordMeasurement(measurement1);
           }
 
-          it('should has points', () => {
+          it('should have points', () => {
             const {timeseries} = view.getMetric();
             assert.equal(timeseries.length, 2);
             const [{labelValues: labelValues1, points: points1}, {
@@ -373,7 +373,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);
@@ -400,7 +400,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);
@@ -425,7 +425,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);
