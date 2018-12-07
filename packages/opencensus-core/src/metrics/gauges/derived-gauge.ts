@@ -47,8 +47,8 @@ export interface ToValueInterface { getValue(): number; }
 type ValueExtractor = () => number;
 
 interface GaugeEntry {
-  labelValues: LabelValue[];
-  extractor: ValueExtractor;
+  readonly labelValues: LabelValue[];
+  readonly extractor: ValueExtractor;
 }
 
 /**
@@ -127,7 +127,9 @@ export class DerivedGauge implements types.Meter {
    * metrics are collected, meaning the reported value is up-to-date.
    *
    * @param {LabelValue[]} labelValues The list of the label values.
-   * @param obj The obj to get the size / length / value from.
+   * @param obj The obj to get the size or length or value from. If multiple
+   *    options are available, the value (ToValueInterface) takes precedence
+   *    first, followed by length and size. e.g value -> length -> size.
    */
   createTimeSeries(
       labelValues: LabelValue[],
