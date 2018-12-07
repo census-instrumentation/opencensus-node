@@ -3,17 +3,19 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
-- Enforce `--noUnusedLocals` Compiler Options on opencensus-core package.
+- Enforce `--noUnusedLocals` Compiler Options on [opencensus-core] package.
 - Fix bugs related to Stackdriver Metrics Descriptor and TimeSeries.
 - Add Resource API.
 - Add Metrics API.
 - Remove support for `min`/`max` in the stats Distribution to make it compatible with Metrics.
 - Add Gauges (`DoubleGauge`, `LongGauge`) APIs.
+- Remove default prefix from [exporter-prometheus]. This could be a breaking change if you have Prometheus metrics from OpenCensus Prometheus exporter of previous versions, please point to the new metrics with no prefix instead.
 
 ## 0.0.7 - 2018-11-12
  **Contains API breaking changes for stats/metrics implementations**
 
-- The histogram bucket boundaries (BucketBoundaries) and values (Count and Sum) are no longer     supported for negative values. The Record API drops the negative value and logs the warning.    This could be a breaking change if you are recording negative value for any measure.
+- The histogram bucket boundaries (BucketBoundaries) and values (Count and Sum) are no longer
+supported for negative values. The Record API drops the negative value and logs the warning. This could be a breaking change if you are recording negative value for any measure.
 - Use setInterval to upload metrics to Stackdriver periodically.
 - fix spanId format.
 
