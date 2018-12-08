@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, Google, Inc.
+ * Copyright 2018, Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,9 @@ class WebMetrics {
    * @param {string} flushbutton - ID of the flush button DOM element
    */
   constructor(incrementbutton, flushbutton) {
+     // [START web_client_monitoring_click_counter]
     this.click_counter_ = 0;
+    // [END web_client_monitoring_click_counter]
     const wm = this;
     const incrementbtn = document.querySelector(incrementbutton);
     incrementbtn.onclick = function() {
@@ -45,11 +47,13 @@ class WebMetrics {
    * @private
    */
   post_data_(count) {
+    // [START web_client_monitoring_performance]
     const pageNav = performance.getEntriesByType("navigation")[0];
     const dnsTime = pageNav.domainLookupEnd - pageNav.domainLookupStart;
     const connectTime = pageNav.connectEnd - pageNav.connectStart;
     const ttfb = pageNav.responseStart - pageNav.requestStart;
     const totalTime = pageNav.responseEnd - pageNav.requestStart;
+    // [END web_client_monitoring_performance]
     const data = {
       dnsTime: dnsTime,
       connectTime: connectTime,

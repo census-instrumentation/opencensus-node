@@ -7,7 +7,8 @@ below for a graphical description.
 
 ## Prerequisites
 Install [Node.js](https://nodejs.org) in your local development environment.
-Create a GCP project and set it as your default project with the command
+Create a Google Cloud Platform (GCP) project and set it as your default project
+with the command
 ```
 export GOOGLE_CLOUD_PROJECT=[your project id]
 gcloud config set project $GOOGLE_CLOUD_PROJECT
@@ -18,6 +19,15 @@ Node.js runtime for it to send the data to Stackdriver when running in a local
 development environment. The choice of variable name matches the [App Engine
 Flex](https://cloud.google.com/appengine/docs/standard/nodejs/runtime#environment_variables)
 environment variable name.
+
+Enable the [Stackdriver API](https://cloud.google.com/monitoring/api/v3/) with
+the command
+```
+gcloud services enable monitoring
+```
+
+You can run the example with another monitoring backend if you modify the code
+in app.js to use a different exporter.
 
 ## Web Client Compilation
 Set up Nodejs and Webpack:
@@ -38,6 +48,7 @@ to make a service account key available via the GOOGLE_APPLICATION_CREDENTIALS
 environment variable. Then serve the HTML file from the Node.js server with
 Express:
 ```
+cd ..
 npm install
 npm start
 ```
@@ -64,3 +75,11 @@ for the (integer value) click counts.
 
 <img src='https://github.com/alexamies/opencensus-node/examples/stats/web_client_monitoring/stackdriver_dashboard.png'/>
 
+## Troubleshooting
+If you monitoring data does not show up in Stackdriver, check the GCP
+[API Dashboard](https://cloud.google.com/apis/docs/monitoring) for the Cloud
+Monitoring API and the [App Engine
+logs](https://cloud.google.com/appengine/articles/logging) for errors in the
+Google Cloud Console and Developer tools in the browser. See [Troubleshooting
+the Monitoring API](https://cloud.google.com/monitoring/api/troubleshooting)
+for more tips.
