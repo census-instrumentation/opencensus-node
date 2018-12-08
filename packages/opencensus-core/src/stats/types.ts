@@ -17,7 +17,9 @@
 import {Metric} from '../metrics/export/types';
 
 /** Tags are maps of names -> values */
-export interface Tags { [key: string]: string; }
+export interface Tags {
+  [key: string]: string;
+}
 
 /**
  * Describes the type of the individual values/measurements recorded by an

@@ -29,4 +29,6 @@ export interface Resource {
 }
 
 /** Labels are maps of keys -> values */
-export interface Labels { [key: string]: string; }
+export interface Labels {
+  [key: string]: string;
+}
