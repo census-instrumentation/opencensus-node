@@ -28,4 +28,6 @@ export interface Logger {
 }
 
 /** Defines an logger options interface. */
-export interface LoggerOptions { level?: string; }
+export interface LoggerOptions {
+  level?: string;
+}

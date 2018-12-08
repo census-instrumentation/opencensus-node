@@ -26,7 +26,9 @@ import * as samplerTypes from '../sampler/types';
 export type Func<T> = (...args: any[]) => T;
 
 /** Maps a label to a string, number or boolean. */
-export interface Attributes { [attributeKey: string]: string|number|boolean; }
+export interface Attributes {
+  [attributeKey: string]: string|number|boolean;
+}
 
 /** A text annotation with a set of attributes. */
 export interface Annotation {

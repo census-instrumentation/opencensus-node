@@ -55,7 +55,9 @@ export namespace opencensus.proto {
         }
       }
 
-      export interface ServiceInfo { name?: string|null; }
+      export interface ServiceInfo {
+        name?: string|null;
+      }
     }
     export namespace trace.v1 {
       export interface CurrentLibraryConfig {
@@ -63,7 +65,9 @@ export namespace opencensus.proto {
         config: TraceConfig;
       }
 
-      export interface UpdatedLibraryConfig { config: TraceConfig; }
+      export interface UpdatedLibraryConfig {
+        config: TraceConfig;
+      }
 
       export interface ExportTraceServiceRequest {
         node: opencensus.proto.agent.common.v1.Node;
@@ -72,11 +76,17 @@ export namespace opencensus.proto {
 
       export interface ExportTraceServiceResponse {}
 
-      export interface ProbabilitySampler { samplingProbability?: number|null; }
+      export interface ProbabilitySampler {
+        samplingProbability?: number|null;
+      }
 
-      export interface ConstantSampler { decision?: boolean|null; }
+      export interface ConstantSampler {
+        decision?: boolean|null;
+      }
 
-      export interface RateLimitingSampler { qps?: number|Long|null; }
+      export interface RateLimitingSampler {
+        qps?: number|Long|null;
+      }
 
       export interface TraceConfig {
         probabilitySampler?: ProbabilitySampler|null;

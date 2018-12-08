@@ -26,7 +26,9 @@ export interface HeaderGetter {
 /**
  * A transport and environment neutral API for setting headers.
  */
-export interface HeaderSetter { setHeader(name: string, value: string): void; }
+export interface HeaderSetter {
+  setHeader(name: string, value: string): void;
+}
 
 /**
  *  Propagation interface

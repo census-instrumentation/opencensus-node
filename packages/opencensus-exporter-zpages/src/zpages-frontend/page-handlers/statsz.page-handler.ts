@@ -23,7 +23,9 @@ const ejs = require('ejs');
 import * as pkgDir from 'pkg-dir';
 import {fileLoader} from 'ejs';
 
-export interface StatszParams { path: string; }
+export interface StatszParams {
+  path: string;
+}
 
 type FolderType = {
   [key: string]: {path: string, isLastFolder: boolean, viewsCount: number}
