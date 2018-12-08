@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, Google LLC
+ * Copyright 2018, OpenCensus Authors
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,8 +69,6 @@ const clickCountView = stats.createView(
   [],
   "The number of button clicks"
 );
-stats.registerView(latencyView);
-stats.registerView(clickCountView);
 // [END web_client_monitoring_ocsetup]
 
 // Process the metrics data posted to the server
@@ -86,7 +84,7 @@ app.post("/metrics", (req, res) => {
   const valueTLSNegotiation = "tls_negotiation";
   const valueDNSLookup = "dns_lookup";
   const valueLoad = "load";
-  let tags = { tagPhase: valueDNSLookup };
+  let tags = { phase: valueDNSLookup };
   // [START web_client_monitoring_record]
   try {
     stats.record({
@@ -94,13 +92,13 @@ app.post("/metrics", (req, res) => {
       tags,
       value: dnsTime
     });
-    tags = { tagPhase: valueTLSNegotiation };
+    tags = { phase: valueTLSNegotiation };
     stats.record({
       measure: mLatencyMs,
       tags,
       value: connectTime
     });
-    tags = { tagPhase: valueLoad };
+    tags = { phase: valueLoad };
     stats.record({
       measure: mLatencyMs,
       tags,
