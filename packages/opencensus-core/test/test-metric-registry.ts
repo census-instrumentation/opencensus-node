@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {LabelKey} from '../src/metrics/export/types';
+import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
 import {MetricRegistry} from '../src/metrics/metric-registry';
 import {MeasureUnit} from '../src/stats/types';
 
@@ -25,10 +25,21 @@ const UNIT = MeasureUnit.UNIT;
 const LABEL_KEYS: LabelKey[] = [{key: 'code', description: 'desc'}];
 const LABEL_KEYS_WITH_NULL: LabelKey[] =
     [{key: 'code', description: 'desc'}, null];
-
-const registry = new MetricRegistry();
+const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
 
 describe('addInt64Gauge', () => {
+  const oldProcessHrtime = process.hrtime;
+  let registry: MetricRegistry;
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+    process.hrtime = () => [1000, 1e7];
+  });
+
+  afterEach(() => {
+    process.hrtime = oldProcessHrtime;
+  });
+
   it('should throw an error when the name is null', () => {
     assert.throws(() => {
       registry.addInt64Gauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
@@ -76,9 +87,44 @@ describe('addInt64Gauge', () => {
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
     }, /^Error: labelKey elements should not be a NULL$/);
   });
+
+  it('should return a metric', () => {
+    const int64Gauge = registry.addInt64Gauge(
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
+    pointEntry.add(100);
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      'labelKeys': LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.GAUGE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 100);
+    assert.deepStrictEqual(point.timestamp, {seconds: 1000, nanos: 1e7});
+  });
 });
 
 describe('addDoubleGauge', () => {
+  const oldProcessHrtime = process.hrtime;
+  let registry: MetricRegistry;
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+    process.hrtime = () => [1000, 1e7];
+  });
+
+  afterEach(() => {
+    process.hrtime = oldProcessHrtime;
+  });
+
   it('should throw an error when the name is null', () => {
     assert.throws(() => {
       registry.addDoubleGauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
@@ -127,9 +173,54 @@ describe('addDoubleGauge', () => {
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
     }, /^Error: labelKey elements should not be a NULL$/);
   });
+  it('should return a metric', () => {
+    const int64Gauge = registry.addDoubleGauge(
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
+    pointEntry.add(5.5);
+
+    const pointEntry1 = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
+    pointEntry1.set(0.7);
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      'labelKeys': LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.GAUGE_DOUBLE
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 0.7);
+    assert.deepStrictEqual(point.timestamp, {seconds: 1000, nanos: 1e7});
+  });
+
+  it('should throw an error when the register same metric', () => {
+    registry.addDoubleGauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    assert.throws(() => {
+      registry.addDoubleGauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
 });
 
 describe('addDerivedInt64Gauge', () => {
+  const oldProcessHrtime = process.hrtime;
+  let registry: MetricRegistry;
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+    process.hrtime = () => [1000, 1e7];
+  });
+
+  afterEach(() => {
+    process.hrtime = oldProcessHrtime;
+  });
+
   it('should throw an error when the name is null', () => {
     assert.throws(() => {
       registry.addDerivedInt64Gauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
@@ -184,6 +275,18 @@ describe('addDerivedInt64Gauge', () => {
 });
 
 describe('addDerivedDoubleGauge', () => {
+  const oldProcessHrtime = process.hrtime;
+  let registry: MetricRegistry;
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+    process.hrtime = () => [1000, 1e7];
+  });
+
+  afterEach(() => {
+    process.hrtime = oldProcessHrtime;
+  });
+
   it('should throw an error when the name is null', () => {
     assert.throws(() => {
       registry.addDerivedDoubleGauge(
