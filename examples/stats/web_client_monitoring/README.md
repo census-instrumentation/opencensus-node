@@ -3,7 +3,7 @@ This example demonstrates instrumentation of browser code in a web application
 for monitoring web metrics with a JavaScript module. See the schematic diagram
 below for a graphical description.
 
-<img src='https://github.com/alexamies/opencensus-node/examples/stats/web_client_monitoring/schematic_diagram.png'/>
+![Schematic Diagram][SchematicDiagram]
 
 ## Prerequisites
 Install [Node.js](https://nodejs.org) in your local development environment.
@@ -73,7 +73,8 @@ names are listed in the app.js file. An example screenshot is shown below.
 You may want to use one chart for the (double value) timing data and one chart
 for the (integer value) click counts.
 
-<img src='https://github.com/alexamies/opencensus-node/examples/stats/web_client_monitoring/stackdriver_dashboard.png'/>
+![Stackdriver Dashboard][StackdriverDashboard]
+<img src='https://github.com/alexamies/opencensus-node/examples/stats/web_client_monitoring/blob/master/stackdriver_dashboard.png'/>
 
 ## Troubleshooting
 If your monitoring data does not show up in Stackdriver, check the GCP
@@ -83,3 +84,6 @@ logs](https://cloud.google.com/appengine/articles/logging) for errors in the
 Google Cloud Console and Developer tools in the browser. See [Troubleshooting
 the Monitoring API](https://cloud.google.com/monitoring/api/troubleshooting)
 for more tips.
+
+[SchematicDiagram]: /drawings/schematic_diagram.png "Schematic Diagram"
+[StackdriverDashboard]: /stackdriver_dashboard.png "Stackdriver Dashboard"
