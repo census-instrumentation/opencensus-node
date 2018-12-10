@@ -48,7 +48,7 @@ to make a service account key available via the GOOGLE_APPLICATION_CREDENTIALS
 environment variable. Then serve the HTML file from the Node.js server with
 Express:
 ```
-cd ..
+cd
 npm install
 npm start
 ```
@@ -76,7 +76,7 @@ for the (integer value) click counts.
 <img src='https://github.com/alexamies/opencensus-node/examples/stats/web_client_monitoring/stackdriver_dashboard.png'/>
 
 ## Troubleshooting
-If you monitoring data does not show up in Stackdriver, check the GCP
+If your monitoring data does not show up in Stackdriver, check the GCP
 [API Dashboard](https://cloud.google.com/apis/docs/monitoring) for the Cloud
 Monitoring API and the [App Engine
 logs](https://cloud.google.com/appengine/articles/logging) for errors in the
