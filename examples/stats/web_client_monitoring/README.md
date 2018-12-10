@@ -1,4 +1,4 @@
-# Monitoring Web Metrics with OpenCenus and Stackdriver
+# Monitoring Web Metrics with OpenCensus and Stackdriver
 This example demonstrates instrumentation of browser code in a web application
 for monitoring web metrics with a JavaScript module. See the schematic diagram
 below for a graphical description.
