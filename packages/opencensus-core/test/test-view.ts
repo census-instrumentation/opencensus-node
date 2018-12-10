@@ -200,6 +200,7 @@ describe('BaseView', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
     const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
+    const tags1: Tags = {testKey1: 'testValue1', testKey2: 'testValue1'};
 
     after(() => {
       process.hrtime = hrtime;
@@ -277,7 +278,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);
@@ -299,6 +300,70 @@ describe('BaseView', () => {
       });
     });
 
+    describe(
+        'DISTRIBUTION aggregation type: record with measurements in succession from a single view and single measure',
+        () => {
+          const view: View = new BaseView(
+              'test/view/name', measure, AggregationType.DISTRIBUTION,
+              ['testKey1', 'testKey2'], 'description test', buckets);
+          let total = 0;
+          for (const value of measurementValues) {
+            total += value;
+            const measurement = {measure, tags, value};
+            const measurement1 = {measure, tags: tags1, value};
+            view.recordMeasurement(measurement);
+            view.recordMeasurement(measurement1);
+          }
+
+          it('should have points', () => {
+            const {timeseries} = view.getMetric();
+            assert.equal(timeseries.length, 2);
+            const [{labelValues: labelValues1, points: points1}, {
+              labelValues: labelValues2,
+              points: points2
+            }] = timeseries;
+            assert.ok(points1);
+
+            let [point] = points1;
+            let {timestamp, value} = point;
+            assert.ok(timestamp);
+            assert.equal(typeof timestamp.nanos, 'number');
+            assert.strictEqual(timestamp.nanos, 1e7);
+            assert.equal(typeof timestamp.seconds, 'number');
+            assert.strictEqual(timestamp.seconds, 1000);
+            assert.notEqual(typeof value, 'number');
+            assert.deepStrictEqual((value as DistributionValue), {
+              bucketOptions: {explicit: {bounds: buckets}},
+              buckets: [1, 2, 2, 0],
+              count: 5,
+              sum: total,
+              sumOfSquaredDeviation: 10.427999999999997
+            });
+            assert.deepEqual(
+                labelValues1, [{'value': 'testValue'}, {'value': 'testValue'}]);
+
+            assert.ok(points2);
+            [point] = points2;
+            ({timestamp, value} = point);
+            assert.ok(timestamp);
+            assert.equal(typeof timestamp.nanos, 'number');
+            assert.strictEqual(timestamp.nanos, 1e7);
+            assert.equal(typeof timestamp.seconds, 'number');
+            assert.strictEqual(timestamp.seconds, 1000);
+            assert.notEqual(typeof value, 'number');
+            assert.deepStrictEqual((value as DistributionValue), {
+              bucketOptions: {explicit: {bounds: buckets}},
+              buckets: [1, 2, 2, 0],
+              count: 5,
+              sum: total,
+              sumOfSquaredDeviation: 10.427999999999997
+            });
+            assert.deepEqual(
+                labelValues2,
+                [{'value': 'testValue1'}, {'value': 'testValue1'}]);
+          });
+        });
+
     describe('COUNT aggregation type', () => {
       const view: View = new BaseView(
           'test/view/name', measure, AggregationType.COUNT,
@@ -308,7 +373,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);
@@ -335,7 +400,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);
@@ -360,7 +425,7 @@ describe('BaseView', () => {
         view.recordMeasurement(measurement);
       }
 
-      it('should has point', () => {
+      it('should have point', () => {
         const {timeseries} = view.getMetric();
         const [{points}] = timeseries;
         assert.ok(points);

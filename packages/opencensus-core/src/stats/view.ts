@@ -167,6 +167,9 @@ export class BaseView implements View {
   private createAggregationData(tags: Tags): AggregationData {
     const aggregationMetadata = {tags, timestamp: Date.now()};
     const {buckets, bucketCounts} = this.bucketBoundaries;
+    const bucketsCopy = Object.assign([], buckets);
+    const bucketCountsCopy = Object.assign([], bucketCounts);
+
     switch (this.aggregation) {
       case AggregationType.DISTRIBUTION:
         return {
@@ -178,8 +181,8 @@ export class BaseView implements View {
           mean: null as number,
           stdDeviation: null as number,
           sumOfSquaredDeviation: null as number,
-          buckets,
-          bucketCounts
+          buckets: bucketsCopy,
+          bucketCounts: bucketCountsCopy
         };
       case AggregationType.SUM:
         return {...aggregationMetadata, type: AggregationType.SUM, value: 0};
