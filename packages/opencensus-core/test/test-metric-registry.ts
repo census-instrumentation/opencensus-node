@@ -26,6 +26,7 @@ const LABEL_KEYS: LabelKey[] = [{key: 'code', description: 'desc'}];
 const LABEL_KEYS_WITH_NULL: LabelKey[] =
     [{key: 'code', description: 'desc'}, null];
 const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
+const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
 
 describe('addInt64Gauge', () => {
   const oldProcessHrtime = process.hrtime;
@@ -174,12 +175,12 @@ describe('addDoubleGauge', () => {
     }, /^Error: labelKey elements should not be a NULL$/);
   });
   it('should return a metric', () => {
-    const int64Gauge = registry.addDoubleGauge(
+    const doubleGauge = registry.addDoubleGauge(
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
+    const pointEntry = doubleGauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry.add(5.5);
 
-    const pointEntry1 = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
+    const pointEntry1 = doubleGauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry1.set(0.7);
 
     const metrics = registry.getMetricProducer().getMetrics();
@@ -272,6 +273,39 @@ describe('addDerivedInt64Gauge', () => {
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
     }, /^Error: labelKey elements should not be a NULL$/);
   });
+  it('should return a metric', () => {
+    const map = new Map();
+    map.set('key', 'value');
+    const derivedInt64Gauge = registry.addDerivedInt64Gauge(
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    derivedInt64Gauge.createTimeSeries(LABEL_VALUES_200, map);
+    map.set('key1', 'value1');
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      'labelKeys': LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.GAUGE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 2);
+    assert.deepStrictEqual(point.timestamp, {seconds: 1000, nanos: 1e7});
+  });
+
+  it('should throw an error when the register same metric', () => {
+    registry.addDerivedInt64Gauge(
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    assert.throws(() => {
+      registry.addDerivedInt64Gauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
 });
 
 describe('addDerivedDoubleGauge', () => {
@@ -338,5 +372,105 @@ describe('addDerivedDoubleGauge', () => {
       registry.addDerivedDoubleGauge(
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
     }, /^Error: labelKey elements should not be a NULL$/);
+  });
+  it('should return a metric', () => {
+    class QueueManager {
+      getValue(): number {
+        return 0.7;
+      }
+    }
+    const derivedDoubleGauge = registry.addDerivedDoubleGauge(
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    derivedDoubleGauge.createTimeSeries(LABEL_VALUES_200, new QueueManager());
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      'labelKeys': LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.GAUGE_DOUBLE
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 0.7);
+    assert.deepStrictEqual(point.timestamp, {seconds: 1000, nanos: 1e7});
+  });
+
+  it('should throw an error when the register same metric', () => {
+    registry.addDerivedDoubleGauge(
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    assert.throws(() => {
+      registry.addDerivedDoubleGauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
+});
+
+describe('Add multiple gauges', () => {
+  const oldProcessHrtime = process.hrtime;
+  let registry: MetricRegistry;
+
+  before(() => {
+    registry = new MetricRegistry();
+    process.hrtime = () => [1000, 1e7];
+  });
+
+  after(() => {
+    process.hrtime = oldProcessHrtime;
+  });
+
+  it('should return metrics', () => {
+    const int64Gauge = registry.addInt64Gauge(
+        'metric-name1', METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200).add(100);
+
+    const doubleGauge = registry.addDoubleGauge(
+        'metric-name2', METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    doubleGauge.getOrCreateTimeSeries(LABEL_VALUES_200).add(5.5);
+
+    const arr = new Array(5).fill('test');
+    const derivedInt64Gauge = registry.addDerivedInt64Gauge(
+        'metric-name3', METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    derivedInt64Gauge.createTimeSeries(LABEL_VALUES_400, {
+      size: () => arr.length,
+    });
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 3);
+    const [{descriptor: descriptor1, timeseries: timeseries1}, {descriptor: descriptor2, timeseries: timeseries2}, {descriptor: descriptor3, timeseries: timeseries3}] = metrics;
+    assert.deepStrictEqual(descriptor1, {
+      name: 'metric-name1',
+      description: METRIC_DESCRIPTION,
+      'labelKeys': LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.GAUGE_INT64
+    });
+    assert.deepStrictEqual(descriptor2, {
+      name: 'metric-name2',
+      description: METRIC_DESCRIPTION,
+      'labelKeys': LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.GAUGE_DOUBLE
+    });
+    assert.deepStrictEqual(descriptor3, {
+      name: 'metric-name3',
+      description: METRIC_DESCRIPTION,
+      'labelKeys': LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.GAUGE_INT64
+    });
+    assert.strictEqual(timeseries1.length, 1);
+    assert.strictEqual(timeseries1[0].points.length, 1);
+    assert.equal(timeseries1[0].points[0].value, 100);
+    assert.strictEqual(timeseries2.length, 1);
+    assert.strictEqual(timeseries2[0].points.length, 1);
+    assert.equal(timeseries2[0].points[0].value, 5.5);
+    assert.strictEqual(timeseries3.length, 1);
+    assert.strictEqual(timeseries3[0].points.length, 1);
+    assert.equal(timeseries3[0].points[0].value, 5);
   });
 });
