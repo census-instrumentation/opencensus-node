@@ -84,7 +84,8 @@ app.post("/metrics", (req, res) => {
   const valueTLSNegotiation = "tls_negotiation";
   const valueDNSLookup = "dns_lookup";
   const valueLoad = "load";
-  let tags = { phase: valueDNSLookup };
+  const valueWeb = "web";
+  let tags = { phase: valueDNSLookup, client: valueWeb };
   // [START web_client_monitoring_record]
   try {
     stats.record({
@@ -92,19 +93,19 @@ app.post("/metrics", (req, res) => {
       tags,
       value: dnsTime
     });
-    tags = { phase: valueTLSNegotiation };
+    tags = { phase: valueTLSNegotiation, client: valueWeb };
     stats.record({
       measure: mLatencyMs,
       tags,
       value: connectTime
     });
-    tags = { phase: valueLoad };
+    tags = { phase: valueLoad, client: valueWeb };
     stats.record({
       measure: mLatencyMs,
       tags,
       value: totalTime
     });
-    tags = {};
+    tags = { client: valueWeb };
     stats.record({
       measure: mClickCount,
       tags,
