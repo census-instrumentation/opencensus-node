@@ -41,7 +41,7 @@
   "devDependencies": {
     "@types/extend": "^3.0.0",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^9.4.7",
+    "@types/node": "^10.12.12",
     "@types/shimmer": "^1.0.1",
     "gts": "^0.9.0",
     "intercept-stdout": "^0.1.2",
