@@ -86,4 +86,4 @@ the Monitoring API](https://cloud.google.com/monitoring/api/troubleshooting)
 for more tips.
 
 [SchematicDiagram]: /drawings/schematic_diagram.png "Schematic Diagram"
-[StackdriverDashboard]: /stackdriver_dashboard.png "Stackdriver Dashboard"
+[StackdriverDashboard]: /drawings/stackdriver_dashboard.png "Stackdriver Dashboard"
