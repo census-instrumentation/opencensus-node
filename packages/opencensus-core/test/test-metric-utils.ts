@@ -41,8 +41,9 @@ describe('MetricUtil', () => {
     assert.strictEqual(
         metricDescriptor.type, MetricDescriptorType.GAUGE_DOUBLE);
     assert.strictEqual(metricDescriptor.description, VIEW_DESCRIPTION);
-    assert.deepStrictEqual(
-        metricDescriptor.labelKeys, [{key: 'testKey1'}, {key: 'testKey2'}]);
+    assert.deepStrictEqual(metricDescriptor.labelKeys, [
+      {key: 'testKey1', description: ''}, {key: 'testKey2', description: ''}
+    ]);
   });
 
   it('should convert tag values to label values', () => {

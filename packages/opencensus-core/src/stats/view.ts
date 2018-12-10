@@ -202,6 +202,10 @@ export class BaseView implements View {
     const {type} = this.metricDescriptor;
     let startTimestamp: Timestamp;
 
+    // The moment when this point was recorded.
+    const [currentSeconds, currentNanos] = process.hrtime();
+    const now: Timestamp = {seconds: currentSeconds, nanos: currentNanos};
+
     switch (type) {
       case MetricDescriptorType.GAUGE_INT64:
       case MetricDescriptorType.GAUGE_DOUBLE:
@@ -209,6 +213,7 @@ export class BaseView implements View {
         break;
       default:
         const [seconds, nanos] = process.hrtime();
+        // TODO (mayurkale): This should be set when create Cumulative view.
         startTimestamp = {seconds, nanos};
     }
 
@@ -217,8 +222,13 @@ export class BaseView implements View {
     Object.keys(this.rows).forEach(key => {
       const {tags} = this.rows[key];
       const labelValues: LabelValue[] = MetricUtils.tagsToLabelValues(tags);
-      const point: Point = this.toPoint(startTimestamp, this.getSnapshot(tags));
-      timeseries.push({startTimestamp, labelValues, points: [point]});
+      const point: Point = this.toPoint(now, this.getSnapshot(tags));
+
+      if (startTimestamp) {
+        timeseries.push({startTimestamp, labelValues, points: [point]});
+      } else {
+        timeseries.push({labelValues, points: [point]});
+      }
     });
 
     return {descriptor: this.metricDescriptor, timeseries};

@@ -61,12 +61,14 @@ export class MetricUtils {
    * @returns {MetricDescriptor}
    */
   static viewToMetricDescriptor(view: View): MetricDescriptor {
+    // TODO(mayurkale): add description
     return {
       name: view.name,
       description: view.description,
       unit: view.measure.unit,
       type: MetricUtils.getType(view.measure, view.aggregation),
-      labelKeys: view.getColumns().map(tag => ({key: tag} as LabelKey))
+      labelKeys: view.getColumns().map(
+          tag => ({key: tag, description: ''} as LabelKey))
     };
   }
 
