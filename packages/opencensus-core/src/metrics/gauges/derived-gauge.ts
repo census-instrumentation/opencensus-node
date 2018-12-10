@@ -22,27 +22,37 @@ import {hashLabelValues} from '../utils';
 /**
  * Interface for objects with "length()" method.
  */
-export interface LengthMethodInterface { length(): number; }
+export interface LengthMethodInterface {
+  length(): number;
+}
 
 /**
  * Interface for objects with "length" attribute (e.g. Array).
  */
-export interface LengthAttributeInterface { length: number; }
+export interface LengthAttributeInterface {
+  length: number;
+}
 
 /**
  * Interface for objects with "size" method.
  */
-export interface SizeMethodInterface { size(): number; }
+export interface SizeMethodInterface {
+  size(): number;
+}
 
 /**
  * Interface for objects with "size" attribute (e.g. Map, Set).
  */
-export interface SizeAttributeInterface { size: number; }
+export interface SizeAttributeInterface {
+  size: number;
+}
 
 /**
  * Interface for objects with "getValue" method.
  */
-export interface ToValueInterface { getValue(): number; }
+export interface ToValueInterface {
+  getValue(): number;
+}
 
 type ValueExtractor = () => number;
 
@@ -50,6 +60,9 @@ interface GaugeEntry {
   readonly labelValues: LabelValue[];
   readonly extractor: ValueExtractor;
 }
+
+export type AccessorInterface = LengthAttributeInterface|LengthMethodInterface|
+    SizeAttributeInterface|SizeMethodInterface|ToValueInterface;
 
 /**
  * DerivedGauge metric
@@ -131,10 +144,7 @@ export class DerivedGauge implements types.Meter {
    *    options are available, the value (ToValueInterface) takes precedence
    *    first, followed by length and size. e.g value -> length -> size.
    */
-  createTimeSeries(
-      labelValues: LabelValue[],
-      obj:|LengthAttributeInterface|LengthMethodInterface|
-      SizeAttributeInterface|SizeMethodInterface|ToValueInterface): void {
+  createTimeSeries(labelValues: LabelValue[], obj: AccessorInterface): void {
     validateArrayElementsNotNull(
         validateNotNull(labelValues, DerivedGauge.LABEL_VALUES),
         DerivedGauge.LABEL_VALUE);
