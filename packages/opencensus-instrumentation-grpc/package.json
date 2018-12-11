@@ -56,7 +56,7 @@
     "nyc": "^11.7.1",
     "protobufjs": "^6.8.6",
     "rimraf": "^2.6.2",
-    "ts-node": "^4.0.0",
+    "ts-node": "^7.0.1",
     "typescript": "~2.7.2"
   },
   "dependencies": {

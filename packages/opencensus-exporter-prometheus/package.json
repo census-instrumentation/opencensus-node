@@ -49,7 +49,7 @@
     "ncp": "^2.0.0",
     "nock": "^9.2.6",
     "nyc": "^11.8.0",
-    "ts-node": "^4.0.0",
+    "ts-node": "^7.0.1",
     "typescript": "~2.7.2"
   },
   "dependencies": {
