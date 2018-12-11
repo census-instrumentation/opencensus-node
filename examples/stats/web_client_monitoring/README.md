@@ -3,7 +3,7 @@ This example demonstrates instrumentation of browser code in a web application
 for monitoring web metrics with a JavaScript module. See the schematic diagram
 below for a graphical description.
 
-![schematic_diagram](https://user-images.githubusercontent.com/4898263/49771031-10b20500-fc9c-11e8-9048-7a9502001205.png)
+![Schematic Diagram](https://user-images.githubusercontent.com/5554156/49771515-4b1ca180-fc9e-11e8-8c2a-07877ee096a3.png)
 
 ## Prerequisites
 Install [Node.js](https://nodejs.org) in your local development environment.
@@ -73,7 +73,7 @@ names are listed in the app.js file. An example screenshot is shown below.
 You may want to use one chart for the (double value) timing data and one chart
 for the (integer value) click counts.
 
-![stackdriver_dashboard](https://user-images.githubusercontent.com/4898263/49771039-190a4000-fc9c-11e8-9536-9ce4172606b8.png)
+![Stackdriver Dashboard](https://user-images.githubusercontent.com/4898263/49771039-190a4000-fc9c-11e8-9536-9ce4172606b8.png)
 
 ## Troubleshooting
 If your monitoring data does not show up in Stackdriver, check the GCP
