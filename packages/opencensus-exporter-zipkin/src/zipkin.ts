@@ -31,8 +31,8 @@ interface TranslatedSpan {
   id: string;
   parentId?: string;
   kind: string;
-  timestamp: string;
-  duration: string;
+  timestamp: number;
+  duration: number;
   debug: boolean;
   shared: boolean;
   localEndpoint: {serviceName: string};
@@ -145,8 +145,8 @@ export class ZipkinTraceExporter implements Exporter {
       id: span.id,
       parentId: span.parentSpanId,
       kind: 'SERVER',
-      timestamp: (span.startTime.getTime() * 1000).toFixed(),
-      duration: (span.duration * 1000).toFixed(),
+      timestamp: span.startTime.getTime() * 1000,
+      duration: Math.round(span.duration * 1000),
       debug: true,
       shared: true,
       localEndpoint: {serviceName: this.serviceName}
