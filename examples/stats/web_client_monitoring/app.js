@@ -67,7 +67,7 @@ const clickCountView = stats.createView(
   "webmetrics/click_count",
   mClickCount,
   AggregationType.COUNT,
-  [],
+  [tagClient],
   "The number of button clicks"
 );
 // [END web_client_monitoring_ocsetup]
