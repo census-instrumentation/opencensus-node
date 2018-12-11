@@ -40,7 +40,7 @@
   "devDependencies": {
     "@types/continuation-local-storage": "^3.2.1",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^9.4.7",
+    "@types/node": "^10.12.12",
     "@types/once": "^1.4.0",
     "@types/semver": "^5.5.0",
     "@types/shimmer": "^1.0.1",
