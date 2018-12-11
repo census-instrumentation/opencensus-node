@@ -1,0 +1,17 @@
+{
+  "name": "web_monitoring_client",
+  "version": "0.0.1",
+  "description": "Web client for monitoring example",
+  "main": "client_app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
+  }
+}
