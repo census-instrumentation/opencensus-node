@@ -16,8 +16,10 @@
 
 import {validateArrayElementsNotNull, validateNotNull} from '../common/validations';
 import {MeasureUnit} from '../stats/types';
+
 import {MetricProducer} from './export/metric-producer';
 import {LabelKey, Metric, MetricDescriptorType} from './export/types';
+import {DerivedGauge} from './gauges/derived-gauge';
 import {Gauge} from './gauges/gauge';
 import {Meter} from './gauges/types';
 
@@ -103,17 +105,23 @@ export class MetricRegistry {
    * @param {string} description The description of the metric.
    * @param {MeasureUnit} unit The unit of the metric.
    * @param {LabelKey[]} labelKeys The list of the label keys.
+   * @returns {DerivedGauge} A Int64 DerivedGauge metric.
    */
   addDerivedInt64Gauge(
       name: string, description: string, unit: MeasureUnit,
-      labelKeys: LabelKey[]): void {
-    validateNotNull(name, MetricRegistry.NAME);
-    validateNotNull(description, MetricRegistry.DESCRIPTION);
-    validateNotNull(unit, MetricRegistry.UNIT);
+      labelKeys: LabelKey[]): DerivedGauge {
     validateArrayElementsNotNull(
         validateNotNull(labelKeys, MetricRegistry.LABEL_KEYS),
         MetricRegistry.LABEL_KEY);
-    // TODO(mayurkale): Add Derived Int64Gauge.
+
+    const labelKeysCopy = Object.assign([], labelKeys);
+    const derivedInt64Gauge = new DerivedGauge(
+        validateNotNull(name, MetricRegistry.NAME),
+        validateNotNull(description, MetricRegistry.DESCRIPTION),
+        validateNotNull(unit, MetricRegistry.UNIT),
+        MetricDescriptorType.GAUGE_INT64, labelKeysCopy);
+    this.registerMetric(name, derivedInt64Gauge);
+    return derivedInt64Gauge;
   }
 
   /**
@@ -125,17 +133,23 @@ export class MetricRegistry {
    * @param {string} description The description of the metric.
    * @param {MeasureUnit} unit The unit of the metric.
    * @param {LabelKey[]} labelKeys The list of the label keys.
+   * @returns {DerivedGauge} A Double DerivedGauge metric.
    */
   addDerivedDoubleGauge(
       name: string, description: string, unit: MeasureUnit,
-      labelKeys: LabelKey[]): void {
-    validateNotNull(name, MetricRegistry.NAME);
-    validateNotNull(description, MetricRegistry.DESCRIPTION);
-    validateNotNull(unit, MetricRegistry.UNIT);
+      labelKeys: LabelKey[]): DerivedGauge {
     validateArrayElementsNotNull(
         validateNotNull(labelKeys, MetricRegistry.LABEL_KEYS),
         MetricRegistry.LABEL_KEY);
-    // TODO(mayurkale): Add Derived DoubleGauge.
+
+    const labelKeysCopy = Object.assign([], labelKeys);
+    const derivedDoubleGauge = new DerivedGauge(
+        validateNotNull(name, MetricRegistry.NAME),
+        validateNotNull(description, MetricRegistry.DESCRIPTION),
+        validateNotNull(unit, MetricRegistry.UNIT),
+        MetricDescriptorType.GAUGE_DOUBLE, labelKeysCopy);
+    this.registerMetric(name, derivedDoubleGauge);
+    return derivedDoubleGauge;
   }
 
   /**
