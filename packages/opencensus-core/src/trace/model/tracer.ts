@@ -21,9 +21,7 @@ import * as configTypes from '../config/types';
 import {Propagation} from '../propagation/types';
 import {SamplerBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
-
 import {RootSpan} from './root-span';
-import {Span} from './span';
 import * as types from './types';
 
 
@@ -40,6 +38,7 @@ export class CoreTracer implements types.Tracer {
   /** A list of end span event listeners */
   private eventListenersLocal: types.SpanEventListener[] = [];
   /** A list of ended root spans */
+  // @ts-ignore
   private endedTraces: types.RootSpan[] = [];
   /** Bit to represent whether trace is sampled or not. */
   private readonly IS_SAMPLED = 0x1;

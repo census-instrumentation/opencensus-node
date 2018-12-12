@@ -23,22 +23,24 @@ export interface PrometheusExporterOptions extends ExporterConfig {
   /** App prefix for metrics, if needed - default opencensus */
   prefix?: string;
   /**
-   * Port number to Prometheus server
+   * Port number for Prometheus exporter server
    * Default registered port is 9464:
    * https://github.com/prometheus/prometheus/wiki/Default-port-allocations
    */
   port?: number;
-  /** Define if the Prometheus server will be started - default false */
+  /**
+   * Define if the Prometheus exporter server will be started - default false
+   */
   startServer?: boolean;
 }
 
-/** Format and sends Stats to Prometheus */
+/** Format and sends Stats to Prometheus exporter */
 export class PrometheusStatsExporter implements StatsEventListener {
   static readonly DEFAULT_OPTIONS = {
     port: 9464,
     startServer: false,
     contentType: 'text/plain; text/plain; version=0.0.4; charset=utf-8',
-    prefix: 'opencensus'
+    prefix: ''
   };
 
   private logger: Logger;
@@ -48,6 +50,9 @@ export class PrometheusStatsExporter implements StatsEventListener {
   private server: http.Server;
   // Registry instance from Prometheus to keep the metrics
   private registry = new Registry();
+
+  // Histogram cannot have a label named 'le'
+  private static readonly RESERVED_HISTOGRAM_LABEL = 'le';
 
   constructor(options: PrometheusExporterOptions) {
     this.logger = options.logger || logger.logger();
@@ -93,11 +98,13 @@ export class PrometheusStatsExporter implements StatsEventListener {
       return metric;
     }
 
+    const labels = view.getColumns();
+
     // Create a new metric if there is no one
     const metricObj = {
       name: metricName,
       help: view.description,
-      labelNames: view.getColumns()
+      labelNames: labels
     };
 
     // Creating the metric based on aggregation type
@@ -110,10 +117,11 @@ export class PrometheusStatsExporter implements StatsEventListener {
         metric = new Gauge(metricObj);
         break;
       case AggregationType.DISTRIBUTION:
+        this.validateDisallowedLeLabelForHistogram(labels);
         const distribution = {
           name: metricName,
           help: view.description,
-          labelNames: view.getColumns(),
+          labelNames: labels,
           buckets: this.getBoundaries(view, tags)
         };
         metric = new Histogram(distribution);
@@ -156,30 +164,35 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param view View used to build the metric name
    */
   private getPrometheusMetricName(view: View): string {
-    return `${this.prefix}_${view.name}_${this.getUnit(view)}`;
+    let metricName;
+    if (this.prefix) {
+      metricName = `${this.prefix}_${view.name}`;
+    } else {
+      metricName = view.name;
+    }
+    return this.sanitizePrometheusMetricName(metricName);
   }
 
   /**
-   * Get a string unit type based on measure unit
-   * @param view View used to get the unit
+   * Sanitize metric name
+   * @param name string The name of the metric.
    */
-  private getUnit(view: View): string {
-    switch (view.measure.unit) {
-      case MeasureUnit.UNIT:
-        return 'total';
-      case MeasureUnit.BYTE:
-        return 'bytes';
-      case MeasureUnit.KBYTE:
-        return 'kbytes';
-      case MeasureUnit.SEC:
-        return 'seconds';
-      case MeasureUnit.MS:
-        return 'milliseconds';
-      case MeasureUnit.NS:
-        return 'nanoseconds';
-      default:
-        return '';
-    }
+  private sanitizePrometheusMetricName(name: string): string {
+    // replace all characters other than [A-Za-z0-9_].
+    return name.replace(/\W/g, '_');
+  }
+
+  /**
+   * Throws an error labels contain "le" label name in histogram label names.
+   */
+  private validateDisallowedLeLabelForHistogram(labels: string[]): void {
+    labels.forEach(label => {
+      if (label === PrometheusStatsExporter.RESERVED_HISTOGRAM_LABEL) {
+        throw new Error(`${
+            PrometheusStatsExporter
+                .RESERVED_HISTOGRAM_LABEL} is a reserved label keyword`);
+      }
+    });
   }
 
   /**
@@ -189,11 +202,11 @@ export class PrometheusStatsExporter implements StatsEventListener {
    */
   private getBoundaries(view: View, tags: Tags): number[] {
     const data = view.getSnapshot(tags) as DistributionData;
-    return data.buckets.map(b => b.lowBoundary).filter(b => b !== -Infinity);
+    return data.buckets;
   }
 
   /**
-   * Start the Prometheus server
+   * Start the Prometheus exporter server
    */
   startServer(callback?: () => void) {
     const self = this;
@@ -212,7 +225,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   }
 
   /**
-   * Stop the Prometheus server
+   * Stop the Prometheus exporter server
    * @param callback
    */
   stopServer(callback?: () => void) {

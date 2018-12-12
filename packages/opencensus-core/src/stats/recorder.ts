@@ -44,18 +44,13 @@ export class Recorder {
       distributionData: DistributionData, value: number): DistributionData {
     distributionData.count += 1;
 
-    const inletBucket = distributionData.buckets.find((bucket) => {
-      return bucket.lowBoundary <= value && value < bucket.highBoundary;
-    });
-    inletBucket.count += 1;
+    let bucketIndex =
+        distributionData.buckets.findIndex(bucket => bucket > value);
 
-    if (value > distributionData.max) {
-      distributionData.max = value;
+    if (bucketIndex < 0) {
+      bucketIndex = distributionData.buckets.length;
     }
-
-    if (value < distributionData.min) {
-      distributionData.min = value;
-    }
+    distributionData.bucketCounts[bucketIndex] += 1;
 
     if (distributionData.count === 1) {
       distributionData.mean = value;
@@ -66,11 +61,11 @@ export class Recorder {
     const oldMean = distributionData.mean;
     distributionData.mean = distributionData.mean +
         (value - distributionData.mean) / distributionData.count;
-    distributionData.sumSquaredDeviations =
-        distributionData.sumSquaredDeviations +
+    distributionData.sumOfSquaredDeviation =
+        distributionData.sumOfSquaredDeviation +
         (value - oldMean) * (value - distributionData.mean);
     distributionData.stdDeviation = Math.sqrt(
-        distributionData.sumSquaredDeviations / distributionData.count);
+        distributionData.sumOfSquaredDeviation / distributionData.count);
 
     return distributionData;
   }

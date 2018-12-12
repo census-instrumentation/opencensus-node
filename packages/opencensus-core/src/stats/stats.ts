@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+import * as defaultLogger from '../common/console-logger';
+import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
+import {Metric} from '../metrics/export/types';
 
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, View} from './types';
 import {BaseView} from './view';
@@ -24,8 +27,16 @@ export class Stats {
   private statsEventListeners: StatsEventListener[] = [];
   /** A map of Measures (name) to their corresponding Views */
   private registeredViews: {[key: string]: View[]} = {};
+  /** An object to log information to */
+  private logger: loggerTypes.Logger;
 
-  constructor() {}
+  /**
+   * Creates stats
+   * @param logger
+   */
+  constructor(logger = defaultLogger) {
+    this.logger = logger.logger();
+  }
 
   /**
    * Registers a view to listen to new measurements in its measure. Prefer using
@@ -105,10 +116,41 @@ export class Stats {
   }
 
   /**
+   * Verifies whether all measurements has positive value
+   * @param measurements A list of measurements
+   * @returns {boolean} Whether values is positive
+   */
+  private hasNegativeValue(measurements: Measurement[]): boolean {
+    return measurements.some(measurement => measurement.value < 0);
+  }
+
+  /**
+   * Gets a collection of produced Metric`s to be exported.
+   * @returns {Metric[]} List of metrics
+   */
+  getMetrics(): Metric[] {
+    const metrics: Metric[] = [];
+
+    for (const measureName of Object.keys(this.registeredViews)) {
+      for (const view of this.registeredViews[measureName]) {
+        metrics.push(view.getMetric());
+      }
+    }
+
+    return metrics;
+  }
+
+  /**
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
    */
   record(...measurements: Measurement[]) {
+    if (this.hasNegativeValue(measurements)) {
+      this.logger.warn(`Dropping measurments ${measurements}, value to record
+          must be non-negative.`);
+      return;
+    }
+
     for (const measurement of measurements) {
       const views = this.registeredViews[measurement.measure.name];
       if (!views) {

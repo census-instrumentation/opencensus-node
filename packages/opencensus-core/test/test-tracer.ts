@@ -15,9 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {EventEmitter} from 'events';
 import * as uuid from 'uuid';
-
 import {randomSpanId} from '../src/internal/util';
 import {TracerConfig} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';

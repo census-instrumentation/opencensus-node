@@ -15,8 +15,6 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import {Recorder} from '../src';
 import {AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, SumData, Tags} from '../src/stats/types';
 
@@ -37,19 +35,8 @@ function assertDistributionData(
     distributionData: DistributionData, values: number[]) {
   const valuesSum = values.reduce((acc, cur) => acc + cur);
 
-  assert.strictEqual(distributionData.max, Math.max(...values));
-  assert.strictEqual(distributionData.min, Math.min(...values));
   assert.strictEqual(distributionData.count, values.length);
   assert.strictEqual(distributionData.sum, valuesSum);
-
-  for (const bucket of distributionData.buckets) {
-    const expectedBucketCount = values
-                                    .filter(
-                                        value => bucket.lowBoundary <= value &&
-                                            value < bucket.highBoundary)
-                                    .length;
-    assert.strictEqual(bucket.count, expectedBucketCount);
-  }
 
   const expectedMean = valuesSum / values.length;
   assert.ok(isAlmostEqual(distributionData.mean, expectedMean, EPSILON));
@@ -58,7 +45,7 @@ function assertDistributionData(
       values.map(value => Math.pow(value - expectedMean, 2))
           .reduce((acc, curr) => acc + curr);
   assert.ok(isAlmostEqual(
-      distributionData.sumSquaredDeviations, expectedSumSquaredDeviations,
+      distributionData.sumOfSquaredDeviation, expectedSumSquaredDeviations,
       EPSILON));
 
   const expectedStdDeviation =
@@ -168,18 +155,11 @@ describe('Recorder', () => {
                    startTime: Date.now(),
                    count: 0,
                    sum: 0,
-                   max: Number.MIN_SAFE_INTEGER,
-                   min: Number.MAX_SAFE_INTEGER,
                    mean: 0,
                    stdDeviation: 0,
-                   sumSquaredDeviations: 0,
-                   buckets: [
-                     {highBoundary: 0, lowBoundary: -Infinity, count: 0},
-                     {highBoundary: 2, lowBoundary: 0, count: 0},
-                     {highBoundary: 4, lowBoundary: 2, count: 0},
-                     {highBoundary: 6, lowBoundary: 4, count: 0},
-                     {highBoundary: Infinity, lowBoundary: 6, count: 0}
-                   ]
+                   sumOfSquaredDeviation: 0,
+                   buckets: [2, 4, 6],
+                   bucketCounts: [0, 0, 0, 0]
                  };
                  const sentValues = [];
                  for (const value of testCase.values) {
@@ -190,8 +170,7 @@ describe('Recorder', () => {
                    const updatedAggregationData =
                        Recorder.addMeasurement(distributionData, measurement) as
                        DistributionData;
-
-                   assertDistributionData(distributionData, sentValues);
+                   assertDistributionData(updatedAggregationData, sentValues);
                  }
                });
           }

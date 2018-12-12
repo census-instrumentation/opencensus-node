@@ -33,7 +33,7 @@ export class HttpsPlugin extends HttpPlugin {
    * Patches HTTPS incoming and outcoming request functions.
    */
   protected applyPatch() {
-    this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
+    this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
     if (this.moduleExports && this.moduleExports.Server &&
         this.moduleExports.Server.prototype) {

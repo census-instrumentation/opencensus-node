@@ -168,10 +168,9 @@ describe('Tracing', () => {
       assert.ok(tracing.config);
       assert.ok(tracing.tracer.active);
       tracing.stop();
-      assert.ok(!tracing.config);
       assert.ok(!tracing.tracer.active);
       assert.strictEqual(tracing.exporter, null);
-      assert.strictEqual(tracing.config, null);
+      assert.deepEqual(tracing.config, {});
     });
   });
 

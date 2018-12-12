@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
+import * as defaultLogger from '../common/console-logger';
+import * as loggerTypes from '../common/types';
+import {LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
+
+import {BucketBoundaries} from './bucket-boundaries';
+import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
-import {AggregationData, AggregationMetadata, AggregationType, Bucket, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, SumData, Tags, View} from './types';
+import {AggregationData, AggregationType, Measure, Measurement, Tags, View} from './types';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 const UNIT_SEPARATOR = String.fromCharCode(31);
@@ -52,13 +58,21 @@ export class BaseView implements View {
   /** The start time for this view */
   readonly startTime: number;
   /** The bucket boundaries in a Distribution Aggregation */
-  private bucketBoundaries?: number[];
+  private bucketBoundaries: BucketBoundaries;
+  /**
+   * Cache a MetricDescriptor to avoid converting View to MetricDescriptor
+   * in the future.
+   */
+  private metricDescriptor: MetricDescriptor;
   /**
    * The end time for this view - represents the last time a value was recorded
    */
   endTime: number;
   /** true if the view was registered */
   registered = false;
+  /** An object to log information to */
+  // @ts-ignore
+  private logger: loggerTypes.Logger;
 
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
@@ -70,20 +84,24 @@ export class BaseView implements View {
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
    * aggregation type
+   * @param logger
    */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagsKeys: string[], description: string, bucketBoundaries?: number[]) {
+      tagsKeys: string[], description: string, bucketBoundaries?: number[],
+      logger = defaultLogger) {
     if (aggregation === AggregationType.DISTRIBUTION && !bucketBoundaries) {
       throw new Error('No bucketBoundaries specified');
     }
+    this.logger = logger.logger();
     this.name = name;
     this.description = description;
     this.measure = measure;
     this.columns = tagsKeys;
     this.aggregation = aggregation;
     this.startTime = Date.now();
-    this.bucketBoundaries = bucketBoundaries;
+    this.bucketBoundaries = new BucketBoundaries(bucketBoundaries);
+    this.metricDescriptor = MetricUtils.viewToMetricDescriptor(this);
   }
 
   /** Gets the view's tag keys */
@@ -115,6 +133,7 @@ export class BaseView implements View {
     if (!this.rows[encodedTags]) {
       this.rows[encodedTags] = this.createAggregationData(measurement.tags);
     }
+
     Recorder.addMeasurement(this.rows[encodedTags], measurement);
   }
 
@@ -147,6 +166,9 @@ export class BaseView implements View {
    */
   private createAggregationData(tags: Tags): AggregationData {
     const aggregationMetadata = {tags, timestamp: Date.now()};
+    const {buckets, bucketCounts} = this.bucketBoundaries;
+    const bucketsCopy = Object.assign([], buckets);
+    const bucketCountsCopy = Object.assign([], bucketCounts);
 
     switch (this.aggregation) {
       case AggregationType.DISTRIBUTION:
@@ -156,12 +178,11 @@ export class BaseView implements View {
           startTime: this.startTime,
           count: 0,
           sum: 0,
-          max: Number.MIN_SAFE_INTEGER,
-          min: Number.MAX_SAFE_INTEGER,
           mean: null as number,
           stdDeviation: null as number,
-          sumSquaredDeviations: null as number,
-          buckets: this.createBuckets(this.bucketBoundaries)
+          sumOfSquaredDeviation: null as number,
+          buckets: bucketsCopy,
+          bucketCounts: bucketCountsCopy
         };
       case AggregationType.SUM:
         return {...aggregationMetadata, type: AggregationType.SUM, value: 0};
@@ -177,24 +198,74 @@ export class BaseView implements View {
   }
 
   /**
-   * Creates empty Buckets, given a list of bucket boundaries.
-   * @param bucketBoundaries a list with the bucket boundaries
+   * Gets view`s metric
+   * @returns {Metric}
    */
-  private createBuckets(bucketBoundaries: number[]): Bucket[] {
-    return bucketBoundaries.map((boundary, boundaryIndex) => {
-      return {
-        count: 0,
-        lowBoundary: boundaryIndex ? boundary : -Infinity,
-        highBoundary: (boundaryIndex === bucketBoundaries.length - 1) ?
-            Infinity :
-            bucketBoundaries[boundaryIndex + 1]
-      };
+  getMetric(): Metric {
+    const {type} = this.metricDescriptor;
+    let startTimestamp: Timestamp;
+
+    // The moment when this point was recorded.
+    const [currentSeconds, currentNanos] = process.hrtime();
+    const now: Timestamp = {seconds: currentSeconds, nanos: currentNanos};
+
+    switch (type) {
+      case MetricDescriptorType.GAUGE_INT64:
+      case MetricDescriptorType.GAUGE_DOUBLE:
+        startTimestamp = null;
+        break;
+      default:
+        const [seconds, nanos] = process.hrtime();
+        // TODO (mayurkale): This should be set when create Cumulative view.
+        startTimestamp = {seconds, nanos};
+    }
+
+    const timeseries: TimeSeries[] = [];
+
+    Object.keys(this.rows).forEach(key => {
+      const {tags} = this.rows[key];
+      const labelValues: LabelValue[] = MetricUtils.tagsToLabelValues(tags);
+      const point: Point = this.toPoint(now, this.getSnapshot(tags));
+
+      if (startTimestamp) {
+        timeseries.push({startTimestamp, labelValues, points: [point]});
+      } else {
+        timeseries.push({labelValues, points: [point]});
+      }
     });
+
+    return {descriptor: this.metricDescriptor, timeseries};
+  }
+
+  /**
+   * Converts snapshot to point
+   * @param timestamp The timestamp
+   * @param data The aggregated data
+   * @returns {Point}
+   */
+  private toPoint(timestamp: Timestamp, data: AggregationData): Point {
+    let value;
+
+    if (data.type === AggregationType.DISTRIBUTION) {
+      // TODO: Add examplar transition
+      const {count, sum, sumOfSquaredDeviation} = data;
+      value = {
+        count,
+        sum,
+        sumOfSquaredDeviation,
+        bucketOptions: {explicit: {bounds: data.buckets}},
+        buckets: data.bucketCounts
+      };
+    } else {
+      value = data.value;
+    }
+    return {timestamp, value};
   }
 
   /**
    * Returns a snapshot of an AggregationData for that tags/labels values.
    * @param tags The desired data's tags
+   * @returns {AggregationData}
    */
   getSnapshot(tags: Tags): AggregationData {
     return this.rows[this.encodeTags(tags)];

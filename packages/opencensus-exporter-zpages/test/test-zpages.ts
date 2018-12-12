@@ -406,36 +406,8 @@ describe('Zpages Exporter', () => {
         assert.equal(data.tagValues[0], tagValues[0]);
         assert.equal(data.tagValues[1], tagValues[1]);
         assert.equal(snapshot.count, 2);
-        assert.equal(snapshot.max, 22);
-        assert.equal(snapshot.min, 11);
         assert.equal(snapshot.mean, 16.5);
-        assert.equal(snapshot.sumSquaredDeviations, 60.5);
-
-        // [-Infinity...20)
-        const bucket1 = snapshot.buckets[0];
-        assert.equal(bucket1.count, 1);
-        // JSON cannot represent Infinity values, returns null instead
-        assert.equal(bucket1.lowBoundary, null);
-        assert.equal(bucket1.highBoundary, 20);
-
-        // [20...30)
-        const bucket2 = snapshot.buckets[1];
-        assert.equal(bucket2.count, 1);
-        assert.equal(bucket2.lowBoundary, 20);
-        assert.equal(bucket2.highBoundary, 30);
-
-        // [30...40)
-        const bucket3 = snapshot.buckets[2];
-        assert.equal(bucket3.count, 0);
-        assert.equal(bucket3.lowBoundary, 30);
-        assert.equal(bucket3.highBoundary, 40);
-
-        // [40...Infinity)
-        const bucket4 = snapshot.buckets[3];
-        assert.equal(bucket4.count, 0);
-        assert.equal(bucket4.lowBoundary, 40);
-        // JSON cannot represent Infinity values, returns null instead
-        assert.equal(bucket4.highBoundary, null);
+        assert.equal(snapshot.sumOfSquaredDeviation, 60.5);
       });
     });
   });

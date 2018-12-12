@@ -46,6 +46,8 @@ export * from './exporters/console-exporter';
 export * from './stats/stats';
 export * from './stats/view';
 export * from './stats/recorder';
+export * from './stats/bucket-boundaries';
+export * from './stats/metric-utils';
 
 // interfaces
 export * from './stats/types';
@@ -53,3 +55,6 @@ export * from './stats/types';
 // logger
 import * as logger from './common/console-logger';
 export {logger};
+
+// version
+export * from './common/version';

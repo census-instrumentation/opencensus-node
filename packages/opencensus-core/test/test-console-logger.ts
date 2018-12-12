@@ -15,11 +15,8 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import * as logger from '../src/common/console-logger';
 import {ConsoleLogger} from '../src/common/console-logger';
-import {Logger} from '../src/common/types';
 
 
 const LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
@@ -38,7 +35,7 @@ describe('ConsoleLogger', () => {
   /** Should create a new ConsoleLogger */
   describe('new ConsoleLogger()', () => {
     it('should log with default levels', () => {
-      const consoleLogger = logger.logger();
+      logger.logger();
       assert.equal(LEVELS.length, ConsoleLogger.LEVELS.length);
     });
 

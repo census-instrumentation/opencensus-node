@@ -18,6 +18,9 @@ import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanContext} f
 import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
+// TODO change to use import when types for hex2dec will be available
+const {hexToDec}: {[key: string]: (input: string) => string} =
+    require('hex2dec');
 
 import {StackdriverExporterOptions, TracesWithCredentials, TranslatedSpan, TranslatedTrace} from './types';
 
@@ -87,7 +90,7 @@ export class StackdriverTraceExporter implements Exporter {
     return {
       name: span.name,
       kind: 'SPAN_KIND_UNSPECIFIED',
-      spanId: span.id,
+      spanId: hexToDec(span.id),
       startTime: span.startTime,
       endTime: span.endTime,
       labels: Object.keys(span.attributes)

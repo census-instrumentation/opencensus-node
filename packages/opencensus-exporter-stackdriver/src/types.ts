@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ExporterConfig} from '@opencensus/core';
+import {Bucket, ExporterConfig} from '@opencensus/core';
 import {JWT} from 'google-auth-library';
 
 export type TranslatedTrace = {
@@ -36,8 +36,11 @@ export type TranslatedSpan = {
  * Options for stackdriver configuration
  */
 export interface StackdriverExporterOptions extends ExporterConfig {
-  /** Delay in milliseconds */
-  delay?: number;
+  /**
+   * Period in milliseconds sets the interval between uploading aggregated
+   * metrics to stackdriver. Optional, default to 1 minute.
+   */
+  period?: number;
   /**
    * projectId project id defined to stackdriver
    */
@@ -46,7 +49,13 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    * Prefix for metric overrides the OpenCensus prefix
    * of a stackdriver metric. Optional
    */
-  metricPrefix?: string;
+  prefix?: string;
+
+  /**
+   * Is called whenever the exporter fails to upload metrics to stackdriver.
+   * Optional
+   */
+  onMetricUploadError?: (err: Error) => void;
 }
 
 export interface TracesWithCredentials {
@@ -63,13 +72,10 @@ export enum MetricKind {
 }
 
 export enum ValueType {
-  VALUE_TYPE_UNSPECIFIED,
-  BOOL,
-  INT64,
-  DOUBLE,
-  STRING,
-  DISTRIBUTION,
-  MONEY
+  VALUE_TYPE_UNSPECIFIED = 'VALUE_TYPE_UNSPECIFIED',
+  INT64 = 'INT64',
+  DOUBLE = 'DOUBLE',
+  DISTRIBUTION = 'DISTRIBUTION'
 }
 
 export interface LabelDescriptor {
@@ -89,10 +95,10 @@ export interface MetricDescriptor {
 }
 
 export interface Distribution {
-  count: string;
+  count: number;
   mean: number;
   sumOfSquaredDeviation: number;
-  bucketOptions: {explicitBuckets: {bounds: number[];}};
+  bucketOptions: {explicitBuckets: {bounds: Bucket[];}};
   bucketCounts: number[];
 }
 
@@ -100,7 +106,7 @@ export interface Point {
   interval: {endTime: string, startTime: string};
   value: {
     boolValue?: boolean;
-    int64Value?: string;
+    int64Value?: number;
     doubleValue?: number;
     stringValue?: string;
     distributionValue?: Distribution;

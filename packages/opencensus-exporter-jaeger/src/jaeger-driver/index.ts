@@ -89,7 +89,7 @@ export type ThriftSpan = {
 };
 
 /**
- * Translate opencensus Span to Jeager Thrift Span
+ * Translate opencensus Span to Jaeger Thrift Span
  * @param span
  */
 export function spanToThrift(span: Span): ThriftSpan {

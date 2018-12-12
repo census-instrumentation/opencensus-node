@@ -15,7 +15,7 @@
  */
 
 import * as loggerTypes from '../common/types';
-import {Measure, Measurement, View} from '../stats/types';
+import {Measurement, View} from '../stats/types';
 import * as modelTypes from '../trace/model/types';
 
 import {ExporterBuffer} from './exporter-buffer';
@@ -34,6 +34,7 @@ export class NoopExporter implements types.Exporter {
 /** Format and sends span data to the console. */
 export class ConsoleExporter implements types.Exporter {
   /** Buffer object to store the spans. */
+  // @ts-ignore
   private logger: loggerTypes.Logger;
   private buffer: ExporterBuffer;
 

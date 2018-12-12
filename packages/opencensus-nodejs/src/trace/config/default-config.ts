@@ -20,7 +20,7 @@ import {Constants} from '../constants';
  * Defines a default configuration. For fields with primitive values,
  * or non-primitive but non-map value (logger, exporter), any user-provided
  * value will override the corresponding default value. For fields with
- * non-primitive values, but map value (plugins), the user-provided value
+ * non-primitive values, but map values (plugins), the user-provided value
  * will be used to extend/overwrite the default value.
  */
 export const defaultConfig = {

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
+import {Metric} from '../metrics/export/types';
+
 /** Tags are maps of names -> values */
-export interface Tags { [key: string]: string; }
+export interface Tags {
+  [key: string]: string;
+}
 
 /**
  * Describes the type of the individual values/measurements recorded by an
@@ -113,6 +117,8 @@ export interface View {
   getSnapshot(tags: Tags): AggregationData;
   /** Gets the view's tag keys */
   getColumns(): string[];
+  /** Gets view`s metric */
+  getMetric(): Metric;
 }
 
 /**
@@ -174,10 +180,6 @@ export interface DistributionData extends AggregationMetadata {
   count: number;
   /** Sum of all recorded values in the histogram */
   sum: number;
-  /** Max value recorded in the histogram */
-  max: number;
-  /** Min value recorded in the histogram */
-  min: number;
   /** Get the computed mean value of all recorded values in the histogram */
   mean: number;
   /**
@@ -189,19 +191,12 @@ export interface DistributionData extends AggregationMetadata {
    * Get the computed sum of squared deviations of all recorded values in the
    * histogram.
    */
-  sumSquaredDeviations: number;
+  sumOfSquaredDeviation: number;
   /** Bucket distribution of the histogram */
   buckets: Bucket[];
+  /** Buckets count */
+  bucketCounts?: number[];
 }
 
-/** A simple histogram bucket interface. */
-export interface Bucket {
-  /** Number of occurrences in the domain */
-  count: number;
-  /** The maximum possible value for a data point to fall in this bucket */
-  readonly highBoundary: number;
-  /** The minimum possible value for a data point to fall in this bucket */
-  readonly lowBoundary: number;
-}
-
+export type Bucket = number;
 export type AggregationData = SumData|CountData|LastValueData|DistributionData;

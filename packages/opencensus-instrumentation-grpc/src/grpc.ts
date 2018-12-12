@@ -107,7 +107,7 @@ export class GrpcPlugin extends BasePlugin {
    * Patches gRPC incoming and outcoming request functions.
    */
   protected applyPatch() {
-    this.logger.debug('applying pacth to %s@%s', this.moduleName, this.version);
+    this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
     shimmer.wrap(
         this.moduleExports.Server.prototype, 'register' as never,

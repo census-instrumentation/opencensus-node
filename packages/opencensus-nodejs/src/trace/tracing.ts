@@ -32,7 +32,7 @@ export class Tracing implements core.Tracing {
   /** Plugin names */
   private defaultPlugins: core.PluginNames;
   /** A configuration object to start the tracing */
-  private configLocal: core.Config = null;
+  private configLocal: core.Config = {};
   /** An object to log information to */
   private logger: core.Logger = null;
   /** Singleton instance */
@@ -47,7 +47,7 @@ export class Tracing implements core.Tracing {
         Constants.DEFAULT_INSTRUMENTATION_MODULES);
   }
 
-  /** Gets the trancing instance. */
+  /** Gets the tracing instance. */
   static get instance(): core.Tracing {
     return this.singletonInstance || (this.singletonInstance = new this());
   }
@@ -94,14 +94,16 @@ export class Tracing implements core.Tracing {
     this.activeLocal = false;
     this.tracer.stop();
     this.pluginLoader.unloadPlugins();
-    this.configLocal = null;
+    this.configLocal = {};
     this.logger = null;
   }
 
 
   /** Gets the exporter. */
   get exporter(): core.Exporter {
-    return this.configLocal ? this.configLocal.exporter as core.Exporter : null;
+    return this.configLocal.exporter ?
+        this.configLocal.exporter as core.Exporter :
+        null;
   }
 
   /**
@@ -109,16 +111,12 @@ export class Tracing implements core.Tracing {
    * @param exporter The exporter to send the traces to.
    */
   registerExporter(exporter: core.Exporter): core.Tracing {
+    if (this.configLocal.exporter) {
+      this.unregisterExporter(this.configLocal.exporter);
+    }
     if (exporter) {
-      if (this.configLocal.exporter) {
-        this.unregisterExporter(this.configLocal.exporter);
-      }
       this.configLocal.exporter = exporter;
       this.tracer.registerSpanEventListener(exporter);
-    } else {
-      if (this.configLocal.exporter) {
-        this.unregisterExporter(this.configLocal.exporter);
-      }
     }
     return this;
   }

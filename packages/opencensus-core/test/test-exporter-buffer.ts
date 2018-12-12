@@ -15,8 +15,6 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import * as logger from '../src/common/console-logger';
 import {NoopExporter} from '../src/exporters/console-exporter';
 import {ExporterBuffer} from '../src/exporters/exporter-buffer';

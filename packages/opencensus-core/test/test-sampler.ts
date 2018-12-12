@@ -15,8 +15,6 @@
  */
 
 import * as assert from 'assert';
-import * as mocha from 'mocha';
-
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
 import {SamplerBuilder} from '../src/trace/sampler/sampler';
