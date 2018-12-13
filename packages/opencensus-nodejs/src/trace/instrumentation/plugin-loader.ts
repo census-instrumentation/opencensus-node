@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Logger, Plugin, PluginNames, Tracer} from '@opencensus/core';
+import {Logger, NamedPluginConfig, Plugin, PluginConfig, PluginNames, Tracer} from '@opencensus/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
@@ -128,9 +128,18 @@ export class PluginLoader {
             'using package %s to patch %s', pluginList[name], name);
         // Expecting a plugin from module;
         try {
-          const plugin: Plugin = require(pluginList[name]).plugin;
+          let moduleName;
+          let moduleOptions: PluginConfig = {};
+          if (typeof pluginList[name] === 'string') {
+            moduleName = pluginList[name];
+          } else {
+            moduleOptions = pluginList[name] as NamedPluginConfig;
+            moduleName = moduleOptions.module;
+          }
+          const plugin: Plugin = require(moduleName as string).plugin;
           this.plugins.push(plugin);
-          return plugin.enable(exports, this.tracer, version, basedir);
+          return plugin.enable(
+              exports, this.tracer, version, moduleOptions, basedir);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s',
