@@ -99,7 +99,7 @@ describe('HttpPlugin', () => {
   });
 
   before(() => {
-    plugin.enable(http, tracer, VERSION, null);
+    plugin.enable(http, tracer, VERSION, {}, null);
     tracer.registerSpanEventListener(rootSpanVerifier);
     server = http.createServer((request, response) => {
       response.end('Test Server Response');

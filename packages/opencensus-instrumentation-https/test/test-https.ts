@@ -115,7 +115,7 @@ describe('HttpsPlugin', () => {
   });
 
   before(() => {
-    plugin.enable(https, tracer, VERSION, null);
+    plugin.enable(https, tracer, VERSION, {}, null);
     tracer.registerSpanEventListener(rootSpanVerifier);
     server = https.createServer(httpsOptions, (request, response) => {
       response.end('Test Server Response');
