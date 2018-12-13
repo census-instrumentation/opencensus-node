@@ -36,6 +36,14 @@ export class Stats {
    */
   constructor(logger = defaultLogger) {
     this.logger = logger.logger();
+
+    // TODO (mayurkale): Decide how to inject MetricProducerForStats.
+    // It should be something like below, but looks like not the right place.
+
+    // Create a new MetricProducerForStats and register it to
+    // MetricProducerManager when Stats is initialized.
+    // const metricProducer: MetricProducer = new MetricProducerForStats(this);
+    // Metrics.getExportComponent().getMetricProducerManager().add(metricProducer);
   }
 
   /**

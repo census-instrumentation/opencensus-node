@@ -14,10 +14,22 @@
  * limitations under the License.
  */
 
+import {ExportComponent} from './export/export-component';
+import {MetricsComponent} from './metric-component';
 import {MetricRegistry} from './metric-registry';
 
+// Class for accessing the default MetricsComponent.
 export class Metrics {
-  private static readonly METRIC_REGISTRY = Metrics.newMetricRegistry();
+  private static readonly METRIC_COMPONENT = new MetricsComponent();
+
+  /**
+   * Returns the global ExportComponent.
+   *
+   * @return {ExportComponent}.
+   */
+  static getExportComponent(): ExportComponent {
+    return Metrics.METRIC_COMPONENT.getExportComponent();
+  }
 
   /**
    * Returns the global MetricRegistry.
@@ -25,10 +37,6 @@ export class Metrics {
    * @return {MetricRegistry}.
    */
   static getMetricRegistry(): MetricRegistry {
-    return Metrics.METRIC_REGISTRY;
-  }
-
-  private static newMetricRegistry(): MetricRegistry {
-    return new MetricRegistry();
+    return Metrics.METRIC_COMPONENT.getMetricRegistry();
   }
 }
