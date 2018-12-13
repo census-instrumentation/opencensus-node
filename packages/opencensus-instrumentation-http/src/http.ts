@@ -241,8 +241,9 @@ export class HttpPlugin extends BasePlugin {
     return (original: Func<httpModule.ClientRequest>): Func<
                httpModule.ClientRequest> => {
       const plugin = this;
-      return function outgoingRequest(options: httpModule.RequestOptions|
-                                      string): httpModule.ClientRequest {
+      return function outgoingRequest(
+                 options: httpModule.RequestOptions|string,
+                 callback): httpModule.ClientRequest {
         if (!options) {
           return original.apply(this, arguments);
         }
