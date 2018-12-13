@@ -126,8 +126,7 @@ export class CoreTracer implements types.Tracer {
 
         let sampleDecision: boolean = propagatedSample;
         if (!sampleDecision) {
-          sampleDecision = !this.isSpanIgnored(aRoot) &&
-              this.sampler.shouldSample(aRoot.traceId);
+          sampleDecision = this.sampler.shouldSample(aRoot.traceId);
         }
 
         if (sampleDecision) {
@@ -153,30 +152,6 @@ export class CoreTracer implements types.Tracer {
       }
       this.notifyStartSpan(root);
     }
-  }
-
-  /**
-   * Check whether the span match ignoreUrl
-   * @param span Span to check
-   */
-  private isSpanIgnored(span: types.RootSpan): boolean {
-    if (!Array.isArray(this.config.ignoreUrls)) {
-      return false;
-    }
-
-    for (const ignored of this.config.ignoreUrls) {
-      if (typeof ignored === 'string') {
-        if (span.name === ignored) {
-          return true;
-        }
-      } else if (ignored instanceof RegExp) {
-        if (ignored.test(span.name)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
   }
 
   /**

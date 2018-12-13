@@ -179,38 +179,6 @@ describe('Tracer', () => {
     });
   });
 
-  describe('startRootSpan() with ignoreUrls', () => {
-    it('should sample if nothing in ignoreUrls match', () => {
-      const tracer = new CoreTracer();
-      const config = {ignoreUrls: ['/a', /^\/b$/], samplingRate: 1.0} as
-          TracerConfig;
-      tracer.start(config);
-      tracer.startRootSpan(options, (rootSpan) => {
-        assert.ok(rootSpan instanceof RootSpan);
-      });
-    });
-
-    it('should not sample if url is ignored with string', () => {
-      const tracer = new CoreTracer();
-      const config = {ignoreUrls: ['/a', '/test'], samplingRate: 1.0} as
-          TracerConfig;
-      tracer.start(config);
-      tracer.startRootSpan({name: '/test'}, (rootSpan) => {
-        assert.strictEqual(rootSpan, null);
-      });
-    });
-
-    it('should not sample if url is ignored with RegExp', () => {
-      const tracer = new CoreTracer();
-      const config = {ignoreUrls: [/^\/a\//, /^\/test/], samplingRate: 1.0} as
-          TracerConfig;
-      tracer.start(config);
-      tracer.startRootSpan({name: '/test/passed'}, (rootSpan) => {
-        assert.strictEqual(rootSpan, null);
-      });
-    });
-  });
-
   /** Should not create the new RootSpan instance */
   describe('startRootSpan() before start()', () => {
     it('should not create the new RootSpan instance, tracer not started',
