@@ -11,11 +11,11 @@
   "scripts": {
     "deploy": "gcloud app deploy",
     "start": "node app.js",
-    "lint": "npm run lint",
+    "lint": "npm run lint"
   },
   "dependencies": {
-    "@opencensus/core": "0.0.7",
-    "@opencensus/exporter-stackdriver": "0.0.7",
+    "@opencensus/core": "0.0.8",
+    "@opencensus/exporter-stackdriver": "0.0.8",
     "express": "^4.16.3"
   }
 }
