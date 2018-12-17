@@ -118,32 +118,35 @@ export class PluginLoader {
         if (this.hookState !== HookState.ENABLED) {
           return exports;
         }
+        const plugin = pluginList[name];
         const version = this.getPackageVersion(name, basedir as string);
         this.logger.info('trying loading %s.%s', name, version);
         if (!version) {
           return exports;
         }
         this.logger.debug('applying patch to %s@%s module', name, version);
+
+        let moduleName;
+        let moduleConfig: PluginConfig = {};
+        if (typeof plugin === 'string') {
+          moduleName = plugin;
+        } else {
+          moduleConfig = plugin.config;
+          moduleName = plugin.module;
+        }
         this.logger.debug(
-            'using package %s to patch %s', pluginList[name], name);
+          'using package %s to patch %s', moduleName, name);
+
         // Expecting a plugin from module;
         try {
-          let moduleName;
-          let moduleOptions: PluginConfig = {};
-          if (typeof pluginList[name] === 'string') {
-            moduleName = pluginList[name];
-          } else {
-            moduleOptions = pluginList[name] as NamedPluginConfig;
-            moduleName = moduleOptions.module;
-          }
           const plugin: Plugin = require(moduleName as string).plugin;
           this.plugins.push(plugin);
           return plugin.enable(
-              exports, this.tracer, version, moduleOptions, basedir);
+              exports, this.tracer, version, moduleConfig, basedir);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s',
-              pluginList[name], name, e.message);
+              moduleName, name, e.message);
           return exports;
         }
       });

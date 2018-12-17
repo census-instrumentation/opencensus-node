@@ -43,8 +43,8 @@ export type PluginConfig = {
 };
 
 export type NamedPluginConfig = {
-  module: string;
-}&PluginConfig;
+  module: string; config: PluginConfig;
+};
 
 /**
  * Type PluginNames: each key should be the name of the module to trace,
@@ -52,7 +52,7 @@ export type NamedPluginConfig = {
  * plugin implementation.
  */
 export type PluginNames = {
-  [pluginName: string]: string|PluginConfig;
+  [pluginName: string]: string|NamedPluginConfig;
 };
 
 export type PluginInternalFilesVersion = {
