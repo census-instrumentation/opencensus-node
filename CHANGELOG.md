@@ -3,13 +3,19 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+- Add Metrics API.
+- Add Resource API.
+- Add Gauges (`DoubleGauge`, `LongGauge`, `DerivedDoubleGauge`, `DerivedLongGauge`) APIs.
+
+## 0.0.8 - 2018-12-14
+ **Contains API breaking changes for stats/metrics implementations**
+
 - Enforce `--noUnusedLocals` Compiler Options on [opencensus-core] package.
 - Fix bugs related to Stackdriver Metrics Descriptor and TimeSeries.
-- Add Resource API.
-- Add Metrics API.
 - Remove support for `min`/`max` in the stats Distribution to make it compatible with Metrics.
 - Remove default prefix from [exporter-prometheus]. This could be a breaking change if you have Prometheus metrics from OpenCensus Prometheus exporter of previous versions, please point to the new metrics with no prefix instead.
-- Add Gauges (`DoubleGauge`, `LongGauge`, `DerivedDoubleGauge`, `DerivedLongGauge`) APIs.
+- Zipkin exporter: Convert "timestamp" and "duration" to "number" type per spec.
+- Exporter/Stats/Prometheus: Sanitize metric names.
 
 ## 0.0.7 - 2018-11-12
  **Contains API breaking changes for stats/metrics implementations**
