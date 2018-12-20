@@ -24,17 +24,27 @@ export interface Plugin {
    * @param moduleExports nodejs module exports from the module to patch
    * @param tracer a tracer instance
    * @param version version of the current instaled module to patch
+   * @param options plugin options
    * @param basedir module absolute path
    */
   enable(
       // tslint:disable-next-line:no-any
       moduleExports: any, tracer: Tracer, version: string,
+      options: PluginConfig,
       // tslint:disable-next-line:no-any
       basedir?: string): any;
   /** Method to disable the instrumentation  */
   disable(): void;
 }
 
+export type PluginConfig = {
+  // tslint:disable-next-line:no-any
+  [key: string]: any;
+};
+
+export type NamedPluginConfig = {
+  module: string; config: PluginConfig;
+};
 
 /**
  * Type PluginNames: each key should be the name of the module to trace,
@@ -42,7 +52,11 @@ export interface Plugin {
  * plugin implementation.
  */
 export type PluginNames = {
-  [pluginName: string]: string;
+  [pluginName: string]: string|NamedPluginConfig;
+};
+
+export type PluginInternalFilesVersion = {
+  [pluginName: string]: string
 };
 
 /**
@@ -50,5 +64,5 @@ export type PluginNames = {
  * a mapping of a property name to a internal plugin file name.
  */
 export type PluginInternalFiles = {
-  [versions: string]: PluginNames;
+  [versions: string]: PluginInternalFilesVersion;
 };

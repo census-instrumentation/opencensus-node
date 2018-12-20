@@ -115,7 +115,19 @@ describe('HttpsPlugin', () => {
   });
 
   before(() => {
-    plugin.enable(https, tracer, VERSION, null);
+    plugin.enable(
+        https, tracer, VERSION, {
+          ignoreIncomingPaths: [
+            '/ignored/string', /^\/ignored\/regexp/,
+            (url: string) => url === '/ignored/function'
+          ],
+          ignoreOutgoingUrls: [
+            `${urlHost}/ignored/string`,
+            /^https:\/\/fake\.service\.io\/ignored\/regexp$/,
+            (url: string) => url === `${urlHost}/ignored/function`
+          ]
+        },
+        null);
     tracer.registerSpanEventListener(rootSpanVerifier);
     server = https.createServer(httpsOptions, (request, response) => {
       response.end('Test Server Response');
@@ -268,6 +280,23 @@ describe('HttpsPlugin', () => {
                assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
              });
            });
+
+        for (const ignored of ['string', 'function', 'regexp']) {
+          it(`should not trace ignored requests with type ${ignored}`,
+             async () => {
+               const testPath = `/ignored/${ignored}`;
+               doNock(urlHost, testPath, 200, 'Ok');
+
+               const options = {
+                 host: hostName,
+                 path: testPath,
+               };
+
+               assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+               await httpRequest.get(options);
+               assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+             });
+        }
       });
     });
   });
@@ -297,6 +326,26 @@ describe('HttpsPlugin', () => {
             span, 200, 'GET', 'localhost', testPath, 'Android');
       });
     });
+
+    for (const ignored of ['string', 'function', 'regexp']) {
+      it(`should not trace ignored requests with type ${ignored}`, async () => {
+        const testPath = `/ignored/${ignored}`;
+
+        const options = {
+          host: 'localhost',
+          path: testPath,
+          port: serverPort,
+          headers: {'User-Agent': 'Android'}
+        };
+        shimmer.unwrap(https, 'get');
+        shimmer.unwrap(https, 'request');
+        nock.enableNetConnect();
+
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+        await httpRequest.get(options);
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      });
+    }
   });
 
   /** Should not intercept incoming and outgoing requests */

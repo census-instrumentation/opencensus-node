@@ -21,6 +21,7 @@ import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as uuid from 'uuid';
+import {HttpPluginConfig, IgnoreMatcher} from './types';
 
 
 
@@ -43,6 +44,7 @@ export class HttpPlugin extends BasePlugin {
   static ATTRIBUTE_HTTP_ERROR_NAME = 'http.error_name';
   static ATTRIBUTE_HTTP_ERROR_MESSAGE = 'http.error_message';
 
+  protected options: HttpPluginConfig;
 
   /** Constructs a new HttpPlugin instance. */
   constructor(moduleName: string) {
@@ -93,6 +95,47 @@ export class HttpPlugin extends BasePlugin {
     }
   }
 
+  /**
+   * Check whether the given request is ignored by configuration
+   * @param url URL of request
+   * @param request Request to inspect
+   * @param list List of ignore patterns
+   */
+  protected isIgnored<T>(
+      url: string, request: T, list: Array<IgnoreMatcher<T>>): boolean {
+    if (!list) {
+      // No ignored urls - trace everything
+      return false;
+    }
+
+    for (const pattern of list) {
+      if (this.isSatisfyPattern(url, request, pattern)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check whether the given request match pattern
+   * @param url URL of request
+   * @param request Request to inspect
+   * @param pattern Match pattern
+   */
+  protected isSatisfyPattern<T>(
+      url: string, request: T, pattern: IgnoreMatcher<T>): boolean {
+    if (typeof pattern === 'string') {
+      return pattern === url;
+    } else if (pattern instanceof RegExp) {
+      return pattern.test(url);
+    } else if (typeof pattern === 'function') {
+      return pattern(url, request);
+    } else {
+      throw new TypeError('Pattern is in unsupported datatype');
+    }
+  }
+
 
   /**
    * Creates spans for incoming requests, restoring spans' context if applied.
@@ -111,8 +154,15 @@ export class HttpPlugin extends BasePlugin {
 
         const request: httpModule.IncomingMessage = args[0];
         const response: httpModule.ServerResponse = args[1];
+        const path = url.parse(request.url).pathname;
 
         plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
+
+        if (plugin.isIgnored(
+                path, request, plugin.options.ignoreIncomingPaths)) {
+          return original.apply(this, arguments);
+        }
+
         const propagation = plugin.tracer.propagation;
         const headers = request.headers;
         const getter: HeaderGetter = {
@@ -122,7 +172,7 @@ export class HttpPlugin extends BasePlugin {
         };
 
         const traceOptions = {
-          name: url.parse(request.url).pathname,
+          name: path,
           kind: 'SERVER',
           spanContext: propagation ? propagation.extract(getter) : null
         };
@@ -192,17 +242,21 @@ export class HttpPlugin extends BasePlugin {
                httpModule.ClientRequest> => {
       const plugin = this;
       return function outgoingRequest(
-                 options, callback): httpModule.ClientRequest {
+                 options: httpModule.RequestOptions|string,
+                 callback): httpModule.ClientRequest {
         if (!options) {
           return original.apply(this, arguments);
         }
 
         // Makes sure the url is an url object
         let pathname = '';
+        let method = 'GET';
+        let origin = '';
         if (typeof (options) === 'string') {
-          options = url.parse(options);
-          arguments[0] = options;
-          pathname = options.pathname;
+          const parsedUrl = url.parse(options);
+          options = parsedUrl;
+          pathname = parsedUrl.pathname;
+          origin = `${parsedUrl.protocol || 'http:'}//${parsedUrl.host}`;
         } else {
           // Do not trace ourselves
           if (options.headers &&
@@ -213,18 +267,28 @@ export class HttpPlugin extends BasePlugin {
           }
 
           try {
-            pathname = options.pathname || url.parse(options.path).pathname;
+            pathname = (options as url.URL).pathname ||
+                url.parse(options.path).pathname;
+            method = options.method;
+            origin = `${options.protocol || 'http:'}//${options.host}`;
           } catch (e) {
           }
         }
 
-        const request = original.apply(this, arguments);
+        const request: httpModule.ClientRequest =
+            original.apply(this, arguments);
+
+        if (plugin.isIgnored(
+                origin + pathname, request,
+                plugin.options.ignoreOutgoingUrls)) {
+          return request;
+        }
 
         plugin.tracer.wrapEmitter(request);
 
         plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
-          name: `${request.method ? request.method : 'GET'} ${pathname}`,
+          name: `${method || 'GET'} ${pathname}`,
           kind: 'CLIENT',
         };
 
