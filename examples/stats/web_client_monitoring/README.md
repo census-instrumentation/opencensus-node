@@ -48,7 +48,7 @@ to make a service account key available via the GOOGLE_APPLICATION_CREDENTIALS
 environment variable. Then serve the HTML file from the Node.js server with
 Express:
 ```
-cd
+cd ..
 npm install
 npm start
 ```
