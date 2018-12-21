@@ -54,7 +54,7 @@
     "nyc": "13.1.0",
     "rimraf": "^2.6.2",
     "ts-node": "^7.0.1",
-    "typescript": "~2.6.1"
+    "typescript": "~2.9.0"
   },
   "dependencies": {
     "@opencensus/core": "^0.0.8",
