@@ -47,6 +47,8 @@ export abstract class BasePlugin implements types.Plugin {
   protected internalFilesExports: ModuleExportsMapping;
   /** module directory - used to load internal files */
   protected basedir: string;
+  /** plugin options */
+  protected options: types.PluginConfig;
 
   /**
    * Constructs a new BasePlugin instance.
@@ -61,17 +63,19 @@ export abstract class BasePlugin implements types.Plugin {
    * @param moduleExports nodejs module exports to set as context
    * @param tracer tracer relating to context
    * @param version module version description
+   * @param options plugin options
    * @param basedir module absolute path
    */
   private setPluginContext(
       // tslint:disable-next-line:no-any
       moduleExports: any, tracer: modelTypes.Tracer, version: string,
-      basedir?: string) {
+      options: types.PluginConfig, basedir?: string) {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
     this.basedir = basedir;
     this.logger = tracer.logger;
+    this.options = options;
     this.internalFilesExports = this.loadInternalFiles();
   }
 
@@ -85,13 +89,14 @@ export abstract class BasePlugin implements types.Plugin {
    * @param moduleExports nodejs module exports from the module to patch
    * @param tracer a tracer instance
    * @param version version of the current instaled module to patch
+   * @param options plugin options
    * @param basedir module absolute path
    */
   enable<T>(
       // tslint:disable-next-line:no-any
       moduleExports: T, tracer: modelTypes.Tracer, version: string,
-      basedir: string) {
-    this.setPluginContext(moduleExports, tracer, version, basedir);
+      options: types.PluginConfig, basedir: string) {
+    this.setPluginContext(moduleExports, tracer, version, options, basedir);
     return this.applyPatch();
   }
 
@@ -146,7 +151,7 @@ export abstract class BasePlugin implements types.Plugin {
    * Load internal files from a module and  set internalFilesExports
    */
   private loadInternalModuleFiles(
-      extraModulesList: types.PluginNames,
+      extraModulesList: types.PluginInternalFilesVersion,
       basedir: string): ModuleExportsMapping {
     const extraModules: ModuleExportsMapping = {};
     if (extraModulesList) {

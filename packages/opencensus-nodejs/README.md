@@ -63,7 +63,6 @@ Tracing has many options available to choose from. At `tracing.start()`, you can
 | [`logger`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L29) | `Logger` | A logger object |
 | [`logLevel`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L47) | `number` | Level of logger - 0: disable, 1: error, 2: warn, 3: info, 4: debug |
 | [`samplingRate`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L35) | `number` | Determines the span's sampling rate. Ranges from 0.0 to 1.0 |
-| [`ignoreUrls`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L37) | `Array<string>` | A list of ignored (or blacklisted) URLs to not trace |
 | [`propagation`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L41) | `Propagation` | A propagation instance to use |
 | [`maximumLabelValueSize`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L52) | `number` | The maximum number of characters reported on a label value |
 | [`plugin`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L68) | `PluginNames` | A list of trace instrumentations plugins to load |

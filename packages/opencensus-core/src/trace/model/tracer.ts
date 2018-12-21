@@ -123,9 +123,11 @@ export class CoreTracer implements types.Tracer {
           }
         }
         const aRoot = new RootSpan(this, options);
-        const sampleDecision: boolean = propagatedSample ?
-            propagatedSample :
-            this.sampler.shouldSample(aRoot.traceId);
+
+        let sampleDecision: boolean = propagatedSample;
+        if (!sampleDecision) {
+          sampleDecision = this.sampler.shouldSample(aRoot.traceId);
+        }
 
         if (sampleDecision) {
           this.currentRootSpan = aRoot;
