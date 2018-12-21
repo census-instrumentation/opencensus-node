@@ -134,8 +134,7 @@ export class PluginLoader {
           moduleConfig = plugin.config;
           moduleName = plugin.module;
         }
-        this.logger.debug(
-          'using package %s to patch %s', moduleName, name);
+        this.logger.debug('using package %s to patch %s', moduleName, name);
 
         // Expecting a plugin from module;
         try {
@@ -145,8 +144,8 @@ export class PluginLoader {
               exports, this.tracer, version, moduleConfig, basedir);
         } catch (e) {
           this.logger.error(
-              'could not load plugin %s of module %s. Error: %s',
-              moduleName, name, e.message);
+              'could not load plugin %s of module %s. Error: %s', moduleName,
+              name, e.message);
           return exports;
         }
       });
