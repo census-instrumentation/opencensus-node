@@ -10,10 +10,11 @@
     "codecov": "nyc report --reporter=json && codecov -f coverage/*.json",
     "clean": "rimraf build/*",
     "check": "gts check",
-    "compile": "tsc -p .",
+    "compile:test": "tsc -p tsconfig-test.json",
+    "compile:release": "tsc -p tsconfig.json",
     "fix": "gts fix",
-    "prepare": "npm run compile",
-    "pretest": "npm run compile",
+    "prepare": "npm run compile:release",
+    "pretest": "npm run compile:test",
     "posttest": "npm run check"
   },
   "keywords": [
