@@ -292,7 +292,7 @@ describe('BaseView', () => {
         assert.notEqual(typeof value, 'number');
         assert.deepStrictEqual((value as DistributionValue), {
           bucketOptions: {explicit: {bounds: buckets}},
-          buckets: [1, 2, 2, 0],
+          buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
           count: 5,
           sum: total,
           sumOfSquaredDeviation: 10.427999999999997
@@ -334,7 +334,7 @@ describe('BaseView', () => {
             assert.notEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
-              buckets: [1, 2, 2, 0],
+              buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
               count: 5,
               sum: total,
               sumOfSquaredDeviation: 10.427999999999997
@@ -353,7 +353,7 @@ describe('BaseView', () => {
             assert.notEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
-              buckets: [1, 2, 2, 0],
+              buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
               count: 5,
               sum: total,
               sumOfSquaredDeviation: 10.427999999999997
