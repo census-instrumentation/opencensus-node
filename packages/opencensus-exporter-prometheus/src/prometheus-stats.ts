@@ -85,6 +85,15 @@ export class PrometheusStatsExporter implements StatsEventListener {
   }
 
   /**
+   * Starts the Prometheus exporter that polls Metric from Metrics library and
+   * send batched data to backend.
+   */
+  start(): void {
+    // TODO(mayurkale): add setInterval here to poll Metric, transform and send
+    // // it to backend (dependency with PR#253).
+  }
+
+  /**
    * Register or get a metric in Prometheus
    * @param view View will be used to register the metric
    * @param tags Optional, used only for histogram metric
