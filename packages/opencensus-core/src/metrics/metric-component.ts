@@ -14,31 +14,19 @@
  * limitations under the License.
  */
 
-import {ExportComponent} from './export/export-component';
+import {metricProducerManagerInstance} from './export/metric-producer-manager';
 import {MetricRegistry} from './metric-registry';
 
-// Class that holds the implementation instance for ExportComponent.
+// Class that holds the implementation instance for MetricRegistry.
 export class MetricsComponent {
   private metricRegistry: MetricRegistry;
-  private exportComponent: ExportComponent;
 
   constructor() {
-    this.exportComponent = new ExportComponent();
     this.metricRegistry = new MetricRegistry();
 
     // Register the MetricRegistry's MetricProducer to the global
     // MetricProducerManager.
-    this.exportComponent.getMetricProducerManager().add(
-        this.metricRegistry.getMetricProducer());
-  }
-
-  /**
-   * Returns the ExportComponent.
-   *
-   * @return {ExportComponent}.
-   */
-  getExportComponent(): ExportComponent {
-    return this.exportComponent;
+    metricProducerManagerInstance.add(this.metricRegistry.getMetricProducer());
   }
 
   /**

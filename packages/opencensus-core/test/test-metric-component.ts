@@ -15,32 +15,20 @@
  */
 
 import * as assert from 'assert';
-import {ExportComponent} from '../src/metrics/export/export-component';
+import {metricProducerManagerInstance} from '../src/metrics/export/metric-producer-manager';
 import {MetricsComponent} from '../src/metrics/metric-component';
 import {MetricRegistry} from '../src/metrics/metric-registry';
 
 describe('MetricsComponent()', () => {
   const metricsComponent: MetricsComponent = new MetricsComponent();
 
-  it('should return a ExportComponent instance', () => {
-    assert.ok(metricsComponent.getExportComponent() instanceof ExportComponent);
-  });
-
   it('should return a MetricRegistry instance', () => {
     assert.ok(metricsComponent.getMetricRegistry() instanceof MetricRegistry);
   });
 
   it('should register metricRegistry to MetricProducerManger', () => {
-    assert.equal(
-        metricsComponent.getExportComponent()
-            .getMetricProducerManager()
-            .getAllMetricProducer()
-            .size,
-        1);
-    assert.ok(
-        metricsComponent.getExportComponent()
-            .getMetricProducerManager()
-            .getAllMetricProducer()
-            .has(metricsComponent.getMetricRegistry().getMetricProducer()));
+    assert.equal(metricProducerManagerInstance.getAllMetricProducer().size, 1);
+    assert.ok(metricProducerManagerInstance.getAllMetricProducer().has(
+        metricsComponent.getMetricRegistry().getMetricProducer()));
   });
 });

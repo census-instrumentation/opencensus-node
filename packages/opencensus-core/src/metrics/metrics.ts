@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ExportComponent} from './export/export-component';
+import {MetricProducerManager, metricProducerManagerInstance} from './export/metric-producer-manager';
 import {MetricsComponent} from './metric-component';
 import {MetricRegistry} from './metric-registry';
 
@@ -23,12 +23,12 @@ export class Metrics {
   private static readonly METRIC_COMPONENT = new MetricsComponent();
 
   /**
-   * Returns the global ExportComponent.
+   * Returns the global MetricProducerManager.
    *
-   * @return {ExportComponent}.
+   * @return {MetricProducerManager}.
    */
-  static getExportComponent(): ExportComponent {
-    return Metrics.METRIC_COMPONENT.getExportComponent();
+  static getMetricProducerManager(): MetricProducerManager {
+    return metricProducerManagerInstance;
   }
 
   /**

@@ -15,71 +15,76 @@
  */
 
 import * as assert from 'assert';
-import {MetricProducerManager} from '../src/metrics/export/metric-producer-manager';
+import {metricProducerManagerInstance} from '../src/metrics/export/metric-producer-manager';
 import {MetricRegistry} from '../src/metrics/metric-registry';
 
 describe('MetricProducerManager()', () => {
-  let instance: MetricProducerManager;
   const registry: MetricRegistry = new MetricRegistry();
   const metricProducer = registry.getMetricProducer();
   const registryOther: MetricRegistry = new MetricRegistry();
   const metricProducerOther = registryOther.getMetricProducer();
 
   beforeEach(() => {
-    instance = new MetricProducerManager();
+    metricProducerManagerInstance.removeAll();
   });
 
   describe('add()', () => {
     it('should throw an error when the metricproducer is null', () => {
       assert.throws(() => {
-        instance.add(null);
+        metricProducerManagerInstance.add(null);
       }, /^Error: Missing mandatory metricProducer parameter$/);
     });
 
     it('add metricproducer', () => {
-      instance.add(metricProducer);
-      const metricProducerList = instance.getAllMetricProducer();
+      metricProducerManagerInstance.add(metricProducer);
+      const metricProducerList =
+          metricProducerManagerInstance.getAllMetricProducer();
 
       assert.notDeepEqual(metricProducerList, null);
       assert.equal(metricProducerList.size, 1);
     });
 
-    it('should not add same metricproducer instance', () => {
-      instance.add(metricProducer);
-      instance.add(metricProducer);
-      instance.add(metricProducer);
-      const metricProducerList = instance.getAllMetricProducer();
+    it('should not add same metricproducer metricProducerManagerInstance',
+       () => {
+         metricProducerManagerInstance.add(metricProducer);
+         metricProducerManagerInstance.add(metricProducer);
+         metricProducerManagerInstance.add(metricProducer);
+         const metricProducerList =
+             metricProducerManagerInstance.getAllMetricProducer();
 
-      assert.equal(metricProducerList.size, 1);
-      assert.ok(metricProducerList.has(metricProducer));
-    });
+         assert.equal(metricProducerList.size, 1);
+         assert.ok(metricProducerList.has(metricProducer));
+       });
 
-    it('should add different metricproducer instance', () => {
-      instance.add(metricProducer);
-      instance.add(metricProducerOther);
-      const metricProducerList = instance.getAllMetricProducer();
+    it('should add different metricproducer metricProducerManagerInstance',
+       () => {
+         metricProducerManagerInstance.add(metricProducer);
+         metricProducerManagerInstance.add(metricProducerOther);
+         const metricProducerList =
+             metricProducerManagerInstance.getAllMetricProducer();
 
-      assert.equal(metricProducerList.size, 2);
-      assert.ok(metricProducerList.has(metricProducer));
-      assert.ok(metricProducerList.has(metricProducerOther));
-    });
+         assert.equal(metricProducerList.size, 2);
+         assert.ok(metricProducerList.has(metricProducer));
+         assert.ok(metricProducerList.has(metricProducerOther));
+       });
   });
 
   describe('remove()', () => {
     it('should throw an error when the metricproducer is null', () => {
       assert.throws(() => {
-        instance.add(null);
+        metricProducerManagerInstance.add(null);
       }, /^Error: Missing mandatory metricProducer parameter$/);
     });
 
     it('remove metricproducer', () => {
-      instance.add(metricProducer);
+      metricProducerManagerInstance.add(metricProducer);
 
-      const metricProducerList = instance.getAllMetricProducer();
+      const metricProducerList =
+          metricProducerManagerInstance.getAllMetricProducer();
       assert.equal(metricProducerList.size, 1);
       assert.ok(metricProducerList.has(metricProducer));
 
-      instance.remove(metricProducer);
+      metricProducerManagerInstance.remove(metricProducer);
       assert.equal(metricProducerList.size, 0);
     });
   });

@@ -47,6 +47,13 @@ export class MetricProducerManager {
   }
 
   /**
+   * Clears all MetricProducers.
+   */
+  removeAll(): void {
+    this.metricProducers.clear();
+  }
+
+  /**
    * Returns all registered MetricProducers that should be exported.
    *
    * This method should be used by any metrics exporter that automatically
@@ -58,3 +65,5 @@ export class MetricProducerManager {
     return this.metricProducers;
   }
 }
+
+export const metricProducerManagerInstance = new MetricProducerManager();

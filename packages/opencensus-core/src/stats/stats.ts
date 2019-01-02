@@ -43,7 +43,7 @@ export class Stats {
     // Create a new MetricProducerForStats and register it to
     // MetricProducerManager when Stats is initialized.
     // const metricProducer: MetricProducer = new MetricProducerForStats(this);
-    // Metrics.getExportComponent().getMetricProducerManager().add(metricProducer);
+    // Metrics.getMetricProducerManager().add(metricProducer);
   }
 
   /**
