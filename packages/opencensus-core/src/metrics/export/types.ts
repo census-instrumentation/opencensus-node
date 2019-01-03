@@ -326,3 +326,27 @@ export interface Timestamp {
    */
   nanos: number|null;
 }
+
+/**
+ * Keeps a set of MetricProducer that is used by exporters to determine the
+ * metrics that need to be exported.
+ */
+export interface MetricProducerManager {
+  /** Adds the MetricProducer to the manager */
+  add(metricProducer: MetricProducer): void;
+  /** Removes the MetricProducer to the manager */
+  remove(metricProducer: MetricProducer): void;
+  /** Clears all MetricProducers */
+  removeAll(): void;
+  /** Gets all registered MetricProducers that should be exported */
+  getAllMetricProducer(): Set<MetricProducer>;
+}
+
+/**
+ * A MetricProducer producer that can be registered for exporting using
+ * MetricProducerManager.
+ */
+export interface MetricProducer {
+  /** Gets a collection of produced Metric`s to be exported */
+  getMetrics(): Metric[];
+}

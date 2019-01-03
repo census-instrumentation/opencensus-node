@@ -15,13 +15,13 @@
  */
 
 import {validateNotNull} from '../../common/validations';
-import {MetricProducer} from '../export/metric-producer';
+import {MetricProducer, MetricProducerManager} from './types';
 
 /**
  * Keeps a set of MetricProducer that is used by exporters to determine the
  * metrics that need to be exported.
  */
-export class MetricProducerManager {
+class BaseMetricProducerManager implements MetricProducerManager {
   private metricProducers: Set<MetricProducer> = new Set<MetricProducer>();
 
   /**
@@ -66,4 +66,4 @@ export class MetricProducerManager {
   }
 }
 
-export const metricProducerManagerInstance = new MetricProducerManager();
+export const metricProducerManagerInstance = new BaseMetricProducerManager();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {MetricProducer} from '../metrics/export/metric-producer';
+import {BaseMetricProducer} from '../metrics/export/base-metric-producer';
 import {Metric} from '../metrics/export/types';
 
 import {Stats} from './stats';
@@ -23,7 +23,7 @@ import {Stats} from './stats';
  * A MetricProducer producer that can be registered for exporting using
  * MetricProducerManager.
  */
-export class MetricProducerForStats extends MetricProducer {
+export class MetricProducerForStats extends BaseMetricProducer {
   private statsManager: Stats;
 
   /**

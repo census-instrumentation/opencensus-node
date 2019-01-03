@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-import {MetricProducerManager, metricProducerManagerInstance} from './export/metric-producer-manager';
+import {metricProducerManagerInstance} from './export/metric-producer-manager';
+import {MetricProducerManager} from './export/types';
 import {MetricsComponent} from './metric-component';
 import {MetricRegistry} from './metric-registry';
+
 
 // Class for accessing the default MetricsComponent.
 export class Metrics {

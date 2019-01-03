@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {Metric} from './types';
+import {Metric, MetricProducer} from './types';
 
 /**
  * A MetricProducer producer that can be registered for exporting using
  * MetricProducerManager.
  */
-export abstract class MetricProducer {
+export abstract class BaseMetricProducer implements MetricProducer {
   /**
    * Gets a collection of produced Metric`s to be exported.
    * @returns {Metric[]} List of metrics
