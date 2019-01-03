@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import {timestampFromMillis} from '../../common/time-util';
 import {validateArrayElementsNotNull, validateNotNull} from '../../common/validations';
-import {LabelKey, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, TimeSeries} from '../export/types';
+import {LabelKey, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, TimeSeries, Timestamp} from '../export/types';
 import * as types from '../gauges/types';
 import {hashLabelValues} from '../utils';
 
@@ -204,16 +205,14 @@ export class DerivedGauge implements types.Meter {
     if (this.registeredPoints.size === 0) {
       return null;
     }
-    const [seconds, nanos] = process.hrtime();
+    const timestamp: Timestamp = timestampFromMillis(Date.now());
     return {
       descriptor: this.metricDescriptor,
       timeseries: Array.from(
           this.registeredPoints,
           ([_, gaugeEntry]) => ({
             labelValues: gaugeEntry.labelValues,
-            points: [
-              {value: gaugeEntry.extractor(), timestamp: {seconds, nanos}}
-            ]
+            points: [{value: gaugeEntry.extractor(), timestamp}]
           } as TimeSeries))
     };
   }

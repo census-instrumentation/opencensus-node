@@ -15,6 +15,7 @@
  */
 
 import * as defaultLogger from '../common/console-logger';
+import {timestampFromMillis} from '../common/time-util';
 import * as loggerTypes from '../common/types';
 import {DistributionValue, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
 
@@ -206,8 +207,7 @@ export class BaseView implements View {
     let startTimestamp: Timestamp;
 
     // The moment when this point was recorded.
-    const [currentSeconds, currentNanos] = process.hrtime();
-    const now: Timestamp = {seconds: currentSeconds, nanos: currentNanos};
+    const now: Timestamp = timestampFromMillis(Date.now());
 
     switch (type) {
       case MetricDescriptorType.GAUGE_INT64:
@@ -215,9 +215,8 @@ export class BaseView implements View {
         startTimestamp = null;
         break;
       default:
-        const [seconds, nanos] = process.hrtime();
         // TODO (mayurkale): This should be set when create Cumulative view.
-        startTimestamp = {seconds, nanos};
+        startTimestamp = timestampFromMillis(Date.now());
     }
 
     const timeseries: TimeSeries[] = [];

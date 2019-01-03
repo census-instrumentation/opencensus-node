@@ -19,16 +19,23 @@ import {AggregationType, Measurement, MeasureUnit, Stats, Tags, View} from '../s
 import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
 import {MetricProducerForStats} from '../src/stats/metric-producer';
 
+
+function mockDateNow() {
+  // mock now = Thu 3 January 2019
+  return 1546540757282;
+}
+
 describe('Metric producer for stats', () => {
-  const {hrtime} = process;
-  const mockedTime: Timestamp = {nanos: 1e7, seconds: 1000};
+  const mockedTime: Timestamp = {nanos: 282000000, seconds: 1546540757};
+  let originalDateNow = Date.now;
 
   before(() => {
-    process.hrtime = () => [1000, 1e7];
+    originalDateNow = Date.now;
+    Date.now = mockDateNow;
   });
 
   after(() => {
-    process.hrtime = hrtime;
+    Date.now = originalDateNow;
   });
 
   const stats = new Stats();
