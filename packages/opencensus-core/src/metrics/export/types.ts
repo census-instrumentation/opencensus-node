@@ -238,7 +238,7 @@ export interface Bucket {
   /**
    * If the distribution does not have a histogram, then omit this field.
    */
-  readonly exemplar: Exemplar;
+  readonly exemplar?: Exemplar;
 }
 
 /**

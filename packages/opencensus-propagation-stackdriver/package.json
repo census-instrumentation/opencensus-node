@@ -35,7 +35,7 @@
     "gts": "^0.6.0",
     "mocha": "^5.1.1",
     "nyc": "^13.0.0",
-    "typescript": "~2.8.0"
+    "typescript": "~2.9.0"
   },
   "dependencies": {
     "hex2dec": "^1.0.1",

@@ -16,7 +16,7 @@
 
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
-import {LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
+import {DistributionValue, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
 
 import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
@@ -254,10 +254,12 @@ export class BaseView implements View {
         sum,
         sumOfSquaredDeviation,
         bucketOptions: {explicit: {bounds: data.buckets}},
-        buckets: data.bucketCounts
-      };
+        // Bucket without an Exemplar.
+        buckets:
+            data.bucketCounts.map(bucketCount => ({count: bucketCount}))
+      } as DistributionValue;
     } else {
-      value = data.value;
+      value = data.value as number;
     }
     return {timestamp, value};
   }

@@ -98,7 +98,7 @@ describe('Metric producer for stats', () => {
     points: [{
       value: {
         'bucketOptions': {'explicit': {'bounds': [2, 4, 6]}},
-        'buckets': [1, 2, 2, 0],
+        'buckets': [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
         'count': 5,
         'sum': 16.099999999999998,
         'sumOfSquaredDeviation': 10.427999999999997
