@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2019, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 the "License";
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 import {metricProducerManagerInstance} from './export/metric-producer-manager';
 import {MetricRegistry} from './metric-registry';
 
-// Class that holds the implementation instance for MetricRegistry.
+/**
+ * Class that holds the implementation instance for MetricRegistry.
+ */
 export class MetricsComponent {
   private metricRegistry: MetricRegistry;
 
