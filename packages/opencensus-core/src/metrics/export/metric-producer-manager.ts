@@ -59,7 +59,7 @@ class BaseMetricProducerManager implements MetricProducerManager {
    * This method should be used by any metrics exporter that automatically
    * exports data for MetricProducer registered with the MetricProducerManager.
    *
-   * @return {MetricProducer[]} List of MetricProducers.
+   * @return {Set<MetricProducer>} The Set of MetricProducers.
    */
   getAllMetricProducer(): Set<MetricProducer> {
     return this.metricProducers;

@@ -19,25 +19,18 @@ import {MetricProducerManager} from './export/types';
 import {MetricsComponent} from './metric-component';
 import {MetricRegistry} from './metric-registry';
 
-
-// Class for accessing the default MetricsComponent.
+/**
+ * Class for accessing the default MetricsComponent.
+ */
 export class Metrics {
   private static readonly METRIC_COMPONENT = new MetricsComponent();
 
-  /**
-   * Returns the global MetricProducerManager.
-   *
-   * @return {MetricProducerManager}.
-   */
+  /** @return {MetricProducerManager} The global MetricProducerManager. */
   static getMetricProducerManager(): MetricProducerManager {
     return metricProducerManagerInstance;
   }
 
-  /**
-   * Returns the global MetricRegistry.
-   *
-   * @return {MetricRegistry}.
-   */
+  /** @return {MetricRegistry} The global MetricRegistry. */
   static getMetricRegistry(): MetricRegistry {
     return Metrics.METRIC_COMPONENT.getMetricRegistry();
   }
