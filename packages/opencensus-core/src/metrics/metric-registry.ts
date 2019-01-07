@@ -98,8 +98,8 @@ export class MetricRegistry {
 
   /**
    * Builds a new derived Int64 gauge to be added to the registry. This is more
-   * convenient form when you want to manually increase and decrease values as
-   * per your service requirements.
+   * convenient form when you want to define a gauge on a collection (e.g. Map,
+   * Set, Array etc. ) or on an object of ToValueInterface type.
    *
    * @param {string} name The name of the metric.
    * @param {string} description The description of the metric.
@@ -126,8 +126,8 @@ export class MetricRegistry {
 
   /**
    * Builds a new derived double gauge to be added to the registry. This is more
-   * convenient form when you want to manually increase and decrease values as
-   * per your service requirements.
+   * convenient form when you want to define a gauge on a collection (e.g. Map,
+   * Set, Array etc. ) or on an object of ToValueInterface type.
    *
    * @param {string} name The name of the metric.
    * @param {string} description The description of the metric.

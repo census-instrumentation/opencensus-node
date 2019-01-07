@@ -1,5 +1,5 @@
 # OpenCensus Libraries for Node.js
-[![Gitter chat][gitter-image]][gitter-url]
+[![Gitter chat][gitter-image]][gitter-url] [![codecov][codecov-image]][codecov-url] ![Apache License][license-image]
 
 OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. Right now OpenCensus for Node.js supports custom tracing and automatic tracing for HTTP and HTTPS. Please visit the [OpenCensus Node.js package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) for usage.
 
@@ -48,4 +48,6 @@ If no exporter is registered in the tracing instance, as default, a console log 
 
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
 [gitter-url]: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
+[codecov-image]: https://codecov.io/gh/census-instrumentation/opencensus-node/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/census-instrumentation/opencensus-node
+[license-image]: https://img.shields.io/badge/license-Apache_2.0-green.svg?style=flat
