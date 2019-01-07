@@ -15,10 +15,10 @@
  */
 
 import {validateArrayElementsNotNull, validateNotNull} from '../common/validations';
-import {MeasureUnit} from '../stats/types';
+import {MeasureUnit,} from '../stats/types';
 
-import {MetricProducer} from './export/metric-producer';
-import {LabelKey, Metric, MetricDescriptorType} from './export/types';
+import {BaseMetricProducer} from './export/base-metric-producer';
+import {LabelKey, Metric, MetricDescriptorType, MetricProducer} from './export/types';
 import {DerivedGauge} from './gauges/derived-gauge';
 import {Gauge} from './gauges/gauge';
 import {Meter} from './gauges/types';
@@ -184,7 +184,7 @@ export class MetricRegistry {
  *  MetricProducer that is used by exporters to determine the metrics that
  *  need to be exported.
  */
-class MetricProducerForRegistry extends MetricProducer {
+class MetricProducerForRegistry extends BaseMetricProducer {
   private registeredMetrics: Map<string, Meter>;
 
   constructor(registeredMetrics: Map<string, Meter>) {
