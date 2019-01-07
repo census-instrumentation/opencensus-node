@@ -16,28 +16,10 @@
 
 import * as assert from 'assert';
 import {AggregationType, Measurement, MeasureUnit, Stats, Tags, View} from '../src';
-import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
+import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
 import {MetricProducerForStats} from '../src/stats/metric-producer';
 
-
-function mockDateNow() {
-  // mock now = Thu 3 January 2019
-  return 1546540757282;
-}
-
 describe('Metric producer for stats', () => {
-  const mockedTime: Timestamp = {nanos: 282000000, seconds: 1546540757};
-  let originalDateNow = Date.now;
-
-  before(() => {
-    originalDateNow = Date.now;
-    Date.now = mockDateNow;
-  });
-
-  after(() => {
-    Date.now = originalDateNow;
-  });
-
   const stats = new Stats();
   const metricProducerForStats = new MetricProducerForStats(stats);
 
@@ -67,11 +49,6 @@ describe('Metric producer for stats', () => {
     unit: MeasureUnit.UNIT,
     type: MetricDescriptorType.CUMULATIVE_DOUBLE,
   };
-  const expectedTimeSeries1 = [{
-    labelValues,
-    points: [{value: 25, timestamp: mockedTime}],
-    startTimestamp: mockedTime
-  }];
   const expectedMetricDescriptor2 = {
     name: viewName2,
     description,
@@ -79,11 +56,6 @@ describe('Metric producer for stats', () => {
     unit: MeasureUnit.UNIT,
     type: MetricDescriptorType.CUMULATIVE_INT64,
   };
-  const expectedTimeSeries2 = [{
-    labelValues,
-    points: [{value: 1, timestamp: mockedTime}],
-    startTimestamp: mockedTime
-  }];
   const expectedMetricDescriptor3 = {
     name: viewName3,
     description,
@@ -91,8 +63,6 @@ describe('Metric producer for stats', () => {
     unit: MeasureUnit.UNIT,
     type: MetricDescriptorType.GAUGE_DOUBLE,
   };
-  const expectedTimeSeries3 =
-      [{labelValues, points: [{value: 300, timestamp: mockedTime}]}];
   const expectedMetricDescriptor4 = {
     name: viewName3,
     description,
@@ -100,20 +70,6 @@ describe('Metric producer for stats', () => {
     unit: MeasureUnit.UNIT,
     type: MetricDescriptorType.CUMULATIVE_DISTRIBUTION,
   };
-  const expectedTimeSeries4 = [{
-    labelValues,
-    points: [{
-      value: {
-        'bucketOptions': {'explicit': {'bounds': [2, 4, 6]}},
-        'buckets': [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
-        'count': 5,
-        'sum': 16.099999999999998,
-        'sumOfSquaredDeviation': 10.427999999999997
-      },
-      timestamp: mockedTime
-    }],
-    startTimestamp: mockedTime
-  }];
 
   it('should add sum stats', () => {
     const view: View = stats.createView(
@@ -130,7 +86,8 @@ describe('Metric producer for stats', () => {
     }] = metrics;
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
-    assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+    assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
+    assert.equal(actualTimeSeries1[0].points[0].value, 25);
   });
 
   it('should add count stats',
@@ -150,11 +107,13 @@ describe('Metric producer for stats', () => {
        assert.deepStrictEqual(
            actualMetricDescriptor1, expectedMetricDescriptor1);
        assert.strictEqual(actualTimeSeries1.length, 1);
-       assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+       assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
+       assert.equal(actualTimeSeries1[0].points[0].value, 25);
        assert.deepStrictEqual(
            actualMetricDescriptor2, expectedMetricDescriptor2);
        assert.strictEqual(actualTimeSeries2.length, 1);
-       assert.deepStrictEqual(actualTimeSeries2, expectedTimeSeries2);
+       assert.deepStrictEqual(actualTimeSeries2[0].labelValues, labelValues);
+       assert.equal(actualTimeSeries2[0].points[0].value, 1);
 
        // update count view
        view.recordMeasurement(measurement2);
@@ -179,12 +138,15 @@ describe('Metric producer for stats', () => {
             metrics;
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
-    assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+    assert.strictEqual(actualTimeSeries1.length, 1);
+    assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
+    assert.equal(actualTimeSeries1[0].points[0].value, 25);
     assert.deepStrictEqual(actualMetricDescriptor2, expectedMetricDescriptor2);
     assert.strictEqual(actualTimeSeries2.length, 1);
     assert.deepStrictEqual(actualMetricDescriptor3, expectedMetricDescriptor3);
     assert.strictEqual(actualTimeSeries3.length, 1);
-    assert.deepStrictEqual(actualTimeSeries3, expectedTimeSeries3);
+    assert.deepStrictEqual(actualTimeSeries3[0].labelValues, labelValues);
+    assert.equal(actualTimeSeries3[0].points[0].value, 300);
   });
 
   it('should add distribution stats', () => {
@@ -210,14 +172,23 @@ describe('Metric producer for stats', () => {
             metrics;
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
-    assert.deepStrictEqual(actualTimeSeries1, expectedTimeSeries1);
+    assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
+    assert.equal(actualTimeSeries1[0].points[0].value, 25);
     assert.deepStrictEqual(actualMetricDescriptor2, expectedMetricDescriptor2);
     assert.strictEqual(actualTimeSeries2.length, 1);
     assert.deepStrictEqual(actualMetricDescriptor3, expectedMetricDescriptor3);
     assert.strictEqual(actualTimeSeries3.length, 1);
-    assert.deepStrictEqual(actualTimeSeries3, expectedTimeSeries3);
+    assert.deepStrictEqual(actualTimeSeries3[0].labelValues, labelValues);
+    assert.equal(actualTimeSeries3[0].points[0].value, 300);
     assert.deepStrictEqual(actualMetricDescriptor4, expectedMetricDescriptor4);
     assert.strictEqual(actualTimeSeries4.length, 1);
-    assert.deepStrictEqual(actualTimeSeries4, expectedTimeSeries4);
+    assert.deepStrictEqual(actualTimeSeries4[0].labelValues, labelValues);
+    assert.deepStrictEqual(actualTimeSeries4[0].points[0].value, {
+      'bucketOptions': {'explicit': {'bounds': [2, 4, 6]}},
+      'buckets': [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
+      'count': 5,
+      'sum': 16.099999999999998,
+      'sumOfSquaredDeviation': 10.427999999999997
+    });
   });
 });

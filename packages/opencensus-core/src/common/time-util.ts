@@ -13,28 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as BigInt from 'big-integer';
+
 import {Timestamp} from '../metrics/export/types';
 
 const MILLIS_PER_SECOND = 1e3;
-const NANOS_PER_MILLI = 1e6;
+const NANOS_PER_MILLI = 1e3 * 1e3;
+const NANOS_PER_SECOND = 1e3 * 1e3 * 1e3;
+
+const hrtime = process.hrtime;
+const origin = hrtime();
+
+const refTime = Date.now();
+const startSecs = Math.floor(refTime / MILLIS_PER_SECOND);
+const startNanos = (refTime % MILLIS_PER_SECOND) * NANOS_PER_MILLI;
 
 /**
- * Creates a new timestamp from the given milliseconds.
+ * Gets the current timestamp with seconds and nanoseconds.
  *
- * @param {number} epochMilli the timestamp represented in milliseconds since
- *  epoch.
- * @returns {Timestamp} new timestamp with specified fields.
+ * @returns {Timestamp} The Timestamp.
  */
-export function timestampFromMillis(epochMilli: number): Timestamp {
-  return {seconds: seconds(epochMilli), nanos: nanos(epochMilli)};
+export function getTimestampWithProcessHRTime(): Timestamp {
+  const [offsetSecs, offsetNanos] = hrtime(origin);  // [seconds, nanoseconds]
+
+  // determine drfit in seconds and nanoseconds
+  const seconds = startSecs + offsetSecs;
+  const nanos = startNanos + offsetNanos;
+
+  // if nanos excess NANOS_PER_SECOND value.
+  if (nanos >= NANOS_PER_SECOND) {
+    return {seconds: seconds + 1, nanos: nanos % NANOS_PER_SECOND};
+  }
+  return {seconds, nanos};
 }
-
-const seconds = (epochMilli: number): number => {
-  return Number(BigInt(epochMilli).divide(MILLIS_PER_SECOND).toString());
-};
-
-const nanos = (epochMilli: number): number => {
-  const mos = epochMilli - seconds(epochMilli) * MILLIS_PER_SECOND;
-  return Number(BigInt(mos).times(NANOS_PER_MILLI).toString());
-};

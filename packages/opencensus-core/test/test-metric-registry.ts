@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
+import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
 import {MetricRegistry} from '../src/metrics/metric-registry';
 import {MeasureUnit} from '../src/stats/types';
 
@@ -27,25 +27,12 @@ const LABEL_KEYS_WITH_NULL: LabelKey[] =
     [{key: 'code', description: 'desc'}, null];
 const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
 const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
-
-function mockDateNow() {
-  // mock now = Thu 3 January 2019
-  return 1546540757282;
-}
-
 describe('addInt64Gauge', () => {
-  const mockedTime: Timestamp = {nanos: 282000000, seconds: 1546540757};
-  let originalDateNow = Date.now;
   let registry: MetricRegistry;
+  let now: number;
 
   beforeEach(() => {
     registry = new MetricRegistry();
-    originalDateNow = Date.now;
-    Date.now = mockDateNow;
-  });
-
-  afterEach(() => {
-    Date.now = originalDateNow;
   });
 
   it('should throw an error when the name is null', () => {
@@ -102,6 +89,7 @@ describe('addInt64Gauge', () => {
     const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry.add(100);
 
+    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -116,25 +104,16 @@ describe('addInt64Gauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 100);
-    assert.deepStrictEqual(
-        point.timestamp,
-        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
   });
 });
 
 describe('addDoubleGauge', () => {
-  const mockedTime: Timestamp = {nanos: 282000000, seconds: 1546540757};
-  let originalDateNow = Date.now;
   let registry: MetricRegistry;
+  let now: number;
 
   beforeEach(() => {
     registry = new MetricRegistry();
-    originalDateNow = Date.now;
-    Date.now = mockDateNow;
-  });
-
-  afterEach(() => {
-    Date.now = originalDateNow;
   });
 
   it('should throw an error when the name is null', () => {
@@ -194,6 +173,7 @@ describe('addDoubleGauge', () => {
     const pointEntry1 = doubleGauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry1.set(0.7);
 
+    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -208,9 +188,7 @@ describe('addDoubleGauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 0.7);
-    assert.deepStrictEqual(
-        point.timestamp,
-        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
   });
 
   it('should throw an error when the register same metric', () => {
@@ -223,18 +201,11 @@ describe('addDoubleGauge', () => {
 });
 
 describe('addDerivedInt64Gauge', () => {
-  const mockedTime: Timestamp = {nanos: 282000000, seconds: 1546540757};
-  let originalDateNow = Date.now;
   let registry: MetricRegistry;
+  let now: number;
 
   beforeEach(() => {
     registry = new MetricRegistry();
-    originalDateNow = Date.now;
-    Date.now = mockDateNow;
-  });
-
-  afterEach(() => {
-    Date.now = originalDateNow;
   });
 
   it('should throw an error when the name is null', () => {
@@ -296,6 +267,7 @@ describe('addDerivedInt64Gauge', () => {
     derivedInt64Gauge.createTimeSeries(LABEL_VALUES_200, map);
     map.set('key1', 'value1');
 
+    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -310,9 +282,7 @@ describe('addDerivedInt64Gauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 2);
-    assert.deepStrictEqual(
-        point.timestamp,
-        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
   });
 
   it('should throw an error when the register same metric', () => {
@@ -326,18 +296,11 @@ describe('addDerivedInt64Gauge', () => {
 });
 
 describe('addDerivedDoubleGauge', () => {
-  const mockedTime: Timestamp = {nanos: 282000000, seconds: 1546540757};
-  let originalDateNow = Date.now;
   let registry: MetricRegistry;
+  let now: number;
 
   beforeEach(() => {
     registry = new MetricRegistry();
-    originalDateNow = Date.now;
-    Date.now = mockDateNow;
-  });
-
-  afterEach(() => {
-    Date.now = originalDateNow;
   });
 
   it('should throw an error when the name is null', () => {
@@ -402,6 +365,7 @@ describe('addDerivedDoubleGauge', () => {
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
     derivedDoubleGauge.createTimeSeries(LABEL_VALUES_200, new QueueManager());
 
+    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -416,9 +380,7 @@ describe('addDerivedDoubleGauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 0.7);
-    assert.deepStrictEqual(
-        point.timestamp,
-        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
   });
 
   it('should throw an error when the register same metric', () => {
@@ -432,17 +394,10 @@ describe('addDerivedDoubleGauge', () => {
 });
 
 describe('Add multiple gauges', () => {
-  let originalDateNow = Date.now;
   let registry: MetricRegistry;
 
   before(() => {
     registry = new MetricRegistry();
-    originalDateNow = Date.now;
-    Date.now = mockDateNow;
-  });
-
-  after(() => {
-    Date.now = originalDateNow;
   });
 
   it('should return metrics', () => {

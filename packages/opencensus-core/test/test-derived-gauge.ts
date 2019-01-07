@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
+import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
 import {DerivedGauge} from '../src/metrics/gauges/derived-gauge';
 
 const METRIC_NAME = 'metric-name';
@@ -28,15 +28,9 @@ const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
 const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
 const LABEL_VALUES_EXRTA: LabelValue[] = [{value: '200'}, {value: '400'}];
 
-function mockDateNow() {
-  // mock now = Thu 3 January 2019
-  return 1546540757282;
-}
-
 describe('DerivedGauge', () => {
-  const mockedTime: Timestamp = {nanos: 282000000, seconds: 1546540757};
-  let originalDateNow = Date.now;
   let instance: DerivedGauge;
+  let now: number;
   const expectedMetricDescriptor = {
     name: METRIC_NAME,
     description: METRIC_DESCRIPTION,
@@ -48,12 +42,6 @@ describe('DerivedGauge', () => {
   beforeEach(() => {
     instance = new DerivedGauge(
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, LABEL_KEYS);
-    originalDateNow = Date.now;
-    Date.now = mockDateNow;
-  });
-
-  afterEach(() => {
-    Date.now = originalDateNow;
   });
 
   describe('createTimeSeries()', () => {
@@ -80,19 +68,19 @@ describe('DerivedGauge', () => {
       map.set('key', 'value');
       instance.createTimeSeries(LABEL_VALUES_200, map);
       map.set('key1', 'value1');
+
+      now = Date.now();
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: LABEL_VALUES_200,
-            points: [{
-              value: 2,
-              timestamp:
-                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
-            }]
-          }]);
+
+      const [timeseries] = metric.timeseries;
+      const [points] = timeseries.points;
+      assert.deepStrictEqual(timeseries.labelValues, LABEL_VALUES_200);
+      assert.equal(points.value, 2);
+      assert.equal(Math.floor(now / 1e3), points.timestamp.seconds);
+      assert.ok(points.timestamp.nanos > 0);
       // add data in collection
       map.set('key2', 'value2');
       map.set('key3', 'value3');
@@ -106,24 +94,14 @@ describe('DerivedGauge', () => {
       metric = instance.getMetric();
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 2);
-      assert.deepStrictEqual(metric.timeseries, [
-        {
-          labelValues: LABEL_VALUES_200,
-          points: [{
-            value: 4,
-            timestamp:
-                {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
-          }]
-        },
-        {
-          labelValues: LABEL_VALUES_400,
-          points: [{
-            value: 5,
-            timestamp:
-                {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
-          }]
-        }
-      ]);
+
+      const [timeseries1, timeseries2] = metric.timeseries;
+      assert.deepStrictEqual(timeseries1.labelValues, LABEL_VALUES_200);
+      assert.deepStrictEqual(timeseries1.points[0].value, 4);
+      assert.deepStrictEqual(timeseries2.labelValues, LABEL_VALUES_400);
+      assert.deepStrictEqual(timeseries2.points[0].value, 5);
+      assert.deepStrictEqual(
+          timeseries1.points[0].timestamp, timeseries2.points[0].timestamp);
     });
     it('should return a Metric (INT64) - custom object', () => {
       class QueueManager {
@@ -137,15 +115,13 @@ describe('DerivedGauge', () => {
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: LABEL_VALUES_200,
-            points: [{
-              value: 45,
-              timestamp:
-                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
-            }]
-          }]);
+
+      const [timeseries] = metric.timeseries;
+      assert.deepStrictEqual(timeseries.labelValues, LABEL_VALUES_200);
+      assert.deepStrictEqual(timeseries.points[0].value, 45);
+      assert.ok(timeseries.points[0].timestamp.seconds > 0);
+      assert.equal(
+          timeseries.points[0].timestamp.seconds, Math.floor(now / 1e3));
     });
     it('should return a Metric (Double) - custom object', () => {
       class QueueManager {
@@ -167,15 +143,9 @@ describe('DerivedGauge', () => {
         labelKeys: LABEL_KEYS
       });
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: LABEL_VALUES_200,
-            points: [{
-              value: 0.7,
-              timestamp:
-                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
-            }]
-          }]);
+      const [timeseries] = metric.timeseries;
+      assert.deepStrictEqual(timeseries.labelValues, LABEL_VALUES_200);
+      assert.deepStrictEqual(timeseries.points[0].value, 0.7);
     });
     it('should throw an error when obj is null', () => {
       assert.throws(() => {
@@ -190,15 +160,9 @@ describe('DerivedGauge', () => {
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: LABEL_VALUES_200,
-            points: [{
-              value: 1,
-              timestamp:
-                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
-            }]
-          }]);
+      const [timeseries] = metric.timeseries;
+      assert.deepStrictEqual(timeseries.labelValues, LABEL_VALUES_200);
+      assert.deepStrictEqual(timeseries.points[0].value, 1);
 
       // create timeseries with same labels.
       assert.throws(() => {
