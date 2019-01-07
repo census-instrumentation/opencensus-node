@@ -127,6 +127,10 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
     });
   }
 
+  start(): void {
+    // TODO(mayurkale): dependency with PR#253.
+  }
+
   /**
    * Send a trace to traces array
    * @param trace the rootSpan to be sent to the array list

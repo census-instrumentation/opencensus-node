@@ -96,4 +96,12 @@ export class ConsoleStatsExporter implements types.StatsEventListener {
   onRecord(views: View[], measurement: Measurement) {
     console.log(`Measurement recorded: ${measurement.measure.name}`);
   }
+
+  /**
+   * Starts the Console exporter that polls Metric from Metrics library and
+   * shows in the log console..
+   */
+  start(): void {
+    // TODO(mayurkale): dependency with PR#253.
+  }
 }

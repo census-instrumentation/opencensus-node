@@ -34,15 +34,23 @@ export interface Exporter extends modelTypes.SpanEventListener {
 export interface StatsEventListener {
   /**
    * Is called whenever a new view is registered
+   * @deprecated since version 0.0.9 - use {@link start} instead
    * @param view The registered view
    */
   onRegisterView(view: View): void;
   /**
    * Is called whenever a new measurement is recorded.
+   * @deprecated since version 0.0.9 - use {@link start} instead
    * @param views The views related to the measurement
    * @param measurement The recorded measurement
    */
   onRecord(views: View[], measurement: Measurement): void;
+
+  /**
+   * Starts the exporter that polls Metric from Metrics library and send
+   * batched data to backend.
+   */
+  start(): void;
 }
 
 export type ExporterConfig = configTypes.BufferConfig;

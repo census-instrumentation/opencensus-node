@@ -30,6 +30,10 @@ class TestExporter implements StatsEventListener {
     this.recordedMeasurements.push(measurement);
   }
 
+  start(): void {
+    // TODO(mayurkale): dependency with PR#253.
+  }
+
   clean() {
     this.registeredViews = [];
     this.recordedMeasurements = [];

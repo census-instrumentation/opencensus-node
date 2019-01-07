@@ -98,6 +98,15 @@ export class StackdriverStatsExporter implements StatsEventListener {
   }
 
   /**
+   * Starts the Stackdriver exporter that polls Metric from Metrics library and
+   * send batched data to backend.
+   */
+  start(): void {
+    // TODO(mayurkale): add setInterval here to poll Metric, transform and send
+    // // it to backend (dependency with PR#253).
+  }
+
+  /**
    * Clear the interval timer to stop uploading metrics. It should be called
    * whenever the exporter is not needed anymore.
    */
