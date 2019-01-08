@@ -20,9 +20,9 @@
  * Full details at https://cloud.google.com/trace/docs/support.
  */
 
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import {decToHex, hexToDec} from 'hex2dec';
-import uuid from 'uuid';
+import * as uuid from 'uuid';
 
 import {HeaderGetter, HeaderSetter, SpanContext} from './index';
 
