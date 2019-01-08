@@ -20,7 +20,12 @@ import {MetricsComponent} from '../src/metrics/metric-component';
 import {MetricRegistry} from '../src/metrics/metric-registry';
 
 describe('MetricsComponent()', () => {
-  const metricsComponent: MetricsComponent = new MetricsComponent();
+  let metricsComponent: MetricsComponent;
+
+  beforeEach(() => {
+    metricProducerManagerInstance.removeAll();
+    metricsComponent = new MetricsComponent();
+  });
 
   it('should return a MetricRegistry instance', () => {
     assert.ok(metricsComponent.getMetricRegistry() instanceof MetricRegistry);
