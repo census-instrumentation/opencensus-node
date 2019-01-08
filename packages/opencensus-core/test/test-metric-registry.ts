@@ -15,7 +15,8 @@
  */
 
 import * as assert from 'assert';
-import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
+import {TEST_ONLY} from '../src/common/time-util';
+import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
 import {MetricRegistry} from '../src/metrics/metric-registry';
 import {MeasureUnit} from '../src/stats/types';
 
@@ -29,10 +30,24 @@ const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
 const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
 describe('addInt64Gauge', () => {
   let registry: MetricRegistry;
-  let now: number;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
 
   beforeEach(() => {
     registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
   });
 
   it('should throw an error when the name is null', () => {
@@ -89,7 +104,6 @@ describe('addInt64Gauge', () => {
     const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry.add(100);
 
-    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -104,16 +118,32 @@ describe('addInt64Gauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 100);
-    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
   });
 });
 
 describe('addDoubleGauge', () => {
   let registry: MetricRegistry;
-  let now: number;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
 
   beforeEach(() => {
     registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
   });
 
   it('should throw an error when the name is null', () => {
@@ -173,7 +203,6 @@ describe('addDoubleGauge', () => {
     const pointEntry1 = doubleGauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry1.set(0.7);
 
-    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -188,7 +217,9 @@ describe('addDoubleGauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 0.7);
-    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
   });
 
   it('should throw an error when the register same metric', () => {
@@ -202,10 +233,24 @@ describe('addDoubleGauge', () => {
 
 describe('addDerivedInt64Gauge', () => {
   let registry: MetricRegistry;
-  let now: number;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
 
   beforeEach(() => {
     registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
   });
 
   it('should throw an error when the name is null', () => {
@@ -267,7 +312,6 @@ describe('addDerivedInt64Gauge', () => {
     derivedInt64Gauge.createTimeSeries(LABEL_VALUES_200, map);
     map.set('key1', 'value1');
 
-    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -282,7 +326,9 @@ describe('addDerivedInt64Gauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 2);
-    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
   });
 
   it('should throw an error when the register same metric', () => {
@@ -297,10 +343,24 @@ describe('addDerivedInt64Gauge', () => {
 
 describe('addDerivedDoubleGauge', () => {
   let registry: MetricRegistry;
-  let now: number;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
 
   beforeEach(() => {
     registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
   });
 
   it('should throw an error when the name is null', () => {
@@ -365,7 +425,6 @@ describe('addDerivedDoubleGauge', () => {
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
     derivedDoubleGauge.createTimeSeries(LABEL_VALUES_200, new QueueManager());
 
-    now = Date.now();
     const metrics = registry.getMetricProducer().getMetrics();
     assert.strictEqual(metrics.length, 1);
     const [{descriptor, timeseries}] = metrics;
@@ -380,7 +439,9 @@ describe('addDerivedDoubleGauge', () => {
     const [{points}] = timeseries;
     const [point] = points;
     assert.equal(point.value, 0.7);
-    assert.equal(point.timestamp.seconds, Math.floor(now / 1e3));
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
   });
 
   it('should throw an error when the register same metric', () => {
@@ -395,9 +456,24 @@ describe('addDerivedDoubleGauge', () => {
 
 describe('Add multiple gauges', () => {
   let registry: MetricRegistry;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
 
-  before(() => {
+  beforeEach(() => {
     registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
   });
 
   it('should return metrics', () => {
@@ -443,11 +519,18 @@ describe('Add multiple gauges', () => {
     assert.strictEqual(timeseries1.length, 1);
     assert.strictEqual(timeseries1[0].points.length, 1);
     assert.equal(timeseries1[0].points[0].value, 100);
+    assert.equal(
+        timeseries1[0].points[0].timestamp.seconds, mockedTime.seconds);
+    assert.equal(timeseries1[0].points[0].timestamp.nanos, mockedTime.nanos);
     assert.strictEqual(timeseries2.length, 1);
     assert.strictEqual(timeseries2[0].points.length, 1);
     assert.equal(timeseries2[0].points[0].value, 5.5);
     assert.strictEqual(timeseries3.length, 1);
     assert.strictEqual(timeseries3[0].points.length, 1);
     assert.equal(timeseries3[0].points[0].value, 5);
+    assert.deepStrictEqual(
+        timeseries1[0].points[0].timestamp, timeseries2[0].points[0].timestamp);
+    assert.deepStrictEqual(
+        timeseries2[0].points[0].timestamp, timeseries3[0].points[0].timestamp);
   });
 });

@@ -20,12 +20,26 @@ const MILLIS_PER_SECOND = 1e3;
 const NANOS_PER_MILLI = 1e3 * 1e3;
 const NANOS_PER_SECOND = 1e3 * 1e3 * 1e3;
 
-const hrtime = process.hrtime;
-const origin = hrtime();
+let hrtime = process.hrtime;
+let hrtimeOrigin: [number, number] = [0, 0];
+let hrtimeRefSeconds = 0;
+let hrtimeRefNanos = 0;
 
-const refTime = Date.now();
-const startSecs = Math.floor(refTime / MILLIS_PER_SECOND);
-const startNanos = (refTime % MILLIS_PER_SECOND) * NANOS_PER_MILLI;
+function setHrtimeReference() {
+  resetHrtimeFunctionCache();
+  hrtimeOrigin = hrtime();
+  const refTime = Date.now();
+  hrtimeRefSeconds = Math.floor(refTime / MILLIS_PER_SECOND);
+  hrtimeRefNanos = (refTime % MILLIS_PER_SECOND) * NANOS_PER_MILLI;
+}
+
+/**
+ * This is used to enable tests to mock process.hrtime while still allow us to
+ * cache it.
+ */
+function resetHrtimeFunctionCache() {
+  hrtime = process.hrtime;
+}
 
 /**
  * Gets the current timestamp with seconds and nanoseconds.
@@ -33,15 +47,21 @@ const startNanos = (refTime % MILLIS_PER_SECOND) * NANOS_PER_MILLI;
  * @returns {Timestamp} The Timestamp.
  */
 export function getTimestampWithProcessHRTime(): Timestamp {
-  const [offsetSecs, offsetNanos] = hrtime(origin);  // [seconds, nanoseconds]
+  const [offsetSecs, offsetNanos] = hrtime(hrtimeOrigin);
 
-  // determine drfit in seconds and nanoseconds
-  const seconds = startSecs + offsetSecs;
-  const nanos = startNanos + offsetNanos;
+  // determine drift in seconds and nanoseconds
+  const seconds = hrtimeRefSeconds + offsetSecs;
+  const nanos = hrtimeRefNanos + offsetNanos;
 
-  // if nanos excess NANOS_PER_SECOND value.
   if (nanos >= NANOS_PER_SECOND) {
     return {seconds: seconds + 1, nanos: nanos % NANOS_PER_SECOND};
   }
   return {seconds, nanos};
 }
+
+setHrtimeReference();
+
+export const TEST_ONLY = {
+  setHrtimeReference,
+  resetHrtimeFunctionCache
+};

@@ -15,13 +15,38 @@
  */
 
 import * as assert from 'assert';
-import {getTimestampWithProcessHRTime} from '../src/common/time-util';
+import {getTimestampWithProcessHRTime, TEST_ONLY} from '../src/common/time-util';
 
 describe('getTimestampWithProcessHRTime()', () => {
-  it('compare now with getTimestampWithProcessHRTime', () => {
-    const arr = getTimestampWithProcessHRTime();
-    const now = Date.now();
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
 
-    assert.equal(Math.floor(now / 1000), arr.seconds);
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
+  });
+
+  it('should return timestamp with respect to now and process.hrtime', () => {
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+
+    const currentTime = getTimestampWithProcessHRTime();
+
+    assert.deepStrictEqual(currentTime, {seconds: 1450000100, nanos: 1e7});
+  });
+
+  it('should handle excess of nanos', () => {
+    process.hrtime = () => [100, 10000000012];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+
+    const currentTime = getTimestampWithProcessHRTime();
+
+    assert.deepStrictEqual(currentTime, {seconds: 1450000101, nanos: 12});
   });
 });
