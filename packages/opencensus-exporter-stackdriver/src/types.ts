@@ -103,7 +103,7 @@ export interface Distribution {
 }
 
 export interface Point {
-  interval: {endTime: string, startTime: string};
+  interval: {endTime: string, startTime?: string};
   value: {
     boolValue?: boolean;
     int64Value?: number;
@@ -115,7 +115,7 @@ export interface Point {
 
 export interface TimeSeries {
   metric: {type: string; labels: {[key: string]: string};};
-  resource: {type: 'global', labels: {[key: string]: string}};
+  resource: {type: string, labels: {[key: string]: string}};
   metricKind: MetricKind;
   valueType: ValueType;
   points: Point[];
