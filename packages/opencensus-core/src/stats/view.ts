@@ -200,7 +200,7 @@ export class BaseView implements View {
 
   /**
    * Gets view`s metric
-   * @param start The start timestamp
+   * @param start The start timestamp in epoch milliseconds
    * @returns {Metric}
    */
   getMetric(start: number): Metric {
