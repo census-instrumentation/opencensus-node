@@ -44,8 +44,6 @@ class ExporterTestLogger implements Logger {
   warn(...args: any[]) {}
   // tslint:disable-next-line:no-any
   info(...args: any[]) {}
-  // tslint:disable-next-line:no-any
-  silly(...args: any[]) {}
 }
 
 describe('Stackdriver Stats Exporter', function() {

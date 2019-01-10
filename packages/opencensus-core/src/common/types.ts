@@ -19,12 +19,13 @@ export type LogFunction = (message: any, ...args: any[]) => void;
 
 /** Defines an logger interface. */
 export interface Logger {
-  level: string;
+  /** Logger verbosity level. If omitted, `debug` level is assumed. */
+  level?: string;
+
   error: LogFunction;
   warn: LogFunction;
   info: LogFunction;
   debug: LogFunction;
-  silly: LogFunction;
 }
 
 /** Defines an logger options interface. */

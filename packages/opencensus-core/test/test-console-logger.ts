@@ -19,7 +19,7 @@ import * as logger from '../src/common/console-logger';
 import {ConsoleLogger} from '../src/common/console-logger';
 
 
-const LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
+const LEVELS = ['silent', 'error', 'warn', 'info', 'debug'];
 let consoleTxt = '';
 
 // TODO: Review test cases: Maybe testing the info log level is sufficient
@@ -86,15 +86,6 @@ describe('ConsoleLogger', () => {
 
       assert.equal(validateString, -1);
     });
-
-    it('should not log silly', () => {
-      consoleTxt = '';
-      consoleLogger.silly('silly test logger');
-      unhookIntercept();
-      const validateString = consoleTxt.indexOf('silly');
-
-      assert.equal(validateString, -1);
-    });
   });
 
   /** Should disable logger  */
@@ -135,15 +126,6 @@ describe('ConsoleLogger', () => {
       consoleLogger.debug('debug test logger');
       unhookIntercept();
       const validateString = consoleTxt.indexOf('debug');
-
-      assert.equal(validateString, -1);
-    });
-
-    it('should not log silly', () => {
-      consoleTxt = '';
-      consoleLogger.silly('silly test logger');
-      unhookIntercept();
-      const validateString = consoleTxt.indexOf('silly');
 
       assert.equal(validateString, -1);
     });
