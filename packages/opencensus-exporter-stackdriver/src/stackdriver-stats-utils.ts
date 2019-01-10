@@ -222,7 +222,6 @@ export function createBucketCounts(buckets: DistributionBucket[]): number[] {
 
 /** Returns a task label value in the format of 'nodejs-<pid>@<hostname>'. */
 function generateDefaultTaskValue(): string {
-  console.log('inside generateDefaultTaskValue');
   const pid = process.pid;
   const hostname = os.hostname() || 'localhost';
   return 'nodejs-' + pid + '@' + hostname;
