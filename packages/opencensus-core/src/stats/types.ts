@@ -118,7 +118,7 @@ export interface View {
   /** Gets the view's tag keys */
   getColumns(): string[];
   /** Gets view`s metric */
-  getMetric(): Metric;
+  getMetric(start: number): Metric;
 }
 
 /**
