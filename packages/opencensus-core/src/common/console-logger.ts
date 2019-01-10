@@ -24,7 +24,7 @@ const logDriver = require('log-driver');
  */
 export class ConsoleLogger implements types.Logger {
   private logger: typeof logDriver;
-  static LEVELS = ['silent', 'error', 'warn', 'info', 'debug', 'silly'];
+  static LEVELS = ['silent', 'error', 'warn', 'info', 'debug'];
   level: string;
 
   /**
@@ -88,16 +88,6 @@ export class ConsoleLogger implements types.Logger {
   // tslint:disable-next-line:no-any
   debug(message: any, ...args: any[]): void {
     this.logger.debug(util.format(message, ...args));
-  }
-
-  /**
-   * Logger silly function.
-   * @param message menssage silly to log in console
-   * @param args arguments to log in console
-   */
-  // tslint:disable-next-line:no-any
-  silly(message: any, ...args: any[]): void {
-    this.logger.silly(util.format(message, ...args));
   }
 }
 
