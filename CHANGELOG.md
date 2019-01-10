@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Add Gauges (`DoubleGauge`, `LongGauge`, `DerivedDoubleGauge`, `DerivedLongGauge`) APIs.
 - Add support for supplying instrumentation configuration via tracing option. Option argument added to instrumentation interface.
 - Add ignoreIncomingPaths and ignoreOutgoingUrls support to the http and https tracing instrumentations.
+- Modify `Logger` interface: `level` made optional, `silly` removed.
 
 ## 0.0.8 - 2018-12-14
  **Contains API breaking changes for stats/metrics implementations**
