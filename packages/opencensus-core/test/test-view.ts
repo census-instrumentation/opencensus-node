@@ -17,7 +17,8 @@
 import * as assert from 'assert';
 
 import {BaseView} from '../src';
-import {DistributionValue, MetricDescriptorType} from '../src/metrics/export/types';
+import {TEST_ONLY} from '../src/common/time-util';
+import {DistributionValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
 import {AggregationType, DistributionData, Measure, Measurement, MeasureType, MeasureUnit, Tags, View} from '../src/stats/types';
 
 /** The order of how close values must be to be considerated almost equal */
@@ -166,7 +167,7 @@ describe('BaseView', () => {
         'test/view/name', measure, AggregationType.LAST_VALUE,
         ['testKey1', 'testKey2'], 'description test');
 
-    it('should not record a measurement when it has wrong tag keys', () => {
+    it('should not record a measurement when it have wrong tag keys', () => {
       const measurement = {measure, tags: {testKey3: 'testValue'}, value: 10};
       view.recordMeasurement(measurement);
       assert.ok(!view.getSnapshot(measurement.tags));
@@ -182,7 +183,7 @@ describe('BaseView', () => {
       assert.ok(!view.getSnapshot(measurement.tags));
     });
 
-    it('should not record a measurement when it has not enough tag keys',
+    it('should not record a measurement when it have not enough tag keys',
        () => {
          const measurement = {
            measure,
@@ -195,16 +196,13 @@ describe('BaseView', () => {
   });
 
   describe('getMetric()', () => {
-    const {hrtime} = process;
-    process.hrtime = () => [1000, 1e7];
+    const realHrtimeFn = process.hrtime;
+    const realNowFn = Date.now;
+    const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
     const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
     const tags1: Tags = {testKey1: 'testValue1', testKey2: 'testValue1'};
-
-    after(() => {
-      process.hrtime = hrtime;
-    });
 
     for (const aggregationTestCase of aggregationTestCases) {
       const view: View = new BaseView(
@@ -214,15 +212,26 @@ describe('BaseView', () => {
         const measurement = {measure, tags, value};
         view.recordMeasurement(measurement);
       }
-      const {descriptor, timeseries} = view.getMetric();
 
-      before(() => {
-        process.hrtime = () => [1000, 1e7];
+      beforeEach(() => {
+        process.hrtime = () => [100, 1e7];
+        Date.now = () => 1450000000000;
+        // Force the clock to recalibrate the time offset with the mocked time
+        TEST_ONLY.setHrtimeReference();
       });
+
+      afterEach(() => {
+        process.hrtime = realHrtimeFn;
+        Date.now = realNowFn;
+        // Reset the hrtime reference so that it uses a real clock again.
+        TEST_ONLY.resetHrtimeFunctionCache();
+      });
+
+      const {descriptor, timeseries} = view.getMetric();
 
       describe(
           `Aggregation type: ${aggregationTestCase.aggregationType}`, () => {
-            it('should has descriptor', () => {
+            it('should have descriptor', () => {
               assert.ok(descriptor);
               assert.deepStrictEqual(descriptor, {
                 description: 'description test',
@@ -240,26 +249,26 @@ describe('BaseView', () => {
 
             if (aggregationTestCase.metricDescriptorType ===
                 MetricDescriptorType.GAUGE_INT64) {
-              it('GAUGE_INT64 shouldnt has timeseries startTimestamp', () => {
+              it('GAUGE_INT64 shouldnt have timeseries startTimestamp', () => {
                 assert.strictEqual(startTimestamp, undefined);
               });
             } else if (
                 aggregationTestCase.metricDescriptorType ===
                 MetricDescriptorType.GAUGE_DOUBLE) {
-              it('GAUGE_DOUBLE shouldnt has timeseries startTimestamp', () => {
+              it('GAUGE_DOUBLE shouldnt have timeseries startTimestamp', () => {
                 assert.strictEqual(startTimestamp, undefined);
               });
             } else {
-              it('shouldnt has timeseries startTimestamp', () => {
+              it('should have timeseries startTimestamp', () => {
                 assert.ok(startTimestamp);
                 assert.equal(typeof startTimestamp.nanos, 'number');
-                assert.strictEqual(startTimestamp.nanos, 1e7);
                 assert.equal(typeof startTimestamp.seconds, 'number');
-                assert.strictEqual(startTimestamp.seconds, 1000);
+                assert.ok(startTimestamp.seconds > 0);
+                assert.ok(startTimestamp.nanos > 0);
               });
             }
 
-            it('should has labelValues', () => {
+            it('should have labelValues', () => {
               assert.ok(labelValues);
               assert.deepStrictEqual(
                   labelValues, [{value: 'testValue'}, {value: 'testValue'}]);
@@ -286,9 +295,9 @@ describe('BaseView', () => {
         const {timestamp, value} = point;
         assert.ok(timestamp);
         assert.equal(typeof timestamp.nanos, 'number');
-        assert.strictEqual(timestamp.nanos, 1e7);
         assert.equal(typeof timestamp.seconds, 'number');
-        assert.strictEqual(timestamp.seconds, 1000);
+        assert.equal(timestamp.seconds, mockedTime.seconds);
+        assert.equal(timestamp.nanos, mockedTime.nanos);
         assert.notEqual(typeof value, 'number');
         assert.deepStrictEqual((value as DistributionValue), {
           bucketOptions: {explicit: {bounds: buckets}},
@@ -328,9 +337,9 @@ describe('BaseView', () => {
             let {timestamp, value} = point;
             assert.ok(timestamp);
             assert.equal(typeof timestamp.nanos, 'number');
-            assert.strictEqual(timestamp.nanos, 1e7);
             assert.equal(typeof timestamp.seconds, 'number');
-            assert.strictEqual(timestamp.seconds, 1000);
+            assert.equal(timestamp.seconds, mockedTime.seconds);
+            assert.equal(timestamp.nanos, mockedTime.nanos);
             assert.notEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
@@ -347,9 +356,9 @@ describe('BaseView', () => {
             ({timestamp, value} = point);
             assert.ok(timestamp);
             assert.equal(typeof timestamp.nanos, 'number');
-            assert.strictEqual(timestamp.nanos, 1e7);
             assert.equal(typeof timestamp.seconds, 'number');
-            assert.strictEqual(timestamp.seconds, 1000);
+            assert.equal(timestamp.seconds, mockedTime.seconds);
+            assert.equal(timestamp.nanos, mockedTime.nanos);
             assert.notEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
@@ -381,9 +390,9 @@ describe('BaseView', () => {
         const {timestamp, value} = point;
         assert.ok(timestamp);
         assert.equal(typeof timestamp.nanos, 'number');
-        assert.strictEqual(timestamp.nanos, 1e7);
         assert.equal(typeof timestamp.seconds, 'number');
-        assert.strictEqual(timestamp.seconds, 1000);
+        assert.equal(timestamp.seconds, mockedTime.seconds);
+        assert.equal(timestamp.nanos, mockedTime.nanos);
         assert.equal(typeof value, 'number');
         assert.strictEqual(value, 5);
       });
@@ -408,9 +417,9 @@ describe('BaseView', () => {
         const {timestamp, value} = point;
         assert.ok(timestamp);
         assert.equal(typeof timestamp.nanos, 'number');
-        assert.strictEqual(timestamp.nanos, 1e7);
         assert.equal(typeof timestamp.seconds, 'number');
-        assert.strictEqual(timestamp.seconds, 1000);
+        assert.equal(timestamp.seconds, mockedTime.seconds);
+        assert.equal(timestamp.nanos, mockedTime.nanos);
         assert.equal(typeof value, 'number');
         assert.strictEqual(value, total);
       });
@@ -431,7 +440,8 @@ describe('BaseView', () => {
         assert.ok(points);
         const [point] = points;
         const {timestamp, value} = point;
-        assert.deepStrictEqual(timestamp, {nanos: 1e7, seconds: 1000});
+        assert.equal(timestamp.seconds, mockedTime.seconds);
+        assert.equal(timestamp.nanos, mockedTime.nanos);
         assert.equal(typeof value, 'number');
         assert.strictEqual(
             value, measurementValues[measurementValues.length - 1]);

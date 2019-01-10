@@ -15,7 +15,9 @@
  */
 
 import * as assert from 'assert';
-import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
+
+import {TEST_ONLY} from '../src/common/time-util';
+import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
 import {Gauge} from '../src/metrics/gauges/gauge';
 
 const METRIC_NAME = 'metric-name';
@@ -32,8 +34,10 @@ const UNSET_LABEL_VALUE: LabelValue = {
 };
 
 describe('GAUGE_INT64', () => {
-  const oldProcessHrtime = process.hrtime;
   let instance: Gauge;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
   const expectedMetricDescriptor = {
     name: METRIC_NAME,
     description: METRIC_DESCRIPTION,
@@ -45,11 +49,18 @@ describe('GAUGE_INT64', () => {
   beforeEach(() => {
     instance = new Gauge(
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, LABEL_KEYS);
-    process.hrtime = () => [1000, 1e7];
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
   });
 
   afterEach(() => {
-    process.hrtime = oldProcessHrtime;
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
   });
 
   describe('getOrCreateTimeSeries()', () => {
@@ -74,6 +85,7 @@ describe('GAUGE_INT64', () => {
     it('should return a Metric', () => {
       const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       point.add(10);
+
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
@@ -81,8 +93,13 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
-            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}]
+            points: [{
+              value: 10,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
           }]);
+
       // add value and create new timeseries.
       point.add(5);
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_400);
@@ -93,11 +110,19 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(metric.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
-          points: [{value: 15, timestamp: {nanos: 1e7, seconds: 1000}}]
+          points: [{
+            value: 15,
+            timestamp:
+                {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }]
         },
         {
           labelValues: LABEL_VALUES_400,
-          points: [{value: -8, timestamp: {nanos: 1e7, seconds: 1000}}]
+          points: [{
+            value: -8,
+            timestamp:
+                {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }]
         }
       ]);
     });
@@ -111,7 +136,11 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
-            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}]
+            points: [{
+              value: 10,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
           }]);
       // create timeseries with same labels.
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
@@ -122,7 +151,11 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: LABEL_VALUES_200,
-            points: [{value: 40, timestamp: {nanos: 1e7, seconds: 1000}}]
+            points: [{
+              value: 40,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
           }]);
     });
   });
@@ -137,7 +170,11 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 10, timestamp: {nanos: 1e7, seconds: 1000}}]
+            points: [{
+              value: 10,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
           }]);
     });
     it('should return same timeseries for interchanged labels', () => {
@@ -169,7 +206,11 @@ describe('GAUGE_INT64', () => {
           metric.timeseries, [{
             labelValues:
                 [UNSET_LABEL_VALUE, UNSET_LABEL_VALUE, UNSET_LABEL_VALUE],
-            points: [{value: 200, timestamp: {nanos: 1e7, seconds: 1000}}]
+            points: [{
+              value: 200,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
           }]);
     });
     it('should use previously created default timeseries', () => {
@@ -182,7 +223,11 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 300, timestamp: {nanos: 1e7, seconds: 1000}}]
+            points: [{
+              value: 300,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
           }]);
       // get default timeseries again.
       const point1 = instance.getDefaultTimeSeries();
@@ -194,7 +239,11 @@ describe('GAUGE_INT64', () => {
       assert.deepStrictEqual(
           metric.timeseries, [{
             labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 700, timestamp: {nanos: 1e7, seconds: 1000}}]
+            points: [{
+              value: 700,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
           }]);
     });
   });
@@ -233,8 +282,10 @@ describe('GAUGE_INT64', () => {
 });
 
 describe('GAUGE_DOUBLE', () => {
-  const oldProcessHrtime = process.hrtime;
   let instance: Gauge;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
   const expectedMetricDescriptor = {
     name: METRIC_NAME,
     description: METRIC_DESCRIPTION,
@@ -246,11 +297,18 @@ describe('GAUGE_DOUBLE', () => {
   beforeEach(() => {
     instance = new Gauge(
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, LABEL_KEYS);
-    process.hrtime = () => [1000, 1e7];
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
   });
 
   afterEach(() => {
-    process.hrtime = oldProcessHrtime;
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
   });
 
   describe('getOrCreateTimeSeries()', () => {
@@ -275,15 +333,20 @@ describe('GAUGE_DOUBLE', () => {
     it('should return a Metric', () => {
       const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       point.add(10.34);
+
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: LABEL_VALUES_200,
-            points: [{value: 10.34, timestamp: {nanos: 1e7, seconds: 1000}}],
-          }]);
+      assert.deepStrictEqual(metric.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{
+            value: 10.34,
+            timestamp: {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }],
+        }
+      ]);
       // add value and create new timeseries.
       point.add(5.12);
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_400);
@@ -293,11 +356,19 @@ describe('GAUGE_DOUBLE', () => {
       assert.deepStrictEqual(metric.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
-          points: [{value: 15.46, timestamp: {nanos: 1e7, seconds: 1000}}]
+          points: [{
+            value: 15.46,
+            timestamp:
+                {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }]
         },
         {
           labelValues: LABEL_VALUES_400,
-          points: [{value: -8.3, timestamp: {nanos: 1e7, seconds: 1000}}]
+          points: [{
+            value: -8.3,
+            timestamp:
+                {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }]
         }
       ]);
     });
@@ -308,22 +379,30 @@ describe('GAUGE_DOUBLE', () => {
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: LABEL_VALUES_200,
-            points: [{value: 12.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-          }]);
+      assert.deepStrictEqual(metric.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{
+            value: 12.1,
+            timestamp: {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }],
+        }
+      ]);
       // create timeseries with same labels.
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       point1.add(30.18);
       metric = instance.getMetric();
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: LABEL_VALUES_200,
-            points: [{value: 42.28, timestamp: {nanos: 1e7, seconds: 1000}}],
-          }]);
+      assert.deepStrictEqual(metric.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{
+            value: 42.28,
+            timestamp: {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }],
+        }
+      ]);
     });
   });
   describe('getDefaultTimeSeries()', () => {
@@ -334,11 +413,15 @@ describe('GAUGE_DOUBLE', () => {
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 10.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-          }]);
+      assert.deepStrictEqual(metric.timeseries, [
+        {
+          labelValues: [UNSET_LABEL_VALUE],
+          points: [{
+            value: 10.1,
+            timestamp: {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }],
+        }
+      ]);
     });
     it('should use previously created default timeseries', () => {
       const point = instance.getDefaultTimeSeries();
@@ -347,11 +430,15 @@ describe('GAUGE_DOUBLE', () => {
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 300.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-          }]);
+      assert.deepStrictEqual(metric.timeseries, [
+        {
+          labelValues: [UNSET_LABEL_VALUE],
+          points: [{
+            value: 300.1,
+            timestamp: {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }],
+        }
+      ]);
       // get default timeseries again.
       const point1 = instance.getDefaultTimeSeries();
       point1.add(400.1);
@@ -359,11 +446,15 @@ describe('GAUGE_DOUBLE', () => {
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues: [UNSET_LABEL_VALUE],
-            points: [{value: 700.2, timestamp: {nanos: 1e7, seconds: 1000}}],
-          }]);
+      assert.deepStrictEqual(metric.timeseries, [
+        {
+          labelValues: [UNSET_LABEL_VALUE],
+          points: [{
+            value: 700.2,
+            timestamp: {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }],
+        }
+      ]);
     });
     it('should create same labelValues as labelKeys', () => {
       instance =
@@ -378,12 +469,16 @@ describe('GAUGE_DOUBLE', () => {
       assert.deepStrictEqual(metric.descriptor.labelKeys.length, 3);
       assert.deepStrictEqual(metric.descriptor.type, 2);
       assert.equal(metric.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric.timeseries, [{
-            labelValues:
-                [UNSET_LABEL_VALUE, UNSET_LABEL_VALUE, UNSET_LABEL_VALUE],
-            points: [{value: 10.1, timestamp: {nanos: 1e7, seconds: 1000}}],
-          }]);
+      assert.deepStrictEqual(metric.timeseries, [
+        {
+          labelValues:
+              [UNSET_LABEL_VALUE, UNSET_LABEL_VALUE, UNSET_LABEL_VALUE],
+          points: [{
+            value: 10.1,
+            timestamp: {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }],
+        }
+      ]);
     });
   });
   describe('removeTimeSeries()', () => {
