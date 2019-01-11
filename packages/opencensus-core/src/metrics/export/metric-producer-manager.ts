@@ -22,7 +22,15 @@ import {MetricProducer, MetricProducerManager} from './types';
  * metrics that need to be exported.
  */
 class BaseMetricProducerManager implements MetricProducerManager {
+  /** Singleton instance */
+  private static singletonInstance: MetricProducerManager;
+
   private metricProducers: Set<MetricProducer> = new Set<MetricProducer>();
+
+  /** Gets the instance. */
+  static get instance(): MetricProducerManager {
+    return this.singletonInstance || (this.singletonInstance = new this());
+  }
 
   /**
    * Adds the MetricProducer to the manager if it is not already present.
@@ -66,4 +74,4 @@ class BaseMetricProducerManager implements MetricProducerManager {
   }
 }
 
-export const metricProducerManagerInstance = new BaseMetricProducerManager();
+export const metricProducerManagerInstance = BaseMetricProducerManager.instance;

@@ -29,7 +29,7 @@ export function createMetricDescriptorData(
     metricDescriptor: OCMetricDescriptor, metricPrefix: string,
     displayNamePrefix: string): MetricDescriptor {
   return {
-    type: getMetricType(metricDescriptor.name, metricPrefix),
+    type: createMetricType(metricDescriptor.name, metricPrefix),
     description: metricDescriptor.description,
     displayName: createDisplayName(metricDescriptor.name, displayNamePrefix),
     metricKind: createMetricKind(metricDescriptor.type),
@@ -69,18 +69,17 @@ export function createTimeSeriesList(
 }
 
 /** Creates Metric type. */
-export function getMetricType(name: string, metricPrefix: string): string {
+function createMetricType(name: string, metricPrefix: string): string {
   return path.join(metricPrefix, name);
 }
 
 /** Creates Metric display name. */
-export function createDisplayName(
-    name: string, displayNamePrefix: string): string {
+function createDisplayName(name: string, displayNamePrefix: string): string {
   return path.join(displayNamePrefix, name);
 }
 
 /** Converts a OpenCensus Type to a StackDriver MetricKind. */
-export function createMetricKind(metricDescriptorType: MetricDescriptorType):
+function createMetricKind(metricDescriptorType: MetricDescriptorType):
     MetricKind {
   if (metricDescriptorType === MetricDescriptorType.GAUGE_INT64 ||
       metricDescriptorType === MetricDescriptorType.GAUGE_DOUBLE) {
@@ -95,7 +94,7 @@ export function createMetricKind(metricDescriptorType: MetricDescriptorType):
 }
 
 /** Converts a OpenCensus Type to a StackDriver ValueType. */
-export function createValueType(metricDescriptorType: MetricDescriptorType):
+function createValueType(metricDescriptorType: MetricDescriptorType):
     ValueType {
   if (metricDescriptorType === MetricDescriptorType.CUMULATIVE_DOUBLE ||
       metricDescriptorType === MetricDescriptorType.GAUGE_DOUBLE) {
@@ -114,8 +113,7 @@ export function createValueType(metricDescriptorType: MetricDescriptorType):
 }
 
 /** Constructs a LabelDescriptor from a LabelKey. */
-export function createLabelDescriptor(labelKeys: LabelKey[]):
-    LabelDescriptor[] {
+function createLabelDescriptor(labelKeys: LabelKey[]): LabelDescriptor[] {
   const labelDescriptorList: LabelDescriptor[] =
       labelKeys.map(labelKey => ({
                       key: labelKey.key,
@@ -133,10 +131,10 @@ export function createLabelDescriptor(labelKeys: LabelKey[]):
 }
 
 /** Creates a Metric using the LabelKeys and LabelValues. */
-export function createMetric(
+function createMetric(
     metricDescriptor: OCMetricDescriptor, labelValues: LabelValue[],
     metricPrefix: string): {type: string; labels: {[key: string]: string};} {
-  const type = getMetricType(metricDescriptor.name, metricPrefix);
+  const type = createMetricType(metricDescriptor.name, metricPrefix);
   const labels: {[key: string]: string} = {};
   for (let i = 0; i < labelValues.length; i++) {
     const value = labelValues[i].value;
@@ -154,7 +152,7 @@ export function createMetric(
 /**
  * Converts timeseries's point, so that metric can be uploaded to StackDriver.
  */
-export function createPoint(
+function createPoint(
     point: TimeSeriesPoint, startTimeStamp: Timestamp,
     valueType: ValueType): Point {
   const value = createValue(valueType, point);
@@ -168,7 +166,7 @@ export function createPoint(
 }
 
 /** Converts a OpenCensus Point's value to a StackDriver Point value. */
-export function createValue(valueType: ValueType, point: TimeSeriesPoint) {
+function createValue(valueType: ValueType, point: TimeSeriesPoint) {
   if (valueType === ValueType.INT64) {
     return {int64Value: point.value as number};
   } else if (valueType === ValueType.DOUBLE) {
@@ -182,8 +180,7 @@ export function createValue(valueType: ValueType, point: TimeSeriesPoint) {
 }
 
 /** Formats an OpenCensus Distribution to Stackdriver's format. */
-export function createDistribution(distribution: DistributionValue):
-    Distribution {
+function createDistribution(distribution: DistributionValue): Distribution {
   return {
     count: distribution.count,
     mean: distribution.count === 0 ? 0 : distribution.sum / distribution.count,
@@ -197,8 +194,7 @@ export function createDistribution(distribution: DistributionValue):
 }
 
 /** Converts a OpenCensus BucketOptions to a StackDriver BucketOptions. */
-export function createExplicitBucketOptions(bucketOptions: BucketOptions):
-    number[] {
+function createExplicitBucketOptions(bucketOptions: BucketOptions): number[] {
   const explicitBucketOptions: number[] = [];
   // The first bucket bound should be 0.0 because the Metrics first bucket is
   // [0, first_bound) but Stackdriver monitoring bucket bounds begin with
@@ -208,7 +204,7 @@ export function createExplicitBucketOptions(bucketOptions: BucketOptions):
 }
 
 /** Converts a OpenCensus Buckets to a list of counts. */
-export function createBucketCounts(buckets: DistributionBucket[]): number[] {
+function createBucketCounts(buckets: DistributionBucket[]): number[] {
   const bucketCounts: number[] = [];
   // The first bucket (underflow bucket) should always be 0 count because the
   // Metrics first bucket is [0, first_bound) but StackDriver distribution
@@ -239,3 +235,17 @@ function leftZeroPad(ns: number) {
   const pad = '000000000'.substring(0, 9 - str.length);
   return `${pad}${str}`;
 }
+
+export const TEST_ONLY = {
+  createMetricType,
+  createDisplayName,
+  createPoint,
+  createMetric,
+  createLabelDescriptor,
+  createValueType,
+  createMetricKind,
+  createDistribution,
+  createExplicitBucketOptions,
+  createValue,
+  createBucketCounts
+};
