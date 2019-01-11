@@ -15,7 +15,7 @@
  */
 
 import * as defaultLogger from '../common/console-logger';
-import {getTimestampWithProcessHRTime} from '../common/time-util';
+import {getTimestampWithProcessHRTime, timestampFromMillis} from '../common/time-util';
 import * as loggerTypes from '../common/types';
 import {DistributionValue, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
 
@@ -200,9 +200,10 @@ export class BaseView implements View {
 
   /**
    * Gets view`s metric
+   * @param start The start timestamp in epoch milliseconds
    * @returns {Metric}
    */
-  getMetric(): Metric {
+  getMetric(start: number): Metric {
     const {type} = this.metricDescriptor;
     let startTimestamp: Timestamp;
 
@@ -215,8 +216,7 @@ export class BaseView implements View {
         startTimestamp = null;
         break;
       default:
-        // TODO (mayurkale): This should be set when create Cumulative view.
-        startTimestamp = getTimestampWithProcessHRTime();
+        startTimestamp = timestampFromMillis(start);
     }
 
     const timeseries: TimeSeries[] = [];

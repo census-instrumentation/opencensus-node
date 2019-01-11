@@ -59,6 +59,20 @@ export function getTimestampWithProcessHRTime(): Timestamp {
   return {seconds, nanos};
 }
 
+/**
+ * Creates a new timestamp from the given milliseconds.
+ *
+ * @param {number} epochMilli the timestamp represented in milliseconds since
+ *  epoch.
+ * @returns {Timestamp} new timestamp with specified fields.
+ */
+export function timestampFromMillis(epochMilli: number): Timestamp {
+  return {
+    seconds: Math.floor(epochMilli / MILLIS_PER_SECOND),
+    nanos: (epochMilli % MILLIS_PER_SECOND) * NANOS_PER_MILLI
+  };
+}
+
 setHrtimeReference();
 
 export const TEST_ONLY = {

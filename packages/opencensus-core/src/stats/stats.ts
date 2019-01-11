@@ -145,7 +145,7 @@ export class Stats {
 
     for (const measureName of Object.keys(this.registeredViews)) {
       for (const view of this.registeredViews[measureName]) {
-        metrics.push(view.getMetric());
+        metrics.push(view.getMetric(view.startTime));
       }
     }
 
