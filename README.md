@@ -53,7 +53,7 @@ If no exporter is registered in the tracing instance, as default, a console log 
 
 ## Versioning
 
-This library follows [Semantic Versioning][semver].
+This library follows [Semantic Versioning](http://semver.org/).
 
 **GA**: Libraries defined at a GA quality level are stable, and will not introduce
 backwards-incompatible changes in any minor or patch releases. We will address issues and requests
@@ -66,6 +66,8 @@ There may be backwards incompatible changes in a minor version release, though n
 release. If an element is part of an API that is only meant to be used by exporters or other
 opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18
 months before removing it, if possible.
+
+**Alpha**: Libraries defined at a Alpha quality level can be unstable and could cause crashes or data loss. Alpha software may not contain all of the features that are planned for the final version. The API is subject to change.
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
