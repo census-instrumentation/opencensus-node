@@ -31,8 +31,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
   private projectId: string;
   private metricPrefix: string;
   private displayNamePrefix: string;
-  // tslint:disable:no-any
-  private onMetricUploadError: any;
+  private onMetricUploadError: (err: Error) => void;
   private timer: NodeJS.Timer;
   static readonly DEFAULT_DISPLAY_NAME_PREFIX: string = 'OpenCensus';
   static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
@@ -137,13 +136,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
     const resourceLabels = {project_id: this.projectId};
     const monitoredResource = {type: 'global', labels: resourceLabels};
 
-    metricsList.map(metric => {
-      const timeSeriesList =
-          createTimeSeriesList(metric, monitoredResource, this.metricPrefix);
-      timeSeriesList.forEach(ts => {
-        timeSeries.push(ts);
-      });
-    });
+    for (const metric of metricsList) {
+      timeSeries.push(...createTimeSeriesList(
+          metric, monitoredResource, this.metricPrefix));
+    }
 
     if (timeSeries.length === 0) {
       return Promise.resolve();

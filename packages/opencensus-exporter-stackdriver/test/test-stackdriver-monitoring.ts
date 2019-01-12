@@ -47,6 +47,8 @@ class MockLogger implements Logger {
 
 
 describe('Stackdriver Stats Exporter', () => {
+  // CircleCI pre-empts the VM
+  const DELAY = 200;
   describe('test constants', () => {
     assert.strictEqual(
         StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN,
@@ -115,6 +117,21 @@ describe('Stackdriver Stats Exporter', () => {
           description: 'Opencensus task identifier'
         }
       ]);
+
+      await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
+        const timeSeries = mockLogger.debugBuffer[1][0];
+        assert.strictEqual(
+            timeSeries.metric.type,
+            `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
+                METRIC_NAME}`);
+        assert.strictEqual(timeSeries.resource.type, 'global');
+        assert.ok(timeSeries.resource.labels.project_id);
+        assert.strictEqual(timeSeries.resource.labels.project_id, PROJECT_ID);
+        assert.strictEqual(timeSeries.metricKind, MetricKind.GAUGE);
+        assert.strictEqual(timeSeries.valueType, ValueType.INT64);
+        assert.ok(timeSeries.points.length > 0);
+        assert.deepStrictEqual(timeSeries.points[0].value.int64Value, 100);
+      });
     });
   });
 });
