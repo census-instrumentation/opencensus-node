@@ -81,6 +81,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
         Metrics.getMetricProducerManager();
     for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
       for (const metric of metricProducer.getMetrics()) {
+        // TODO(mayurkale): OPTIMIZATION: consider to call in parallel.
         const isRegistered =
             await this.registerMetricDescriptor(metric.descriptor);
         if (metric && isRegistered) {
