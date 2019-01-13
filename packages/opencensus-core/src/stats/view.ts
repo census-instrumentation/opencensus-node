@@ -158,9 +158,11 @@ export class BaseView implements View {
    * @param tags The tags to be checked
    */
   private invalidTags(tags: Tags): boolean {
-    const result: boolean =  this.invalidPrintableCharacters(tags) || this.invalidLength(tags);
-    if(result) {
-      this.logger.warn('Unable to create tagkey/tagvalue with the specified tags.');
+    const result: boolean =
+        this.invalidPrintableCharacters(tags) || this.invalidLength(tags);
+    if (result) {
+      this.logger.warn(
+          'Unable to create tagkey/tagvalue with the specified tags.');
     }
     return result;
   }
