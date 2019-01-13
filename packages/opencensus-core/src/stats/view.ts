@@ -73,12 +73,10 @@ export class BaseView implements View {
   /** An object to log information to */
   // @ts-ignore
   private logger: loggerTypes.Logger;
-
-  
   /**
-   * A list of tag keys that represents the possible column labels
+   * Max Length of a TagKey
    */
-    private readonly MAX_LENGTH: number = 256;
+  private readonly MAX_LENGTH: number = 256;
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
    * prefer using Stats.createView() instead.
