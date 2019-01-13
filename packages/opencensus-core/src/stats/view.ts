@@ -22,6 +22,7 @@ import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
 import {AggregationData, AggregationType, Measure, Measurement, Tags, View} from './types';
+import { logger } from '..';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 const UNIT_SEPARATOR = String.fromCharCode(31);
@@ -158,7 +159,11 @@ export class BaseView implements View {
    * @param tags The tags to be checked
    */
   private invalidTags(tags: Tags): boolean {
-    return this.invalidPrintableCharacters(tags) || this.invalidLength(tags);
+    const result: boolean =  this.invalidPrintableCharacters(tags) || this.invalidLength(tags);
+    if(result) {
+      this.logger.warn('Unable to create tagkey/tagvalue with the specified tags.');
+    }
+    return result;
   }
 
   /**
