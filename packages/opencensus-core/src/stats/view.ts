@@ -74,6 +74,11 @@ export class BaseView implements View {
   // @ts-ignore
   private logger: loggerTypes.Logger;
 
+  
+  /**
+   * A list of tag keys that represents the possible column labels
+   */
+    private readonly MAX_LENGTH: number = 256;
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
    * prefer using Stats.createView() instead.
@@ -151,15 +156,32 @@ export class BaseView implements View {
   }
 
   /**
-   * Checks if tag keys and values have only printable characters.
+   * Checks if tag keys and values are valid.
    * @param tags The tags to be checked
    */
   private invalidTags(tags: Tags): boolean {
+    return this.invalidPrintableCharacters(tags) || this.invalidLength(tags);
+  }
+
+  /**
+   * Checks if tag keys and values have only printable characters.
+   * @param tags The tags to be checked
+   */
+  private invalidPrintableCharacters(tags: Tags): boolean {
     return Object.keys(tags).some(tagKey => {
       return invalidString.test(tagKey) || invalidString.test(tags[tagKey]);
     });
   }
 
+  /**
+   * Checks if length of tagkey is greater than 0 & less than 256.
+   * @param tags The tags to be checked
+   */
+  private invalidLength(tags: Tags): boolean {
+    return Object.keys(tags).some(tagKey => {
+      return tagKey.length <= 0 || tagKey.length >= this.MAX_LENGTH;
+    });
+  }
   /**
    * Creates an empty aggregation data for a given tags.
    * @param tags The tags for that aggregation data
