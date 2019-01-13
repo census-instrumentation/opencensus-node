@@ -22,7 +22,6 @@ import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
 import {AggregationData, AggregationType, Measure, Measurement, Tags, View} from './types';
-import { logger } from '..';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 const UNIT_SEPARATOR = String.fromCharCode(31);
