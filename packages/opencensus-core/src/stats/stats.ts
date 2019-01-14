@@ -53,7 +53,6 @@ export class Stats {
     return this.singletonInstance || (this.singletonInstance = new this());
   }
 
-
   /**
    * Registers a view to listen to new measurements in its measure. Prefer using
    * the method createView() that creates an already registered view.

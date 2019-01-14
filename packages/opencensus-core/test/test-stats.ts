@@ -15,7 +15,6 @@
  */
 
 import * as assert from 'assert';
-
 import {BaseView, StatsEventListener} from '../src';
 import {Stats} from '../src/stats/stats';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';

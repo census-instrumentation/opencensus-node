@@ -9,9 +9,24 @@ All notable changes to this project will be documented in this file.
 - Add support for supplying instrumentation configuration via tracing option. Option argument added to instrumentation interface.
 - Add ignoreIncomingPaths and ignoreOutgoingUrls support to the http and https tracing instrumentations.
 
- **Contains API breaking changes for trace implementations**
+ **This release has multiple breaking changes. Please test your code accordingly after upgrading.**
 
 - Modify `Logger` interface: `level` made optional, `silly` removed.
+- The ```new Stats()``` has been deprecated on Stats class. The global singleton ```stats``` object should be used instead.
+
+##### Old code
+```js
+const { Stats } = require("@opencensus/core");
+const stats = new Stats();
+stats.createView(...);
+```
+
+##### New code
+```js
+// Get the global singleton stats object
+const { stats } = require("@opencensus/core");
+stats.createView(...);
+```
 
 ## 0.0.8 - 2018-12-14
  **Contains API breaking changes for stats/metrics implementations**
