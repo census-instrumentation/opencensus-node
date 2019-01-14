@@ -15,12 +15,11 @@
  */
 
 import * as assert from 'assert';
-import {AggregationType, Measurement, MeasureUnit, Stats, Tags, View} from '../src';
+import {AggregationType, Measurement, MeasureUnit, stats, Tags, View} from '../src';
 import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
 import {MetricProducerForStats} from '../src/stats/metric-producer';
 
 describe('Metric producer for stats', () => {
-  const stats = new Stats();
   const metricProducerForStats = new MetricProducerForStats(stats);
 
   // constants for view name

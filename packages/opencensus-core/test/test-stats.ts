@@ -15,7 +15,9 @@
  */
 
 import * as assert from 'assert';
-import {BaseView, Stats, StatsEventListener} from '../src';
+
+import {BaseView, StatsEventListener} from '../src';
+import {Stats} from '../src/stats/stats';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';
 
 class TestExporter implements StatsEventListener {
@@ -53,6 +55,23 @@ describe('Stats', () => {
   const measureName = 'testMeasureDouble';
   const measureUnit = MeasureUnit.UNIT;
   const description = 'test description';
+
+  /** Should create a Stats instance */
+  describe('new Stats()', () => {
+    it('should create a Stats instance', () => {
+      const stats = new Stats();
+      assert.ok(stats instanceof Stats);
+    });
+  });
+
+
+  /** Should get the singleton stats instance. */
+  describe('static get instance()', () => {
+    it('should get the singleton stats instance', () => {
+      const stats = Stats.instance;
+      assert.ok(stats instanceof Stats);
+    });
+  });
 
   describe('createMeasureDouble()', () => {
     it('should create a measure of type double', () => {

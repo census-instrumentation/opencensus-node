@@ -17,7 +17,10 @@
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
+import {MetricProducer} from '../metrics/export/types';
 import {Metric} from '../metrics/export/types';
+import {Metrics} from '../metrics/metrics';
+import {MetricProducerForStats} from './metric-producer';
 
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, View} from './types';
 import {BaseView} from './view';
@@ -29,6 +32,8 @@ export class Stats {
   private registeredViews: {[key: string]: View[]} = {};
   /** An object to log information to */
   private logger: loggerTypes.Logger;
+  /** Singleton instance */
+  private static singletonInstance: Stats;
 
   /**
    * Creates stats
@@ -37,14 +42,17 @@ export class Stats {
   constructor(logger = defaultLogger) {
     this.logger = logger.logger();
 
-    // TODO (mayurkale): Decide how to inject MetricProducerForStats.
-    // It should be something like below, but looks like not the right place.
-
     // Create a new MetricProducerForStats and register it to
     // MetricProducerManager when Stats is initialized.
-    // const metricProducer: MetricProducer = new MetricProducerForStats(this);
-    // Metrics.getMetricProducerManager().add(metricProducer);
+    const metricProducer: MetricProducer = new MetricProducerForStats(this);
+    Metrics.getMetricProducerManager().add(metricProducer);
   }
+
+  /** Gets the stats instance. */
+  static get instance(): Stats {
+    return this.singletonInstance || (this.singletonInstance = new this());
+  }
+
 
   /**
    * Registers a view to listen to new measurements in its measure. Prefer using
