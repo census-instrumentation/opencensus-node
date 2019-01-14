@@ -195,8 +195,7 @@ describe('BaseView', () => {
 
     it('should not record a measurement when a tag key is longer than 255 characters',
        () => {
-         const tagkey =
-             'NHHcUMQtGf7kFjSvy86aZZMIp5zx1aoRH4FFjOJnU4AvwVmAD5GPcmQmwnP6NuWx5NmHdts3xgqyAjn57i9Yc5mak22duPlf7JehY3bMcjbacocAEC1TepDCEt3ihzSOuI9mRvKL4vop7AZ3Uahge6OL3ogIJOhulRlIkK2qeT2avh8FeoGcnNV3O6yKHNovvUoUf01vxnwhG3ruPTh6j2E8G51q1tGAbSUd0UE0Sf2KceRQTr28GOp8zGlIj6lpqJXg';
+         const tagkey = 'a'.repeat(256);
          const measurement = {
            measure,
            tags: {[tagkey]: 'testValue'},
