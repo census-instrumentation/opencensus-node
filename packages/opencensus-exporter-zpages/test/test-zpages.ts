@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, CountData, DistributionData, Measure, Measurement, MeasureUnit, RootSpan, Stats, SumData, Tags, TracerConfig} from '@opencensus/core';
+import {AggregationType, CountData, DistributionData, Measure, Measurement, MeasureUnit, RootSpan, SumData, Tags, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import axios from 'axios';
 import * as http from 'http';
@@ -243,20 +243,13 @@ describe('Zpages Exporter', () => {
       return tags[tagKey];
     });
     let zpages: ZpagesExporter;
-    let stats: Stats;
     let measure: Measure;
     let zpagesData: StatsViewData;
     let measurement: Measurement;
     let measurement2: Measurement;
 
     beforeEach((done) => {
-      stats = new Stats();
       zpages = new ZpagesExporter(options);
-      stats.registerExporter(zpages);
-      measure = stats.createMeasureDouble(
-          'testMeasureDouble', MeasureUnit.UNIT, 'A test measure');
-      measurement = {measure, tags, value: 22};
-      measurement2 = {measure, tags, value: 11};
       zpages.startServer(done);
     });
 
@@ -265,7 +258,15 @@ describe('Zpages Exporter', () => {
     });
 
     describe('with COUNT aggregation type', () => {
+      /** Creating here because stats is a singleton */
+      const {stats} = require('@opencensus/core');
+      measure = stats.createMeasureDouble(
+          'testMeasureDouble', MeasureUnit.UNIT, 'A test measure');
+      measurement = {measure, tags, value: 22};
+      measurement2 = {measure, tags, value: 11};
+
       it('should get view information', async () => {
+        stats.registerExporter(zpages);
         stats.createView(
             'test/CountView', measure, AggregationType.COUNT, tagKeys,
             'A count test', null);
@@ -280,6 +281,7 @@ describe('Zpages Exporter', () => {
       });
 
       it('should get stats for view', async () => {
+        stats.registerExporter(zpages);
         stats.createView(
             'test/CountView', measure, AggregationType.COUNT, tagKeys,
             'A count test', null);
@@ -298,6 +300,12 @@ describe('Zpages Exporter', () => {
     });
 
     describe('with SUM aggregation type', () => {
+      /** Creating here because stats is a singleton */
+      const {stats} = require('@opencensus/core');
+      measure = stats.createMeasureDouble(
+          'testMeasureDouble', MeasureUnit.UNIT, 'A test measure');
+      measurement = {measure, tags, value: 22};
+      measurement2 = {measure, tags, value: 11};
       it('should get view information', async () => {
         stats.registerExporter(zpages);
         stats.createView(
@@ -334,6 +342,13 @@ describe('Zpages Exporter', () => {
     });
 
     describe('with LAST VALUE aggregation type', () => {
+      /** Creating here because stats is a singleton */
+      const {stats} = require('@opencensus/core');
+      measure = stats.createMeasureDouble(
+          'testMeasureDouble', MeasureUnit.UNIT, 'A test measure');
+      measurement = {measure, tags, value: 22};
+      measurement2 = {measure, tags, value: 11};
+
       it('should get view information', async () => {
         stats.registerExporter(zpages);
         stats.createView(
@@ -370,6 +385,13 @@ describe('Zpages Exporter', () => {
     });
 
     describe('with DISTRIBUTION aggregation type', () => {
+      /** Creating here because stats is a singleton */
+      const {stats} = require('@opencensus/core');
+      measure = stats.createMeasureDouble(
+          'testMeasureDouble', MeasureUnit.UNIT, 'A test measure');
+      measurement = {measure, tags, value: 22};
+      measurement2 = {measure, tags, value: 11};
+
       it('should get view information', async () => {
         const boundaries = [10, 20, 30, 40];
         stats.registerExporter(zpages);
@@ -414,12 +436,13 @@ describe('Zpages Exporter', () => {
 
   describe('when a view is accessed in rpcz page', () => {
     let zpages: ZpagesExporter;
-    let stats: Stats;
     let rpczData: RpczData;
     const boundaries = [10, 20, 30, 40];
+    /** Creating here because stats is a singleton */
+    const {stats} = require('@opencensus/core');
+
 
     beforeEach((done) => {
-      stats = new Stats();
       zpages = new ZpagesExporter(options);
       stats.registerExporter(zpages);
       zpages.startServer(done);

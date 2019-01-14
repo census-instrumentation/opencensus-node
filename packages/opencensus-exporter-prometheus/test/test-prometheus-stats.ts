@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, Measure, MeasureUnit, Stats} from '@opencensus/core';
+import {AggregationType, Measure, MeasureUnit, stats} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import {PrometheusStatsExporter} from '../src/';
@@ -26,10 +26,8 @@ describe('Prometheus Stats Exporter', () => {
   const tagKeys = Object.keys(tags);
   let exporter: PrometheusStatsExporter;
   let measure: Measure;
-  let stats: Stats;
 
   beforeEach((done) => {
-    stats = new Stats();
     measure = stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     exporter = new PrometheusStatsExporter(options);
     stats.registerExporter(exporter);
@@ -195,10 +193,8 @@ describe('Prometheus Stats Exporter with prefix option', () => {
   const tagKeys = Object.keys(tags);
   let exporter: PrometheusStatsExporter;
   let measure: Measure;
-  let stats: Stats;
 
   beforeEach((done) => {
-    stats = new Stats();
     measure = stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     exporter = new PrometheusStatsExporter(options);
     stats.registerExporter(exporter);

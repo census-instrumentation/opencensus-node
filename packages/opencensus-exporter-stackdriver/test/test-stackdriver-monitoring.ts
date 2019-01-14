@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, BaseView, logger, Logger, Measurement, MeasureUnit, Stats} from '@opencensus/core';
+import {AggregationType, BaseView, logger, Logger, Measurement, MeasureUnit, stats} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as nock from 'nock';
@@ -60,7 +60,6 @@ describe('Stackdriver Stats Exporter', function() {
   const exporterTestLogger = new ExporterTestLogger();
   let exporterOptions: StackdriverExporterOptions;
   let exporter: StackdriverStatsExporter;
-  const stats = new Stats();
 
   const tags = {tagKey1: 'valueKey1'};
   const tagKeys = Object.keys(tags);
