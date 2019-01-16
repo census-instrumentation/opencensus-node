@@ -33,8 +33,9 @@
 
 /**
  * This is an example of exporting a custom metric from
- * OpenCensus to Stackdriver.
+ * OpenCensus to Prometheus.
  */
+/*jshint node:true, esversion: 6, laxcomma:true */
 const { Stats, MeasureUnit, AggregationType } = require("@opencensus/core");
 const { PrometheusStatsExporter } = require("@opencensus/exporter-prometheus");
 
@@ -78,8 +79,8 @@ const lineReader = readline.createInterface({ input: stream });
 
 const tagKeys = ["method", "status"];
 
-// Register the view.
-const latencyView = stats.createView(
+// Create & Register the view.
+/*const latencyView = */stats.createView(
   "demo/latency",
   mLatencyMs,
   AggregationType.DISTRIBUTION,
@@ -89,18 +90,20 @@ const latencyView = stats.createView(
   // [>=0ms, >=25ms, >=50ms, >=75ms, >=100ms, >=200ms, >=400ms, >=600ms, >=800ms, >=1s, >=2s, >=4s, >=6s]
   [0, 25, 50, 75, 100, 200, 400, 600, 800, 1000, 2000, 4000, 6000]
 );
+//stats.registerView(latencyView);
 
-// Register the view.
-const lineCountView = stats.createView(
+// Create & Register the view.
+/*const lineCountView = */stats.createView(
   "demo/lines_in",
   mLineLengths,
   AggregationType.COUNT,
   tagKeys,
   "The number of lines from standard input"
 );
+//stats.registerView(lineCountView);
 
-// Register the view.
-const lineLengthView = stats.createView(
+// Create & Register the view.
+/*const lineLengthView = */stats.createView(
   "demo/line_lengths",
   mLineLengths,
   AggregationType.DISTRIBUTION,
@@ -110,6 +113,7 @@ const lineLengthView = stats.createView(
   // [>=0B, >=5B, >=10B, >=15B, >=20B, >=40B, >=60B, >=80, >=100B, >=200B, >=400, >=600, >=800, >=1000]
   [0, 5, 10, 15, 20, 40, 60, 80, 100, 200, 400, 600, 800, 1000]
 );
+//stats.registerView(lineLengthView);
 
 // The begining of our REPL loop
 let [_, startNanoseconds] = process.hrtime();
