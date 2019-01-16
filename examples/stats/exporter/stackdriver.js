@@ -62,35 +62,35 @@ const stream = fs.createReadStream("./test.txt");
 // Create an interface to read and process our file line by line
 const lineReader = readline.createInterface({ input: stream });
 
-const tagKey = "method";
+const tagKeys = ["method", "status"];
 
-// Register the view.
-const latencyView = stats.createView(
+// Create the view.
+stats.createView(
   "demo/latency",
   mLatencyMs,
   AggregationType.DISTRIBUTION,
-  [tagKey],
+  tagKeys,
   "The distribution of the repl latencies",
   // Latency in buckets:
   // [>=0ms, >=25ms, >=50ms, >=75ms, >=100ms, >=200ms, >=400ms, >=600ms, >=800ms, >=1s, >=2s, >=4s, >=6s]
   [0, 25, 50, 75, 100, 200, 400, 600, 800, 1000, 2000, 4000, 6000]
 );
 
-// Register the view.
-const lineCountView = stats.createView(
+// Create the view.
+stats.createView(
   "demo/lines_in",
   mLineLengths,
   AggregationType.COUNT,
-  [tagKey],
+  tagKeys,
   "The number of lines from standard input"
 );
 
-// Register the view.
-const lineLengthView = stats.createView(
+// Create the view.
+stats.createView(
   "demo/line_lengths",
   mLineLengths,
   AggregationType.DISTRIBUTION,
-  [tagKey],
+  tagKeys,
   "Groups the lengths of keys in buckets",
   // Bucket Boudaries:
   // [>=0B, >=5B, >=10B, >=15B, >=20B, >=40B, >=60B, >=80, >=100B, >=200B, >=400, >=600, >=800, >=1000]
