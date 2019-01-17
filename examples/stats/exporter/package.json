@@ -20,7 +20,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "jshint": "^2.9.7"
+    "gts": "^0.9.0"
   },
   "dependencies": {
     "@opencensus/core": "^0.0.8",
