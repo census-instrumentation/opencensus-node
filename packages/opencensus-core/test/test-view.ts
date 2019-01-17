@@ -193,6 +193,30 @@ describe('BaseView', () => {
          view.recordMeasurement(measurement);
          assert.ok(!view.getSnapshot(measurement.tags));
        });
+
+    it('should not record a measurement when a tag key is longer than 255 characters',
+       () => {
+         const tagkey = 'a'.repeat(256);
+         const measurement = {
+           measure,
+           tags: {[tagkey]: 'testValue'},
+           value: 10
+         };
+         view.recordMeasurement(measurement);
+         assert.ok(!view.getSnapshot(measurement.tags));
+       });
+
+    it('should not record a measurement when tag key is 0 character long',
+       () => {
+         const tagkey = '';
+         const measurement = {
+           measure,
+           tags: {[tagkey]: 'testValue'},
+           value: 10
+         };
+         view.recordMeasurement(measurement);
+         assert.ok(!view.getSnapshot(measurement.tags));
+       });
   });
 
   describe('getMetric()', () => {

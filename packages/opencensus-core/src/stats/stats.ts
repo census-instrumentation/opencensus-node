@@ -98,10 +98,7 @@ export class Stats {
         exporter.onRegisterView(view);
       }
     }
-
-    // dependency with PR#253 and once start method is implemented in all stats
-    // exporters
-    // exporter.start();
+    exporter.start();
   }
 
   /**
