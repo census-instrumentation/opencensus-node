@@ -83,7 +83,7 @@ node ./prometheus.js
 
 You can observe the Prometheus Metrics Exporter that is created by the sample:
 ```
-http://localhost:9465/metrics
+http://localhost:9464/metrics
 ```
 
 
