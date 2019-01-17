@@ -17,7 +17,6 @@
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
-import {MetricProducer} from '../metrics/export/types';
 import {Metric} from '../metrics/export/types';
 import {Metrics} from '../metrics/metrics';
 
@@ -44,7 +43,7 @@ export class BaseStats implements Stats {
 
     // Create a new MetricProducerForStats and register it to
     // MetricProducerManager when Stats is initialized.
-    const metricProducer: MetricProducer = new MetricProducerForStats(this);
+    const metricProducer = new MetricProducerForStats(this);
     Metrics.getMetricProducerManager().add(metricProducer);
   }
 
@@ -54,8 +53,7 @@ export class BaseStats implements Stats {
   }
 
   /**
-   * Registers a view to listen to new measurements in its measure. Prefer using
-   * the method createView() that creates an already registered view.
+   * Registers a view to listen to new measurements in its measure.
    * @param view The view to be registered
    */
   registerView(view: View): void {
