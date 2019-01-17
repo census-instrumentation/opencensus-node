@@ -1,5 +1,18 @@
 # Examples
 
+You will need to:
+
+1. Clone this repo and install dependent packages
+
+```bash
+WORK=[[YOUR-WORKING-DIRECTORY]]
+cd ${WORK}
+
+git clone https://github.com/census-instrumentation/opencensus-node
+
+cd opencensus-node
+npm install
+```
 
 ## Stackdriver
 
@@ -10,14 +23,14 @@ See https://developers.google.com/identity/protocols/application-default-credent
 You will need to:
 
 1. Create a Google Cloud Platform project
-2. Enable billing
-3. Create a Stackdriver workspace
-4. Create a service account and ensure it is permitted to write Stackdriver metrics
-5. Run the sample
+1. Enable billing
+1. Create a Stackdriver workspace
+1. Create a service account and ensure it is permitted to write Stackdriver metrics
+1. Run the sample
 
 ### Create Google Cloud Platform project and enable billing
 
-```
+```bash
 PROJECT=[[YOUR-PROJECT]]
 BILLING=[[YOUR-BILLING]]
 
@@ -34,7 +47,7 @@ google-chrome console.cloud.google.com/monitoring/?project=${PROJECT}
 
 ### Create Service Account and set IAM policy
 
-```
+```bash
 ACCOUNT=[[YOUR-SERVICE-ACCOUNT]]
 ADDRESS=${ACCOUNT}@${PROJECT}.iam.gserviceaccount.com
 
@@ -56,15 +69,34 @@ gcloud iam service-accounts keys create ${FILE} \
 
 ### Run it
 
-```
+```bash
 GOOGLE_APPLICATION_CREDENTIALS=${FILE} node ./stackdriver.js
+```
+
+Alternatively, if you'd prefer to use Docker:
+
+```bash
+IMAGE=[[YOUR-STACKDRIVER-IMAGE]]
+TAG=[[YOUR-TAG]]
+
+docker build \
+  --tag=${IMAGE}:${TAG} \
+  --file=./Dockerfile.stackdriver \
+  .
+
+docker run \
+  --interactive \
+  --tty \
+  --mount=type=bind,src=${WORK}/${ACCOUNT}.key.json,dst=/keys/${ACCOUNT}.key.json \
+  --env=GOOGLE_APPLICATION_CREDENTIALS=/keys/${ACCOUNT}.key.json \
+  ${IMAGE}:${TAG}
 ```
 
 ### Observe it
 
 Look for the metrics (prefixed `repl/`) in metrics explorer:
 
-```
+```bash
 google-chrome console.cloud.google.com/monitoring/?project=${PROJECT}
 ```
 
@@ -77,13 +109,33 @@ If you'd like to see the metrics consumed by a Prometheus server, you will need 
 
 ### Run it
 
-```
+```bash
 node ./prometheus.js
 ```
 
-You can observe the Prometheus Metrics Exporter that is created by the sample:
+Alternatively, if you'd prefer to use Docker:
+
+```bash
+IMAGE=[[YOUR-PROMETHEUS-IMAGE]]
+TAG=[[YOUR-TAG]]
+
+docker build \
+  --tag=${IMAGE}:${TAG} \
+  --file=./Dockerfile.prometheus \
+  .
+
+docker run \
+  --interactive \
+  --tty \
+  --publish=9464:9464 \
+  ${IMAGE}:${TAG}
 ```
-http://localhost:9464/metrics
+
+### Observer it
+
+You can observe the Prometheus Metrics Exporter that is created by the sample:
+```bash
+google-chrome http://localhost:9464/metrics
 ```
 
 

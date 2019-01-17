@@ -1,0 +1,30 @@
+{
+  "name": "@opencensus/examples",
+  "version": "0.0.8",
+  "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
+  "repository": "census-instrumentation/opencensus-node",
+  "scripts": {},
+  "keywords": [
+    "opencensus",
+    "nodejs",
+    "tracing",
+    "profiling"
+  ],
+  "author": "Google Inc.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "files": [],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "jshint": "^2.9.7"
+  },
+  "dependencies": {
+    "@opencensus/core": "^0.0.8",
+    "@opencensus/exporter-prometheus": "^0.0.8",
+    "@opencensus/exporter-stackdriver": "^0.0.8"
+  }
+}
