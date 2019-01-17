@@ -317,10 +317,10 @@ describe('Zpages Exporter', () => {
 
       it('should get stats for view', async () => {
         globalStats.registerExporter(zpages);
-        globalStats.createView(
+        const view = globalStats.createView(
             'test/SumView', measure, AggregationType.SUM, tagKeys, 'A sum test',
             null);
-
+        globalStats.registerView(view);
         globalStats.record(measurement, measurement2);
 
         zpagesData = await zpagesClient.getStatsz({path: 'test/SumView'});
@@ -338,9 +338,10 @@ describe('Zpages Exporter', () => {
     describe('with LAST VALUE aggregation type', () => {
       it('should get view information', async () => {
         globalStats.registerExporter(zpages);
-        globalStats.createView(
+        const view = globalStats.createView(
             'test/LastValueView', measure, AggregationType.LAST_VALUE, tagKeys,
             'A last value test', null);
+        globalStats.registerView(view);
         globalStats.record(measurement, measurement2);
 
         zpagesData = await zpagesClient.getStatsz({path: 'test/LastValueView'});
@@ -353,10 +354,10 @@ describe('Zpages Exporter', () => {
 
       it('should get stats for view', async () => {
         globalStats.registerExporter(zpages);
-        globalStats.createView(
+        const view = globalStats.createView(
             'test/LastValueView', measure, AggregationType.LAST_VALUE, tagKeys,
             'A last value test', null);
-
+        globalStats.registerView(view);
         globalStats.record(measurement, measurement2);
 
         zpagesData = await zpagesClient.getStatsz({path: 'test/LastValueView'});
@@ -375,9 +376,10 @@ describe('Zpages Exporter', () => {
       it('should get view information', async () => {
         const boundaries = [10, 20, 30, 40];
         globalStats.registerExporter(zpages);
-        globalStats.createView(
+        const view = globalStats.createView(
             'test/DistributionView', measure, AggregationType.DISTRIBUTION,
             tagKeys, 'A distribution test', boundaries);
+        globalStats.registerView(view);
         globalStats.record(measurement, measurement2);
 
         zpagesData =
@@ -392,10 +394,10 @@ describe('Zpages Exporter', () => {
       it('should get stats for view', async () => {
         const boundaries = [10, 20, 30, 40];
         globalStats.registerExporter(zpages);
-        globalStats.createView(
+        const view = globalStats.createView(
             'test/DistributionView', measure, AggregationType.DISTRIBUTION,
             tagKeys, 'A distribution test', boundaries);
-
+        globalStats.registerView(view);
         globalStats.record(measurement, measurement2);
 
         zpagesData =
@@ -454,28 +456,33 @@ describe('Zpages Exporter', () => {
           'grpc.io/client/started_rpcs', MeasureUnit.UNIT,
           'Number of started client RPCs.');
 
-      globalStats.createView(
+      const view1 = globalStats.createView(
           'grpc.io/client/sent_bytes_per_rpc', measure,
           AggregationType.DISTRIBUTION, tagKeys, 'Sent bytes per RPC',
           boundaries);
+      globalStats.registerView(view1);
 
-      globalStats.createView(
+      const view2 = globalStats.createView(
           'grpc.io/client/received_bytes_per_rpc', measure2,
           AggregationType.DISTRIBUTION, tagKeys, 'Sent bytes per RPC',
           boundaries);
+      globalStats.registerView(view2);
 
-      globalStats.createView(
+      const view3 = globalStats.createView(
           'grpc.io/client/roundtrip_latency', measure3,
           AggregationType.DISTRIBUTION, tagKeys, 'Latency in msecs',
           boundaries);
+      globalStats.registerView(view3);
 
-      globalStats.createView(
+      const view4 = globalStats.createView(
           'grpc.io/client/completed_rpcs', measure3, AggregationType.COUNT,
           tagKeys, 'Number of completed client RPCs', null);
+      globalStats.registerView(view4);
 
-      globalStats.createView(
+      const view5 = globalStats.createView(
           'grpc.io/client/started_rpcs', measure4, AggregationType.COUNT,
           tagKeys, 'Number of started client RPCs', null);
+      globalStats.registerView(view5);
 
       const measurement = {measure, tags, value: 22000};
       const measurement2 = {measure: measure2, tags, value: 1100};
@@ -521,28 +528,33 @@ describe('Zpages Exporter', () => {
           'grpc.io/server/started_rpcs', MeasureUnit.UNIT,
           'Number of started client RPCs.');
 
-      globalStats.createView(
+      const view1 = globalStats.createView(
           'grpc.io/server/received_bytes_per_rpc', measure5,
           AggregationType.DISTRIBUTION, tagKeys2, 'Sent bytes per RPC',
           boundaries);
+      globalStats.registerView(view1);
 
-      globalStats.createView(
+      const view2 = globalStats.createView(
           'grpc.io/server/sent_bytes_per_rpc', measure6,
           AggregationType.DISTRIBUTION, tagKeys2, 'Sent bytes per RPC',
           boundaries);
+      globalStats.registerView(view2);
 
-      globalStats.createView(
+      const view3 = globalStats.createView(
           'grpc.io/server/server_latency', measure7,
           AggregationType.DISTRIBUTION, tagKeys2, 'Latency in msecs',
           boundaries);
+      globalStats.registerView(view3);
 
-      globalStats.createView(
+      const view4 = globalStats.createView(
           'grpc.io/server/completed_rpcs', measure7, AggregationType.COUNT,
           tagKeys2, 'Number of completed client RPCs', null);
+      globalStats.registerView(view4);
 
-      globalStats.createView(
+      const view5 = globalStats.createView(
           'grpc.io/server/started_rpcs', measure8, AggregationType.COUNT,
           tagKeys2, 'Number of started client RPCs', null);
+      globalStats.registerView(view5);
 
       const measurement6 = {measure: measure5, tags: tags3, value: 2200};
       const measurement7 = {measure: measure6, tags: tags3, value: 1100};
