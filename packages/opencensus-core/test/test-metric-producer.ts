@@ -15,13 +15,13 @@
  */
 
 import * as assert from 'assert';
-import {AggregationType, Measurement, MeasureUnit, Stats, Tags, View} from '../src';
+
+import {AggregationType, globalStats, Measurement, MeasureUnit, Tags, View} from '../src';
 import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
 import {MetricProducerForStats} from '../src/stats/metric-producer';
 
 describe('Metric producer for stats', () => {
-  const stats = new Stats();
-  const metricProducerForStats = new MetricProducerForStats(stats);
+  const metricProducerForStats = new MetricProducerForStats(globalStats);
 
   // constants for view name
   const viewName1 = 'test/view/name1';
@@ -29,7 +29,7 @@ describe('Metric producer for stats', () => {
   const viewName3 = 'test/view/name2';
   const description = 'test description';
 
-  const measureDouble = stats.createMeasureDouble(
+  const measureDouble = globalStats.createMeasureDouble(
       'opencensus.io/test/double', MeasureUnit.UNIT, 'Measure Double');
   const tags: Tags = {testKey1: 'testValue1', testKey2: 'testValue2'};
   const labelKeys: LabelKey[] = [
@@ -72,9 +72,10 @@ describe('Metric producer for stats', () => {
   };
 
   it('should add sum stats', () => {
-    const view: View = stats.createView(
+    const view: View = globalStats.createView(
         viewName1, measureDouble, AggregationType.SUM, Object.keys(tags),
         description);
+    globalStats.registerView(view);
     view.recordMeasurement(measurement1);
 
     const metrics = metricProducerForStats.getMetrics();
@@ -92,9 +93,10 @@ describe('Metric producer for stats', () => {
 
   it('should add count stats',
      () => {
-       const view: View = stats.createView(
+       const view: View = globalStats.createView(
            viewName2, measureDouble, AggregationType.COUNT, Object.keys(tags),
            description);
+       globalStats.registerView(view);
        view.recordMeasurement(measurement1);
 
        let metrics = metricProducerForStats.getMetrics();
@@ -122,9 +124,10 @@ describe('Metric producer for stats', () => {
      });
 
   it('should add lastValue stats', () => {
-    const view: View = stats.createView(
+    const view: View = globalStats.createView(
         viewName3, measureDouble, AggregationType.LAST_VALUE, Object.keys(tags),
         description);
+    globalStats.registerView(view);
     view.recordMeasurement(measurement1);
     view.recordMeasurement(measurement2);
 
@@ -153,9 +156,10 @@ describe('Metric producer for stats', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
 
-    const view: View = stats.createView(
+    const view: View = globalStats.createView(
         viewName3, measureDouble, AggregationType.DISTRIBUTION,
         Object.keys(tags), description, buckets);
+    globalStats.registerView(view);
     for (const value of measurementValues) {
       const measurement: Measurement = {measure: measureDouble, value, tags};
       view.recordMeasurement(measurement);

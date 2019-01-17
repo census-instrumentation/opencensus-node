@@ -14,7 +14,76 @@
  * limitations under the License.
  */
 
+import {StatsEventListener} from '../exporters/types';
 import {Metric} from '../metrics/export/types';
+
+/** Main interface for stats. */
+export interface Stats {
+  /**
+   * Creates a view.
+   * @param name The view name
+   * @param measure The view measure
+   * @param aggregation The view aggregation type
+   * @param tagKeys The view columns (tag keys)
+   * @param description The view description
+   * @param bucketBoundaries The view bucket boundaries for a distribution
+   * aggregation type
+   */
+  createView(
+      name: string, measure: Measure, aggregation: AggregationType,
+      tagKeys: string[], description: string,
+      bucketBoundaries?: number[]): View;
+
+  /**
+   * Registers a view to listen to new measurements in its measure. Prefer using
+   * the method createView() that creates an already registered view.
+   * @param view The view to be registered
+   */
+  registerView(view: View): void;
+
+  /**
+   * Creates a measure of type Double.
+   * @param name The measure name
+   * @param unit The measure unit
+   * @param description The measure description
+   */
+  createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
+      Measure;
+
+  /**
+   * Creates a measure of type Int64. Values must be integers up to
+   * Number.MAX_SAFE_INTERGER.
+   * @param name The measure name
+   * @param unit The measure unit
+   * @param description The measure description
+   */
+  createMeasureInt64(name: string, unit: MeasureUnit, description?: string):
+      Measure;
+
+  /**
+   * Updates all views with the new measurements.
+   * @param measurements A list of measurements to record
+   */
+  record(...measurements: Measurement[]): void;
+
+  /**
+   * Remove all registered Views and exporters from the stats.
+   */
+  clear(): void;
+
+  /**
+   * Gets a collection of produced Metric`s to be exported.
+   * @returns {Metric[]} List of metrics
+   */
+  getMetrics(): Metric[];
+
+  /**
+   * Registers an exporter to send stats data to a service.
+   * @param exporter An stats exporter
+   */
+  registerExporter(exporter: StatsEventListener): void;
+}
+
 
 /** Tags are maps of names -> values */
 export interface Tags {

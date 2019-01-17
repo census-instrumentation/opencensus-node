@@ -66,7 +66,6 @@ export * from './exporters/console-exporter';
 // STATS CLASSES
 
 // classes
-export * from './stats/stats';
 export * from './stats/view';
 export * from './stats/recorder';
 export * from './stats/bucket-boundaries';
@@ -94,3 +93,10 @@ export * from './metrics/metric-registry';
 // GAUGES CLASSES
 export * from './metrics/gauges/derived-gauge';
 export * from './metrics/gauges/gauge';
+
+
+// Stats singleton instance
+import {BaseStats} from './stats/stats';
+import {Stats} from './stats/types';
+const globalStats: Stats = BaseStats.instance;
+export {globalStats};
