@@ -22,11 +22,8 @@ export class TagMap {
   // A map mapping TagKey to to its respective TagValue.
   private readonly registeredTags: Map<TagKey, TagValue> = new Map();
 
-  /**
-   * Inserts a key and value in the map if the map does not already contain the
-   * key.
-   */
-  insert(tagKey: TagKey, tagValue: TagValue): void {
+  /** Adds the key/value pair regardless of whether the key is present. */
+  set(tagKey: TagKey, tagValue: TagValue): void {
     if (!isValidTagKey(tagKey)) {
       throw Error(`Invalid TagKey name: ${tagKey.name}`);
     }
@@ -34,25 +31,12 @@ export class TagMap {
     if (!isValidTagValue(tagValue)) {
       throw Error(`Invalid TagValue: ${tagValue.value}`);
     }
-
-    if (!this.registeredTags.has(tagKey)) {
-      this.registeredTags.set(tagKey, tagValue);
-    }
+    this.registeredTags.set(tagKey, tagValue);
   }
 
   /** Deletes a tag from the map if the key is in the map. */
   delete(tagKey: TagKey): void {
     this.registeredTags.delete(tagKey);
-  }
-
-  /** Updates the map by updating the value of a key. */
-  update(tagKey: TagKey, tagValue: TagValue): void {
-    if (this.registeredTags.has(tagKey)) {
-      if (!isValidTagValue(tagValue)) {
-        throw Error(`Invalid TagValue: ${tagValue.value}`);
-      }
-      this.registeredTags.set(tagKey, tagValue);
-    }
   }
 
   /** Gets the tags map. */

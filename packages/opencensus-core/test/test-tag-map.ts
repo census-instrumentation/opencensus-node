@@ -30,9 +30,9 @@ describe('TagMap()', () => {
     tagMap = new TagMap();
   });
 
-  describe('insert()', () => {
-    it('should insert tagkey and tagvalue', () => {
-      tagMap.insert(key1, value1);
+  describe('set()', () => {
+    it('should set tagkey and tagvalue', () => {
+      tagMap.set(key1, value1);
       const tags = tagMap.tags;
       assert.equal(tags.size, 1);
       assert.deepStrictEqual(tags.get(key1), value1);
@@ -40,60 +40,49 @@ describe('TagMap()', () => {
 
     it('should throw an error when invalid tagKey', () => {
       assert.throws(() => {
-        tagMap.insert(invalidKey1, value1);
+        tagMap.set(invalidKey1, value1);
       }, /^Error: Invalid TagKey name:/);
     });
 
     it('should throw an error when invalid tagValue', () => {
       assert.throws(() => {
-        tagMap.insert(key1, invalidValue1);
+        tagMap.set(key1, invalidValue1);
       }, /^Error: Invalid TagValue:/);
     });
 
-    it('should not insert duplicate tagkey and tagvalue', () => {
-      tagMap.insert(key1, value1);
+    it('should not set duplicate tagkey and tagvalue', () => {
+      tagMap.set(key1, value1);
       const tags = tagMap.tags;
       assert.equal(tags.size, 1);
-      tagMap.insert(key1, value1);
+      assert.deepStrictEqual(tags.get(key1), value1);
+      tagMap.set(key1, value1);
       assert.equal(tags.size, 1);
+    });
+
+    it('should update existing tagkey', () => {
+      tagMap.set(key1, value1);
+      const tags = tagMap.tags;
+      assert.equal(tags.size, 1);
+      assert.deepStrictEqual(tags.get(key1), value1);
+      tagMap.set(key1, value2);
+      assert.equal(tags.size, 1);
+      assert.deepStrictEqual(tags.get(key1), value2);
     });
   });
   describe('delete()', () => {
     it('should delete tagkey', () => {
-      tagMap.insert(key1, value1);
+      tagMap.set(key1, value1);
       const tags = tagMap.tags;
       assert.equal(tags.size, 1);
       tagMap.delete(key1);
       assert.equal(tags.size, 0);
     });
     it('should delete missing tagkey1', () => {
-      tagMap.insert(key1, value1);
+      tagMap.set(key1, value1);
       const tags = tagMap.tags;
       assert.equal(tags.size, 1);
       tagMap.delete(key2);
       assert.equal(tags.size, 1);
-    });
-  });
-
-  describe('update()', () => {
-    it('should update tagkey', () => {
-      tagMap.insert(key1, value1);
-      const tags = tagMap.tags;
-      assert.equal(tags.size, 1);
-      assert.deepStrictEqual(tags.get(key1), value1);
-      tagMap.update(key1, value2);
-      assert.equal(tags.size, 1);
-      assert.deepStrictEqual(tags.get(key1), value2);
-    });
-
-    it('should throw an error when update invalid tagValue', () => {
-      tagMap.insert(key1, value1);
-      const tags = tagMap.tags;
-      assert.equal(tags.size, 1);
-      assert.deepStrictEqual(tags.get(key1), value1);
-      assert.throws(() => {
-        tagMap.update(key1, invalidValue1);
-      }, /^Error: Invalid TagValue:/);
     });
   });
 });
