@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Add Gauges (`DoubleGauge`, `LongGauge`, `DerivedDoubleGauge`, `DerivedLongGauge`) APIs.
 - Add support for supplying instrumentation configuration via tracing option. Option argument added to instrumentation interface.
 - Add ignoreIncomingPaths and ignoreOutgoingUrls support to the http and https tracing instrumentations.
+- Add ```opencensus-resource-util``` to auto detect AWS, GCE and Kubernetes(K8S) monitored resource, based on the environment where the application is running.
 
  **Contains API breaking changes for trace implementations**
 

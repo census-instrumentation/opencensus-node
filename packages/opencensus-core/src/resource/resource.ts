@@ -35,9 +35,9 @@ export class CoreResource {
   // OC_RESOURCE_LABELS contains key value pair separated by '='.
   private static readonly LABEL_KEY_VALUE_SPLITTER = '=';
 
-  private static readonly ENV_TYPE =
+  private static ENV_TYPE =
       CoreResource.parseResourceType(process.env.OC_RESOURCE_TYPE);
-  private static readonly ENV_LABEL_MAP =
+  private static ENV_LABEL_MAP =
       CoreResource.parseResourceLabels(process.env.OC_RESOURCE_LABELS);
   private static readonly ERROR_MESSAGE_INVALID_CHARS =
       'should be a ASCII string with a length greater than 0 and not exceed ' +
@@ -174,5 +174,13 @@ export class CoreResource {
    */
   private static isValidAndNotEmpty(name: string): boolean {
     return name && name.length > 0 && CoreResource.isValid(name);
+  }
+
+  /** TEST_ONLY */
+  static setup() {
+    CoreResource.ENV_TYPE =
+        CoreResource.parseResourceType(process.env.OC_RESOURCE_TYPE);
+    CoreResource.ENV_LABEL_MAP =
+        CoreResource.parseResourceLabels(process.env.OC_RESOURCE_LABELS);
   }
 }

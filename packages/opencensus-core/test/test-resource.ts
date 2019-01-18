@@ -16,14 +16,17 @@
 
 import * as assert from 'assert';
 
-process.env.OC_RESOURCE_TYPE = 'k8s.io/container';
-process.env.OC_RESOURCE_LABELS =
-    'k8s.io/pod/name="pod-xyz-123",k8s.io/container/name="c1",k8s.io/namespace/name="default"';
-
 import {CoreResource} from '../src/resource/resource';
-import {Resource, Labels} from '../src/resource/types';
+import {Labels, Resource} from '../src/resource/types';
 
 describe('Resource()', () => {
+  before(() => {
+    process.env.OC_RESOURCE_TYPE = 'k8s.io/container';
+    process.env.OC_RESOURCE_LABELS =
+        'k8s.io/pod/name="pod-xyz-123",k8s.io/container/name="c1",k8s.io/namespace/name="default"';
+    CoreResource.setup();
+  });
+
   after(() => {
     delete process.env.OC_RESOURCE_TYPE;
     delete process.env.OC_RESOURCE_LABELS;
