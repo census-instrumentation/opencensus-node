@@ -18,7 +18,7 @@
  * This is an example of exporting a custom metric from
  * OpenCensus to Prometheus.
  */
-/*jshint node:true, esversion: 6, laxcomma:true */
+
 const { Stats, MeasureUnit, AggregationType } = require("@opencensus/core");
 const { PrometheusStatsExporter } = require("@opencensus/exporter-prometheus");
 
