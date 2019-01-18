@@ -22,13 +22,9 @@ export class TagMap {
   // A map mapping TagKey to to its respective TagValue.
   private readonly registeredTags: Map<TagKey, TagValue> = new Map();
 
-  constructor() {}
-
   /**
    * Inserts a key and value in the map if the map does not already contain the
    * key.
-   * @param tagKey The tag key.
-   * @param tagValue The tag value.
    */
   insert(tagKey: TagKey, tagValue: TagValue): void {
     if (!isValidTagKey(tagKey)) {
@@ -44,21 +40,12 @@ export class TagMap {
     }
   }
 
-  /**
-   * Deletes a tag from the map if the key is in the map.
-   * @param tagKey The tag key.
-   */
+  /** Deletes a tag from the map if the key is in the map. */
   delete(tagKey: TagKey): void {
-    if (this.registeredTags.has(tagKey)) {
-      this.registeredTags.delete(tagKey);
-    }
+    this.registeredTags.delete(tagKey);
   }
 
-  /**
-   * Updates the map by updating the value of a key.
-   * @param tagKey A tag key to be updated.
-   * @param tagValue The value to update the key to in the map.
-   */
+  /** Updates the map by updating the value of a key. */
   update(tagKey: TagKey, tagValue: TagValue): void {
     if (this.registeredTags.has(tagKey)) {
       if (!isValidTagValue(tagValue)) {

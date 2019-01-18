@@ -16,41 +16,27 @@
 
 import {TagKey, TagValue} from './types';
 
-// String that has only printable characters
-const invalidString = /[^\u0020-\u007e]/;
+const nonPrintableCharsRegex = /[^\u0020-\u007e]/;
+const TAG_KEY_MAX_LENGTH = 255;
 
-// Max Length of a TagKey
-const MAX_LENGTH = 255;
-
-/**
- * Determines whether the given String is a valid tag key.
- *
- * @param tagKey the name to be validated.
- * @return whether the name is valid.
- */
+/** Determines whether the given String is a valid tag key. */
 export function isValidTagKey(tagKey: TagKey): boolean {
-  if (tagKey === null || typeof tagKey === 'undefined') {
+  if (!tagKey) {
     return false;
   }
-  const name = tagKey.name;
-  return name && isLegalCharacters(name) && name.length <= MAX_LENGTH;
+  return isPrintableString(tagKey.name) && tagKey.name.length > 0 &&
+      tagKey.name.length <= TAG_KEY_MAX_LENGTH;
 }
 
-/**
- * Determines whether the given String is a valid tag value.
- *
- * @param tagValue the name to be validated.
- * @return whether the name is valid.
- */
-
+/** Determines whether the given String is a valid tag value. */
 export function isValidTagValue(tagValue: TagValue): boolean {
-  if (tagValue === null || typeof tagValue === 'undefined') {
+  if (!tagValue) {
     return false;
   }
-  const value = tagValue.value;
-  return isLegalCharacters(value) && value.length <= MAX_LENGTH;
+  return isPrintableString(tagValue.value) &&
+      tagValue.value.length <= TAG_KEY_MAX_LENGTH;
 }
 
-function isLegalCharacters(name: string): boolean {
-  return !invalidString.test(name);
+function isPrintableString(name: string): boolean {
+  return !nonPrintableCharsRegex.test(name);
 }

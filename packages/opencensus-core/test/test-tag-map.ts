@@ -58,7 +58,7 @@ describe('TagMap()', () => {
       assert.equal(tags.size, 1);
     });
   });
-  describe('update()', () => {
+  describe('delete()', () => {
     it('should delete tagkey', () => {
       tagMap.insert(key1, value1);
       const tags = tagMap.tags;
