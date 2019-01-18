@@ -72,10 +72,12 @@ export * from './stats/recorder';
 export * from './stats/bucket-boundaries';
 export * from './stats/metric-utils';
 export * from './tags/tag-map';
+export * from './resource/resource';
 
 // interfaces
 export * from './stats/types';
 export * from './tags/types';
+export * from './resource/types';
 
 // logger
 import * as logger from './common/console-logger';
