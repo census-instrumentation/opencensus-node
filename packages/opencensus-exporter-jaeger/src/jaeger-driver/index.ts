@@ -15,20 +15,10 @@
  */
 
 import {Span} from '@opencensus/core';
-import * as path from 'path';
 
-const indexPath = path.dirname(require.resolve('jaeger-client'));
-
-function requireJaegerClientModule(nodeName: string) {
-  return require(path.join(indexPath, nodeName)).default;
-}
-
-// tslint:disable-next-line:variable-name
-export const UDPSender = requireJaegerClientModule('reporters/udp_sender');
-// tslint:disable-next-line:variable-name
-export const Utils = requireJaegerClientModule('util');
-// tslint:disable-next-line:variable-name
-export const ThriftUtils = requireJaegerClientModule('thrift');
+export const UDPSender = require('jaeger-client/reporters/udp_sender').default;
+export const Utils = require('jaeger-client/util').default;
+export const ThriftUtils = require('jaeger-client/thrift').default;
 
 export type TagValue = string|number|boolean;
 
