@@ -2,7 +2,7 @@
     <thead>
         <tr>
         <? for (var tagKey of statsData[0].tagKeys) { ?>
-            <th class="borderRL">TagKey: <?= tagKey ?></th>                
+            <th class="borderRL">TagKey: <?= tagKey.name ?></th>
         <? } ?>
             <th class="borderRL">Last Value, <?= view.measure.unit ?></th>
         </tr>
@@ -12,8 +12,12 @@
             <? for (var data of statsData) { ?>
                 <tr>
                     <? for (var tagValue of data.tagValues) { ?>
-                        <td class="borderRL"><?= tagValue ?></td>
-                    <? } ?>            
+                        <? if (tagValue) { ?>
+                            <td class="borderRL"><?= tagValue.value ?></td>
+                        <? } else { ?>
+                            <td class="borderRL"></td>
+                        <? } ?>
+                    <? } ?>
                 <td class="borderRL"><?= data.snapshot.value ?></td>
                 </tr>
             <? } ?>

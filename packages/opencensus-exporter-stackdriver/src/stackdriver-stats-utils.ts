@@ -138,7 +138,8 @@ function createMetric(
   const labels: {[key: string]: string} = {};
   for (let i = 0; i < labelValues.length; i++) {
     const value = labelValues[i].value;
-    if (value && metricDescriptor.labelKeys[i]) {
+    if (value !== null && value !== undefined &&
+        metricDescriptor.labelKeys[i]) {
       labels[metricDescriptor.labelKeys[i].key] = value;
     } else {
       // TODO(mayurkale) : consider to throw an error when LabelValue and

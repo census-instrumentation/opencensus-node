@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, RootSpan, Span, StatsEventListener, Tags, View} from '@opencensus/core';
+import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, RootSpan, Span, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
-
 import {createRoutes} from './zpages-frontend/routes';
 
 /** Interface to Zpages options */
@@ -112,10 +111,14 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    * Called whenever a measurement is recorded
    * @param views the view list where the measurement was recorded
    * @param measurement the recorded measurement
+   * @param tags The tags to which the value is applied
    */
-  onRecord(views: View[], measurement: Measurement): void {
+  onRecord(
+      views: View[], measurement: Measurement,
+      tags: Map<TagKey, TagValue>): void {
+    const tagValues = [...tags.values()];
     views.map(view => {
-      const snapshot = view.getSnapshot(measurement.tags);
+      const snapshot = view.getSnapshot(tagValues);
       // Check if there is no data for the current view
       if (!this.statsParams.recordedData[view.name]) {
         this.statsParams.recordedData[view.name] = [snapshot];

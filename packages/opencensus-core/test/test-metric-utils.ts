@@ -18,7 +18,7 @@ import * as assert from 'assert';
 
 import {BaseView, MetricUtils} from '../src';
 import {MetricDescriptorType} from '../src/metrics/export/types';
-import {AggregationType, Measure, MeasureType, MeasureUnit, Tags} from '../src/stats/types';
+import {AggregationType, Measure, MeasureType, MeasureUnit} from '../src/stats/types';
 
 
 describe('MetricUtil', () => {
@@ -29,7 +29,7 @@ describe('MetricUtil', () => {
       type: MeasureType.DOUBLE,
       unit: MeasureUnit.UNIT
     };
-    const tagKeys = ['testKey1', 'testKey2'];
+    const tagKeys = [{name: 'testKey1'}, {name: 'testKey2'}];
     const view = new BaseView(
         'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
         VIEW_DESCRIPTION);
@@ -47,9 +47,10 @@ describe('MetricUtil', () => {
   });
 
   it('should convert tag values to label values', () => {
-    const tags: Tags = {test: 'test1', tag: 'test2', empty: '', fake: null};
+    const tags =
+        [{value: 'value1'}, {value: 'value2'}, {value: ''}, {value: null}];
     assert.deepStrictEqual(
-        MetricUtils.tagsToLabelValues(tags),
-        [{value: 'test1'}, {value: 'test2'}, {value: ''}, {value: null}]);
+        MetricUtils.tagValuesToLabelValues(tags),
+        [{value: 'value1'}, {value: 'value2'}, {value: ''}, {value: null}]);
   });
 });

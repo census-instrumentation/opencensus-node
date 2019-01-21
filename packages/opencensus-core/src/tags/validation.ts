@@ -21,7 +21,7 @@ const TAG_KEY_MAX_LENGTH = 255;
 
 /** Determines whether the given String is a valid tag key. */
 export function isValidTagKey(tagKey: TagKey): boolean {
-  if (!tagKey) {
+  if (!tagKey || !tagKey.name) {
     return false;
   }
   return isPrintableString(tagKey.name) && tagKey.name.length > 0 &&
@@ -30,7 +30,7 @@ export function isValidTagKey(tagKey: TagKey): boolean {
 
 /** Determines whether the given String is a valid tag value. */
 export function isValidTagValue(tagValue: TagValue): boolean {
-  if (!tagValue) {
+  if (!tagValue || tagValue.value === null || tagValue.value === undefined) {
     return false;
   }
   return isPrintableString(tagValue.value) &&

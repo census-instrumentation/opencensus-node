@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import {AggregationData, AggregationType, Tags, View} from '@opencensus/core';
-
+import {AggregationData, AggregationType, TagKey, TagValue, View} from '@opencensus/core';
 import {StatsParams} from '../../zpages';
 
 const ejs = require('ejs');
 
 import * as pkgDir from 'pkg-dir';
-import {fileLoader} from 'ejs';
 
 export interface StatszParams {
   path: string;
@@ -33,8 +31,8 @@ type FolderType = {
 
 // AggregationData in zPages format
 export type ZPagesStatsData = {
-  tagKeys: string[],
-  tagValues?: string[],
+  tagKeys: TagKey[],
+  tagValues?: TagValue[],
   snapshot?: AggregationData
 };
 
@@ -191,20 +189,10 @@ export class StatszPageHandler {
     }
     return recordedData.map(snapshot => {
       return {
-        tagKeys: Object.keys(snapshot.tags),
-        tagValues: this.getTagValues(snapshot.tags),
+        tagKeys: selectedView.getColumns(),
+        tagValues: snapshot.tagValues,
         snapshot
       };
-    });
-  }
-
-  /**
-   * Extracts the tag's values from given tags.
-   * @param tags The list of tags
-   */
-  private getTagValues(tags: Tags): string[] {
-    return Object.keys(tags).map((tagKey) => {
-      return tags[tagKey];
     });
   }
 

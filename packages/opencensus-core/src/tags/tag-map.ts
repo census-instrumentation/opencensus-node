@@ -25,11 +25,11 @@ export class TagMap {
   /** Adds the key/value pair regardless of whether the key is present. */
   set(tagKey: TagKey, tagValue: TagValue): void {
     if (!isValidTagKey(tagKey)) {
-      throw Error(`Invalid TagKey name: ${tagKey.name}`);
+      throw new Error(`Invalid TagKey name: ${tagKey.name}`);
     }
 
     if (!isValidTagValue(tagValue)) {
-      throw Error(`Invalid TagValue: ${tagValue.value}`);
+      throw new Error(`Invalid TagValue: ${tagValue.value}`);
     }
     this.registeredTags.set(tagKey, tagValue);
   }

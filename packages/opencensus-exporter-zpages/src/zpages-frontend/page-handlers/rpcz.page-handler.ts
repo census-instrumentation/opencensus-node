@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, CountData, DistributionData} from '@opencensus/core';
-
+import {AggregationType} from '@opencensus/core';
 import {StatsParams} from '../../zpages';
 
 const ejs = require('ejs');
@@ -102,21 +101,38 @@ export class RpczPageHandler {
 
     for (const view of rpcViews) {
       const recordedData = this.statsParams.recordedData[view.name];
-      for (const snapshot of recordedData) {
-        let method = snapshot.tags['grpc_client_method'];
-        let zMeasures = rpczData.measuresSent;
 
-        // Switches to received data if it's a server
-        if (!method) {
-          method = snapshot.tags['grpc_server_method'];
+      let clientMethodIndex = -1;
+      let clientStatusIndex = -1;
+      let serverMethodIndex = -1;
+      let serverStatusIndex = -1;
+      const columns = view.getColumns();
+      for (let i = 0; i < columns.length; i++) {
+        if (columns[i].name === 'grpc_client_method') {
+          clientMethodIndex = i;
+        } else if (columns[i].name === 'grpc_client_status') {
+          clientStatusIndex = i;
+        } else if (columns[i].name === 'grpc_server_method') {
+          serverMethodIndex = i;
+        } else if (columns[i].name === 'grpc_server_status') {
+          serverStatusIndex = i;
+        }
+      }
+      for (const snapshot of recordedData) {
+        let method = '';
+        let zMeasures;
+        if (clientMethodIndex !== -1) {
+          method = snapshot.tagValues[clientMethodIndex].value;
+          zMeasures = rpczData.measuresSent;
+        } else if (serverMethodIndex !== -1) {
+          // Switches to received data if it's a server
+          method = snapshot.tagValues[serverMethodIndex].value;
           zMeasures = rpczData.measuresReceived;
         }
-
         if (method) {
           if (!zMeasures[method]) {
             zMeasures[method] = this.newEmptyZMeasure();
           }
-
           if (snapshot.type === AggregationType.DISTRIBUTION) {
             // Fills the output columns for that method
             if (view.name === DefaultViews.CLIENT_SENT_BYTES_PER_RPC ||
@@ -159,10 +175,14 @@ export class RpczPageHandler {
             zMeasures[method].rate.hr = zMeasures[method].rate.min * 60;
 
             // Fills the error columns for that method
-            const error = (snapshot.tags['grpc_client_status'] ||
-                           snapshot.tags['grpc_server_status']) &&
-                (snapshot.tags['grpc_client_status'] !== 'OK' ||
-                 snapshot.tags['grpc_server_status'] !== 'OK');
+            const error =
+                (clientStatusIndex !== -1 &&
+                 snapshot.tagValues[clientStatusIndex] &&
+                 snapshot.tagValues[clientStatusIndex].value !== 'OK') ||
+                (serverStatusIndex !== -1 &&
+                 snapshot.tagValues[serverStatusIndex] &&
+                 snapshot.tagValues[serverStatusIndex].value !== 'OK');
+
             if (error) {
               zMeasures[method].errors.tot += snapshot.value;
               zMeasures[method].errors.min =

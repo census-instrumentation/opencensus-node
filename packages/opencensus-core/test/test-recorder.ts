@@ -15,8 +15,8 @@
  */
 
 import * as assert from 'assert';
-import {Recorder} from '../src';
-import {AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, SumData, Tags} from '../src/stats/types';
+import {Recorder, TagMap} from '../src';
+import {AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, SumData} from '../src/stats/types';
 
 /** The order of how close values must be to be considerated almost equal */
 const EPSILON = 6;
@@ -59,7 +59,7 @@ describe('Recorder', () => {
     {name: 'Test Measure 1', type: MeasureType.DOUBLE, unit: MeasureUnit.UNIT},
     {name: 'Test Measure 2', type: MeasureType.INT64, unit: MeasureUnit.UNIT}
   ];
-  const tags: Tags = {testKey: 'testValue'};
+  const tagValues = [{value: 'testValue'}];
   const testCases: RecorderTestCase[] = [
     {values: [1.1, 2.5, 3.2, 4.7, 5.2], description: 'with positive values'}, {
       values: [-1.5, -2.3, -3.7, -4.3, -5.9],
@@ -76,14 +76,14 @@ describe('Recorder', () => {
            () => {
              const countData: CountData = {
                type: AggregationType.COUNT,
-               tags,
+               tagValues,
                timestamp: Date.now(),
                value: 0
              };
              let count = 0;
              for (const value of testCase.values) {
                count++;
-               const measurement: Measurement = {measure, tags, value};
+               const measurement: Measurement = {measure, value};
                const updatedAggregationData =
                    Recorder.addMeasurement(countData, measurement) as CountData;
 
@@ -100,12 +100,12 @@ describe('Recorder', () => {
                () => {
                  const lastValueData: LastValueData = {
                    type: AggregationType.LAST_VALUE,
-                   tags,
+                   tagValues,
                    timestamp: Date.now(),
                    value: undefined
                  };
                  for (const value of testCase.values) {
-                   const measurement: Measurement = {measure, tags, value};
+                   const measurement: Measurement = {measure, value};
                    const lastValue = measure.type === MeasureType.DOUBLE ?
                        value :
                        Math.trunc(value);
@@ -125,7 +125,7 @@ describe('Recorder', () => {
            () => {
              const sumData: SumData = {
                type: AggregationType.SUM,
-               tags,
+               tagValues,
                timestamp: Date.now(),
                value: 0
              };
@@ -133,7 +133,7 @@ describe('Recorder', () => {
              for (const value of testCase.values) {
                acc += measure.type === MeasureType.DOUBLE ? value :
                                                             Math.trunc(value);
-               const measurement: Measurement = {measure, tags, value};
+               const measurement: Measurement = {measure, value};
                const updatedAggregationData =
                    Recorder.addMeasurement(sumData, measurement) as SumData;
 
@@ -150,7 +150,7 @@ describe('Recorder', () => {
                () => {
                  const distributionData: DistributionData = {
                    type: AggregationType.DISTRIBUTION,
-                   tags,
+                   tagValues,
                    timestamp: Date.now(),
                    startTime: Date.now(),
                    count: 0,
@@ -166,7 +166,7 @@ describe('Recorder', () => {
                    sentValues.push(
                        measure.type === MeasureType.DOUBLE ? value :
                                                              Math.trunc(value));
-                   const measurement: Measurement = {measure, tags, value};
+                   const measurement: Measurement = {measure, value};
                    const updatedAggregationData =
                        Recorder.addMeasurement(distributionData, measurement) as
                        DistributionData;
@@ -175,5 +175,49 @@ describe('Recorder', () => {
                });
           }
         });
+
+    describe('getTagValues()', () => {
+      const CALLER = {name: 'caller'};
+      const METHOD = {name: 'method'};
+      const ORIGINATOR = {name: 'originator'};
+      const CALLER_V = {value: 'some caller'};
+      const METHOD_V = {value: 'some method'};
+      const ORIGINATOR_V = {value: 'some originator'};
+      let tagMap: TagMap;
+
+      beforeEach(() => {
+        tagMap = new TagMap();
+      });
+
+      it('should return tag values from tags and columns', () => {
+        const columns = [CALLER, METHOD];
+        tagMap.set(CALLER, CALLER_V);
+        tagMap.set(METHOD, METHOD_V);
+        const tagValues = Recorder.getTagValues(tagMap.tags, columns);
+        assert.equal(tagValues.length, 2);
+        assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
+      });
+
+      it('should return tag values from tags and columns with extra keys',
+         () => {
+           const columns = [CALLER, METHOD, ORIGINATOR];
+           tagMap.set(CALLER, CALLER_V);
+           tagMap.set(METHOD, METHOD_V);
+           const tagValues = Recorder.getTagValues(tagMap.tags, columns);
+           assert.equal(tagValues.length, 2);
+           assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
+         });
+
+      it('should return tag values from tags and columns with extra tags',
+         () => {
+           const columns = [CALLER, METHOD];
+           tagMap.set(CALLER, CALLER_V);
+           tagMap.set(METHOD, METHOD_V);
+           tagMap.set(ORIGINATOR, ORIGINATOR_V);
+           const tagValues = Recorder.getTagValues(tagMap.tags, columns);
+           assert.equal(tagValues.length, 2);
+           assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
+         });
+    });
   }
 });
