@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import {LabelKey, Logger, MeasureUnit, Metrics, Stats} from '@opencensus/core';
+import {globalStats, LabelKey, Logger, MeasureUnit, Metrics} from '@opencensus/core';
 import * as assert from 'assert';
 
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
 import {MetricKind, StackdriverExporterOptions, ValueType} from '../src/types';
+
 import * as nocks from './nocks';
 
 const PROJECT_ID = 'fake-project-id';
@@ -58,7 +59,6 @@ describe('Stackdriver Stats Exporter', () => {
   });
 
   describe('Send data to Stackdriver', () => {
-    const stats = new Stats();
     const mockLogger = new MockLogger();
     let exporterOptions: StackdriverExporterOptions;
     let exporter: StackdriverStatsExporter;
@@ -73,10 +73,11 @@ describe('Stackdriver Stats Exporter', () => {
     afterEach(() => {
       exporter.close();
       mockLogger.cleanAll();
+      globalStats.clear();
     });
 
     it('should not export for empty data', () => {
-      stats.registerExporter(exporter);
+      globalStats.registerExporter(exporter);
       assert.equal(mockLogger.debugBuffer.length, 0);
     });
 
