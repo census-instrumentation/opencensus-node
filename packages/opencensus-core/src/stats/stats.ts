@@ -18,17 +18,21 @@ import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
 import {Metric} from '../metrics/export/types';
+import {Metrics} from '../metrics/metrics';
 
-import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, View} from './types';
+import {MetricProducerForStats} from './metric-producer';
+import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from './types';
 import {BaseView} from './view';
 
-export class Stats {
+export class BaseStats implements Stats {
   /** A list of Stats exporters */
   private statsEventListeners: StatsEventListener[] = [];
   /** A map of Measures (name) to their corresponding Views */
   private registeredViews: {[key: string]: View[]} = {};
   /** An object to log information to */
   private logger: loggerTypes.Logger;
+  /** Singleton instance */
+  private static singletonInstance: BaseStats;
 
   /**
    * Creates stats
@@ -37,21 +41,22 @@ export class Stats {
   constructor(logger = defaultLogger) {
     this.logger = logger.logger();
 
-    // TODO (mayurkale): Decide how to inject MetricProducerForStats.
-    // It should be something like below, but looks like not the right place.
-
     // Create a new MetricProducerForStats and register it to
     // MetricProducerManager when Stats is initialized.
-    // const metricProducer: MetricProducer = new MetricProducerForStats(this);
-    // Metrics.getMetricProducerManager().add(metricProducer);
+    const metricProducer = new MetricProducerForStats(this);
+    Metrics.getMetricProducerManager().add(metricProducer);
+  }
+
+  /** Gets the stats instance. */
+  static get instance(): Stats {
+    return this.singletonInstance || (this.singletonInstance = new this());
   }
 
   /**
-   * Registers a view to listen to new measurements in its measure. Prefer using
-   * the method createView() that creates an already registered view.
+   * Registers a view to listen to new measurements in its measure.
    * @param view The view to be registered
    */
-  registerView(view: View) {
+  registerView(view: View): void {
     if (this.registeredViews[view.measure.name]) {
       this.registeredViews[view.measure.name].push(view);
     } else {
@@ -67,7 +72,7 @@ export class Stats {
   }
 
   /**
-   * Creates and registers a view.
+   * Creates a view.
    * @param name The view name
    * @param measure The view measure
    * @param aggregation The view aggregation type
@@ -82,7 +87,6 @@ export class Stats {
       bucketBoundaries?: number[]): View {
     const view = new BaseView(
         name, measure, aggregation, tagKeys, description, bucketBoundaries);
-    this.registerView(view);
     return view;
   }
 
@@ -90,7 +94,7 @@ export class Stats {
    * Registers an exporter to send stats data to a service.
    * @param exporter An stats exporter
    */
-  registerExporter(exporter: StatsEventListener) {
+  registerExporter(exporter: StatsEventListener): void {
     this.statsEventListeners.push(exporter);
 
     for (const measureName of Object.keys(this.registeredViews)) {
@@ -153,7 +157,7 @@ export class Stats {
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
    */
-  record(...measurements: Measurement[]) {
+  record(...measurements: Measurement[]): void {
     if (this.hasNegativeValue(measurements)) {
       this.logger.warn(`Dropping measurments ${measurements}, value to record
           must be non-negative.`);
@@ -175,5 +179,13 @@ export class Stats {
         exporter.onRecord(views, measurement);
       }
     }
+  }
+
+  /**
+   * Remove all registered Views and exporters from the stats.
+   */
+  clear(): void {
+    this.registeredViews = {};
+    this.statsEventListeners = [];
   }
 }

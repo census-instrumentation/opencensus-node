@@ -8,10 +8,33 @@ All notable changes to this project will be documented in this file.
 - Add Gauges (`DoubleGauge`, `LongGauge`, `DerivedDoubleGauge`, `DerivedLongGauge`) APIs.
 - Add support for supplying instrumentation configuration via tracing option. Option argument added to instrumentation interface.
 - Add ignoreIncomingPaths and ignoreOutgoingUrls support to the http and https tracing instrumentations.
+- Add ```opencensus-resource-util``` to auto detect AWS, GCE and Kubernetes(K8S) monitored resource, based on the environment where the application is running.
 
- **Contains API breaking changes for trace implementations**
+ **This release has multiple breaking changes. Please test your code accordingly after upgrading.**
 
 - Modify `Logger` interface: `level` made optional, `silly` removed.
+- The ```new Stats()``` has been deprecated on Stats class. The global singleton ```globalStats``` object should be used instead. Also, ```registerView()``` is separated out from ```createView()```.
+
+##### Old code
+```js
+const { Stats } = require("@opencensus/core");
+const stats = new Stats();
+
+// Create and register the view
+stats.createView(...);
+```
+
+##### New code
+```js
+// Get the global singleton stats object
+const { globalStats } = require("@opencensus/core");
+
+// Create the view
+const view = globalStats.createView(...);
+
+// register the view
+globalStats.registerView(view);
+```
 
 ## 0.0.8 - 2018-12-14
  **Contains API breaking changes for stats/metrics implementations**

@@ -21,9 +21,6 @@ bin
 #VScode
 .vscode/
 
-# Other
-TAGS
-
 # nodejs
 node_modules/
 !packages/opencensus-nodejs/test/instrumentation/node_modules
@@ -40,4 +37,3 @@ build/
 
 #istanbul files
 coverage/
-

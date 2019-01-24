@@ -66,14 +66,17 @@ export * from './exporters/console-exporter';
 // STATS CLASSES
 
 // classes
-export * from './stats/stats';
 export * from './stats/view';
 export * from './stats/recorder';
 export * from './stats/bucket-boundaries';
 export * from './stats/metric-utils';
+export * from './tags/tag-map';
+export * from './resource/resource';
 
 // interfaces
 export * from './stats/types';
+export * from './tags/types';
+export * from './resource/types';
 
 // logger
 import * as logger from './common/console-logger';
@@ -90,3 +93,10 @@ export * from './metrics/metric-registry';
 // GAUGES CLASSES
 export * from './metrics/gauges/derived-gauge';
 export * from './metrics/gauges/gauge';
+
+
+// Stats singleton instance
+import {BaseStats} from './stats/stats';
+import {Stats} from './stats/types';
+const globalStats: Stats = BaseStats.instance;
+export {globalStats};

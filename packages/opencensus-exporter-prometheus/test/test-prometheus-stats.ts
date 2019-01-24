@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {AggregationType, Measure, MeasureUnit, Stats} from '@opencensus/core';
+import {AggregationType, globalStats, Measure, MeasureUnit} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
+
 import {PrometheusStatsExporter} from '../src/';
 
 describe('Prometheus Stats Exporter', () => {
@@ -26,23 +27,28 @@ describe('Prometheus Stats Exporter', () => {
   const tagKeys = Object.keys(tags);
   let exporter: PrometheusStatsExporter;
   let measure: Measure;
-  let stats: Stats;
 
   beforeEach((done) => {
-    stats = new Stats();
-    measure = stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+    measure =
+        globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     exporter = new PrometheusStatsExporter(options);
-    stats.registerExporter(exporter);
+    globalStats.registerExporter(exporter);
     exporter.startServer(done);
   });
 
+  afterEach((done) => {
+    exporter.stopServer(done);
+    globalStats.clear();
+  });
+
   it('should create a count aggregation', (done) => {
-    stats.createView(
+    const view = globalStats.createView(
         'ocnodemetrics/countview', measure, AggregationType.COUNT, tagKeys,
         'A count aggregation example', null);
     const measurement = {measure, tags, value: 2};
     const measurement2 = {measure, tags, value: 3};
-    stats.record(measurement, measurement2);
+    globalStats.registerView(view);
+    globalStats.record(measurement, measurement2);
 
     http.get(prometheusServerUrl, (res) => {
           res.on('data', (chunk) => {
@@ -62,15 +68,16 @@ describe('Prometheus Stats Exporter', () => {
 
   it('should create a sum aggregation', (done) => {
     const measure =
-        stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+        globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     const tags = {tagKey1: 'tagValue1'};
     const tagKeys = Object.keys(tags);
-    stats.createView(
+    const view = globalStats.createView(
         'ocnodemetrics/sumview', measure, AggregationType.SUM, tagKeys,
         'A sum aggregation example', null);
     const measurement = {measure, tags, value: 2};
     const measurement2 = {measure, tags, value: 3};
-    stats.record(measurement, measurement2);
+    globalStats.registerView(view);
+    globalStats.record(measurement, measurement2);
 
     http.get(prometheusServerUrl, (res) => {
           res.on('data', (chunk) => {
@@ -90,15 +97,16 @@ describe('Prometheus Stats Exporter', () => {
 
   it('should create a last value aggregation', (done) => {
     const measure =
-        stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+        globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     const tags = {tagKey1: 'tagValue1'};
     const tagKeys = Object.keys(tags);
-    stats.createView(
+    const view = globalStats.createView(
         'ocnodemetrics/lastvalueview', measure, AggregationType.LAST_VALUE,
         tagKeys, 'A last value aggregation example', null);
     const measurement = {measure, tags, value: 2};
     const measurement2 = {measure, tags, value: 3};
-    stats.record(measurement, measurement2);
+    globalStats.registerView(view);
+    globalStats.record(measurement, measurement2);
 
     http.get(prometheusServerUrl, (res) => {
           res.on('data', (chunk) => {
@@ -118,16 +126,17 @@ describe('Prometheus Stats Exporter', () => {
 
   it('should create a distribution aggregation', (done) => {
     const measure =
-        stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+        globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     const tags = {tagKey1: 'tagValue1'};
     const tagKeys = Object.keys(tags);
     const boundaries = [10, 20, 30, 40];
-    stats.createView(
+    const view = globalStats.createView(
         'ocnodemetrics/distributionview', measure, AggregationType.DISTRIBUTION,
         tagKeys, 'A distribution aggregation example', boundaries);
     const measurement = {measure, tags, value: 12};
     const measurement2 = {measure, tags, value: 31};
-    stats.record(measurement, measurement2);
+    globalStats.registerView(view);
+    globalStats.record(measurement, measurement2);
 
     http.get(prometheusServerUrl, (res) => {
           res.on('data', (chunk) => {
@@ -166,26 +175,22 @@ describe('Prometheus Stats Exporter', () => {
 
   it('should throw error when labels contains "le" label name in histogram label names',
      () => {
-       const measure =
-           stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+       const measure = globalStats.createMeasureDouble(
+           'testMeasureDouble', MeasureUnit.UNIT);
        const tags = {le: 'tagValue1'};
        const tagKeys = Object.keys(tags);
        const boundaries = [10, 20, 30, 40];
-       stats.createView(
+       const view = globalStats.createView(
            'ocnodemetrics/distributionview1', measure,
            AggregationType.DISTRIBUTION, tagKeys,
            'A distribution aggregation example', boundaries);
-
+       globalStats.registerView(view);
        const measurement = {measure, tags, value: 2};
 
        assert.throws(() => {
-         stats.record(measurement);
+         globalStats.record(measurement);
        }, /^Error: le is a reserved label keyword$/);
      });
-
-  afterEach((done) => {
-    exporter.stopServer(done);
-  });
 });
 
 describe('Prometheus Stats Exporter with prefix option', () => {
@@ -195,23 +200,28 @@ describe('Prometheus Stats Exporter with prefix option', () => {
   const tagKeys = Object.keys(tags);
   let exporter: PrometheusStatsExporter;
   let measure: Measure;
-  let stats: Stats;
 
   beforeEach((done) => {
-    stats = new Stats();
-    measure = stats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+    measure =
+        globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     exporter = new PrometheusStatsExporter(options);
-    stats.registerExporter(exporter);
+    globalStats.registerExporter(exporter);
     exporter.startServer(done);
   });
 
+  afterEach((done) => {
+    exporter.stopServer(done);
+    globalStats.clear();
+  });
+
   it('should create a count aggregation with le labels', (done) => {
-    stats.createView(
+    const view = globalStats.createView(
         'test/key-1', measure, AggregationType.COUNT, tagKeys,
         'A count aggregation example', null);
     const measurement = {measure, tags, value: 2};
     const measurement2 = {measure, tags, value: 3};
-    stats.record(measurement, measurement2);
+    globalStats.registerView(view);
+    globalStats.record(measurement, measurement2);
 
     http.get(prometheusServerUrl, (res) => {
           res.on('data', (chunk) => {
@@ -226,9 +236,5 @@ describe('Prometheus Stats Exporter with prefix option', () => {
             done();
           });
         }).on('error', done);
-  });
-
-  afterEach((done) => {
-    exporter.stopServer(done);
   });
 });

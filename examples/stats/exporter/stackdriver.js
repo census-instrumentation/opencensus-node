@@ -32,11 +32,20 @@ const stats = new Stats();
 
 // [START setup_exporter]
 // Enable OpenCensus exporters to export metrics to Stackdriver Monitoring.
-// Exporters use Application Default Credentials to authenticate.
+// Exporters use Application Default Credentials (ADCs) to authenticate.
 // See https://developers.google.com/identity/protocols/application-default-credentials
 // for more details.
-// Add your project id to the Stackdriver options
-const exporter = new StackdriverStatsExporter({ projectId: "your-project-id" });
+// Expects ADCs to be provided through the environment as ${GOOGLE_APPLICATION_CREDENTIALS}
+// A Stackdriver workspace is required and provided through the environment as ${GOOGLE_PROJECT_ID}
+const projectId = process.env.GOOGLE_PROJECT_ID;
+
+// GOOGLE_APPLICATION_CREDENTIALS are expected by a dependency of this code
+// Not this code itself. Checking for existence here but not retaining (as not needed)
+if (!projectId || !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  // Unable to proceed without a Project ID
+  process.exit(1);
+}
+const exporter = new StackdriverStatsExporter({ projectId: projectId });
 
 // Pass the created exporter to Stats
 stats.registerExporter(exporter);
@@ -62,35 +71,35 @@ const stream = fs.createReadStream("./test.txt");
 // Create an interface to read and process our file line by line
 const lineReader = readline.createInterface({ input: stream });
 
-const tagKey = "method";
+const tagKeys = ["method", "status"];
 
-// Register the view.
-const latencyView = stats.createView(
+// Create the view.
+stats.createView(
   "demo/latency",
   mLatencyMs,
   AggregationType.DISTRIBUTION,
-  [tagKey],
+  tagKeys,
   "The distribution of the repl latencies",
   // Latency in buckets:
   // [>=0ms, >=25ms, >=50ms, >=75ms, >=100ms, >=200ms, >=400ms, >=600ms, >=800ms, >=1s, >=2s, >=4s, >=6s]
   [0, 25, 50, 75, 100, 200, 400, 600, 800, 1000, 2000, 4000, 6000]
 );
 
-// Register the view.
-const lineCountView = stats.createView(
+// Create the view.
+stats.createView(
   "demo/lines_in",
   mLineLengths,
   AggregationType.COUNT,
-  [tagKey],
+  tagKeys,
   "The number of lines from standard input"
 );
 
-// Register the view.
-const lineLengthView = stats.createView(
+// Create the view.
+stats.createView(
   "demo/line_lengths",
   mLineLengths,
   AggregationType.DISTRIBUTION,
-  [tagKey],
+  tagKeys,
   "Groups the lengths of keys in buckets",
   // Bucket Boudaries:
   // [>=0B, >=5B, >=10B, >=15B, >=20B, >=40B, >=60B, >=80, >=100B, >=200B, >=400, >=600, >=800, >=1000]
