@@ -97,6 +97,32 @@ describe('Prometheus Stats Exporter', () => {
         }).on('error', done);
   });
 
+  it('should create a sum aggregation with empty tagMap', (done) => {
+    const measure =
+        globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
+    const view = globalStats.createView(
+        'ocnodemetrics/sumview1', measure, AggregationType.SUM, tagKeys,
+        'A sum aggregation example', null);
+    const measurement = {measure, value: 2};
+    const measurement2 = {measure, value: 3};
+    globalStats.registerView(view);
+    globalStats.record([measurement, measurement2]);
+
+    http.get(prometheusServerUrl, (res) => {
+          res.on('data', (chunk) => {
+            const body = chunk.toString();
+            const lines = body.split('\n');
+
+            assert.equal(
+                lines[0],
+                '# HELP ocnodemetrics_sumview1 A sum aggregation example');
+            assert.equal(lines[1], '# TYPE ocnodemetrics_sumview1 gauge');
+            assert.equal(lines[2], 'ocnodemetrics_sumview1 5');
+            done();
+          });
+        }).on('error', done);
+  });
+
   it('should create a last value aggregation', (done) => {
     const measure =
         globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);

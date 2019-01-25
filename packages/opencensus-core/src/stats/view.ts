@@ -118,7 +118,6 @@ export class BaseView implements View {
   recordMeasurement(measurement: Measurement, tags: TagMap) {
     const tagValues = Recorder.getTagValues(tags.tags, this.columns);
     const encodedTags = this.encodeTagValues(tagValues);
-
     if (!this.tagValueAggregationMap[encodedTags]) {
       this.tagValueAggregationMap[encodedTags] =
           this.createAggregationData(tagValues);
@@ -133,7 +132,7 @@ export class BaseView implements View {
    * @param tagValues The tagValues to encode
    */
   private encodeTagValues(tagValues: TagValue[]): string {
-    return tagValues.map(tagValue => tagValue.value)
+    return tagValues.map((tagValue) => tagValue ? tagValue.value : null)
         .sort()
         .join(RECORD_SEPARATOR);
   }

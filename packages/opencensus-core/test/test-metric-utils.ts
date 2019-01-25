@@ -53,4 +53,11 @@ describe('MetricUtil', () => {
         MetricUtils.tagValuesToLabelValues(tags),
         [{value: 'value1'}, {value: 'value2'}, {value: ''}, {value: null}]);
   });
+
+  it('should convert tag values to label values with null tag value', () => {
+    const tags = [{value: 'value1'}, null, null, {value: null}];
+    assert.deepStrictEqual(
+        MetricUtils.tagValuesToLabelValues(tags),
+        [{value: 'value1'}, {value: null}, {value: null}, {value: null}]);
+  });
 });

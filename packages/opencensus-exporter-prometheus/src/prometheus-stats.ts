@@ -82,8 +82,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   onRecord(
       views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {
     for (const view of views) {
-      const labelValues = this.getLabelValues(view.getColumns(), tags);
-      this.updateMetric(view, measurement, labelValues);
+      this.updateMetric(view, measurement, tags);
     }
   }
 
@@ -112,7 +111,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param view View will be used to register the metric
    * @param labels Object with label keys and values
    */
-  private registerMetric(view: View, labels: labelValues): Metric {
+  private registerMetric(view: View, tags: Map<TagKey, TagValue>): Metric {
     const metricName = this.getPrometheusMetricName(view);
     /** Get metric if already registered */
     let metric = this.registry.getSingleMetric(metricName);
@@ -122,7 +121,6 @@ export class PrometheusStatsExporter implements StatsEventListener {
     }
 
     const labelNames = view.getColumns().map((tagKey) => tagKey.name);
-
     // Create a new metric if there is no one
     const metricObj = {name: metricName, help: view.description, labelNames};
 
@@ -141,7 +139,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
           name: metricName,
           help: view.description,
           labelNames,
-          buckets: this.getBoundaries(view, labels)
+          buckets: this.getBoundaries(view, tags)
         };
         metric = new Histogram(distribution);
         break;
@@ -160,20 +158,21 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param measurement Measurement with the new value to update the metric
    */
   private updateMetric(
-      view: View, measurement: Measurement, labels: labelValues) {
-    const metric = this.registerMetric(view, labels);
+      view: View, measurement: Measurement, tags: Map<TagKey, TagValue>) {
+    const metric = this.registerMetric(view, tags);
     // Updating the metric based on metric instance type and aggregation type
+    const labelValues = this.getLabelValues(view.getColumns(), tags);
     if (metric instanceof Counter) {
-      metric.inc(labels);
+      metric.inc(labelValues);
     } else if (
         view.aggregation === AggregationType.SUM && metric instanceof Gauge) {
-      metric.inc(labels, measurement.value);
+      metric.inc(labelValues, measurement.value);
     } else if (
         view.aggregation === AggregationType.LAST_VALUE &&
         metric instanceof Gauge) {
-      metric.set(labels, measurement.value);
+      metric.set(labelValues, measurement.value);
     } else if (metric instanceof Histogram) {
-      metric.observe(labels, measurement.value);
+      metric.observe(labelValues, measurement.value);
     } else {
       this.logger.error('Metric not supported');
     }
@@ -220,10 +219,9 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param view View used to get the DistributionData
    * @param tags Tags used to get the DistributionData
    */
-  private getBoundaries(view: View, labels: labelValues): number[] {
-    const tagValues = Object.keys(labels).map((label) => {
-      return {value: String(labels[label])};
-    });
+  private getBoundaries(view: View, tags: Map<TagKey, TagValue>): number[] {
+    const tagValues =
+        view.getColumns().map((tagKey) => (tags.get(tagKey) || null));
     const data = view.getSnapshot(tagValues) as DistributionData;
     return data.buckets;
   }

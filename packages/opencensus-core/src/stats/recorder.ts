@@ -17,6 +17,8 @@
 import {TagKey, TagValue} from '../tags/types';
 import {AggregationData, AggregationType, CountData, DistributionData, LastValueData, Measurement, MeasureType, SumData} from './types';
 
+const UNKNOWN_TAG_VALUE: TagValue = null;
+
 export class Recorder {
   static addMeasurement(
       aggregationData: AggregationData,
@@ -44,15 +46,10 @@ export class Recorder {
   /** Gets the tag values from tags and columns */
   static getTagValues(tags: Map<TagKey, TagValue>, columns: TagKey[]):
       TagValue[] {
-    const tagValues: TagValue[] = [];
-
-    // ignore not found key values.
-    columns.forEach((tagKey) => {
-      if (tags.has(tagKey)) {
-        tagValues.push(tags.get(tagKey));
-      }
-    });
-    return tagValues;
+    return columns.map(
+        (tagKey) =>
+            (tags.get(tagKey) ||
+             /** replace not found key values by null. */ UNKNOWN_TAG_VALUE));
   }
 
   private static addToDistribution(

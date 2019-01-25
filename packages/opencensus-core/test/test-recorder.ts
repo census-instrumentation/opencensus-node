@@ -204,8 +204,8 @@ describe('Recorder', () => {
            tagMap.set(CALLER, CALLER_V);
            tagMap.set(METHOD, METHOD_V);
            const tagValues = Recorder.getTagValues(tagMap.tags, columns);
-           assert.equal(tagValues.length, 2);
-           assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
+           assert.equal(tagValues.length, 3);
+           assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V, null]);
          });
 
       it('should return tag values from tags and columns with extra tags',
