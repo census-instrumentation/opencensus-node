@@ -13,3 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {CoreResource, Resource} from '@opencensus/core';
+import {getAwsEC2Resource, getComputerEngineResource, getKubernetesEngineResource, getResourceType, ResourceType} from './resource-utils';
+
+/**
+ * Returns a Resource. Detector sequentially runs resource detection from
+ * environment variables, K8S, GCE and AWS.
+ */
+export async function detectResource(): Promise<Resource> {
+  const resources: Resource[] = [];
+  const resourceFromEnv = CoreResource.createFromEnvironmentVariables();
+  resources.push(resourceFromEnv);
+
+  const resourceType = await getResourceType();
+  if (resourceType === ResourceType.GCP_GKE_CONTAINER) {
+    resources.push(await getKubernetesEngineResource());
+  } else if (resourceType === ResourceType.GCP_GCE_INSTANCE) {
+    resources.push(await getComputerEngineResource());
+  }
+  if (resourceType === ResourceType.AWS_EC2_INSTANCE) {
+    resources.push(await getAwsEC2Resource());
+  }
+
+  return CoreResource.mergeResources(resources);
+}
+
+// export constants
+export * from './resource-labels';

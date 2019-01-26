@@ -1,0 +1,306 @@
+/**
+ * Copyright 2019, OpenCensus Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {CoreResource} from '@opencensus/core';
+import * as assert from 'assert';
+import {BASE_PATH, HEADER_NAME, HEADER_VALUE, HOST_ADDRESS} from 'gcp-metadata';
+import * as nock from 'nock';
+import * as resource from '../src';
+import * as resourceUtil from '../src/resource-utils';
+
+// NOTE: nodejs switches all incoming header names to lower case.
+const HEADERS = {
+  [HEADER_NAME.toLowerCase()]: HEADER_VALUE
+};
+const INSTANCE_PATH = BASE_PATH + '/instance';
+const INSTANCE_ID_PATH = BASE_PATH + '/instance/id';
+const PROJECT_ID_PATH = BASE_PATH + '/project/project-id';
+const ZONE_PATH = BASE_PATH + '/instance/zone';
+const HOSTNAME_PATH = BASE_PATH + '/instance/hostname';
+const CLUSTER_NAME_PATH = BASE_PATH + '/instance/attributes/cluster-name';
+const mockedAwsResponse = {
+  instanceId: 'my-instance-id',
+  accountId: 'my-account-id',
+  region: 'my-region'
+};
+
+describe('detectResource', () => {
+  before(() => {
+    nock.disableNetConnect();
+  });
+
+  after(() => {
+    nock.enableNetConnect();
+  });
+
+  beforeEach(() => {
+    nock.cleanAll();
+    resourceUtil.clear();
+    delete process.env.KUBERNETES_SERVICE_HOST;
+    delete process.env.NAMESPACE;
+    delete process.env.CONTAINER_NAME;
+    delete process.env.OC_RESOURCE_TYPE;
+    delete process.env.OC_RESOURCE_LABELS;
+    CoreResource.setup();
+  });
+
+  it('should return GCP_GKE_CONTAINER resource when KUBERNETES_SERVICE_HOST is set',
+     async () => {
+       process.env.KUBERNETES_SERVICE_HOST = 'my-host';
+       const scope = nock(HOST_ADDRESS)
+                         .get(CLUSTER_NAME_PATH)
+                         .reply(200, () => 'my-cluster', HEADERS)
+                         .get(PROJECT_ID_PATH)
+                         .reply(200, () => 'my-project-id', HEADERS)
+                         .get(ZONE_PATH)
+                         .reply(200, () => 'project/zone/my-zone', HEADERS)
+                         .get(HOSTNAME_PATH)
+                         .reply(200, () => 'my-hostname', HEADERS);
+       const {type, labels} = await resource.detectResource();
+       scope.done();
+
+       assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
+       assert.equal(Object.keys(labels).length, 6);
+       assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
+       assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'my-zone');
+       assert.strictEqual(labels[resource.K8S_CLUSTER_NAME_KEY], 'my-cluster');
+       assert.strictEqual(labels[resource.K8S_POD_NAME_KEY], 'my-hostname');
+       assert.strictEqual(labels[resource.K8S_NAMESPACE_NAME_KEY], '');
+       assert.strictEqual(labels[resource.K8S_CONTAINER_NAME_KEY], '');
+     });
+
+  it('should return GCP_GKE_CONTAINER resource when KUBERNETES_SERVICE_HOST, NAMESPACE and CONTAINER_NAME is set',
+     async () => {
+       process.env.KUBERNETES_SERVICE_HOST = 'my-host';
+       process.env.NAMESPACE = 'my-namespace';
+       process.env.CONTAINER_NAME = 'my-container-name';
+       const scope = nock(HOST_ADDRESS)
+                         .get(CLUSTER_NAME_PATH)
+                         .reply(200, () => 'my-cluster', HEADERS)
+                         .get(PROJECT_ID_PATH)
+                         .reply(200, () => 'my-project-id', HEADERS)
+                         .get(ZONE_PATH)
+                         .reply(200, () => 'project/zone/my-zone', HEADERS)
+                         .get(HOSTNAME_PATH)
+                         .reply(200, () => 'my-hostname', HEADERS);
+       const {type, labels} = await resource.detectResource();
+       scope.done();
+
+       assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
+       assert.equal(Object.keys(labels).length, 6);
+       assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
+       assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'my-zone');
+       assert.strictEqual(labels[resource.K8S_CLUSTER_NAME_KEY], 'my-cluster');
+       assert.strictEqual(labels[resource.K8S_POD_NAME_KEY], 'my-hostname');
+       assert.strictEqual(
+           labels[resource.K8S_NAMESPACE_NAME_KEY], 'my-namespace');
+       assert.strictEqual(
+           labels[resource.K8S_CONTAINER_NAME_KEY], 'my-container-name');
+
+       // fetch again, this shouldn't make http call again
+       const {type: type1, labels: labels1} = await resource.detectResource();
+       assert.deepStrictEqual(type, type1);
+       assert.deepStrictEqual(labels, labels1);
+     });
+
+  it('Should merge resources from CoreResource and detected k8s resource',
+     async () => {
+       process.env.OC_RESOURCE_TYPE = 'k8s.io/container';
+       process.env.OC_RESOURCE_LABELS =
+           'k8s.io/pod/name=pod-xyz-123,k8s.io/container/name=c1,k8s.io/namespace/name=default';
+       CoreResource.setup();
+
+       process.env.KUBERNETES_SERVICE_HOST = 'my-host';
+       const scope = nock(HOST_ADDRESS)
+                         .get(CLUSTER_NAME_PATH)
+                         .reply(200, () => 'my-cluster', HEADERS)
+                         .get(PROJECT_ID_PATH)
+                         .reply(200, () => 'my-project-id', HEADERS)
+                         .get(ZONE_PATH)
+                         .reply(200, () => 'project/zone/my-zone', HEADERS)
+                         .get(HOSTNAME_PATH)
+                         .reply(200, () => 'my-hostname', HEADERS);
+       const {type, labels} = await resource.detectResource();
+       scope.done();
+
+       assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
+       assert.equal(Object.keys(labels).length, 6);
+       assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
+       assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'my-zone');
+       assert.strictEqual(labels[resource.K8S_CLUSTER_NAME_KEY], 'my-cluster');
+       assert.strictEqual(labels[resource.K8S_POD_NAME_KEY], 'pod-xyz-123');
+       assert.strictEqual(labels[resource.K8S_NAMESPACE_NAME_KEY], 'default');
+       assert.strictEqual(labels[resource.K8S_CONTAINER_NAME_KEY], 'c1');
+     });
+
+  it('should return GCP_GCE_INSTANCE resource', async () => {
+    const scope = nock(HOST_ADDRESS)
+                      .get(INSTANCE_PATH)
+                      .reply(200, {}, HEADERS)
+                      .get(PROJECT_ID_PATH)
+                      .reply(200, () => 'my-project-id', HEADERS)
+                      .get(ZONE_PATH)
+                      .reply(200, () => 'project/zone/my-zone', HEADERS)
+                      .get(INSTANCE_ID_PATH)
+                      .reply(200, () => 'my-instance', HEADERS);
+    const {type, labels} = await resource.detectResource();
+    scope.done();
+
+    assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
+    assert.equal(Object.keys(labels).length, 3);
+    assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
+    assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'my-zone');
+    assert.strictEqual(labels[resource.GCP_INSTANCE_ID_KEY], 'my-instance');
+  });
+
+  it('should retry if the initial request fails', async () => {
+    const scope = nock(HOST_ADDRESS)
+                      .get(INSTANCE_PATH)
+                      .times(2)
+                      .reply(500)
+                      .get(INSTANCE_PATH)
+                      .reply(200, {}, HEADERS)
+                      .get(PROJECT_ID_PATH)
+                      .reply(200, () => 'my-project-id', HEADERS)
+                      .get(ZONE_PATH)
+                      .reply(200, () => 'project/zone/my-zone', HEADERS)
+                      .get(INSTANCE_ID_PATH)
+                      .reply(200, () => 'my-instance', HEADERS);
+    const {type, labels} = await resource.detectResource();
+    scope.done();
+
+    assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
+    assert.equal(Object.keys(labels).length, 3);
+    assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
+    assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'my-zone');
+    assert.strictEqual(labels[resource.GCP_INSTANCE_ID_KEY], 'my-instance');
+  });
+
+  it('should return GCP_GCE_INSTANCE resource and empty data for non avaiable metadata attribute',
+     async () => {
+       const scope = nock(HOST_ADDRESS)
+                         .get(INSTANCE_PATH)
+                         .reply(200, {}, HEADERS)
+                         .get(PROJECT_ID_PATH)
+                         .reply(200, () => 'my-project-id', HEADERS)
+                         .get(ZONE_PATH)
+                         .reply(413)
+                         .get(INSTANCE_ID_PATH)
+                         .reply(400, undefined, HEADERS);
+       const {type, labels} = await resource.detectResource();
+       scope.done();
+
+       assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
+       assert.equal(Object.keys(labels).length, 3);
+       assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
+       assert.strictEqual(labels[resource.GCP_ZONE_KEY], '');
+       assert.strictEqual(labels[resource.GCP_INSTANCE_ID_KEY], '');
+
+       // fetch again, this shouldn't make http call again
+       const {type: type1, labels: labels1} = await resource.detectResource();
+       assert.deepStrictEqual(type, type1);
+       assert.deepStrictEqual(labels, labels1);
+     });
+
+  it('Should merge resources from CoreResource and detected gce resource',
+     async () => {
+       process.env.OC_RESOURCE_TYPE = 'global';
+       process.env.OC_RESOURCE_LABELS =
+           'cloud.google.com/gce/zone=zone1,user=user1,version=1.0';
+       CoreResource.setup();
+
+       const scope = nock(HOST_ADDRESS)
+                         .get(INSTANCE_PATH)
+                         .reply(200, {}, HEADERS)
+                         .get(PROJECT_ID_PATH)
+                         .reply(200, () => 'my-project-id', HEADERS)
+                         .get(ZONE_PATH)
+                         .reply(200, () => 'project/zone/my-zone', HEADERS)
+                         .get(INSTANCE_ID_PATH)
+                         .reply(200, () => 'my-instance', HEADERS);
+       const {type, labels} = await resource.detectResource();
+       scope.done();
+
+       assert.deepEqual(type, 'global');
+       assert.equal(Object.keys(labels).length, 5);
+       assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
+       assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'zone1');
+       assert.strictEqual(labels[resource.GCP_INSTANCE_ID_KEY], 'my-instance');
+       assert.strictEqual(labels['user'], 'user1');
+       assert.strictEqual(labels['version'], '1.0');
+     });
+
+  it('should return aws_ec2_instance resource', async () => {
+    const gcpScope = nock(HOST_ADDRESS).get(INSTANCE_PATH).replyWithError({
+      code: 'ENOTFOUND'
+    });
+    const awsScope = nock(resourceUtil.AWS_INSTANCE_IDENTITY_DOCUMENT_URI)
+                         .get('')
+                         .reply(200, () => mockedAwsResponse, HEADERS);
+    const {type, labels} = await resource.detectResource();
+    awsScope.done();
+    gcpScope.done();
+
+    assert.deepEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
+    assert.equal(Object.keys(labels).length, 3);
+    assert.strictEqual(labels[resource.AWS_ACCOUNT_KEY], 'my-account-id');
+    assert.strictEqual(labels[resource.AWS_INSTANCE_ID_KEY], 'my-instance-id');
+    assert.strictEqual(labels[resource.AWS_REGION_KEY], 'my-region');
+
+    // fetch again, this shouldn't make http call again
+    const {type: type1, labels: labels1} = await resource.detectResource();
+    assert.deepStrictEqual(type, type1);
+    assert.deepStrictEqual(labels, labels1);
+  });
+
+  it('Should merge resources from CoreResource and detected aws_ec2_instance resource',
+     async () => {
+       process.env.OC_RESOURCE_TYPE = 'aws.com/ec2/instance';
+       process.env.OC_RESOURCE_LABELS = 'aws.com/ec2/region=default';
+       CoreResource.setup();
+
+       const gcpScope = nock(HOST_ADDRESS).get(INSTANCE_PATH).replyWithError({
+         code: 'ENOTFOUND'
+       });
+       const awsScope = nock(resourceUtil.AWS_INSTANCE_IDENTITY_DOCUMENT_URI)
+                            .get('')
+                            .reply(200, () => mockedAwsResponse, HEADERS);
+       const {type, labels} = await resource.detectResource();
+       awsScope.done();
+       gcpScope.done();
+
+       assert.deepEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
+       assert.equal(Object.keys(labels).length, 3);
+       assert.strictEqual(labels[resource.AWS_ACCOUNT_KEY], 'my-account-id');
+       assert.strictEqual(
+           labels[resource.AWS_INSTANCE_ID_KEY], 'my-instance-id');
+       assert.strictEqual(labels[resource.AWS_REGION_KEY], 'default');
+     });
+
+  it('return empty labels when failed to find any resources', async () => {
+    const gcpScope = nock(HOST_ADDRESS).get(INSTANCE_PATH).replyWithError({
+      code: 'ENOTFOUND'
+    });
+    const awsScope = nock(resourceUtil.AWS_INSTANCE_IDENTITY_DOCUMENT_URI)
+                         .get('')
+                         .replyWithError({code: 'ENOTFOUND'});
+    const {type, labels} = await resource.detectResource();
+    awsScope.done();
+    gcpScope.done();
+
+    assert.deepEqual(type, null);
+    assert.equal(Object.keys(labels).length, 0);
+  });
+});
