@@ -15,11 +15,20 @@
  */
 
 import * as assert from 'assert';
+
+import {TraceParameters} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
-import {SamplerBuilder} from '../src/trace/sampler/sampler';
+import {SamplerBuilder, TraceParamasBuilder} from '../src/trace/sampler/sampler';
 
 const tracer = new CoreTracer();
+
+const traceParameters: TraceParameters = {
+  numberOfAnnontationEventsPerSpan: 12,
+  numberOfAttributesPerSpan: 10,
+  numberOfLinksPerSpan: 7,
+  numberOfMessageEventsPerSpan: 5
+};
 
 describe('Sampler', () => {
   /**
@@ -99,5 +108,49 @@ describe('Sampler', () => {
                `should not have sampled but did: ${traceId}`);
          });
        });
+  });
+  describe('getNumberOfAnnotationEventsPerSpan', () => {
+    it('should return max annotation event per span', () => {
+      assert.equal(
+          TraceParamasBuilder.getNumberOfAnnotationEventsPerSpan(undefined),
+          32);
+    });
+    it('should return  12', () => {
+      assert.equal(
+          TraceParamasBuilder.getNumberOfAnnotationEventsPerSpan(
+              traceParameters),
+          12);
+    });
+  });
+  describe('getNumberOfMessageEventsPerSpan', () => {
+    it('should return max message events per span', () => {
+      assert.equal(
+          TraceParamasBuilder.getNumberOfMessageEventsPerSpan(undefined), 128);
+    });
+    it('should return 5', () => {
+      assert.equal(
+          TraceParamasBuilder.getNumberOfMessageEventsPerSpan(traceParameters),
+          5);
+    });
+  });
+  describe('getNumberOfAttributesPerSpan', () => {
+    it('should return max number of attributes per span', () => {
+      assert.equal(
+          TraceParamasBuilder.getNumberOfAttributesPerSpan(undefined), 32);
+    });
+    it('should return 10', () => {
+      assert.equal(
+          TraceParamasBuilder.getNumberOfAttributesPerSpan(traceParameters),
+          10);
+    });
+  });
+  describe('getNumberOfLinksPerSpan', () => {
+    it('should return max number of links per span', () => {
+      assert.equal(TraceParamasBuilder.getNumberOfLinksPerSpan(undefined), 32);
+    });
+    it('should return 7', () => {
+      assert.equal(
+          TraceParamasBuilder.getNumberOfLinksPerSpan(traceParameters), 7);
+    });
   });
 });

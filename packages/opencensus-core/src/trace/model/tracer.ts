@@ -19,7 +19,7 @@ import * as loggerTypes from '../../common/types';
 import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
 import {Propagation} from '../propagation/types';
-import {SamplerBuilder} from '../sampler/sampler';
+import {SamplerBuilder, TraceParamasBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 import {RootSpan} from './root-span';
 import * as types from './types';
@@ -46,7 +46,14 @@ export class CoreTracer implements types.Tracer {
   sampler: samplerTypes.Sampler;
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger = logger.logger();
-
+  /** maxAnnotationEvents is max number of annotation events per span  */
+  numberOfAnnontationEventsPerSpan?: number;
+  /** maxMessageEventsPerSpan is max number of message events per span */
+  numberOfMessageEventsPerSpan?: number;
+  /** maxAttributesPerSpan is max number of attributes per span */
+  numberOfAttributesPerSpan?: number;
+  /** MaxLinksPerSpan is max number of links per span */
+  numberOfLinksPerSpan?: number;
 
   /** Constructs a new TraceImpl instance. */
   constructor() {
@@ -81,6 +88,28 @@ export class CoreTracer implements types.Tracer {
     this.config = config;
     this.logger = this.config.logger || logger.logger();
     this.sampler = SamplerBuilder.getSampler(config.samplingRate);
+    if (config.traceParameters != null) {
+      this.numberOfAnnontationEventsPerSpan =
+          TraceParamasBuilder.getNumberOfAnnotationEventsPerSpan(
+              config.traceParameters);
+      this.numberOfAttributesPerSpan =
+          TraceParamasBuilder.getNumberOfAttributesPerSpan(
+              config.traceParameters);
+      this.numberOfMessageEventsPerSpan =
+          TraceParamasBuilder.getNumberOfMessageEventsPerSpan(
+              config.traceParameters);
+      this.numberOfLinksPerSpan =
+          TraceParamasBuilder.getNumberOfLinksPerSpan(config.traceParameters);
+    } else {
+      this.numberOfAnnontationEventsPerSpan =
+          TraceParamasBuilder.getNumberOfAnnotationEventsPerSpan(undefined);
+      this.numberOfAttributesPerSpan =
+          TraceParamasBuilder.getNumberOfAttributesPerSpan(undefined);
+      this.numberOfMessageEventsPerSpan =
+          TraceParamasBuilder.getNumberOfMessageEventsPerSpan(undefined);
+      this.numberOfLinksPerSpan =
+          TraceParamasBuilder.getNumberOfLinksPerSpan(undefined);
+    }
     return this;
   }
 

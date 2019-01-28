@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {TraceParameters} from '../config/types';
+
 import {Sampler} from './types';
 
 // We use 52-bits as our max number because it remains a javascript "safe
@@ -95,5 +97,48 @@ export class SamplerBuilder {
       return SamplerBuilder.NEVER;
     }
     return new ProbabilitySampler(probability);
+  }
+}
+
+/** Builder Class of TraceParams */
+export class TraceParamasBuilder {
+  private static readonly MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN = 32;
+  private static readonly MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN = 128;
+  private static readonly MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN = 32;
+  private static readonly MAX_NUMBER_OF_LINKS_PER_SPAN = 32;
+
+  static getNumberOfAnnotationEventsPerSpan(traceParameters: TraceParameters):
+      number {
+    return traceParameters === undefined ||
+            traceParameters.numberOfAnnontationEventsPerSpan >
+                this.MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN ?
+        this.MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN :
+        traceParameters.numberOfAnnontationEventsPerSpan;
+  }
+
+  static getNumberOfMessageEventsPerSpan(traceParameters: TraceParameters):
+      number {
+    return traceParameters === undefined ||
+            traceParameters.numberOfMessageEventsPerSpan >
+                this.MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN ?
+        this.MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN :
+        traceParameters.numberOfMessageEventsPerSpan;
+  }
+
+  static getNumberOfAttributesPerSpan(traceParameters: TraceParameters):
+      number {
+    return traceParameters === undefined ||
+            traceParameters.numberOfAttributesPerSpan >
+                this.MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN ?
+        this.MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN :
+        traceParameters.numberOfAttributesPerSpan;
+  }
+
+  static getNumberOfLinksPerSpan(traceParameters: TraceParameters): number {
+    return traceParameters === undefined ||
+            traceParameters.numberOfLinksPerSpan >
+                this.MAX_NUMBER_OF_LINKS_PER_SPAN ?
+        this.MAX_NUMBER_OF_LINKS_PER_SPAN :
+        traceParameters.numberOfLinksPerSpan;
   }
 }
