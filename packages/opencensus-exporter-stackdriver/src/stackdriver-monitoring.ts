@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, View} from '@opencensus/core';
+import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 
@@ -223,8 +223,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
 
   /**
    * Is called whenever a measure is recorded.
-   * @param views The views associated with the measure
-   * @param measurement The measurement recorded
+   * @param views The views related to the measurement
+   * @param measurement The recorded measurement
+   * @param tags The tags to which the value is applied
    */
-  onRecord(views: View[], measurement: Measurement) {}
+  onRecord(
+      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {}
 }

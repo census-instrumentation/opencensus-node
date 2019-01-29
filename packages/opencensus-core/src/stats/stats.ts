@@ -19,6 +19,8 @@ import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
 import {Metric} from '../metrics/export/types';
 import {Metrics} from '../metrics/metrics';
+import {TagMap} from '../tags/tag-map';
+import {TagKey} from '../tags/types';
 
 import {MetricProducerForStats} from './metric-producer';
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from './types';
@@ -83,7 +85,7 @@ export class BaseStats implements Stats {
    */
   createView(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagKeys: string[], description: string,
+      tagKeys: TagKey[], description: string,
       bucketBoundaries?: number[]): View {
     const view = new BaseView(
         name, measure, aggregation, tagKeys, description, bucketBoundaries);
@@ -156,12 +158,20 @@ export class BaseStats implements Stats {
   /**
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
+   * @param tags optional The tags to which the value is applied.
+   *  tags could either be explicitly passed to the method, or implicitly
+   *  read from current execution context.
    */
-  record(...measurements: Measurement[]): void {
+  record(measurements: Measurement[], tags?: TagMap): void {
     if (this.hasNegativeValue(measurements)) {
       this.logger.warn(`Dropping measurments ${measurements}, value to record
           must be non-negative.`);
       return;
+    }
+
+    if (!tags) {
+      // TODO(mayurkale): read tags current execution context
+      tags = new TagMap();
     }
 
     for (const measurement of measurements) {
@@ -171,12 +181,12 @@ export class BaseStats implements Stats {
       }
       // Updates all views
       for (const view of views) {
-        view.recordMeasurement(measurement);
+        view.recordMeasurement(measurement, tags);
       }
 
       // Notifies all exporters
       for (const exporter of this.statsEventListeners) {
-        exporter.onRecord(views, measurement);
+        exporter.onRecord(views, measurement, tags.tags);
       }
     }
   }

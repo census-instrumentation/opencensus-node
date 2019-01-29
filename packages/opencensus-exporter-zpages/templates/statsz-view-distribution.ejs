@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <? for (var tagKey of statsData[0].tagKeys) { ?>
-                <th class="borderRL">TagKey: <?= tagKey ?></th>                
+                <th class="borderRL">TagKey: <?= tagKey.name ?></th>
             <? } ?>
             <th class="borderRL">Mean, By</th>
             <th class="borderRL">Count</th>
@@ -17,8 +17,12 @@
             <? for (var data of statsData) { ?>
                 <tr>
                     <? for (var tagValue of data.tagValues) { ?>
-                        <td class="borderRL"><?= tagValue ?></td>
-                    <? } ?>  
+                        <? if (tagValue) { ?>
+                            <td class="borderRL"><?= tagValue.value ?></td>
+                        <? } else { ?>
+                            <td class="borderRL"></td>
+                        <? } ?>
+                    <? } ?>
                     <td class="borderRL"><?= data.snapshot.mean ?></td>
                     <td class="borderRL"><?= data.snapshot.count ?></td>
                     <td class="borderRL"><?= data.snapshot.sumOfSquaredDeviation ?></td>
@@ -32,7 +36,7 @@
                             </thead>
                             <tbody>
                                 <? for (var item of data.snapshot.buckets) { ?>
-                                    <tr>                        
+                                    <tr>
                                         <td>[<?= item.lowBoundary ?>...<?= item.highBoundary ?>)</td>
                                         <td><?= item.count ?></td>
                                     </tr>

@@ -104,6 +104,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
   describe('createMetric()', () => {
     const labelKeys: LabelKey[] = [{'key': 'key1', 'description': 'desc'}];
     const labelValues: LabelValue[] = [{'value': 'value1'}];
+    const emptyLabelValues: LabelValue[] = [{'value': ''}];
     const metricDescriptor: OCMetricDescriptor = {
       name: METRIC_NAME,
       description: METRIC_DESCRIPTION,
@@ -140,6 +141,17 @@ describe('Stackdriver Stats Exporter Utils', () => {
       assert.strictEqual(metric.type, `${prometheusDomain}${METRIC_NAME}`);
       assert.deepStrictEqual(
           metric.labels, {'opencensus_task': OPENCENSUS_TASK_VALUE_DEFAULT});
+    });
+
+    it('should return a Stackdriver Metric With Empty label value', () => {
+      const metric = TEST_ONLY.createMetric(
+          metricDescriptor, emptyLabelValues,
+          StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN);
+      assert.strictEqual(
+          metric.type, `custom.googleapis.com/opencensus/${METRIC_NAME}`);
+      assert.deepStrictEqual(
+          metric.labels,
+          {'key1': '', 'opencensus_task': OPENCENSUS_TASK_VALUE_DEFAULT});
     });
   });
 

@@ -15,9 +15,10 @@
  */
 
 
-import {LabelKey, LabelValue, MetricDescriptor, MetricDescriptorType} from '../metrics/export/types';
+import {LabelValue, MetricDescriptor, MetricDescriptorType} from '../metrics/export/types';
+import {TagValue} from '../tags/types';
 
-import {AggregationType, Measure, MeasureType, Tags, View} from './types';
+import {AggregationType, Measure, MeasureType, View} from './types';
 
 /** Utils to convert Stats data models to Metric data models */
 export class MetricUtils {
@@ -61,25 +62,24 @@ export class MetricUtils {
    * @returns {MetricDescriptor}
    */
   static viewToMetricDescriptor(view: View): MetricDescriptor {
-    // TODO(mayurkale): add description
     return {
       name: view.name,
       description: view.description,
       unit: view.measure.unit,
       type: MetricUtils.getType(view.measure, view.aggregation),
       labelKeys: view.getColumns().map(
-          tag => ({key: tag, description: ''} as LabelKey))
+          // TODO(mayurkale): add description
+          tagKey => ({key: tagKey.name, description: ''}))
     };
   }
 
   /**
-   * Converts tags to label values.
-   * @param tags
+   * Converts tag values to label values.
+   * @param tagValues
    * @returns {LabelValue[]} List of label values
    */
-  static tagsToLabelValues(tags: Tags): LabelValue[] {
-    return Object.keys(tags).map(key => {
-      return {value: tags[key]} as LabelValue;
-    });
+  static tagValuesToLabelValues(tagValues: TagValue[]): LabelValue[] {
+    return tagValues.map(
+        (tagValue) => ({value: tagValue ? tagValue.value : null}));
   }
 }
