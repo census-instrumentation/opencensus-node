@@ -42,16 +42,17 @@ export enum ResourceType {
 
 /** Determine the compute environment in which the code is running. */
 export async function getResourceType(): Promise<ResourceType> {
-  if (!resourceType) {
-    if (process.env.KUBERNETES_SERVICE_HOST) {
-      resourceType = ResourceType.GCP_GKE_CONTAINER;
-    } else if (await isRunningOnComputeEngine()) {
-      resourceType = ResourceType.GCP_GCE_INSTANCE;
-    } else if (await isRunningOnAwsEc2()) {
-      resourceType = ResourceType.AWS_EC2_INSTANCE;
-    } else {
-      resourceType = ResourceType.NONE;
-    }
+  if (resourceType) {
+    return resourceType;
+  }
+  if (process.env.KUBERNETES_SERVICE_HOST) {
+    resourceType = ResourceType.GCP_GKE_CONTAINER;
+  } else if (await isRunningOnComputeEngine()) {
+    resourceType = ResourceType.GCP_GCE_INSTANCE;
+  } else if (await isRunningOnAwsEc2()) {
+    resourceType = ResourceType.AWS_EC2_INSTANCE;
+  } else {
+    resourceType = ResourceType.NONE;
   }
   return resourceType;
 }
@@ -150,9 +151,8 @@ async function getProjectId() {
   try {
     return await gcpMetadata.project('project-id');
   } catch {
-    /* ignore */
+    return '';
   }
-  return '';
 }
 
 /** Gets instance id from GCP instance metadata. */
@@ -160,9 +160,8 @@ async function getInstanceId() {
   try {
     return await gcpMetadata.instance('id');
   } catch {
-    /* ignore */
+    return '';
   }
-  return '';
 }
 
 /** Gets zone from GCP instance metadata. */
@@ -173,9 +172,8 @@ async function getZone() {
       return zoneId.split('/').pop();
     }
   } catch {
-    /* ignore */
+    return '';
   }
-  return '';
 }
 
 /** Gets cluster name from GCP instance metadata. */
