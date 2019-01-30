@@ -125,7 +125,7 @@ async function awsMetadataAccessor<T>(): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(new Error('EC2 metadata api request timed out.'));
-  }, 2000);
+    }, 2000);
 
     const req = http.get(AWS_INSTANCE_IDENTITY_DOCUMENT_URI, (res) => {
       clearTimeout(timeoutId);
