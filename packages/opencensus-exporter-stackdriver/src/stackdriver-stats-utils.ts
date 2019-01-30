@@ -26,41 +26,12 @@ const OPENCENSUS_TASK_DESCRIPTION = 'Opencensus task identifier';
 export const OPENCENSUS_TASK_VALUE_DEFAULT = generateDefaultTaskValue();
 const STACKDRIVER_PROJECT_ID_KEY = 'project_id';
 
-// Mappings for the well-known OC resources to applicable Stackdriver resources.
-const GCP_RESOURCE_MAPPING = getGcpResourceLabelsMappings();
-const K8S_RESOURCE_MAPPING = getK8sResourceLabelsMappings();
-const AWS_RESOURCE_MAPPING = getAwsResourceLabelsMappings();
-
-const GCP_GKE_CONTAINER = 'k8s_container';
-const GCP_GCE_INSTANCE = 'gce_instance';
-const AWS_EC2_INSTANCE = 'aws_ec2_instance';
-const GLOBAL = 'global';
-
 /* Return a self-configured StackDriver monitored resource. */
 export async function getDefaultResource(projectId: string):
     Promise<MonitoredResource> {
-  let type;
   const labels: Labels = {project_id: projectId};
-  let mappings: Labels = {};
   const autoDetectedResource = await resource.detectResource();
-  switch (autoDetectedResource.type) {
-    case resource.GCP_GCE_INSTANCE_TYPE:
-      type = GCP_GCE_INSTANCE;
-      mappings = GCP_RESOURCE_MAPPING;
-      break;
-    case resource.K8S_CONTAINER_TYPE:
-      type = GCP_GKE_CONTAINER;
-      mappings = K8S_RESOURCE_MAPPING;
-      break;
-    case resource.AWS_EC2_INSTANCE_TYPE:
-      type = AWS_EC2_INSTANCE;
-      mappings = AWS_RESOURCE_MAPPING;
-      break;
-    default:
-      type = GLOBAL;
-      break;
-  }
-
+  const [type, mappings] = getTypeAndMappings(autoDetectedResource.type);
   Object.keys(mappings).forEach((key) => {
     if (autoDetectedResource.labels[mappings[key]]) {
       if (mappings[key] === resource.AWS_REGION_KEY) {
@@ -287,35 +258,42 @@ function leftZeroPad(ns: number) {
   return `${pad}${str}`;
 }
 
-function getGcpResourceLabelsMappings() {
-  // https://cloud.google.com/monitoring/api/resources#tag_gce_instance
-  return {
-    'project_id': STACKDRIVER_PROJECT_ID_KEY,
-    'instance_id': resource.GCP_INSTANCE_ID_KEY,
-    'zone': resource.GCP_ZONE_KEY
-  };
-}
-
-function getK8sResourceLabelsMappings() {
-  // https://cloud.google.com/monitoring/api/resources#tag_k8s_container
-  return {
-    'project_id': STACKDRIVER_PROJECT_ID_KEY,
-    'location': resource.GCP_ZONE_KEY,
-    'cluster_name': resource.K8S_CLUSTER_NAME_KEY,
-    'namespace_name': resource.K8S_NAMESPACE_NAME_KEY,
-    'pod_name': resource.K8S_POD_NAME_KEY,
-    'container_name': resource.K8S_CONTAINER_NAME_KEY
-  };
-}
-
-function getAwsResourceLabelsMappings() {
-  // https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
-  return {
-    'project_id': STACKDRIVER_PROJECT_ID_KEY,
-    'instance_id': resource.AWS_INSTANCE_ID_KEY,
-    'region': resource.AWS_REGION_KEY,
-    'aws_account': resource.AWS_ACCOUNT_KEY
-  };
+function getTypeAndMappings(resourceType: string): [string, Labels] {
+  switch (resourceType) {
+    case resource.GCP_GCE_INSTANCE_TYPE:
+      // https://cloud.google.com/monitoring/api/resources#tag_gce_instance
+      return [
+        'gce_instance', {
+          'project_id': STACKDRIVER_PROJECT_ID_KEY,
+          'instance_id': resource.GCP_INSTANCE_ID_KEY,
+          'zone': resource.GCP_ZONE_KEY
+        }
+      ];
+    case resource.K8S_CONTAINER_TYPE:
+      // https://cloud.google.com/monitoring/api/resources#tag_k8s_container
+      return [
+        'k8s_container', {
+          'project_id': STACKDRIVER_PROJECT_ID_KEY,
+          'location': resource.GCP_ZONE_KEY,
+          'cluster_name': resource.K8S_CLUSTER_NAME_KEY,
+          'namespace_name': resource.K8S_NAMESPACE_NAME_KEY,
+          'pod_name': resource.K8S_POD_NAME_KEY,
+          'container_name': resource.K8S_CONTAINER_NAME_KEY
+        }
+      ];
+    case resource.AWS_EC2_INSTANCE_TYPE:
+      // https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
+      return [
+        'aws_ec2_instance', {
+          'project_id': STACKDRIVER_PROJECT_ID_KEY,
+          'instance_id': resource.AWS_INSTANCE_ID_KEY,
+          'region': resource.AWS_REGION_KEY,
+          'aws_account': resource.AWS_ACCOUNT_KEY
+        }
+      ];
+    default:
+      return ['global', {}];
+  }
 }
 
 export const TEST_ONLY = {
