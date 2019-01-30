@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {TraceParameters} from '../config/types';
+import {TraceParams} from '../config/types';
 
 import {Sampler} from './types';
 
@@ -101,43 +101,37 @@ export class SamplerBuilder {
 }
 
 /** Builder Class of TraceParams */
-export class TraceParamasBuilder {
+export class TraceParamsBuilder {
   private static readonly MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN = 32;
   private static readonly MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN = 128;
   private static readonly MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN = 32;
   private static readonly MAX_NUMBER_OF_LINKS_PER_SPAN = 32;
 
-  static getNumberOfAnnotationEventsPerSpan(traceParameters: TraceParameters):
+  static getNumberOfAnnotationEventsPerSpan(traceParameters: TraceParams):
       number {
-    return traceParameters === undefined ||
-            traceParameters.numberOfAnnontationEventsPerSpan >
-                this.MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN ?
+    return traceParameters.numberOfAnnontationEventsPerSpan >
+            this.MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN ?
         this.MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN :
         traceParameters.numberOfAnnontationEventsPerSpan;
   }
 
-  static getNumberOfMessageEventsPerSpan(traceParameters: TraceParameters):
-      number {
-    return traceParameters === undefined ||
-            traceParameters.numberOfMessageEventsPerSpan >
-                this.MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN ?
+  static getNumberOfMessageEventsPerSpan(traceParameters: TraceParams): number {
+    return traceParameters.numberOfMessageEventsPerSpan >
+            this.MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN ?
         this.MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN :
         traceParameters.numberOfMessageEventsPerSpan;
   }
 
-  static getNumberOfAttributesPerSpan(traceParameters: TraceParameters):
-      number {
-    return traceParameters === undefined ||
-            traceParameters.numberOfAttributesPerSpan >
-                this.MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN ?
+  static getNumberOfAttributesPerSpan(traceParameters: TraceParams): number {
+    return traceParameters.numberOfAttributesPerSpan >
+            this.MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN ?
         this.MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN :
         traceParameters.numberOfAttributesPerSpan;
   }
 
-  static getNumberOfLinksPerSpan(traceParameters: TraceParameters): number {
-    return traceParameters === undefined ||
-            traceParameters.numberOfLinksPerSpan >
-                this.MAX_NUMBER_OF_LINKS_PER_SPAN ?
+  static getNumberOfLinksPerSpan(traceParameters: TraceParams): number {
+    return traceParameters.numberOfLinksPerSpan >
+            this.MAX_NUMBER_OF_LINKS_PER_SPAN ?
         this.MAX_NUMBER_OF_LINKS_PER_SPAN :
         traceParameters.numberOfLinksPerSpan;
   }
