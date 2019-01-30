@@ -17,9 +17,8 @@
 import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
-
-import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-stats-utils';
-import {StackdriverExporterOptions, TimeSeries} from './types';
+import {createMetricDescriptorData, createTimeSeriesList, getDefaultResource} from './stackdriver-stats-utils';
+import {MonitoredResource, StackdriverExporterOptions, TimeSeries} from './types';
 
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
 const monitoring = google.monitoring('v3');
@@ -36,11 +35,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
   static readonly DEFAULT_DISPLAY_NAME_PREFIX: string = 'OpenCensus';
   static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
       'custom.googleapis.com/opencensus';
-  static readonly GLOBAL: string = 'global';
   static readonly PERIOD: number = 60000;
   private registeredMetricDescriptors: Map<string, OCMetricDescriptor> =
       new Map();
-
+  private DEFAULT_RESOURCE: Promise<MonitoredResource>;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
@@ -54,6 +52,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
         options.prefix || StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX;
     this.logger = options.logger || logger.logger();
     this.onMetricUploadError = options.onMetricUploadError;
+    this.DEFAULT_RESOURCE = getDefaultResource(this.projectId);
   }
 
   /**
@@ -132,11 +131,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * be uploaded to StackDriver.
    * @param metricsList The List of Metric.
    */
-  private createTimeSeries(metricsList: Metric[]) {
+  private async createTimeSeries(metricsList: Metric[]) {
     const timeSeries: TimeSeries[] = [];
-    const resourceLabels = {project_id: this.projectId};
-    const monitoredResource = {type: 'global', labels: resourceLabels};
-
+    const monitoredResource = await this.DEFAULT_RESOURCE;
     for (const metric of metricsList) {
       timeSeries.push(...createTimeSeriesList(
           metric, monitoredResource, this.metricPrefix));

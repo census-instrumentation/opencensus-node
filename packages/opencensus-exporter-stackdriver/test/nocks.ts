@@ -21,6 +21,10 @@ import * as nock from 'nock';
 
 const accept = () => true;
 
+const HEADERS = {
+  ['metadata-flavor']: 'Google'
+};
+
 export function oauth2<T extends {} = {}>(validator?: (body: T) => boolean):
     nock.Scope {
   validator = validator || accept;
@@ -43,6 +47,31 @@ export function projectId(status: number|(() => string), reply?: () => string) {
       .get('/computeMetadata/v1/project/project-id')
       .once()
       .reply(status, reply, {'Metadata-Flavor': 'Google'});
+}
+
+export function noDetectResource() {
+  const scopes = [
+    nock('http://metadata.google.internal')
+        .get('/computeMetadata/v1/instance')
+        .once()
+        .replyWithError({code: 'ENOTFOUND'}),
+    nock('http://169.254.169.254/latest/dynamic/instance-identity/document')
+        .get('')
+        .replyWithError({code: 'ENOTFOUND'})
+  ];
+  return scopes;
+}
+
+export function detectGceResource() {
+  return nock('http://metadata.google.internal')
+      .get('/computeMetadata/v1/instance')
+      .reply(200, {}, HEADERS)
+      .get('/computeMetadata/v1/project/project-id')
+      .reply(200, () => 'my-project-id', HEADERS)
+      .get('/computeMetadata/v1/instance/zone')
+      .reply(200, () => 'project/zone/my-zone', HEADERS)
+      .get('/computeMetadata/v1/instance/id')
+      .reply(200, () => 4520031799277581759, HEADERS);
 }
 
 export function instanceId(

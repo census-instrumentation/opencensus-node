@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {BucketOptions, DistributionBucket, DistributionValue, LabelKey, LabelValue, Metric, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
+import {BucketOptions, DistributionBucket, DistributionValue, LabelKey, Labels, LabelValue, Metric, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
+import * as resource from '@opencensus/resource-util';
 import * as os from 'os';
 import * as path from 'path';
 
@@ -23,6 +24,26 @@ import {Distribution, LabelDescriptor, MetricDescriptor, MetricKind, MonitoredRe
 const OPENCENSUS_TASK = 'opencensus_task';
 const OPENCENSUS_TASK_DESCRIPTION = 'Opencensus task identifier';
 export const OPENCENSUS_TASK_VALUE_DEFAULT = generateDefaultTaskValue();
+const STACKDRIVER_PROJECT_ID_KEY = 'project_id';
+
+/* Return a self-configured StackDriver monitored resource. */
+export async function getDefaultResource(projectId: string):
+    Promise<MonitoredResource> {
+  const labels: Labels = {project_id: projectId};
+  const autoDetectedResource = await resource.detectResource();
+  const [type, mappings] = getTypeAndMappings(autoDetectedResource.type);
+  Object.keys(mappings).forEach((key) => {
+    if (autoDetectedResource.labels[mappings[key]]) {
+      if (mappings[key] === resource.AWS_REGION_KEY) {
+        labels[key] = `${resource.AWS_REGION_VALUE_PREFIX}${
+            autoDetectedResource.labels[mappings[key]]}`;
+      } else {
+        labels[key] = autoDetectedResource.labels[mappings[key]];
+      }
+    }
+  });
+  return {type, labels};
+}
 
 /** Converts a OpenCensus MetricDescriptor to a StackDriver MetricDescriptor. */
 export function createMetricDescriptorData(
@@ -235,6 +256,44 @@ function leftZeroPad(ns: number) {
   const str = `${ns}`;
   const pad = '000000000'.substring(0, 9 - str.length);
   return `${pad}${str}`;
+}
+
+function getTypeAndMappings(resourceType: string): [string, Labels] {
+  switch (resourceType) {
+    case resource.GCP_GCE_INSTANCE_TYPE:
+      // https://cloud.google.com/monitoring/api/resources#tag_gce_instance
+      return [
+        'gce_instance', {
+          'project_id': STACKDRIVER_PROJECT_ID_KEY,
+          'instance_id': resource.GCP_INSTANCE_ID_KEY,
+          'zone': resource.GCP_ZONE_KEY
+        }
+      ];
+    case resource.K8S_CONTAINER_TYPE:
+      // https://cloud.google.com/monitoring/api/resources#tag_k8s_container
+      return [
+        'k8s_container', {
+          'project_id': STACKDRIVER_PROJECT_ID_KEY,
+          'location': resource.GCP_ZONE_KEY,
+          'cluster_name': resource.K8S_CLUSTER_NAME_KEY,
+          'namespace_name': resource.K8S_NAMESPACE_NAME_KEY,
+          'pod_name': resource.K8S_POD_NAME_KEY,
+          'container_name': resource.K8S_CONTAINER_NAME_KEY
+        }
+      ];
+    case resource.AWS_EC2_INSTANCE_TYPE:
+      // https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
+      return [
+        'aws_ec2_instance', {
+          'project_id': STACKDRIVER_PROJECT_ID_KEY,
+          'instance_id': resource.AWS_INSTANCE_ID_KEY,
+          'region': resource.AWS_REGION_KEY,
+          'aws_account': resource.AWS_ACCOUNT_KEY
+        }
+      ];
+    default:
+      return ['global', {}];
+  }
 }
 
 export const TEST_ONLY = {

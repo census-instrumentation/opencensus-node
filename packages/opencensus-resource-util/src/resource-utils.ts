@@ -158,7 +158,8 @@ async function getProjectId() {
 /** Gets instance id from GCP instance metadata. */
 async function getInstanceId() {
   try {
-    return await gcpMetadata.instance('id');
+    const id = await gcpMetadata.instance('id');
+    return id.toString();
   } catch {
     return '';
   }

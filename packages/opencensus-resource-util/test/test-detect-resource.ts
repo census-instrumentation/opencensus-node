@@ -154,7 +154,7 @@ describe('detectResource', () => {
                       .get(ZONE_PATH)
                       .reply(200, () => 'project/zone/my-zone', HEADERS)
                       .get(INSTANCE_ID_PATH)
-                      .reply(200, () => 'my-instance', HEADERS);
+                      .reply(200, () => 4520031799277581759, HEADERS);
     const {type, labels} = await resource.detectResource();
     scope.done();
 
@@ -162,7 +162,8 @@ describe('detectResource', () => {
     assert.equal(Object.keys(labels).length, 3);
     assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
     assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'my-zone');
-    assert.strictEqual(labels[resource.GCP_INSTANCE_ID_KEY], 'my-instance');
+    assert.strictEqual(
+        labels[resource.GCP_INSTANCE_ID_KEY], '4520031799277582000');
   });
 
   it('should retry if the initial request fails', async () => {
@@ -177,7 +178,7 @@ describe('detectResource', () => {
                       .get(ZONE_PATH)
                       .reply(200, () => 'project/zone/my-zone', HEADERS)
                       .get(INSTANCE_ID_PATH)
-                      .reply(200, () => 'my-instance', HEADERS);
+                      .reply(200, () => 4520031799277581759, HEADERS);
     const {type, labels} = await resource.detectResource();
     scope.done();
 
@@ -185,7 +186,8 @@ describe('detectResource', () => {
     assert.equal(Object.keys(labels).length, 3);
     assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
     assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'my-zone');
-    assert.strictEqual(labels[resource.GCP_INSTANCE_ID_KEY], 'my-instance');
+    assert.strictEqual(
+        labels[resource.GCP_INSTANCE_ID_KEY], '4520031799277582000');
   });
 
   it('should return GCP_GCE_INSTANCE resource and empty data for non avaiable metadata attribute',
@@ -229,7 +231,7 @@ describe('detectResource', () => {
                          .get(ZONE_PATH)
                          .reply(200, () => 'project/zone/my-zone', HEADERS)
                          .get(INSTANCE_ID_PATH)
-                         .reply(200, () => 'my-instance', HEADERS);
+                         .reply(200, () => 4520031799277581759, HEADERS);
        const {type, labels} = await resource.detectResource();
        scope.done();
 
@@ -237,7 +239,8 @@ describe('detectResource', () => {
        assert.equal(Object.keys(labels).length, 5);
        assert.strictEqual(labels[resource.GCP_ACCOUNT_ID_KEY], 'my-project-id');
        assert.strictEqual(labels[resource.GCP_ZONE_KEY], 'zone1');
-       assert.strictEqual(labels[resource.GCP_INSTANCE_ID_KEY], 'my-instance');
+       assert.strictEqual(
+           labels[resource.GCP_INSTANCE_ID_KEY], '4520031799277582000');
        assert.strictEqual(labels['user'], 'user1');
        assert.strictEqual(labels['version'], '1.0');
      });
