@@ -20,7 +20,7 @@ import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
 import {TraceParams} from '../config/types';
 import {Propagation} from '../propagation/types';
-import {SamplerBuilder, TraceParamasBuilder} from '../sampler/sampler';
+import {SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 
 import {RootSpan} from './root-span';
@@ -101,15 +101,15 @@ export class CoreTracer implements types.Tracer {
     this.sampler = SamplerBuilder.getSampler(config.samplingRate);
     if (config.traceParams) {
       this.traceParams.numberOfAnnontationEventsPerSpan =
-          TraceParamasBuilder.getNumberOfAnnotationEventsPerSpan(
+          TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
               config.traceParams);
       this.traceParams.numberOfAttributesPerSpan =
-          TraceParamasBuilder.getNumberOfAttributesPerSpan(config.traceParams);
+          TraceParamsBuilder.getNumberOfAttributesPerSpan(config.traceParams);
       this.traceParams.numberOfMessageEventsPerSpan =
-          TraceParamasBuilder.getNumberOfMessageEventsPerSpan(
+          TraceParamsBuilder.getNumberOfMessageEventsPerSpan(
               config.traceParams);
       this.traceParams.numberOfLinksPerSpan =
-          TraceParamasBuilder.getNumberOfLinksPerSpan(config.traceParams);
+          TraceParamsBuilder.getNumberOfLinksPerSpan(config.traceParams);
     }
     return this;
   }

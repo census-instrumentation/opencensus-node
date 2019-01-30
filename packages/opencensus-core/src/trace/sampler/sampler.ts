@@ -101,7 +101,7 @@ export class SamplerBuilder {
 }
 
 /** Builder Class of TraceParams */
-export class TraceParamasBuilder {
+export class TraceParamsBuilder {
   private static readonly MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN = 32;
   private static readonly MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN = 128;
   private static readonly MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN = 32;
