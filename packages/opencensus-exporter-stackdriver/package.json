@@ -49,12 +49,12 @@
     "nock": "^10.0.0",
     "nyc": "^13.0.0",
     "ts-node": "^7.0.1",
-    "typescript": "~3.2.0"
+    "typescript": "~3.1.0"
   },
   "dependencies": {
     "@opencensus/core": "^0.0.8",
     "@opencensus/resource-util": "^0.0.1",
-    "google-auth-library": "^1.5.0",
+    "google-auth-library": "^3.0.0",
     "googleapis": "27.0.0",
     "hex2dec": "^1.1.0"
   }
