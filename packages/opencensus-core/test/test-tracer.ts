@@ -237,6 +237,15 @@ describe('Tracer', () => {
         assert.notEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
       });
     });
+
+    it('should create a tracer with default TraceParams', () => {
+      const tracer = new CoreTracer();
+      tracer.start(defaultConfig);
+      assert.equal(tracer.traceParams.numberOfAnnontationEventsPerSpan, 32);
+      assert.equal(tracer.traceParams.numberOfAttributesPerSpan, 32);
+      assert.equal(tracer.traceParams.numberOfLinksPerSpan, 32);
+      assert.equal(tracer.traceParams.numberOfMessageEventsPerSpan, 128);
+    });
   });
 
 

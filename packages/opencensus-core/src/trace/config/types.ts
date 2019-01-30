@@ -38,7 +38,7 @@ export interface TracerConfig {
   /** A propagation instance */
   propagation?: Propagation;
   /** Trace Parameters */
-  traceParameters?: TraceParameters;
+  traceParams?: TraceParams;
 }
 
 /** Available configuration options. */
@@ -72,17 +72,8 @@ export interface TracingConfig {
   logger?: Logger;
 }
 
-/** Specify the deafault Tracer Paramaters */
-// export class TracerParams {
-
-//   static readonly DEFAULT_SPAN_MAX_NUM_ATTRIBUTES?: number = 32;
-//   static readonly DEFAULT_SPAN_MAX_NUM_ANNOTATIONS?: number = 32;
-//   static readonly DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS?: number = 128;
-//   static readonly DEFAULT_SPAN_MAX_NUM_LINKS?: number = 32;
-
-// }
-
-export interface TraceParameters {
+/** Global configuration of trace service */
+export interface TraceParams {
   /**
    * numberOfAnnontationEventsPerSpan is max number of annotation events per
    * span
