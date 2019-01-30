@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.0.8",
+    "@opencensus/resource-util": "^0.0.1",
     "google-auth-library": "^1.5.0",
     "googleapis": "27.0.0",
     "hex2dec": "^1.1.0"

@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {DistributionValue, LabelKey, LabelValue, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
+import {CoreResource, DistributionValue, LabelKey, LabelValue, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
 import * as assert from 'assert';
 
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
-import {createMetricDescriptorData, createTimeSeriesList, OPENCENSUS_TASK_VALUE_DEFAULT, TEST_ONLY} from '../src/stackdriver-stats-utils';
+import {createMetricDescriptorData, createTimeSeriesList, getDefaultResource, OPENCENSUS_TASK_VALUE_DEFAULT, TEST_ONLY} from '../src/stackdriver-stats-utils';
 import {Distribution, MetricDescriptor, MetricKind, ValueType} from '../src/types';
+
+import * as nocks from './nocks';
 
 const METRIC_NAME = 'metric-name';
 const METRIC_DESCRIPTION = 'metric-description';
@@ -412,5 +414,76 @@ describe('Stackdriver Stats Exporter Utils', () => {
          const [point2] = timeseries2.points;
          assert.deepStrictEqual(point2.value, {doubleValue: 15});
        });
+  });
+
+  describe('getDefaultResource()', () => {
+    beforeEach(() => {
+      delete process.env.OC_RESOURCE_TYPE;
+      delete process.env.OC_RESOURCE_LABELS;
+      CoreResource.setup();
+    });
+
+    it('should return a global MonitoredResource', async () => {
+      nocks.noDetectResource();
+      const monitoredResource = await getDefaultResource('my-project-id');
+      const {type, labels} = monitoredResource;
+
+      assert.equal(type, 'global');
+      assert.deepEqual(labels, {project_id: 'my-project-id'});
+    });
+
+    it('should return a k8s MonitoredResource', async () => {
+      process.env.OC_RESOURCE_TYPE = 'k8s.io/container';
+      process.env.OC_RESOURCE_LABELS =
+          'k8s.io/pod/name=pod-xyz-123,k8s.io/container/name=c1,k8s.io/namespace/name=default,cloud.google.com/gce/zone=zone1';
+      CoreResource.setup();
+      const monitoredResource = await getDefaultResource('my-project-id');
+      const {type, labels} = monitoredResource;
+
+      assert.equal(type, 'k8s_container');
+      assert.equal(Object.keys(labels).length, 5);
+      assert.deepStrictEqual(labels, {
+        'container_name': 'c1',
+        'namespace_name': 'default',
+        'pod_name': 'pod-xyz-123',
+        'project_id': 'my-project-id',
+        'location': 'zone1'
+      });
+    });
+
+    it('should return a gce MonitoredResource', async () => {
+      process.env.OC_RESOURCE_TYPE = 'cloud.google.com/gce/instance';
+      process.env.OC_RESOURCE_LABELS =
+          'cloud.google.com/gce/instance_id=id1,cloud.google.com/gce/zone=zone1';
+      CoreResource.setup();
+      const monitoredResource = await getDefaultResource('my-project-id');
+      const {type, labels} = monitoredResource;
+
+      assert.equal(type, 'gce_instance');
+      assert.equal(Object.keys(labels).length, 3);
+      assert.deepStrictEqual(labels, {
+        'instance_id': 'id1',
+        'project_id': 'my-project-id',
+        'zone': 'zone1'
+      });
+    });
+
+    it('should return a aws MonitoredResource', async () => {
+      process.env.OC_RESOURCE_TYPE = 'aws.com/ec2/instance';
+      process.env.OC_RESOURCE_LABELS =
+          'aws.com/ec2/account_id=id1,aws.com/ec2/instance_id=instance1,aws.com/ec2/region=region1';
+      CoreResource.setup();
+      const monitoredResource = await getDefaultResource('my-project-id');
+      const {type, labels} = monitoredResource;
+
+      assert.equal(type, 'aws_ec2_instance');
+      assert.equal(Object.keys(labels).length, 4);
+      assert.deepStrictEqual(labels, {
+        'instance_id': 'instance1',
+        'region': 'aws:region1',
+        'project_id': 'my-project-id',
+        'aws_account': 'id1'
+      });
+    });
   });
 });
