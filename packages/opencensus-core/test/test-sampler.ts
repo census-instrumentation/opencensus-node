@@ -15,11 +15,20 @@
  */
 
 import * as assert from 'assert';
+
+import {TraceParams} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
-import {SamplerBuilder} from '../src/trace/sampler/sampler';
+import {SamplerBuilder, TraceParamsBuilder} from '../src/trace/sampler/sampler';
 
 const tracer = new CoreTracer();
+
+const traceParameters: TraceParams = {
+  numberOfAnnontationEventsPerSpan: 12,
+  numberOfAttributesPerSpan: 10,
+  numberOfLinksPerSpan: 7,
+  numberOfMessageEventsPerSpan: 5
+};
 
 describe('Sampler', () => {
   /**
@@ -99,5 +108,32 @@ describe('Sampler', () => {
                `should not have sampled but did: ${traceId}`);
          });
        });
+  });
+  describe('getNumberOfAnnotationEventsPerSpan', () => {
+    it('should return  12', () => {
+      assert.equal(
+          TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
+              traceParameters),
+          12);
+    });
+  });
+  describe('getNumberOfMessageEventsPerSpan', () => {
+    it('should return 5', () => {
+      assert.equal(
+          TraceParamsBuilder.getNumberOfMessageEventsPerSpan(traceParameters),
+          5);
+    });
+  });
+  describe('getNumberOfAttributesPerSpan', () => {
+    it('should return 10', () => {
+      assert.equal(
+          TraceParamsBuilder.getNumberOfAttributesPerSpan(traceParameters), 10);
+    });
+  });
+  describe('getNumberOfLinksPerSpan', () => {
+    it('should return 7', () => {
+      assert.equal(
+          TraceParamsBuilder.getNumberOfLinksPerSpan(traceParameters), 7);
+    });
   });
 });

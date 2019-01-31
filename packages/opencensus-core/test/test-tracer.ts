@@ -16,8 +16,10 @@
 
 import * as assert from 'assert';
 import * as uuid from 'uuid';
+
 import {randomSpanId} from '../src/internal/util';
 import {TracerConfig} from '../src/trace/config/types';
+import {TraceParams} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
@@ -237,6 +239,37 @@ describe('Tracer', () => {
         assert.notEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
       });
     });
+
+    it('should create a tracer with default TraceParams when no parameters are specified upon initialisation',
+       () => {
+         const tracer = new CoreTracer();
+         tracer.start(defaultConfig);
+         assert.equal(
+             tracer.activeTraceParams.numberOfAnnontationEventsPerSpan, 32);
+         assert.equal(tracer.activeTraceParams.numberOfAttributesPerSpan, 32);
+         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, 32);
+         assert.equal(
+             tracer.activeTraceParams.numberOfMessageEventsPerSpan, 128);
+       });
+
+    it('should create a tracer with default TraceParams when parameters with values higher than maximum limit are specified upon initialisation',
+       () => {
+         const traceParametersWithHigherThanMaximumValues: TraceParams = {
+           numberOfAnnontationEventsPerSpan: 50,
+           numberOfMessageEventsPerSpan: 200,
+           numberOfAttributesPerSpan: 37,
+           numberOfLinksPerSpan: 45
+         };
+         defaultConfig.traceParams = traceParametersWithHigherThanMaximumValues;
+         const tracer = new CoreTracer();
+         tracer.start(defaultConfig);
+         assert.equal(
+             tracer.activeTraceParams.numberOfAnnontationEventsPerSpan, 32);
+         assert.equal(tracer.activeTraceParams.numberOfAttributesPerSpan, 32);
+         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, 32);
+         assert.equal(
+             tracer.activeTraceParams.numberOfMessageEventsPerSpan, 128);
+       });
   });
 
 

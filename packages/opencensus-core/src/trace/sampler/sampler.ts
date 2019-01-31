@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {TraceParams} from '../config/types';
+
 import {Sampler} from './types';
 
 // We use 52-bits as our max number because it remains a javascript "safe
@@ -95,5 +97,46 @@ export class SamplerBuilder {
       return SamplerBuilder.NEVER;
     }
     return new ProbabilitySampler(probability);
+  }
+}
+
+
+/** Default Limit for Annotations per span */
+export const DEFAULT_SPAN_MAX_NUM_ANNOTATIONS = 32;
+/** Default limit for Message events per span */
+export const DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS = 128;
+/** Default limit for Attributes per span */
+export const DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
+/** Default limit for Links per span */
+export const DEFAULT_SPAN_MAX_NUM_LINKS = 32;
+
+/** Builder Class of TraceParams */
+export class TraceParamsBuilder {
+  static getNumberOfAnnotationEventsPerSpan(traceParameters: TraceParams):
+      number {
+    return traceParameters.numberOfAnnontationEventsPerSpan >
+            DEFAULT_SPAN_MAX_NUM_ANNOTATIONS ?
+        DEFAULT_SPAN_MAX_NUM_ANNOTATIONS :
+        traceParameters.numberOfAnnontationEventsPerSpan;
+  }
+
+  static getNumberOfAttributesPerSpan(traceParameters: TraceParams): number {
+    return traceParameters.numberOfAttributesPerSpan >
+            DEFAULT_SPAN_MAX_NUM_ATTRIBUTES ?
+        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES :
+        traceParameters.numberOfAttributesPerSpan;
+  }
+
+  static getNumberOfMessageEventsPerSpan(traceParameters: TraceParams): number {
+    return traceParameters.numberOfMessageEventsPerSpan >
+            DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS ?
+        DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS :
+        traceParameters.numberOfMessageEventsPerSpan;
+  }
+
+  static getNumberOfLinksPerSpan(traceParameters: TraceParams): number {
+    return traceParameters.numberOfLinksPerSpan > DEFAULT_SPAN_MAX_NUM_LINKS ?
+        DEFAULT_SPAN_MAX_NUM_LINKS :
+        traceParameters.numberOfLinksPerSpan;
   }
 }

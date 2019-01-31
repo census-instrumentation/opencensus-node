@@ -37,6 +37,8 @@ export interface TracerConfig {
   logger?: Logger;
   /** A propagation instance */
   propagation?: Propagation;
+  /** Trace Parameters */
+  traceParams?: TraceParams;
 }
 
 /** Available configuration options. */
@@ -68,6 +70,21 @@ export interface TracingConfig {
   exporter?: Exporter;
   /** An instance of a logger  */
   logger?: Logger;
+}
+
+/** Global configuration of trace service */
+export interface TraceParams {
+  /**
+   * numberOfAnnontationEventsPerSpan is number of annotation events per
+   * span
+   */
+  numberOfAnnontationEventsPerSpan?: number;
+  /** numberOfMessageEventsPerSpan is number of message events per span */
+  numberOfMessageEventsPerSpan?: number;
+  /** numberOfAttributesPerSpan is number of attributes per span */
+  numberOfAttributesPerSpan?: number;
+  /** numberOfLinksPerSpan is number of links per span */
+  numberOfLinksPerSpan?: number;
 }
 
 export type Config = TracingConfig&TracerConfig&BufferConfig;

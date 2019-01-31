@@ -18,9 +18,12 @@ import * as logger from '../../common/console-logger';
 import * as loggerTypes from '../../common/types';
 import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
+import {TraceParams} from '../config/types';
 import {Propagation} from '../propagation/types';
-import {SamplerBuilder} from '../sampler/sampler';
+import * as samplerConstants from '../sampler/sampler';
+import {SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
+
 import {RootSpan} from './root-span';
 import * as types from './types';
 
@@ -42,11 +45,20 @@ export class CoreTracer implements types.Tracer {
   private endedTraces: types.RootSpan[] = [];
   /** Bit to represent whether trace is sampled or not. */
   private readonly IS_SAMPLED = 0x1;
+  private readonly DEFAULT_TRACE_PARAMS: TraceParams = {
+    numberOfAnnontationEventsPerSpan:
+        samplerConstants.DEFAULT_SPAN_MAX_NUM_ANNOTATIONS,
+    numberOfAttributesPerSpan: samplerConstants.DEFAULT_SPAN_MAX_NUM_ATTRIBUTES,
+    numberOfLinksPerSpan: samplerConstants.DEFAULT_SPAN_MAX_NUM_LINKS,
+    numberOfMessageEventsPerSpan: samplerConstants
+                                    .DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS
+  };
   /** A sampler used to make sample decisions */
   sampler: samplerTypes.Sampler;
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger = logger.logger();
-
+  /** A configuration object for trace parameters */
+  activeTraceParams: TraceParams = this.DEFAULT_TRACE_PARAMS;
 
   /** Constructs a new TraceImpl instance. */
   constructor() {
@@ -81,6 +93,18 @@ export class CoreTracer implements types.Tracer {
     this.config = config;
     this.logger = this.config.logger || logger.logger();
     this.sampler = SamplerBuilder.getSampler(config.samplingRate);
+    if (config.traceParams) {
+      this.activeTraceParams.numberOfAnnontationEventsPerSpan =
+          TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
+              config.traceParams);
+      this.activeTraceParams.numberOfAttributesPerSpan =
+          TraceParamsBuilder.getNumberOfAttributesPerSpan(config.traceParams);
+      this.activeTraceParams.numberOfMessageEventsPerSpan =
+          TraceParamsBuilder.getNumberOfMessageEventsPerSpan(
+              config.traceParams);
+      this.activeTraceParams.numberOfLinksPerSpan =
+          TraceParamsBuilder.getNumberOfLinksPerSpan(config.traceParams);
+    }
     return this;
   }
 
