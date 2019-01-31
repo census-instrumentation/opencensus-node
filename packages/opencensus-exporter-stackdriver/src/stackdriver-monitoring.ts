@@ -162,7 +162,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       return new Promise((resolve, reject) => {
         monitoring.projects.timeSeries.create(
             request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
-            (err: Error) => {
+            (err?: Error) => {
               this.logger.debug(
                   'sent time series', request.resource.timeSeries);
               err ? reject(err) : resolve();
@@ -187,7 +187,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       return new Promise((resolve, reject) => {
         monitoring.projects.metricDescriptors.create(
             request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
-            (err: Error) => {
+            (err?: Error) => {
               this.logger.debug('sent metric descriptor', request.resource);
               err ? reject(err) : resolve();
             });
