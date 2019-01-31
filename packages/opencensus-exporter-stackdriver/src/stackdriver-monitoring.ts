@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
+import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, version, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
+
 import {createMetricDescriptorData, createTimeSeriesList, getDefaultResource} from './stackdriver-stats-utils';
 import {MonitoredResource, StackdriverExporterOptions, TimeSeries} from './types';
 
-google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
+const OC_USER_AGENT = {
+  product: 'opencensus-node',
+  version
+};
+const OC_HEADER = {
+  'x-opencensus-outgoing-request': 0x1
+};
+
+google.options({headers: OC_HEADER});
 const monitoring = google.monitoring('v3');
 const GOOGLEAPIS_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 
@@ -151,10 +160,13 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        monitoring.projects.timeSeries.create(request, (err: Error) => {
-          this.logger.debug('sent time series', request.resource.timeSeries);
-          err ? reject(err) : resolve();
-        });
+        monitoring.projects.timeSeries.create(
+            request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
+            (err: Error) => {
+              this.logger.debug(
+                  'sent time series', request.resource.timeSeries);
+              err ? reject(err) : resolve();
+            });
       });
     });
   }
@@ -173,10 +185,12 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        monitoring.projects.metricDescriptors.create(request, (err: Error) => {
-          this.logger.debug('sent metric descriptor', request.resource);
-          err ? reject(err) : resolve();
-        });
+        monitoring.projects.metricDescriptors.create(
+            request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
+            (err: Error) => {
+              this.logger.debug('sent metric descriptor', request.resource);
+              err ? reject(err) : resolve();
+            });
       });
     });
   }
