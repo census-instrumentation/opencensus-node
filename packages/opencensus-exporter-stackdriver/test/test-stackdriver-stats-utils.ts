@@ -17,8 +17,9 @@
 import {CoreResource, DistributionValue, LabelKey, LabelValue, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
 import * as assert from 'assert';
 
+import {getDefaultResource} from '../src/common-utils';
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
-import {createMetricDescriptorData, createTimeSeriesList, getDefaultResource, OPENCENSUS_TASK_VALUE_DEFAULT, TEST_ONLY} from '../src/stackdriver-stats-utils';
+import {createMetricDescriptorData, createTimeSeriesList, OPENCENSUS_TASK_VALUE_DEFAULT, TEST_ONLY} from '../src/stackdriver-stats-utils';
 import {Distribution, MetricDescriptor, MetricKind, ValueType} from '../src/types';
 
 import * as nocks from './nocks';

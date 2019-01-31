@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanContext} from '@opencensus/core';
+import {Exporter, ExporterBuffer, RootSpan, Span, SpanContext} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 // TODO change to use import when types for hex2dec will be available
 const {hexToDec}: {[key: string]: (input: string) => string} =
     require('hex2dec');
-
 import {StackdriverExporterOptions, TracesWithCredentials, TranslatedSpan, TranslatedTrace} from './types';
 
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
