@@ -17,8 +17,8 @@
 import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, version, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
-
-import {createMetricDescriptorData, createTimeSeriesList, getDefaultResource} from './stackdriver-stats-utils';
+import {getDefaultResource} from './common-utils';
+import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-stats-utils';
 import {MonitoredResource, StackdriverExporterOptions, TimeSeries} from './types';
 
 const OC_USER_AGENT = {
