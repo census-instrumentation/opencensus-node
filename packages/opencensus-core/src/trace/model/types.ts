@@ -48,6 +48,13 @@ export interface MessageEvent {
   type: string;
   /** An identifier for the MessageEvent's message. */
   id: string;
+  /** The number of uncompressed bytes sent or received. */
+  uncompressedSize?: number;
+  /**
+   * The number of compressed bytes sent or received. If zero or
+   * undefined, assumed to be the same size as uncompressed.
+   */
+  compressedSize?: number;
 }
 
 /**
