@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, Span, SpanEventListener, HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
@@ -55,6 +55,27 @@ const httpRequest = {
 
 const VERSION = process.versions.node;
 
+class DummyPropagation implements Propagation {
+  extract(getter: HeaderGetter): SpanContext {
+    return {
+      traceId: 'dummy-trace-id',
+      spanId: 'dummy-span-id'
+    } as SpanContext;
+  }
+
+  inject(setter: HeaderSetter, spanContext: SpanContext): void {
+    setter.setHeader('x-dummy-trace-id', spanContext.traceId || 'undefined');
+    setter.setHeader('x-dummy-span-id', spanContext.spanId || 'undefined');
+  }
+
+  generate(): SpanContext {
+    return {
+      traceId: 'dummy-trace-id',
+      spanId: 'dummy-span-id'
+    } as SpanContext;
+  }
+}
+
 class RootSpanVerifier implements SpanEventListener {
   endedRootSpans: RootSpan[] = [];
 
@@ -91,7 +112,7 @@ describe('HttpPlugin', () => {
   const log = logger.logger();
   const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
-  tracer.start({samplingRate: 1, logger: log});
+  tracer.start({samplingRate: 1, logger: log, propagation: new DummyPropagation()});
 
 
   it('should return a plugin', () => {
@@ -273,6 +294,20 @@ describe('HttpPlugin', () => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
       });
     }
+
+    it('should create a rootSpan for GET requests and add propagation headers', async () => {
+      nock.enableNetConnect();
+      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      await httpRequest.get(`http://google.fr/`).then((result) => {
+        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+        assert.ok(
+            rootSpanVerifier.endedRootSpans[0].name.indexOf('GET /') >= 0);
+
+        const span = rootSpanVerifier.endedRootSpans[0];
+        assertSpanAttributes(span, 301, 'GET', 'google.fr', '/', undefined);
+      });
+      nock.disableNetConnect();
+    });
   });
 
 
