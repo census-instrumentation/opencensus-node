@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span} from '@opencensus/core';
+import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span, Status} from '@opencensus/core';
 
 import {google, opencensus} from './types';
 
@@ -194,15 +194,6 @@ const adaptTimeEvents =
     };
 
 /**
- * Adapts a statusCode number to a `opencensus.proto.trace.v1.Status` type.
- * @param statusCode number
- * @returns opencensus.proto.trace.v1.Status
- */
-const adaptStatus = (statusCode: number): opencensus.proto.trace.v1.Status => {
-  return {code: statusCode, message: null};
-};
-
-/**
  * Adapts a traceState string to a `opencensus.proto.trace.v1.Span.Tracestate`
  * type. The tracestate is a comma-delimited set of equals-delimited key-value
  * pairs.
@@ -285,7 +276,7 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
     stackTrace: null,  // Unsupported by nodejs
     timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
     links: adaptLinks(span.links),
-    status: adaptStatus(span.status),
+    status: span.status,
     sameProcessAsParentSpan: adaptBoolean(!span.remoteParent),
     childSpanCount: null,
   };

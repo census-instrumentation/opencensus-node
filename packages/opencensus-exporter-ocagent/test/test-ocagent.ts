@@ -328,7 +328,7 @@ describe('OpenCensus Agent Exporter', () => {
 
     tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
       // Status
-      rootSpan.status = 200;
+      rootSpan.setStatus(200);
 
       // Attribute
       rootSpan.addAttribute('my_attribute_string', 'bar2');
@@ -385,12 +385,11 @@ describe('OpenCensus Agent Exporter', () => {
                 span.tracestate.entries,
                 [{key: 'foo', value: 'bar'}, {key: 'baz', value: 'buzz'}]);
 
-            // Status
             if (!span.status) {
               assert.fail('span.status is null or undefined');
-              return;
+            } else {
+              assert.deepEqual(span.status, {code: 200, message: ''});
             }
-            assert.equal(span.status.code, 200);
 
             // Attributes
             if (!span.attributes) {

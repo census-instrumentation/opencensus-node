@@ -52,7 +52,7 @@ export abstract class SpanBase implements types.Span {
   /** Kind of span. */
   kind: string = null;
   /** A final status for this span */
-  status: number;
+  status: types.Status = {code: 0};
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
 
@@ -181,6 +181,18 @@ export abstract class SpanBase implements types.Span {
       'id': id,
       'timestamp': timestamp ? timestamp : Date.now(),
     } as types.MessageEvent);
+  }
+
+  /**
+   * Sets a status to the span.
+   * @param code The status code.
+   * @param message optional A developer-facing error message.
+   */
+  setStatus(code: number, message?: string) {
+    this.status.code = code;
+    if (message) {
+      this.status.message = message;
+    }
   }
 
   /** Starts the span. */

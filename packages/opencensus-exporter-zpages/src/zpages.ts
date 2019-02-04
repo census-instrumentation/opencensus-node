@@ -139,17 +139,9 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    * @param trace the rootSpan to be sent to the array list
    */
   private sendTrace(trace: RootSpan) {
-    /** If there is no status, put status 0 (OK) */
-    if (!trace.status) {
-      trace.status = 0;
-    }
     this.pushSpan(trace);
 
     for (const span of trace.spans) {
-      /** If there is no status, put status 0 (OK) */
-      if (!span.status) {
-        span.status = 0;
-      }
       this.pushSpan(span);
     }
     this.logger.debug('Z-PAGES: trace added');
