@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span, Status} from '@opencensus/core';
+import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span} from '@opencensus/core';
 
 import {google, opencensus} from './types';
 

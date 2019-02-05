@@ -262,7 +262,7 @@ describe('Span', () => {
   /**
    * Should set a status
    */
-  describe('addStatus()', () => {
+  describe('setStatus()', () => {
     it('should return default status', () => {
       const rootSpan = new RootSpan(tracer);
       rootSpan.start();
@@ -281,11 +281,11 @@ describe('Span', () => {
       rootSpan.start();
       const span = new Span(rootSpan);
       span.start();
-      span.setStatus(400, 'This is an error');
+      span.setStatus(types.CanonicalCode.PERMISSION_DENIED, 'This is an error');
 
       assert.equal(rootSpan.status.code, 0);
       assert.equal(rootSpan.status.message, null);
-      assert.equal(span.status.code, 400);
+      assert.equal(span.status.code, 7);
       assert.equal(span.status.message, 'This is an error');
     });
   });

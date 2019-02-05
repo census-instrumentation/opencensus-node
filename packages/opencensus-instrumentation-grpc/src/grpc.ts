@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span} from '@opencensus/core';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
@@ -227,8 +227,7 @@ export class GrpcPlugin extends BasePlugin {
         rootSpan.addAttribute(
             GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
       } else {
-        rootSpan.setStatus(
-            GrpcPlugin.convertGrpcStatusToSpanStatus(grpcTypes.status.OK));
+        rootSpan.setStatus(CanonicalCode.OK);
         rootSpan.addAttribute(
             GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
             grpcTypes.status.OK.toString());
@@ -268,8 +267,6 @@ export class GrpcPlugin extends BasePlugin {
     });
 
     call.on('error', (err: grpcTypes.ServiceError) => {
-      rootSpan.setStatus(
-          GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
       rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
       rootSpan.addAttribute(
           GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
@@ -362,8 +359,7 @@ export class GrpcPlugin extends BasePlugin {
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
         } else {
-          span.setStatus(
-              GrpcPlugin.convertGrpcStatusToSpanStatus(grpcTypes.status.OK));
+          span.setStatus(CanonicalCode.OK);
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
               grpcTypes.status.OK.toString());
@@ -417,8 +413,6 @@ export class GrpcPlugin extends BasePlugin {
         let spanEnded = false;
         call.on('error', (err: grpcTypes.ServiceError) => {
           // span.status = plugin.traceStatus(err.code);
-          span.setStatus(
-              GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
           span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);

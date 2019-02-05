@@ -15,7 +15,7 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {RootSpan, TraceOptions, Tracing} from '@opencensus/core';
+import {CanonicalCode, RootSpan, TraceOptions, Tracing} from '@opencensus/core';
 import * as nodeTracing from '@opencensus/nodejs';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
@@ -328,7 +328,7 @@ describe('OpenCensus Agent Exporter', () => {
 
     tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
       // Status
-      rootSpan.setStatus(200);
+      rootSpan.setStatus(CanonicalCode.OK);
 
       // Attribute
       rootSpan.addAttribute('my_attribute_string', 'bar2');
@@ -388,7 +388,7 @@ describe('OpenCensus Agent Exporter', () => {
             if (!span.status) {
               assert.fail('span.status is null or undefined');
             } else {
-              assert.deepEqual(span.status, {code: 200, message: ''});
+              assert.deepEqual(span.status, {code: 0, message: ''});
             }
 
             // Attributes

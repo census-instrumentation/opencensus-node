@@ -18,6 +18,9 @@ import {Clock} from '../../internal/clock';
 import {randomSpanId} from '../../internal/util';
 import * as types from './types';
 
+const STATUS_OK = {
+  code: types.CanonicalCode.OK
+};
 
 /** Defines a base model for spans. */
 export abstract class SpanBase implements types.Span {
@@ -52,7 +55,7 @@ export abstract class SpanBase implements types.Span {
   /** Kind of span. */
   kind: string = null;
   /** A final status for this span */
-  status: types.Status = {code: 0};
+  status: types.Status = STATUS_OK;
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
 
@@ -185,14 +188,11 @@ export abstract class SpanBase implements types.Span {
 
   /**
    * Sets a status to the span.
-   * @param code The status code.
+   * @param code The canonical status code.
    * @param message optional A developer-facing error message.
    */
-  setStatus(code: number, message?: string) {
-    this.status.code = code;
-    if (message) {
-      this.status.message = message;
-    }
+  setStatus(code: types.CanonicalCode, message?: string) {
+    this.status = {code, message};
   }
 
   /** Starts the span. */

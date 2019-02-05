@@ -339,7 +339,6 @@ describe('GrpcPlugin() ', function() {
     if (status !== grpcModule.status.OK) {
       assert.ok(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME]);
       assert.ok(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE]);
-      assert.ok(span.status.message);
     } else {
       assert.equal(span.status.message, undefined);
     }

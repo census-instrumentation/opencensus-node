@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Add ignoreIncomingPaths and ignoreOutgoingUrls support to the http and https tracing instrumentations.
 - Add ```opencensus-resource-util``` to auto detect AWS, GCE and Kubernetes(K8S) monitored resource, based on the environment where the application is running.
 - Add optional `uncompressedSize` and `compressedSize` fields to `MessageEvent` interface.
+- Add a ```setStatus``` method in the Span.
 
  **This release has multiple breaking changes. Please test your code accordingly after upgrading.**
 
