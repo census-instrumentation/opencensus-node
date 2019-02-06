@@ -172,8 +172,11 @@ describe('OpenCensus Agent Exporter', () => {
       bufferSize: 1,
       bufferTimeout: 0
     });
-    tracing = nodeTracing.start(
-        {exporter: ocAgentExporter, samplingRate: INITIAL_SAMPLER_PROBABILITY});
+    tracing = nodeTracing.start({
+      exporter: ocAgentExporter,
+      samplingRate: INITIAL_SAMPLER_PROBABILITY,
+      traceParams: {numberOfAttributesPerSpan: 3}
+    });
   });
 
   afterEach(() => {
@@ -331,13 +334,16 @@ describe('OpenCensus Agent Exporter', () => {
       rootSpan.setStatus(CanonicalCode.OK);
 
       // Attribute
+      rootSpan.addAttribute('my_first_attribute', 'foo');
+      rootSpan.addAttribute('my_second_attribute', 'foo2');
       rootSpan.addAttribute('my_attribute_string', 'bar2');
       rootSpan.addAttribute('my_attribute_number', 456);
       rootSpan.addAttribute('my_attribute_boolean', false);
 
       // Annotation
       rootSpan.addAnnotation(
-          'my_annotation');
+          'my_annotation',
+          {attributeMap: {myString: 'bar', myNumber: 123, myBoolean: true}});
 
       // Metric Event
       const timeStamp = 123456789;
@@ -348,7 +354,13 @@ describe('OpenCensus Agent Exporter', () => {
       rootSpan.addMessageEvent(null as any, 'ffff', timeStamp);
 
       // Links
-      rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN');
+      rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN', {
+        attributeMap: {
+          'child_link_attribute_string': 'foo1',
+          'child_link_attribute_number': 123,
+          'child_link_attribute_boolean': true,
+        }
+      });
       rootSpan.addLink('ffff', 'ffff', 'PARENT_LINKED_SPAN');
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any
@@ -400,6 +412,7 @@ describe('OpenCensus Agent Exporter', () => {
               my_attribute_number: {value: 'intValue', intValue: '456'},
               my_attribute_boolean: {value: 'boolValue', boolValue: false}
             });
+            assert.equal(span.attributes.droppedAttributesCount, 2);
 
             // Time Events
             assert.deepEqual(span.timeEvents, {

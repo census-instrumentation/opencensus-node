@@ -30,7 +30,7 @@ export interface Attributes {
   /** The map of attributes. */
   attributeMap: {[attributeKey: string]: string|number|boolean;};
   /** The number of dropped attributes. */
-  droppedAttributesCount: number;
+  droppedAttributesCount?: number;
 }
 
 /**

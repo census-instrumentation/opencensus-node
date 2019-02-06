@@ -56,6 +56,7 @@ export class CoreTracer implements types.Tracer {
     this.activeLocal = false;
     this.contextManager = cls.createNamespace();
     this.clearCurrentTrace();
+    this.activeTraceParams = {};
   }
 
   /** Gets the current root span. */

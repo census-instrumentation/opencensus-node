@@ -17,7 +17,6 @@ import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 import {randomSpanId} from '../../internal/util';
 import * as configTypes from '../config/types';
-
 import * as types from './types';
 
 const STATUS_OK = {

@@ -122,7 +122,10 @@ const adaptAttributes = (attributes: Attributes):
     attributeMap[name] = {stringValue, intValue, boolValue};
   });
 
-  return {attributeMap, droppedAttributesCount: null};
+  return {
+    attributeMap,
+    droppedAttributesCount: attributes.droppedAttributesCount
+  };
 };
 
 /**

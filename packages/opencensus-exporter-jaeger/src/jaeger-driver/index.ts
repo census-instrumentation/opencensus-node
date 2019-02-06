@@ -95,7 +95,7 @@ export type ThriftSpan = {
 export function spanToThrift(span: Span): ThriftSpan {
   const tags: Tag[] = [];
   if (span.attributes) {
-    Object.keys(span.attributes).forEach(key => {
+    Object.keys(span.attributes.attributeMap).forEach(key => {
       tags.push({'key': key, 'value': span.attributes.attributeMap[key]});
     });
   }
@@ -116,7 +116,7 @@ export function spanToThrift(span: Span): ThriftSpan {
   if (span.annotations) {
     span.annotations.forEach(ann => {
       const tags: Tag[] = [];
-      Object.keys(ann.attributes).forEach(key => {
+      Object.keys(ann.attributes.attributeMap).forEach(key => {
         tags.push({'key': key, 'value': ann.attributes.attributeMap[key]});
       });
       tags.push({'key': 'description', 'value': ann.description});

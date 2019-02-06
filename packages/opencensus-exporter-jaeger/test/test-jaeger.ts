@@ -121,7 +121,11 @@ describe('Jaeger Exporter', () => {
         span.addAttribute('testBool', true);
         span.addAttribute('testString', 'here');
         span.addAttribute('testNum', 3.142);
-        span.addAnnotation('something happened');
+        span.addAnnotation('something happened', {
+          attributeMap: {
+            'error': true,
+          }
+        });
         span.end();
         rootSpan.end();
         const thriftSpan = spanToThrift(span);
