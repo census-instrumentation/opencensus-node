@@ -65,6 +65,9 @@ export abstract class SpanBase implements types.Span {
   /** The number of dropped attributes. */
   droppedAttributesCount = 0;
 
+  /** The number of dropped links. */
+  droppedLinksCount = 0;
+
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
     this.className = this.constructor.name;
@@ -180,6 +183,11 @@ export abstract class SpanBase implements types.Span {
   addLink(
       traceId: string, spanId: string, type: string,
       attributes?: types.Attributes) {
+    if (this.links.length >= this.activeTraceParams.numberOfLinksPerSpan) {
+      this.links.shift();
+      this.droppedLinksCount++;
+    }
+
     this.links.push({
       'traceId': traceId,
       'spanId': spanId,

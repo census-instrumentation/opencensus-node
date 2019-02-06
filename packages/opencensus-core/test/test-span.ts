@@ -232,6 +232,7 @@ describe('Span', () => {
       span.addLink(span.traceId, rootSpan.id, LINK_TYPE);
 
       assert.ok(span.links.length > 0);
+      assert.equal(span.droppedLinksCount, 0);
       assert.ok(instanceOfLink(span.links[0]));
     });
   });
