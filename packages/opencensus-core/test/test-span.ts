@@ -259,9 +259,6 @@ describe('Span', () => {
     });
   });
 
-  /**
-   * Should set a status
-   */
   describe('setStatus()', () => {
     it('should return default status', () => {
       const rootSpan = new RootSpan(tracer);
