@@ -62,8 +62,6 @@ export abstract class SpanBase implements types.Span {
   /** Trace Parameters */
   activeTraceParams: configTypes.TraceParams;
 
-  private totalRecordedAttributes = 0;
-
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
     this.className = this.constructor.name;
@@ -141,17 +139,14 @@ export abstract class SpanBase implements types.Span {
    * @param value The result of an operation.
    */
   addAttribute(key: string, value: string|number|boolean) {
-    this.totalRecordedAttributes++;
     if (Object.keys(this.attributes.attributeMap).length >=
         this.activeTraceParams.numberOfAttributesPerSpan) {
+      this.attributes.droppedAttributesCount++;
       const attributeKeyToDelete =
           Object.keys(this.attributes.attributeMap).shift();
       delete this.attributes.attributeMap[attributeKeyToDelete];
     }
-
     this.attributes.attributeMap[key] = value;
-    this.attributes.droppedAttributesCount = this.totalRecordedAttributes -
-        Object.keys(this.attributes.attributeMap).length;
   }
 
   /**
