@@ -94,8 +94,8 @@ const adaptAttributes = (attributes: Attributes):
   const attributeMap:
       Record<string, opencensus.proto.trace.v1.AttributeValue> = {};
 
-  Object.getOwnPropertyNames(attributes).forEach((name) => {
-    const value = attributes[name];
+  Object.getOwnPropertyNames(attributes.attributeMap).forEach((name) => {
+    const value = attributes.attributeMap[name];
 
     let stringValue: opencensus.proto.trace.v1.TruncatableString|null = null;
     let intValue: number|null = null;

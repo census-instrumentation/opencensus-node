@@ -16,7 +16,6 @@
 
 import {DEFAULT_INSTRUMENTATION_MODULES} from '@opencensus/instrumentation-all';
 
-
 /** General purpose constants. */
 const constants = {
   /** Default maximum size of a buffer. */
@@ -28,7 +27,14 @@ const constants = {
   /** OpenCensus Scope */
   OPENCENSUS_SCOPE: '@opencensus',
   /** Default prefix for instrumentation modules */
-  DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'instrumentation'
+  DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'instrumentation',
+  /** Default Limit for Trace Parameters */
+  DEFAULT_TRACE_PARAMS: {
+    numberOfAnnontationEventsPerSpan:32,
+    numberOfAttributesPerSpan: 32,
+    numberOfLinksPerSpan: 32,
+    numberOfMessageEventsPerSpan: 128
+  }
 };
 
 export {constants as Constants};

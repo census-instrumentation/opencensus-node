@@ -54,6 +54,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
     this.spansLocal = [];
     this.kind = context && context.kind ? context.kind : null;
     this.logger = tracer.logger || logger.logger();
+    this.activeTraceParams = tracer.activeTraceParams;
   }
 
   /** Gets span list from rootspan instance. */

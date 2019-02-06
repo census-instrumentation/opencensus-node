@@ -29,5 +29,6 @@ export const defaultConfig = {
   plugins: {},
   bufferSize: Constants.DEFAULT_BUFFER_SIZE,
   bufferTimeout: Constants.DEFAULT_BUFFER_TIMEOUT,
-  samplingRate: 1
+  samplingRate: 1,
+  traceParams: Constants.DEFAULT_TRACE_PARAMS
 };

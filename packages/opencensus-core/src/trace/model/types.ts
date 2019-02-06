@@ -25,9 +25,12 @@ import * as samplerTypes from '../sampler/types';
 // tslint:disable:no-any
 export type Func<T> = (...args: any[]) => T;
 
-/** Maps a label to a string, number or boolean. */
+/** A map of attributes and the number of dropped attributes representation. */
 export interface Attributes {
-  [attributeKey: string]: string|number|boolean;
+  /** The map of attributes. */
+  attributeMap: {[attributeKey: string]: string|number|boolean;};
+  /** The number of dropped attributes. */
+  droppedAttributesCount: number;
 }
 
 /**
@@ -320,6 +323,9 @@ export interface Span {
   /** Gives the TraceContext of the span. */
   readonly spanContext: SpanContext;
 
+  /** Trace Parameters */
+  activeTraceParams: configTypes.TraceParams;
+
   /**
    * Adds an atribute to the span.
    * @param key Describes the value added.
@@ -392,6 +398,9 @@ export interface Tracer extends SpanEventListener {
 
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger;
+
+  /** A configuration object for trace parameters */
+  activeTraceParams: configTypes.TraceParams;
 
   /** A propagation instance */
   readonly propagation: Propagation;

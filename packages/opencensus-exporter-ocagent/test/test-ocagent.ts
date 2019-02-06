@@ -337,7 +337,7 @@ describe('OpenCensus Agent Exporter', () => {
 
       // Annotation
       rootSpan.addAnnotation(
-          'my_annotation', {myString: 'bar', myNumber: 123, myBoolean: true});
+          'my_annotation');
 
       // Metric Event
       const timeStamp = 123456789;
@@ -348,11 +348,7 @@ describe('OpenCensus Agent Exporter', () => {
       rootSpan.addMessageEvent(null as any, 'ffff', timeStamp);
 
       // Links
-      rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN', {
-        'child_link_attribute_string': 'foo1',
-        'child_link_attribute_number': 123,
-        'child_link_attribute_boolean': true,
-      });
+      rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN');
       rootSpan.addLink('ffff', 'ffff', 'PARENT_LINKED_SPAN');
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any

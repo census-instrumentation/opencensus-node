@@ -70,17 +70,22 @@ function assertSpanAttributes(
   assert.strictEqual(
       span.status.code, HttpPlugin.parseResponseStatus(httpStatusCode));
   assert.strictEqual(
-      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE],
+      span.attributes.attributeMap[HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE],
       span.status.message);
-  assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(
-      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
-  assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_PATH], path);
-  assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_ROUTE], path);
+      span.attributes.attributeMap[HttpPlugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(
-      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT], userAgent);
+      span.attributes.attributeMap[HttpPlugin.ATTRIBUTE_HTTP_METHOD],
+      httpMethod);
   assert.strictEqual(
-      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE],
+      span.attributes.attributeMap[HttpPlugin.ATTRIBUTE_HTTP_PATH], path);
+  assert.strictEqual(
+      span.attributes.attributeMap[HttpPlugin.ATTRIBUTE_HTTP_ROUTE], path);
+  assert.strictEqual(
+      span.attributes.attributeMap[HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT],
+      userAgent);
+  assert.strictEqual(
+      span.attributes.attributeMap[HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE],
       `${httpStatusCode}`);
 }
 

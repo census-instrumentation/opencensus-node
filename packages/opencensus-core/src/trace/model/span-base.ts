@@ -16,6 +16,8 @@
 import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 import {randomSpanId} from '../../internal/util';
+import * as configTypes from '../config/types';
+
 import * as types from './types';
 
 const STATUS_OK = {
@@ -39,7 +41,7 @@ export abstract class SpanBase implements types.Span {
   /** An object to log information to */
   logger: Logger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
-  attributes: types.Attributes = {};
+  attributes: types.Attributes = {attributeMap: {}, droppedAttributesCount: 0};
   /** A text annotation with a set of attributes. */
   annotations: types.Annotation[] = [];
   /** An event describing a message sent/received between Spans */
@@ -58,6 +60,10 @@ export abstract class SpanBase implements types.Span {
   status: types.Status = STATUS_OK;
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
+  /** Trace Parameters */
+  activeTraceParams: configTypes.TraceParams;
+
+  private totalRecordedAttributes = 0;
 
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
@@ -136,7 +142,17 @@ export abstract class SpanBase implements types.Span {
    * @param value The result of an operation.
    */
   addAttribute(key: string, value: string|number|boolean) {
-    this.attributes[key] = value;
+    this.totalRecordedAttributes++;
+    if (Object.keys(this.attributes.attributeMap).length >=
+        this.activeTraceParams.numberOfAttributesPerSpan) {
+      const attributeKeyToDelete =
+          Object.keys(this.attributes.attributeMap).shift();
+      delete this.attributes.attributeMap[attributeKeyToDelete];
+    }
+
+    this.attributes.attributeMap[key] = value;
+    this.attributes.droppedAttributesCount = this.totalRecordedAttributes -
+        Object.keys(this.attributes.attributeMap).length;
   }
 
   /**

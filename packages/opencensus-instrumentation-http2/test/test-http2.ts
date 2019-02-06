@@ -43,15 +43,19 @@ function assertSpanAttributes(
   assert.strictEqual(
       span.status.code, Http2Plugin.parseResponseStatus(httpStatusCode));
   assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_HOST], hostName);
+      span.attributes.attributeMap[Http2Plugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
-  assert.strictEqual(span.attributes[Http2Plugin.ATTRIBUTE_HTTP_PATH], path);
-  assert.strictEqual(span.attributes[Http2Plugin.ATTRIBUTE_HTTP_ROUTE], path);
+      span.attributes.attributeMap[Http2Plugin.ATTRIBUTE_HTTP_METHOD],
+      httpMethod);
   assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT], userAgent);
+      span.attributes.attributeMap[Http2Plugin.ATTRIBUTE_HTTP_PATH], path);
   assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE],
+      span.attributes.attributeMap[Http2Plugin.ATTRIBUTE_HTTP_ROUTE], path);
+  assert.strictEqual(
+      span.attributes.attributeMap[Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT],
+      userAgent);
+  assert.strictEqual(
+      span.attributes.attributeMap[Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE],
       `${httpStatusCode}`);
 }
 
