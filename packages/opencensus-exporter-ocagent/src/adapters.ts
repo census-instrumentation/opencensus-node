@@ -85,7 +85,8 @@ const spanKindToEnum =
  * @param attributes Attributes
  * @returns opencensus.proto.trace.v1.Span.Attributes
  */
-const adaptAttributes = (attributes: Attributes):
+const adaptAttributes = (attributes: Attributes,
+                         droppedAttributesCount: number):
                             opencensus.proto.trace.v1.Span.Attributes|null => {
   if (!attributes) {
     return null;
@@ -94,8 +95,8 @@ const adaptAttributes = (attributes: Attributes):
   const attributeMap:
       Record<string, opencensus.proto.trace.v1.AttributeValue> = {};
 
-  Object.getOwnPropertyNames(attributes.attributeMap).forEach((name) => {
-    const value = attributes.attributeMap[name];
+  Object.getOwnPropertyNames(attributes).forEach((name) => {
+    const value = attributes[name];
 
     let stringValue: opencensus.proto.trace.v1.TruncatableString|null = null;
     let intValue: number|null = null;
@@ -122,10 +123,7 @@ const adaptAttributes = (attributes: Attributes):
     attributeMap[name] = {stringValue, intValue, boolValue};
   });
 
-  return {
-    attributeMap,
-    droppedAttributesCount: attributes.droppedAttributesCount
-  };
+  return {attributeMap, droppedAttributesCount};
 };
 
 /**
@@ -170,7 +168,7 @@ const adaptTimeEvents =
             time: null,
             annotation: {
               description: stringToTruncatableString(annotation.description),
-              attributes: adaptAttributes(annotation.attributes)
+              attributes: adaptAttributes(annotation.attributes, 0)
             }
           });
         });
@@ -238,7 +236,7 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
     }
   }
 
-  const attributes = adaptAttributes(link.attributes);
+  const attributes = adaptAttributes(link.attributes, 0);
 
   return {traceId, spanId, type, attributes};
 };
@@ -275,7 +273,7 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
     kind: spanKindToEnum(span.kind),
     startTime: millisToTimestamp(span.startTime),
     endTime: millisToTimestamp(span.endTime),
-    attributes: adaptAttributes(span.attributes),
+    attributes: adaptAttributes(span.attributes, span.droppedAttributesCount),
     stackTrace: null,  // Unsupported by nodejs
     timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
     links: adaptLinks(span.links),

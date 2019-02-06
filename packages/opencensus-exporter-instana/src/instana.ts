@@ -111,11 +111,10 @@ export class InstanaTraceExporter implements Exporter {
       name: span.name,
       type: spanKindTranslation[span.kind] || span.kind,
       error: span.status != null && span.status.code !== 0,
-      data: Object.keys(span.attributes.attributeMap)
+      data: Object.keys(span.attributes)
                 .reduce(
                     (agg: {[k: string]: string}, key) => {
-                      agg[String(key)] =
-                          String(span.attributes.attributeMap[key]);
+                      agg[String(key)] = String(span.attributes[key]);
                       return agg;
                     },
                     {})

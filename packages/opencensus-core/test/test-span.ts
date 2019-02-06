@@ -183,8 +183,7 @@ describe('Span', () => {
       ['String', 'Number', 'Boolean'].map(attType => {
         span.addAttribute('testKey' + attType, 'testValue' + attType);
         assert.equal(
-            span.attributes.attributeMap['testKey' + attType],
-            'testValue' + attType);
+            span.attributes['testKey' + attType], 'testValue' + attType);
       });
     });
   });

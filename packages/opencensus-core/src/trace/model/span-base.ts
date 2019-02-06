@@ -40,7 +40,7 @@ export abstract class SpanBase implements types.Span {
   /** An object to log information to */
   logger: Logger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
-  attributes: types.Attributes = {attributeMap: {}, droppedAttributesCount: 0};
+  attributes: types.Attributes = {};
   /** A text annotation with a set of attributes. */
   annotations: types.Annotation[] = [];
   /** An event describing a message sent/received between Spans */
@@ -61,6 +61,9 @@ export abstract class SpanBase implements types.Span {
   abstract get isRootSpan(): boolean;
   /** Trace Parameters */
   activeTraceParams: configTypes.TraceParams;
+
+  /** The number of dropped attributes. */
+  droppedAttributesCount = 0;
 
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
@@ -139,14 +142,17 @@ export abstract class SpanBase implements types.Span {
    * @param value The result of an operation.
    */
   addAttribute(key: string, value: string|number|boolean) {
-    if (Object.keys(this.attributes.attributeMap).length >=
-        this.activeTraceParams.numberOfAttributesPerSpan) {
-      this.attributes.droppedAttributesCount++;
-      const attributeKeyToDelete =
-          Object.keys(this.attributes.attributeMap).shift();
-      delete this.attributes.attributeMap[attributeKeyToDelete];
+    if (this.attributes[key]) {
+      delete this.attributes[key];
     }
-    this.attributes.attributeMap[key] = value;
+
+    if (Object.keys(this.attributes).length >=
+        this.activeTraceParams.numberOfAttributesPerSpan) {
+      this.droppedAttributesCount++;
+      const attributeKeyToDelete = Object.keys(this.attributes).shift();
+      delete this.attributes[attributeKeyToDelete];
+    }
+    this.attributes[key] = value;
   }
 
   /**

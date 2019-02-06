@@ -184,8 +184,7 @@ describe('RootSpan', () => {
       ['String', 'Number', 'Boolean'].map(attType => {
         rootSpan.addAttribute('testKey' + attType, 'testValue' + attType);
         assert.equal(
-            rootSpan.attributes.attributeMap['testKey' + attType],
-            'testValue' + attType);
+            rootSpan.attributes['testKey' + attType], 'testValue' + attType);
       });
     });
   });

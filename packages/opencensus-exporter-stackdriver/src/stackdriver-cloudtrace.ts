@@ -92,10 +92,10 @@ export class StackdriverTraceExporter implements Exporter {
       spanId: hexToDec(span.id),
       startTime: span.startTime,
       endTime: span.endTime,
-      labels: Object.keys(span.attributes.attributeMap)
+      labels: Object.keys(span.attributes)
                   .reduce(
                       (acc, k) => {
-                        acc[k] = String(span.attributes.attributeMap[k]);
+                        acc[k] = String(span.attributes[k]);
                         return acc;
                       },
                       {} as Record<string, string>)
