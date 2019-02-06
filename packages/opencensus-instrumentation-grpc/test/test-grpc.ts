@@ -331,8 +331,7 @@ describe('GrpcPlugin() ', function() {
     assert.strictEqual(span.name, spanName);
     assert.strictEqual(span.kind, kind);
     assert.strictEqual(
-        span.status, GrpcPlugin.convertGrpcStatusToSpanStatus(status));
-
+        span.status.code, GrpcPlugin.convertGrpcStatusToSpanStatus(status));
     assert.strictEqual(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_KIND], kind);
     assert.strictEqual(
         span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE], `${status}`);
@@ -340,6 +339,8 @@ describe('GrpcPlugin() ', function() {
     if (status !== grpcModule.status.OK) {
       assert.ok(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME]);
       assert.ok(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE]);
+    } else {
+      assert.equal(span.status.message, undefined);
     }
   }
 

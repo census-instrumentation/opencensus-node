@@ -258,4 +258,32 @@ describe('Span', () => {
       assert.ok(instanceOfLink(span.messageEvents[0]));
     });
   });
+
+  describe('setStatus()', () => {
+    it('should return default status', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+
+      assert.equal(rootSpan.status.code, 0);
+      assert.equal(rootSpan.status.message, null);
+      assert.equal(span.status.code, 0);
+      assert.equal(span.status.message, null);
+    });
+
+    it('should set an error status', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+      const span = new Span(rootSpan);
+      span.start();
+      span.setStatus(types.CanonicalCode.PERMISSION_DENIED, 'This is an error');
+
+      assert.equal(rootSpan.status.code, 0);
+      assert.equal(rootSpan.status.message, null);
+      assert.equal(span.status.code, 7);
+      assert.equal(span.status.message, 'This is an error');
+    });
+  });
 });

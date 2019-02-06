@@ -11,12 +11,14 @@ All notable changes to this project will be documented in this file.
 - Add ignoreIncomingPaths and ignoreOutgoingUrls support to the http and https tracing instrumentations.
 - Add ```opencensus-resource-util``` to auto detect AWS, GCE and Kubernetes(K8S) monitored resource, based on the environment where the application is running.
 - Add optional `uncompressedSize` and `compressedSize` fields to `MessageEvent` interface.
+- Add a ```setStatus``` method in the Span.
 
  **This release has multiple breaking changes. Please test your code accordingly after upgrading.**
 
 - Modify `Logger` interface: `level` made optional, `silly` removed.
 - The ```new Stats()``` has been deprecated on Stats class. The global singleton ```globalStats``` object should be used instead. Also, ```registerView()``` is separated out from ```createView()```.
 - Use ```TagKey```, ```TagValue``` and ```TagMap``` to create the tag keys, tag values.
+- The `status` field on `Span` is no longer a number, use `CanonicalCode` instead.
 
 ##### Old code
 ```js

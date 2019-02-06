@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span} from '@opencensus/core';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
@@ -219,15 +219,15 @@ export class GrpcPlugin extends BasePlugin {
         // tslint:disable-next-line:no-any
         value: any, trailer: grpcTypes.Metadata, flags: grpcTypes.writeFlags) {
       if (err) {
-        rootSpan.status = GrpcPlugin.convertGrpcStatusToSpanStatus(err.code);
+        rootSpan.setStatus(
+            GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
         rootSpan.addAttribute(
             GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
         rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
         rootSpan.addAttribute(
             GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
       } else {
-        rootSpan.status =
-            GrpcPlugin.convertGrpcStatusToSpanStatus(grpcTypes.status.OK);
+        rootSpan.setStatus(CanonicalCode.OK);
         rootSpan.addAttribute(
             GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
             grpcTypes.status.OK.toString());
@@ -256,8 +256,8 @@ export class GrpcPlugin extends BasePlugin {
 
     plugin.tracer.wrapEmitter(call);
     call.on('finish', () => {
-      rootSpan.status =
-          GrpcPlugin.convertGrpcStatusToSpanStatus(call.status.code);
+      rootSpan.setStatus(
+          GrpcPlugin.convertGrpcStatusToSpanStatus(call.status.code));
       rootSpan.addAttribute(
           GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, call.status.code.toString());
       // if there is an error, span is ended on error event, otherwise here
@@ -351,15 +351,15 @@ export class GrpcPlugin extends BasePlugin {
       // tslint:disable-next-line:no-any
       const wrappedFn = (err: grpcTypes.ServiceError, res: any) => {
         if (err) {
-          span.status = GrpcPlugin.convertGrpcStatusToSpanStatus(err.code);
+          span.setStatus(
+              GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
           span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
         } else {
-          span.status =
-              GrpcPlugin.convertGrpcStatusToSpanStatus(grpcTypes.status.OK);
+          span.setStatus(CanonicalCode.OK);
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
               grpcTypes.status.OK.toString());
@@ -423,7 +423,7 @@ export class GrpcPlugin extends BasePlugin {
         });
 
         call.on('status', (status: Status) => {
-          span.status = GrpcPlugin.convertGrpcStatusToSpanStatus(status.code);
+          span.setStatus(GrpcPlugin.convertGrpcStatusToSpanStatus(status.code));
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, status.code.toString());
 

@@ -144,7 +144,7 @@ export class TracezPageHandler {
 
     // Building span list
     for (const span of spans) {
-      if (span.status && span.status !== 0) {
+      if (span.status && span.status.code !== 0) {
         spanCell.ERRORS += 1;
       } else if (span.ended) {
         const durationNs =
@@ -208,14 +208,14 @@ export class TracezPageHandler {
       if (this.traceMap.has(params.tracename)) {
         for (const span of this.traceMap.get(params.tracename)!) {
           if (params.type === 'ERRORS') {
-            if (span.status !== 0) {
+            if (span.status.code !== 0) {
               traceList.push(span);
             }
           } else if (params.type === 'RUNNING') {
             if (span.started && !span.ended) {
               traceList.push(span);
             }
-          } else if (span.ended && span.status === 0) {
+          } else if (span.ended && span.status.code === 0) {
             const durationNs =
                 LatencyBucketBoundaries.millisecondsToNanos(span.duration);
             const latency =

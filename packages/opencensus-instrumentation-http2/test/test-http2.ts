@@ -41,7 +41,7 @@ function assertSpanAttributes(
     span: Span, httpStatusCode: number, httpMethod: string, hostName: string,
     path: string, userAgent: string) {
   assert.strictEqual(
-      span.status, Http2Plugin.convertTraceStatus(httpStatusCode));
+      span.status.code, Http2Plugin.parseResponseStatus(httpStatusCode));
   assert.strictEqual(
       span.attributes[Http2Plugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(

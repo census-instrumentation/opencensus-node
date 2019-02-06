@@ -68,7 +68,10 @@ function assertSpanAttributes(
     span: Span, httpStatusCode: number, httpMethod: string, hostName: string,
     path: string, userAgent: string) {
   assert.strictEqual(
-      span.status, HttpPlugin.convertTraceStatus(httpStatusCode));
+      span.status.code, HttpPlugin.parseResponseStatus(httpStatusCode));
+  assert.strictEqual(
+      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE],
+      span.status.message);
   assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(
       span.attributes[HttpPlugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
