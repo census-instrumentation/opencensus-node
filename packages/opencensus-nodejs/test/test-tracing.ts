@@ -89,6 +89,13 @@ describe('Tracing', () => {
             tracing.config.plugins['https'],
             `${Constants.OPENCENSUS_SCOPE}/${
                 Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
+        assert.strictEqual(
+            defaultConfig.traceParams.numberOfAnnontationEventsPerSpan, 32);
+        assert.strictEqual(
+            defaultConfig.traceParams.numberOfAttributesPerSpan, 32);
+        assert.strictEqual(defaultConfig.traceParams.numberOfLinksPerSpan, 32);
+        assert.strictEqual(
+            defaultConfig.traceParams.numberOfMessageEventsPerSpan, 128);
       });
 
       it('should start tracing with a non-default logLevel', () => {
@@ -156,6 +163,35 @@ describe('Tracing', () => {
             tracing.config.plugins['https'],
             `${Constants.OPENCENSUS_SCOPE}/${
                 Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
+      });
+
+      it('should start with a non-default traceparams', () => {
+        tracing.start({
+          traceParams: {
+            numberOfAttributesPerSpan: 10,
+            numberOfAnnontationEventsPerSpan: 5,
+            numberOfLinksPerSpan: 8,
+            numberOfMessageEventsPerSpan: 100
+          }
+        });
+        assert.strictEqual(
+            tracing.config.traceParams.numberOfAttributesPerSpan, 10);
+        assert.strictEqual(
+            tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 5);
+        assert.strictEqual(tracing.config.traceParams.numberOfLinksPerSpan, 8);
+        assert.strictEqual(
+            tracing.config.traceParams.numberOfMessageEventsPerSpan, 100);
+      });
+
+      it('should start with a non-default and default traceparams', () => {
+        tracing.start({traceParams: {numberOfAttributesPerSpan: 10}});
+        assert.strictEqual(
+            tracing.config.traceParams.numberOfAttributesPerSpan, 10);
+        assert.strictEqual(
+            tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 32);
+        assert.strictEqual(tracing.config.traceParams.numberOfLinksPerSpan, 32);
+        assert.strictEqual(
+            tracing.config.traceParams.numberOfMessageEventsPerSpan, 128);
       });
     });
   });

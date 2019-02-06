@@ -172,8 +172,11 @@ describe('OpenCensus Agent Exporter', () => {
       bufferSize: 1,
       bufferTimeout: 0
     });
-    tracing = nodeTracing.start(
-        {exporter: ocAgentExporter, samplingRate: INITIAL_SAMPLER_PROBABILITY});
+    tracing = nodeTracing.start({
+      exporter: ocAgentExporter,
+      samplingRate: INITIAL_SAMPLER_PROBABILITY,
+      traceParams: {numberOfAttributesPerSpan: 4}
+    });
   });
 
   afterEach(() => {
@@ -331,7 +334,10 @@ describe('OpenCensus Agent Exporter', () => {
       rootSpan.setStatus(CanonicalCode.OK);
 
       // Attribute
+      rootSpan.addAttribute('my_first_attribute', 'foo');
+      rootSpan.addAttribute('my_second_attribute', 'foo2');
       rootSpan.addAttribute('my_attribute_string', 'bar2');
+      rootSpan.addAttribute('my_first_attribute', 'foo1');
       rootSpan.addAttribute('my_attribute_number', 456);
       rootSpan.addAttribute('my_attribute_boolean', false);
 
@@ -397,6 +403,10 @@ describe('OpenCensus Agent Exporter', () => {
               return;
             }
             assert.deepEqual(span.attributes.attributeMap, {
+              my_first_attribute: {
+                value: 'stringValue',
+                stringValue: {value: 'foo1', truncatedByteCount: 0}
+              },
               my_attribute_string: {
                 value: 'stringValue',
                 stringValue: {value: 'bar2', truncatedByteCount: 0}
@@ -404,6 +414,7 @@ describe('OpenCensus Agent Exporter', () => {
               my_attribute_number: {value: 'intValue', intValue: '456'},
               my_attribute_boolean: {value: 'boolValue', boolValue: false}
             });
+            assert.equal(span.attributes.droppedAttributesCount, 1);
 
             // Time Events
             assert.deepEqual(span.timeEvents, {

@@ -245,11 +245,13 @@ describe('Tracer', () => {
          const tracer = new CoreTracer();
          tracer.start(defaultConfig);
          assert.equal(
-             tracer.activeTraceParams.numberOfAnnontationEventsPerSpan, 32);
-         assert.equal(tracer.activeTraceParams.numberOfAttributesPerSpan, 32);
-         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, 32);
+             tracer.activeTraceParams.numberOfAnnontationEventsPerSpan,
+             undefined);
          assert.equal(
-             tracer.activeTraceParams.numberOfMessageEventsPerSpan, 128);
+             tracer.activeTraceParams.numberOfAttributesPerSpan, undefined);
+         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, undefined);
+         assert.equal(
+             tracer.activeTraceParams.numberOfMessageEventsPerSpan, undefined);
        });
 
     it('should create a tracer with default TraceParams when parameters with values higher than maximum limit are specified upon initialisation',

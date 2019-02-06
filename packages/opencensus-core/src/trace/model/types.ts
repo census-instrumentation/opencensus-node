@@ -320,6 +320,12 @@ export interface Span {
   /** Gives the TraceContext of the span. */
   readonly spanContext: SpanContext;
 
+  /** The number of dropped attributes. */
+  droppedAttributesCount: number;
+
+  /** Trace Parameters */
+  activeTraceParams: configTypes.TraceParams;
+
   /**
    * Adds an atribute to the span.
    * @param key Describes the value added.
@@ -392,6 +398,9 @@ export interface Tracer extends SpanEventListener {
 
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger;
+
+  /** A configuration object for trace parameters */
+  activeTraceParams: configTypes.TraceParams;
 
   /** A propagation instance */
   readonly propagation: Propagation;

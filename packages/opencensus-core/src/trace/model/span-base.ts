@@ -16,6 +16,7 @@
 import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 import {randomSpanId} from '../../internal/util';
+import * as configTypes from '../config/types';
 import * as types from './types';
 
 const STATUS_OK = {
@@ -58,6 +59,11 @@ export abstract class SpanBase implements types.Span {
   status: types.Status = STATUS_OK;
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
+  /** Trace Parameters */
+  activeTraceParams: configTypes.TraceParams;
+
+  /** The number of dropped attributes. */
+  droppedAttributesCount = 0;
 
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
@@ -136,6 +142,16 @@ export abstract class SpanBase implements types.Span {
    * @param value The result of an operation.
    */
   addAttribute(key: string, value: string|number|boolean) {
+    if (this.attributes[key]) {
+      delete this.attributes[key];
+    }
+
+    if (Object.keys(this.attributes).length >=
+        this.activeTraceParams.numberOfAttributesPerSpan) {
+      this.droppedAttributesCount++;
+      const attributeKeyToDelete = Object.keys(this.attributes).shift();
+      delete this.attributes[attributeKeyToDelete];
+    }
     this.attributes[key] = value;
   }
 

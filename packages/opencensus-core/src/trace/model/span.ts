@@ -35,6 +35,7 @@ export class Span extends SpanBase implements types.Span {
     this.root = root;
     this.logger = this.root.logger || logger.logger();
     this.parentSpanId = root.id;
+    this.activeTraceParams = this.root.activeTraceParams;
   }
 
   /** Gets trace id of span. */
