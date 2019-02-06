@@ -30,7 +30,7 @@ const constants = {
   DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX: 'instrumentation',
   /** Default Limit for Trace Parameters */
   DEFAULT_TRACE_PARAMS: {
-    numberOfAnnontationEventsPerSpan:32,
+    numberOfAnnontationEventsPerSpan: 32,
     numberOfAttributesPerSpan: 32,
     numberOfLinksPerSpan: 32,
     numberOfMessageEventsPerSpan: 128
