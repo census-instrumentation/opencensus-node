@@ -64,9 +64,12 @@ export abstract class SpanBase implements types.Span {
 
   /** The number of dropped attributes. */
   droppedAttributesCount = 0;
-
   /** The number of dropped links. */
   droppedLinksCount = 0;
+  /** The number of dropped annotations. */
+  droppedAnnotationsCount = 0;
+  /** The number of dropped message events. */
+  droppedMessageEventsCount = 0;
 
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
@@ -166,6 +169,11 @@ export abstract class SpanBase implements types.Span {
    */
   addAnnotation(
       description: string, attributes?: types.Attributes, timestamp = 0) {
+    if (this.annotations.length >=
+        this.activeTraceParams.numberOfAnnontationEventsPerSpan) {
+      this.annotations.shift();
+      this.droppedAnnotationsCount++;
+    }
     this.annotations.push({
       'description': description,
       'attributes': attributes,
@@ -203,6 +211,11 @@ export abstract class SpanBase implements types.Span {
    * @param timestamp A time in milliseconds. Defaults to Date.now()
    */
   addMessageEvent(type: string, id: string, timestamp = 0) {
+    if (this.messageEvents.length >=
+        this.activeTraceParams.numberOfMessageEventsPerSpan) {
+      this.messageEvents.shift();
+      this.droppedMessageEventsCount++;
+    }
     this.messageEvents.push({
       'type': type,
       'id': id,

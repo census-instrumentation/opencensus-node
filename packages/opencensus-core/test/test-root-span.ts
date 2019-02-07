@@ -206,6 +206,7 @@ describe('RootSpan', () => {
       rootSpan.addAnnotation('description test', {} as Attributes, Date.now());
 
       assert.ok(rootSpan.annotations.length > 0);
+      assert.equal(rootSpan.droppedAnnotationsCount, 0);
       assert.ok(instanceOfAnnotation(rootSpan.annotations[0]));
     });
   });
@@ -251,6 +252,7 @@ describe('RootSpan', () => {
       rootSpan.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
 
       assert.ok(rootSpan.messageEvents.length > 0);
+      assert.equal(rootSpan.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(rootSpan.messageEvents[0]));
     });
   });

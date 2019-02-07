@@ -329,6 +329,12 @@ export interface Span {
   /** The number of dropped links. */
   droppedLinksCount: number;
 
+  /** The number of dropped annotations. */
+  droppedAnnotationsCount: number;
+
+  /** The number of dropped message events. */
+  droppedMessageEventsCount: number;
+
   /**
    * Adds an atribute to the span.
    * @param key Describes the value added.

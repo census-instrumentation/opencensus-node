@@ -175,7 +175,12 @@ describe('OpenCensus Agent Exporter', () => {
     tracing = nodeTracing.start({
       exporter: ocAgentExporter,
       samplingRate: INITIAL_SAMPLER_PROBABILITY,
-      traceParams: {numberOfAttributesPerSpan: 4, numberOfLinksPerSpan: 3}
+      traceParams: {
+        numberOfAttributesPerSpan: 4,
+        numberOfLinksPerSpan: 3,
+        numberOfAnnontationEventsPerSpan: 2,
+        numberOfMessageEventsPerSpan: 3
+      }
     });
   });
 
@@ -344,9 +349,16 @@ describe('OpenCensus Agent Exporter', () => {
       // Annotation
       rootSpan.addAnnotation(
           'my_annotation', {myString: 'bar', myNumber: 123, myBoolean: true});
+      rootSpan.addAnnotation(
+          'my_annotation1', {myString: 'bar1', myNumber: 456, myBoolean: true});
+      rootSpan.addAnnotation(
+          'my_annotation2', {myString: 'bar2', myNumber: 789, myBoolean: true});
+      rootSpan.addAnnotation(
+          'my_annotation3', {myString: 'bar3', myNumber: 789, myBoolean: true});
 
       // Message Event
       const timeStamp = 123456789;
+      rootSpan.addMessageEvent('MessageEventTypeSent', 'aaaa', timeStamp);
       rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
       rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
@@ -420,27 +432,46 @@ describe('OpenCensus Agent Exporter', () => {
 
             // Time Events
             assert.deepEqual(span.timeEvents, {
-              droppedAnnotationsCount: 0,
-              droppedMessageEventsCount: 0,
+              droppedAnnotationsCount: 2,
+              droppedMessageEventsCount: 1,
               timeEvent: [
                 {
                   value: 'annotation',
                   time: null,
                   annotation: {
                     description:
-                        {value: 'my_annotation', truncatedByteCount: 0},
+                        {value: 'my_annotation2', truncatedByteCount: 0},
                     attributes: {
                       attributeMap: {
                         myString: {
                           value: 'stringValue',
-                          stringValue: {value: 'bar', truncatedByteCount: 0}
+                          stringValue: {value: 'bar2', truncatedByteCount: 0}
                         },
-                        myNumber: {value: 'intValue', intValue: '123'},
+                        myNumber: {value: 'intValue', intValue: '789'},
                         myBoolean: {value: 'boolValue', boolValue: true}
                       },
                       droppedAttributesCount: 0
                     }
-                  }
+                  },
+                },
+                {
+                  value: 'annotation',
+                  time: null,
+                  annotation: {
+                    description:
+                        {value: 'my_annotation3', truncatedByteCount: 0},
+                    attributes: {
+                      attributeMap: {
+                        myString: {
+                          value: 'stringValue',
+                          stringValue: {value: 'bar3', truncatedByteCount: 0}
+                        },
+                        myNumber: {value: 'intValue', intValue: '789'},
+                        myBoolean: {value: 'boolValue', boolValue: true}
+                      },
+                      droppedAttributesCount: 0
+                    }
+                  },
                 },
                 {
                   messageEvent: {
