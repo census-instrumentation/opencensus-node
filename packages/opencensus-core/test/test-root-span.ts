@@ -185,7 +185,6 @@ describe('RootSpan', () => {
       for (const span of root.spans) {
         assert.ok(span.ended);
       }
-      assert.equal(root.numberOfChildren, 1);
     });
   });
 
@@ -223,8 +222,6 @@ describe('RootSpan', () => {
       rootSpan.addAnnotation('description test', {} as Attributes, Date.now());
 
       assert.ok(rootSpan.annotations.length > 0);
-      assert.equal(rootSpan.droppedAnnotationsCount, 0);
-      assert.equal(rootSpan.numberOfChildren, 0);
       assert.ok(instanceOfAnnotation(rootSpan.annotations[0]));
     });
   });
