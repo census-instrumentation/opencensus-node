@@ -15,6 +15,7 @@
  */
 
 import * as assert from 'assert';
+import {SpanKind} from '../src';
 import * as logger from '../src/common/console-logger';
 import {NoopExporter} from '../src/exporters/console-exporter';
 import {ExporterBuffer} from '../src/exporters/exporter-buffer';
@@ -40,7 +41,7 @@ const createRootSpans = (num: number): RootSpan[] => {
     const rootSpan = new RootSpan(tracer, {name: `rootSpan.${i}`});
     rootSpan.start();
     for (let j = 0; j < 10; j++) {
-      rootSpan.startChildSpan(`childSpan.${i}.${j}`, 'client');
+      rootSpan.startChildSpan(`childSpan.${i}.${j}`, SpanKind.CLIENT);
     }
     rootSpans.push(rootSpan);
   }

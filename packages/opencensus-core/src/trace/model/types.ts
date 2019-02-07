@@ -191,7 +191,7 @@ export interface MessageEvent {
   /** A timestamp for the event. */
   timestamp: number;
   /** Indicates whether the message was sent or received. */
-  type: string;
+  type: MessageEventType;
   /** An identifier for the MessageEvent's message. */
   id: string;
   /** The number of uncompressed bytes sent or received. */
@@ -213,7 +213,7 @@ export interface Link {
   /** The span ID for a span within a trace. */
   spanId: string;
   /** The relationship of the current span relative to the linked. */
-  type: string;
+  type: LinkType;
   /** A set of attributes on the link. */
   attributes: Attributes;
 }
@@ -225,7 +225,7 @@ export interface TraceOptions {
   /** Trace context */
   spanContext?: SpanContext;
   /** Span kind */
-  kind?: string;
+  kind?: SpanKind;
 }
 
 export type TraceState = string;
@@ -249,6 +249,51 @@ export interface SpanEventListener {
   onEndSpan(span: RootSpan): void;
 }
 
+/** An event describing a message sent/received between Spans. */
+export enum MessageEventType {
+  /** Unknown event type. */
+  UNSPECIFIED = 0,
+  /** Indicates a sent message. */
+  SENT = 1,
+  /** Indicates a received message. */
+  RECEIVED = 2
+}
+
+/**
+ * Type of span. Can be used to specify additional relationships between spans
+ * in addition to a parent/child relationship.
+ */
+export enum SpanKind {
+  /** Unspecified */
+  UNSPECIFIED = 0,
+  /**
+   * Indicates that the span covers server-side handling of an RPC or other
+   * remote network request.
+   */
+  SERVER = 1,
+  /**
+   * Indicates that the span covers the client-side wrapper around an RPC or
+   * other remote request.
+   */
+  CLIENT = 2
+}
+
+/**
+ * Type of link. The relationship of the current span relative to the linked
+ * span.
+ */
+export enum LinkType {
+  /**
+   * The relationship of the two spans is unknown, or known but other
+   * than parent-child.
+   */
+  UNSPECIFIED = 0,
+  /** The linked span is a child of the current span. */
+  CHILD_LINKED_SPAN = 1,
+  /** The linked span is a parent of the current span. */
+  PARENT_LINKED_SPAN = 2
+}
+
 /** Interface for Span */
 export interface Span {
   /** The Span ID of this span */
@@ -264,7 +309,7 @@ export interface Span {
   name: string;
 
   /** Kind of span. */
-  kind: string;
+  kind: SpanKind;
 
   /** An object to log information to */
   logger: loggerTypes.Logger;
@@ -359,7 +404,7 @@ export interface Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: string,
+      traceId: string, spanId: string, type: LinkType,
       attributes?: Attributes): void;
 
   /**
@@ -368,7 +413,7 @@ export interface Span {
    * @param id An identifier for the message event.
    * @param timestamp A timestamp for this event.
    */
-  addMessageEvent(type: string, id: string, timestamp?: number): void;
+  addMessageEvent(type: MessageEventType, id: string, timestamp?: number): void;
 
   /**
    * Sets a status to the span.
@@ -393,7 +438,7 @@ export interface RootSpan extends Span {
   readonly spans: Span[];
 
   /** Starts a new Span instance in the RootSpan instance */
-  startChildSpan(name: string, type: string): Span;
+  startChildSpan(name: string, kind: SpanKind): Span;
 }
 
 
@@ -460,7 +505,7 @@ export interface Tracer extends SpanEventListener {
    * @param parentSpanId Parent SpanId
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, type?: string, parentSpanId?: string): Span;
+  startChildSpan(name?: string, type?: SpanKind, parentSpanId?: string): Span;
 
   /**
    * Binds the trace context to the given function.

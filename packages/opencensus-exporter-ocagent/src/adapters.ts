@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span} from '@opencensus/core';
+import {Annotation, Attributes, Link, LinkType, MessageEvent, MessageEventType, RootSpan, Span, SpanKind} from '@opencensus/core';
 import {google, opencensus} from './types';
 
 /**
@@ -65,12 +65,12 @@ const hexStringToUint8Array = (hex: string): Uint8Array|null => {
  * enum type.
  */
 const spanKindToEnum =
-    (value: string): opencensus.proto.trace.v1.Span.SpanKind => {
-      switch (value) {
-        case 'SERVER': {
+    (kind: SpanKind): opencensus.proto.trace.v1.Span.SpanKind => {
+      switch (kind) {
+        case SpanKind.SERVER: {
           return opencensus.proto.trace.v1.Span.SpanKind.SERVER;
         }
-        case 'CLIENT': {
+        case SpanKind.CLIENT: {
           return opencensus.proto.trace.v1.Span.SpanKind.CLIENT;
         }
         default: {
@@ -131,13 +131,13 @@ const adaptAttributes = (attributes: Attributes,
  * @param value
  * @return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type
  */
-const adaptMessageEventType = (value: string): opencensus.proto.trace.v1.Span
-                                  .TimeEvent.MessageEvent.Type => {
-  switch (value) {
-    case 'MessageEventTypeSent': {
+const adaptMessageEventType = (type: MessageEventType): opencensus.proto.trace
+                                  .v1.Span.TimeEvent.MessageEvent.Type => {
+  switch (type) {
+    case MessageEventType.SENT: {
       return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type.SENT;
     }
-    case 'MessageEventTypeRecv': {
+    case MessageEventType.RECEIVED: {
       return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type
           .RECEIVED;
     }
@@ -223,11 +223,11 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
 
   let type;
   switch (link.type) {
-    case 'CHILD_LINKED_SPAN': {
+    case LinkType.CHILD_LINKED_SPAN: {
       type = opencensus.proto.trace.v1.Span.Link.Type.CHILD_LINKED_SPAN;
       break;
     }
-    case 'PARENT_LINKED_SPAN': {
+    case LinkType.PARENT_LINKED_SPAN: {
       type = opencensus.proto.trace.v1.Span.Link.Type.PARENT_LINKED_SPAN;
       break;
     }

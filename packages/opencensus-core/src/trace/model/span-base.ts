@@ -54,7 +54,7 @@ export abstract class SpanBase implements types.Span {
   /** The resource name of the span */
   name: string = null;
   /** Kind of span. */
-  kind: string = null;
+  kind: types.SpanKind = types.SpanKind.UNSPECIFIED;
   /** A final status for this span */
   status: types.Status = STATUS_OK;
   /** set isRootSpan  */
@@ -189,7 +189,7 @@ export abstract class SpanBase implements types.Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: string,
+      traceId: string, spanId: string, type: types.LinkType,
       attributes?: types.Attributes) {
     if (this.links.length >= this.activeTraceParams.numberOfLinksPerSpan) {
       this.links.shift();
@@ -210,12 +210,13 @@ export abstract class SpanBase implements types.Span {
    * @param id An identifier for the message event.
    * @param timestamp A time in milliseconds. Defaults to Date.now()
    */
-  addMessageEvent(type: string, id: string, timestamp = 0) {
+  addMessageEvent(type: types.MessageEventType, id: string, timestamp = 0) {
     if (this.messageEvents.length >=
         this.activeTraceParams.numberOfMessageEventsPerSpan) {
       this.messageEvents.shift();
       this.droppedMessageEventsCount++;
     }
+
     this.messageEvents.push({
       'type': type,
       'id': id,
