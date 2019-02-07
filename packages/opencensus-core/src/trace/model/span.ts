@@ -58,7 +58,6 @@ export class Span extends SpanBase implements types.Span {
     });
   }
 
-
   /** Ends the span. */
   end(): void {
     super.end();

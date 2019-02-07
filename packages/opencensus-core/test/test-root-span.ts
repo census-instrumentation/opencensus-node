@@ -68,6 +68,21 @@ describe('RootSpan', () => {
     });
   });
 
+  describe('get numberOfChildren()', () => {
+    it('should get numberOfChildren from rootspan instance', () => {
+      const root = new RootSpan(tracer);
+      root.start();
+      assert.equal(root.numberOfChildren, 0);
+      root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
+      assert.equal(root.numberOfChildren, 1);
+
+      for (let i = 0; i < 10; i++) {
+        root.startChildSpan('spanName' + i, types.SpanKind.UNSPECIFIED);
+      }
+      assert.equal(root.numberOfChildren, 11);
+    });
+  });
+
   /**
    * Should get trace id from rootspan instance
    */
@@ -170,6 +185,7 @@ describe('RootSpan', () => {
       for (const span of root.spans) {
         assert.ok(span.ended);
       }
+      assert.equal(root.numberOfChildren, 1);
     });
   });
 
@@ -208,6 +224,7 @@ describe('RootSpan', () => {
 
       assert.ok(rootSpan.annotations.length > 0);
       assert.equal(rootSpan.droppedAnnotationsCount, 0);
+      assert.equal(rootSpan.numberOfChildren, 0);
       assert.ok(instanceOfAnnotation(rootSpan.annotations[0]));
     });
   });

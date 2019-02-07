@@ -437,6 +437,9 @@ export interface RootSpan extends Span {
   /** Get the span list from RootSpan instance */
   readonly spans: Span[];
 
+  /** Gets the number of child span created for this span. */
+  readonly numberOfChildren: number;
+
   /** Starts a new Span instance in the RootSpan instance */
   startChildSpan(name: string, kind: SpanKind): Span;
 }
