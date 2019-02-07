@@ -15,7 +15,6 @@
  */
 
 import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span} from '@opencensus/core';
-
 import {google, opencensus} from './types';
 
 /**
@@ -246,10 +245,10 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
  * @param links Link[]
  * @returns opencensus.proto.trace.v1.Span.Links
  */
-const adaptLinks =
-    (links: Link[] = []): opencensus.proto.trace.v1.Span.Links => {
-      return {link: links.map(adaptLink), droppedLinksCount: null};
-    };
+const adaptLinks = (links: Link[] = [], droppedLinksCount: number):
+                       opencensus.proto.trace.v1.Span.Links => {
+  return {link: links.map(adaptLink), droppedLinksCount};
+};
 
 /**
  * Adapts a boolean to a `google.protobuf.BoolValue` type.
@@ -276,7 +275,7 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
     attributes: adaptAttributes(span.attributes, span.droppedAttributesCount),
     stackTrace: null,  // Unsupported by nodejs
     timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
-    links: adaptLinks(span.links),
+    links: adaptLinks(span.links, span.droppedLinksCount),
     status: span.status,
     sameProcessAsParentSpan: adaptBoolean(!span.remoteParent),
     childSpanCount: null,

@@ -26,6 +26,10 @@ import {Annotation, Attributes, Link} from '../src/trace/model/types';
 // rootspan
 
 const tracer = new CoreTracer();
+tracer.activeTraceParams = {
+  numberOfAttributesPerSpan: 32,
+  numberOfLinksPerSpan: 32
+};
 
 describe('Span', () => {
   /**
@@ -186,6 +190,20 @@ describe('Span', () => {
             span.attributes['testKey' + attType], 'testValue' + attType);
       });
     });
+
+    it('should drop extra attributes', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+      for (let i = 0; i < 40; i++) {
+        span.addAttribute('attr' + i, 100);
+      }
+
+      assert.equal(Object.keys(span.attributes).length, 32);
+      assert.equal(span.droppedAttributesCount, 8);
+    });
   });
 
   /**
@@ -232,7 +250,23 @@ describe('Span', () => {
       span.addLink(span.traceId, rootSpan.id, LINK_TYPE);
 
       assert.ok(span.links.length > 0);
+      assert.equal(span.droppedLinksCount, 0);
       assert.ok(instanceOfLink(span.links[0]));
+    });
+
+    it('should drop extra links', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+      const span = new Span(rootSpan);
+      span.start();
+
+      const LINK_TYPE = 'PARENT_LINKED_SPAN';
+      for (let i = 0; i < 35; i++) {
+        span.addLink(span.traceId, rootSpan.id, LINK_TYPE);
+      }
+
+      assert.equal(span.links.length, 32);
+      assert.equal(span.droppedLinksCount, 3);
     });
   });
 

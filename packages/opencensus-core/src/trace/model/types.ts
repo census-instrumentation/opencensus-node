@@ -320,11 +320,14 @@ export interface Span {
   /** Gives the TraceContext of the span. */
   readonly spanContext: SpanContext;
 
+  /** Trace Parameters */
+  activeTraceParams: configTypes.TraceParams;
+
   /** The number of dropped attributes. */
   droppedAttributesCount: number;
 
-  /** Trace Parameters */
-  activeTraceParams: configTypes.TraceParams;
+  /** The number of dropped links. */
+  droppedLinksCount: number;
 
   /**
    * Adds an atribute to the span.
