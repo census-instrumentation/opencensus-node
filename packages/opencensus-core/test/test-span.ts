@@ -318,7 +318,8 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
       for (let i = 0; i < 35; i++) {
-        span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
+        span.addMessageEvent(
+            types.MessageEventType.UNSPECIFIED, 'message_event_test_id');
       }
 
       assert.equal(span.messageEvents.length, 32);
