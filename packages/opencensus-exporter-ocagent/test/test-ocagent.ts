@@ -345,7 +345,7 @@ describe('OpenCensus Agent Exporter', () => {
       rootSpan.addAnnotation(
           'my_annotation', {myString: 'bar', myNumber: 123, myBoolean: true});
 
-      // Metric Event
+      // Message Event
       const timeStamp = 123456789;
       rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
       rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
@@ -546,7 +546,7 @@ describe('OpenCensus Agent Exporter', () => {
              'my_annotation',
              {myString: 'bar', myNumber: 123, myBoolean: true});
 
-         // Metric Event
+         // Message Event
          const timeStamp = 123456789;
          rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
          rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
