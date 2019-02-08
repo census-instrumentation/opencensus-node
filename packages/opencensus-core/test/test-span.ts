@@ -263,8 +263,8 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
 
-      const LINK_TYPE = 'PARENT_LINKED_SPAN';
-      span.addLink(span.traceId, rootSpan.id, LINK_TYPE);
+      span.addLink(
+          span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
 
       assert.ok(span.links.length > 0);
       assert.equal(span.droppedLinksCount, 0);
@@ -277,9 +277,9 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
 
-      const LINK_TYPE = 'PARENT_LINKED_SPAN';
       for (let i = 0; i < 35; i++) {
-        span.addLink(span.traceId, rootSpan.id, LINK_TYPE);
+        span.addLink(
+            span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
       }
 
       assert.equal(span.links.length, 32);
@@ -303,7 +303,8 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
 
-      span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
+      span.addMessageEvent(
+          types.MessageEventType.UNSPECIFIED, 'message_event_test_id');
 
       assert.ok(span.messageEvents.length > 0);
       assert.equal(span.droppedMessageEventsCount, 0);
@@ -317,7 +318,8 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
       for (let i = 0; i < 35; i++) {
-        span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
+        span.addMessageEvent(
+            types.MessageEventType.UNSPECIFIED, 'message_event_test_id');
       }
 
       assert.equal(span.messageEvents.length, 32);

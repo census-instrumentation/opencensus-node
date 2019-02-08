@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - The ```new Stats()``` has been deprecated on Stats class. The global singleton ```globalStats``` object should be used instead. Also, ```registerView()``` is separated out from ```createView()```.
 - Use ```TagKey```, ```TagValue``` and ```TagMap``` to create the tag keys, tag values.
 - The `status` field on `Span` is no longer a number, use `CanonicalCode` instead.
+- Add enum type for `MessageEvent`, `Link` and `SpanKind`, instead of string.
 
 ##### Old code
 ```js

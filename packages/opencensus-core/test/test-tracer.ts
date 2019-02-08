@@ -194,7 +194,7 @@ describe('Tracer', () => {
   });
 
   describe('startRootSpan() with context propagation', () => {
-    const traceOptions = {name: 'rootName', kind: 'spanType'} as
+    const traceOptions = {name: 'rootName', kind: types.SpanKind.UNSPECIFIED} as
         types.TraceOptions;
 
     it('should create new RootSpan instance, no propagation', () => {
@@ -295,7 +295,7 @@ describe('Tracer', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
-        span = tracer.startChildSpan('spanName', 'spanType');
+        span = tracer.startChildSpan('spanName', types.SpanKind.CLIENT);
       });
     });
     it('should create a Span instance', () => {
@@ -304,7 +304,7 @@ describe('Tracer', () => {
     it('should start a span', () => {
       assert.ok(span.started);
       assert.strictEqual(span.name, 'spanName');
-      assert.strictEqual(span.kind, 'spanType');
+      assert.strictEqual(span.kind, types.SpanKind.CLIENT);
     });
   });
 
@@ -313,7 +313,8 @@ describe('Tracer', () => {
     it('should not create a Span instance, without a rootspan', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      const span = tracer.startChildSpan('spanName', 'spanType');
+      const span =
+          tracer.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
       assert.equal(span, null);
     });
   });

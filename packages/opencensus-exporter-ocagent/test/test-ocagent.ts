@@ -15,7 +15,7 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {CanonicalCode, RootSpan, TraceOptions, Tracing} from '@opencensus/core';
+import {CanonicalCode, LinkType, MessageEventType, RootSpan, SpanKind, TraceOptions, Tracing} from '@opencensus/core';
 import * as nodeTracing from '@opencensus/nodejs';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
@@ -202,7 +202,8 @@ describe('OpenCensus Agent Exporter', () => {
           spanContext: {traceId: hexId(), spanId: hexId(), options: 0x1}
         },
         (rootSpan: RootSpan) => {
-          const childSpan = rootSpan.startChildSpan(CHILD_SPAN_NAME, '');
+          const childSpan =
+              rootSpan.startChildSpan(CHILD_SPAN_NAME, SpanKind.UNSPECIFIED);
 
           // When the stream is connected, we end both spans, which should
           // trigger the spans to be sent to the agent.
@@ -325,7 +326,7 @@ describe('OpenCensus Agent Exporter', () => {
   it('should adapt a span correctly', (done) => {
     const rootSpanOptions: TraceOptions = {
       name: 'root',
-      kind: 'SERVER',
+      kind: SpanKind.SERVER,
       spanContext: {
         traceId: hexId(),
         spanId: hexId(),
@@ -358,22 +359,22 @@ describe('OpenCensus Agent Exporter', () => {
 
       // Message Event
       const timeStamp = 123456789;
-      rootSpan.addMessageEvent('MessageEventTypeSent', 'aaaa', timeStamp);
-      rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
-      rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.SENT, 'aaaa', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.SENT, 'ffff', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.RECEIVED, 'ffff', timeStamp);
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any
       rootSpan.addMessageEvent(null as any, 'ffff', timeStamp);
 
       // Links
-      rootSpan.addLink('aaaaa', 'aaa', 'CHILD_LINKED_SPAN');
-      rootSpan.addLink('bbbbb', 'bbbbb', 'CHILD_LINKED_SPAN');
-      rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN', {
+      rootSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
+      rootSpan.addLink('bbbbb', 'bbbbb', LinkType.CHILD_LINKED_SPAN);
+      rootSpan.addLink('ffff', 'ffff', LinkType.CHILD_LINKED_SPAN, {
         'child_link_attribute_string': 'foo1',
         'child_link_attribute_number': 123,
         'child_link_attribute_boolean': true,
       });
-      rootSpan.addLink('ffff', 'ffff', 'PARENT_LINKED_SPAN');
+      rootSpan.addLink('ffff', 'ffff', LinkType.PARENT_LINKED_SPAN);
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any
       rootSpan.addLink('ffff', 'ffff', null as any);
@@ -555,7 +556,7 @@ describe('OpenCensus Agent Exporter', () => {
      (done) => {
        const rootSpanOptions: TraceOptions = {
          name: 'root',
-         kind: 'SERVER',
+         kind: SpanKind.SERVER,
          spanContext: {
            traceId: hexId(),
            spanId: hexId(),
@@ -579,16 +580,16 @@ describe('OpenCensus Agent Exporter', () => {
 
          // Message Event
          const timeStamp = 123456789;
-         rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
-         rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
+         rootSpan.addMessageEvent(MessageEventType.SENT, 'ffff', timeStamp);
+         rootSpan.addMessageEvent(MessageEventType.RECEIVED, 'ffff', timeStamp);
 
          // Links
-         rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN', {
+         rootSpan.addLink('ffff', 'ffff', LinkType.CHILD_LINKED_SPAN, {
            'child_link_attribute_string': 'foo1',
            'child_link_attribute_number': 123,
            'child_link_attribute_boolean': true,
          });
-         rootSpan.addLink('ffff', 'ffff', 'PARENT_LINKED_SPAN');
+         rootSpan.addLink('ffff', 'ffff', LinkType.PARENT_LINKED_SPAN);
 
          server.on(
              MockAgentEvent.ExportStreamMessageReceived,

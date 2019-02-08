@@ -236,16 +236,16 @@ export class CoreTracer implements types.Tracer {
   /**
    * Starts a span.
    * @param name The span name.
-   * @param type The span type.
+   * @param kind optional The span kind.
    * @param parentSpanId The parent span ID.
    */
-  startChildSpan(name?: string, type?: string): types.Span {
+  startChildSpan(name?: string, kind?: types.SpanKind): types.Span {
     let newSpan: types.Span = null;
     if (!this.currentRootSpan) {
       this.logger.debug(
           'no current trace found - must start a new root span first');
     } else {
-      newSpan = this.currentRootSpan.startChildSpan(name, type);
+      newSpan = this.currentRootSpan.startChildSpan(name, kind);
     }
     return newSpan;
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, Func, Span} from '@opencensus/core';
+import {BasePlugin, Func, Span, SpanKind} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as mongodb from 'mongodb';
 import * as semver from 'semver';
@@ -96,8 +96,8 @@ export class MongoDBPlugin extends BasePlugin {
             type = 'command';
           }
 
-          const span = plugin.tracer.startChildSpan(
-              ns + '.' + type, plugin.SPAN_MONGODB_QUERY_TYPE);
+          const span =
+              plugin.tracer.startChildSpan(ns + '.' + type, SpanKind.SERVER);
           resultHandler = plugin.patchEnd(span, resultHandler);
         }
 
@@ -116,8 +116,8 @@ export class MongoDBPlugin extends BasePlugin {
             let resultHandler = args[args.length - 1];
             if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
                 typeof resultHandler === 'function') {
-              const span = plugin.tracer.startChildSpan(
-                  ns + '.query', plugin.SPAN_MONGODB_QUERY_TYPE);
+              const span =
+                  plugin.tracer.startChildSpan(ns + '.query', SpanKind.SERVER);
               resultHandler = plugin.patchEnd(span, resultHandler);
             }
 
@@ -136,7 +136,7 @@ export class MongoDBPlugin extends BasePlugin {
         if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
             typeof resultHandler === 'function') {
           const span = plugin.tracer.startChildSpan(
-              this.ns + '.cursor', plugin.SPAN_MONGODB_QUERY_TYPE);
+              this.ns + '.cursor', SpanKind.SERVER);
           resultHandler = plugin.patchEnd(span, resultHandler);
         }
 

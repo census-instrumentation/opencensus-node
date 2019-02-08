@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span, SpanKind} from '@opencensus/core';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
@@ -172,7 +172,7 @@ export class GrpcPlugin extends BasePlugin {
 
                 const traceOptions = {
                   name: `grpc.${name.replace('/', '')}`,
-                  kind: 'SERVER',
+                  kind: SpanKind.SERVER,
                   spanContext: propagation ? propagation.extract(getter) : null
                 };
                 plugin.logger.debug('path func: %s', traceOptions.name);
@@ -314,7 +314,7 @@ export class GrpcPlugin extends BasePlugin {
       ) {
         const traceOptions = {
           name: `grpc.${original.path.replace('/', '')}`,
-          kind: 'CLIENT',
+          kind: SpanKind.CLIENT,
         };
         const args = Array.prototype.slice.call(arguments);
         // Checks if this remote function call is part of an operation by

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, RootSpan, Span, Tracer} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, RootSpan, Span, SpanKind, Tracer} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as httpModule from 'http';
 import * as semver from 'semver';
@@ -174,7 +174,7 @@ export class HttpPlugin extends BasePlugin {
 
         const traceOptions = {
           name: path,
-          kind: 'SERVER',
+          kind: SpanKind.SERVER,
           spanContext: propagation ? propagation.extract(getter) : null
         };
 
@@ -221,7 +221,7 @@ export class HttpPlugin extends BasePlugin {
 
             // Message Event ID is not defined
             rootSpan.addMessageEvent(
-                'MessageEventTypeRecv', uuid.v4().split('-').join(''));
+                MessageEventType.RECEIVED, uuid.v4().split('-').join(''));
 
             rootSpan.end();
             return returned;
@@ -290,7 +290,7 @@ export class HttpPlugin extends BasePlugin {
         plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
           name: `${method || 'GET'} ${pathname}`,
-          kind: 'CLIENT',
+          kind: SpanKind.CLIENT,
         };
 
 
@@ -370,7 +370,7 @@ export class HttpPlugin extends BasePlugin {
 
           // Message Event ID is not defined
           span.addMessageEvent(
-              'MessageEventTypeSent', uuid.v4().split('-').join(''));
+              MessageEventType.SENT, uuid.v4().split('-').join(''));
 
           span.end();
         });
