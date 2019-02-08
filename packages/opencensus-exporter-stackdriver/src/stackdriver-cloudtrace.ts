@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, RootSpan, Span, SpanContext} from '@opencensus/core';
+import {Exporter, ExporterBuffer, RootSpan, Span as OCSpan, SpanContext} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
-// TODO change to use import when types for hex2dec will be available
-const {hexToDec}: {[key: string]: (input: string) => string} =
-    require('hex2dec');
-import {StackdriverExporterOptions, TracesWithCredentials, TranslatedSpan, TranslatedTrace} from './types';
+
+import {getDefaultResource} from './common-utils';
+import {createAttributes, createLinks, createTimeEvents, getResourceLabels, stringToTruncatableString} from './stackdriver-cloudtrace-utils';
+import {AttributeValue, Span, SpansWithCredentials, StackdriverExporterOptions} from './types';
 
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
-const cloudTrace = google.cloudtrace('v1');
+const cloudTrace = google.cloudtrace('v2');
 
 /** Format and sends span information to Stackdriver */
 export class StackdriverTraceExporter implements Exporter {
@@ -32,11 +32,14 @@ export class StackdriverTraceExporter implements Exporter {
   exporterBuffer: ExporterBuffer;
   logger: Logger;
   failBuffer: SpanContext[] = [];
+  private RESOURCE_LABELS: Promise<Record<string, AttributeValue>>;
 
   constructor(options: StackdriverExporterOptions) {
     this.projectId = options.projectId;
     this.logger = options.logger || logger.logger();
     this.exporterBuffer = new ExporterBuffer(this, options);
+    this.RESOURCE_LABELS =
+        getResourceLabels(getDefaultResource(this.projectId));
   }
 
   /**
@@ -54,13 +57,12 @@ export class StackdriverTraceExporter implements Exporter {
    * Publishes a list of root spans to Stackdriver.
    * @param rootSpans
    */
-  publish(rootSpans: RootSpan[]) {
-    const stackdriverTraces =
-        rootSpans.map(trace => this.translateTrace(trace));
+  async publish(rootSpans: RootSpan[]) {
+    const spanList = await this.translateSpan(rootSpans);
 
-    return this.authorize(stackdriverTraces)
-        .then((traces: TracesWithCredentials) => {
-          return this.sendTrace(traces);
+    return this.authorize(spanList)
+        .then((spans: SpansWithCredentials) => {
+          return this.batchWriteSpans(spans);
         })
         .catch(err => {
           for (const root of rootSpans) {
@@ -70,51 +72,66 @@ export class StackdriverTraceExporter implements Exporter {
         });
   }
 
-  /**
-   * Translates root span data to Stackdriver's trace format.
-   * @param root
-   */
-  private translateTrace(root: RootSpan): TranslatedTrace {
-    const spanList = root.spans.map((span: Span) => this.translateSpan(span));
-    spanList.push(this.translateSpan(root));
-
-    return {projectId: this.projectId, traceId: root.traceId, spans: spanList};
+  async translateSpan(rootSpans: RootSpan[]) {
+    const resourceLabel = await this.RESOURCE_LABELS;
+    const spanList: Span[] = [];
+    rootSpans.forEach(rootSpan => {
+      // RootSpan data
+      spanList.push(this.createSpan(rootSpan, resourceLabel));
+      rootSpan.spans.forEach(span => {
+        // Builds spans data
+        spanList.push(this.createSpan(span, resourceLabel));
+      });
+    });
+    return spanList;
   }
 
-  /**
-   * Translates span data to Stackdriver's span format.
-   * @param span
-   */
-  private translateSpan(span: Span): TranslatedSpan {
-    return {
-      name: span.name,
-      kind: 'SPAN_KIND_UNSPECIFIED',
-      spanId: hexToDec(span.id),
-      startTime: span.startTime,
-      endTime: span.endTime,
-      labels: Object.keys(span.attributes)
-                  .reduce(
-                      (acc, k) => {
-                        acc[k] = String(span.attributes[k]);
-                        return acc;
-                      },
-                      {} as Record<string, string>)
+  private createSpan(
+      span: OCSpan, resourceLabels: Record<string, AttributeValue>): Span {
+    const spanName =
+        `projects/${this.projectId}/traces/${span.traceId}/spans/${span.id}`;
+
+    const spanBuilder: Span = {
+      name: spanName,
+      spanId: span.id,
+      displayName: stringToTruncatableString(span.name),
+      startTime: span.startTime.toISOString(),
+      endTime: span.endTime.toISOString(),
+      attributes: createAttributes(
+          span.attributes, resourceLabels, span.droppedAttributesCount),
+      timeEvents: createTimeEvents(
+          span.annotations, span.messageEvents, span.droppedAnnotationsCount,
+          span.droppedMessageEventsCount),
+      links: createLinks(span.links, span.droppedLinksCount),
+      status: {code: span.status.code},
+      sameProcessAsParentSpan: !span.remoteParent,
+      childSpanCount: null,
+      stackTrace: null,  // Unsupported by nodejs
     };
+    if (span.parentSpanId) {
+      spanBuilder.parentSpanId = span.parentSpanId;
+    }
+    if (span.status.message) {
+      spanBuilder.status.message = span.status.message;
+    }
+
+    return spanBuilder;
   }
 
   /**
-   * Sends traces in the Stackdriver format to the service.
-   * @param traces
+   * Sends new spans to new or existing traces in the Stackdriver format to the
+   * service.
+   * @param spans
    */
-  private sendTrace(traces: TracesWithCredentials) {
+  private batchWriteSpans(spans: SpansWithCredentials) {
     return new Promise((resolve, reject) => {
-      cloudTrace.projects.patchTraces(traces, (err: Error) => {
+      cloudTrace.projects.traces.batchWrite(spans, (err: Error) => {
         if (err) {
-          err.message = `sendTrace error: ${err.message}`;
+          err.message = `batchWriteSpans error: ${err.message}`;
           this.logger.error(err.message);
           reject(err);
         } else {
-          const successMsg = 'sendTrace sucessfully';
+          const successMsg = 'batchWriteSpans sucessfully';
           this.logger.debug(successMsg);
           resolve(successMsg);
         }
@@ -124,10 +141,10 @@ export class StackdriverTraceExporter implements Exporter {
 
   /**
    * Gets the Google Application Credentials from the environment variables,
-   * authenticates the client and calls a method to send the traces data.
+   * authenticates the client and calls a method to send the spans data.
    * @param stackdriverTraces
    */
-  private authorize(stackdriverTraces: TranslatedTrace[]) {
+  private authorize(stackdriverSpans: Span[]) {
     return auth.getApplicationDefault()
         .then((client) => {
           let authClient = client.credential as JWT;
@@ -138,12 +155,12 @@ export class StackdriverTraceExporter implements Exporter {
             authClient = authClient.createScoped(scopes);
           }
 
-          const traces: TracesWithCredentials = {
-            projectId: client.projectId,
-            resource: {traces: stackdriverTraces},
+          const spans: SpansWithCredentials = {
+            name: `projects/${this.projectId}`,
+            resource: {spans: stackdriverSpans},
             auth: authClient
           };
-          return traces;
+          return spans;
         })
         .catch((err) => {
           err.message = `authorize error: ${err.message}`;

@@ -17,20 +17,121 @@
 import {Bucket, ExporterConfig} from '@opencensus/core';
 import {JWT} from 'google-auth-library';
 
-export type TranslatedTrace = {
-  projectId: string,
-  traceId: string,
-  spans: TranslatedSpan[]
+export type Span = {
+  name?: string,
+  spanId?: string,
+  parentSpanId?: string,
+  displayName?: TruncatableString,
+  startTime?: string,
+  endTime?: string,
+  attributes?: Attributes,
+  stackTrace?: StackTrace,
+  timeEvents?: TimeEvents,
+  links?: Links,
+  status?: Status,
+  sameProcessAsParentSpan?: boolean,
+  childSpanCount?: number
 };
 
-export type TranslatedSpan = {
-  name: string,
-  kind: string,
-  spanId: string,
-  startTime: Date,
-  endTime: Date,
-  labels: Record<string, string>
+export type Attributes = {
+  attributeMap?: {[key: string]: AttributeValue;};
+  droppedAttributesCount?: number;
 };
+
+export type AttributeValue = {
+  boolValue?: boolean;
+  intValue?: string;
+  stringValue?: TruncatableString;
+};
+
+export type TruncatableString = {
+  value?: string;
+  truncatedByteCount?: number;
+};
+
+export type Links = {
+  droppedLinksCount?: number;
+  link?: Link[];
+};
+
+export type Link = {
+  attributes?: Attributes;
+  spanId?: string;
+  traceId?: string;
+  type?: LinkType;
+};
+
+export type StackTrace = {
+  stackFrames?: StackFrames;
+  stackTraceHashId?: string;
+};
+
+export type StackFrames = {
+  droppedFramesCount?: number;
+  frame?: StackFrame[];
+};
+
+export type StackFrame = {
+  columnNumber?: string;
+  fileName?: TruncatableString;
+  functionName?: TruncatableString;
+  lineNumber?: string;
+  loadModule?: Module;
+  originalFunctionName?: TruncatableString;
+  sourceVersion?: TruncatableString;
+};
+
+export type Module = {
+  buildId?: TruncatableString;
+  module?: TruncatableString;
+};
+
+export type Status = {
+  code?: number;
+  message?: string;
+};
+
+export type TimeEvents = {
+  droppedAnnotationsCount?: number;
+  droppedMessageEventsCount?: number;
+  timeEvent?: TimeEvent[];
+};
+
+export type TimeEvent = {
+  annotation?: Annotation;
+  messageEvent?: MessageEvent;
+  time?: string;
+};
+
+export type Annotation = {
+  attributes?: Attributes;
+  description?: TruncatableString;
+};
+
+export type MessageEvent = {
+  id?: string;
+  type?: Type;
+  compressedSizeBytes?: string;
+  uncompressedSizeBytes?: string;
+};
+
+export enum Type {
+  TYPE_UNSPECIFIED = 0,
+  SENT = 1,
+  RECEIVED = 2
+}
+
+export enum LinkType {
+  UNSPECIFIED = 0,
+  CHILD_LINKED_SPAN = 1,
+  PARENT_LINKED_SPAN = 2
+}
+
+export interface SpansWithCredentials {
+  name: string;
+  resource: {spans: {}};
+  auth: JWT;
+}
 
 /**
  * Options for stackdriver configuration
@@ -56,12 +157,6 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    * Optional
    */
   onMetricUploadError?: (err: Error) => void;
-}
-
-export interface TracesWithCredentials {
-  projectId: string;
-  resource: {traces: {}};
-  auth: JWT;
 }
 
 export enum MetricKind {
