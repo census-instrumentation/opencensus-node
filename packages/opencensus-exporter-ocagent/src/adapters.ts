@@ -157,7 +157,8 @@ const adaptMessageEventType = (value: string): opencensus.proto.trace.v1.Span
  * @returns opencensus.proto.trace.v1.Span.TimeEvents
  */
 const adaptTimeEvents =
-    (annotations: Annotation[], messageEvents: MessageEvent[]):
+    (annotations: Annotation[], messageEvents: MessageEvent[],
+     droppedAnnotationsCount: number, droppedMessageEventsCount: number):
         opencensus.proto.trace.v1.Span.TimeEvents => {
       const timeEvents: opencensus.proto.trace.v1.Span.TimeEvent[] = [];
 
@@ -188,8 +189,8 @@ const adaptTimeEvents =
 
       return {
         timeEvent: timeEvents,
-        droppedAnnotationsCount: null,
-        droppedMessageEventsCount: null
+        droppedAnnotationsCount,
+        droppedMessageEventsCount
       };
     };
 
@@ -274,7 +275,9 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
     endTime: millisToTimestamp(span.endTime),
     attributes: adaptAttributes(span.attributes, span.droppedAttributesCount),
     stackTrace: null,  // Unsupported by nodejs
-    timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
+    timeEvents: adaptTimeEvents(
+        span.annotations, span.messageEvents, span.droppedAnnotationsCount,
+        span.droppedMessageEventsCount),
     links: adaptLinks(span.links, span.droppedLinksCount),
     status: span.status,
     sameProcessAsParentSpan: adaptBoolean(!span.remoteParent),

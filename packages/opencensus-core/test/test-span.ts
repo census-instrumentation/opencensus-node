@@ -28,7 +28,9 @@ import {Annotation, Attributes, Link} from '../src/trace/model/types';
 const tracer = new CoreTracer();
 tracer.activeTraceParams = {
   numberOfAttributesPerSpan: 32,
-  numberOfLinksPerSpan: 32
+  numberOfLinksPerSpan: 32,
+  numberOfAnnontationEventsPerSpan: 32,
+  numberOfMessageEventsPerSpan: 32
 };
 
 describe('Span', () => {
@@ -226,7 +228,22 @@ describe('Span', () => {
       span.addAnnotation('description test', {} as Attributes, Date.now());
 
       assert.ok(span.annotations.length > 0);
+      assert.equal(span.droppedAnnotationsCount, 0);
       assert.ok(instanceOfAnnotation(span.annotations[0]));
+    });
+
+    it('should drop extra annotations', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+      for (let i = 0; i < 40; i++) {
+        span.addAnnotation('description test', {} as Attributes, Date.now());
+      }
+
+      assert.equal(span.annotations.length, 32);
+      assert.equal(span.droppedAnnotationsCount, 8);
     });
   });
 
@@ -289,7 +306,22 @@ describe('Span', () => {
       span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
 
       assert.ok(span.messageEvents.length > 0);
+      assert.equal(span.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(span.messageEvents[0]));
+    });
+
+    it('should drop extra  Message Event', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+      for (let i = 0; i < 35; i++) {
+        span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
+      }
+
+      assert.equal(span.messageEvents.length, 32);
+      assert.equal(span.droppedMessageEventsCount, 3);
     });
   });
 
