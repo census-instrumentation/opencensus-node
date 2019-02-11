@@ -105,8 +105,8 @@ export class StackdriverTraceExporter implements Exporter {
       links: createLinks(span.links, span.droppedLinksCount),
       status: {code: span.status.code},
       sameProcessAsParentSpan: !span.remoteParent,
-      childSpanCount: null,
-      stackTrace: null,  // Unsupported by nodejs
+      childSpanCount: null,  // TODO: Consider to add count after pull/332
+      stackTrace: null,      // Unsupported by nodejs
     };
     if (span.parentSpanId) {
       spanBuilder.parentSpanId = span.parentSpanId;
@@ -125,6 +125,10 @@ export class StackdriverTraceExporter implements Exporter {
    */
   private batchWriteSpans(spans: SpansWithCredentials) {
     return new Promise((resolve, reject) => {
+      // TODO: Consider to use gRPC call (BatchWriteSpansRequest) for sending
+      // data to backend :
+      // https://cloud.google.com/trace/docs/reference/v2/rpc/google.devtools.
+      // cloudtrace.v2#google.devtools.cloudtrace.v2.TraceService
       cloudTrace.projects.traces.batchWrite(spans, (err: Error) => {
         if (err) {
           err.message = `batchWriteSpans error: ${err.message}`;

@@ -64,28 +64,26 @@ export function createTimeEvents(
     messageEventTimedEvents: coreTypes.MessageEvent[],
     droppedAnnotationsCount: number,
     droppedMessageEventsCount: number): types.TimeEvents {
-  const timeEvents: types.TimeEvent[] = [];
+  let timeEvents: types.TimeEvent[] = [];
   if (annotationTimedEvents) {
-    annotationTimedEvents.forEach(annotation => {
-      timeEvents.push({
-        time: new Date(annotation.timestamp).toISOString(),
-        annotation: {
-          description: stringToTruncatableString(annotation.description),
-          attributes: createAttributesBuilder(annotation.attributes, 0)
-        }
-      });
-    });
+    timeEvents = annotationTimedEvents.map(
+        (annotation) => ({
+          time: new Date(annotation.timestamp).toISOString(),
+          annotation: {
+            description: stringToTruncatableString(annotation.description),
+            attributes: createAttributesBuilder(annotation.attributes, 0)
+          }
+        }));
   }
   if (messageEventTimedEvents) {
-    messageEventTimedEvents.forEach(messageEvent => {
-      timeEvents.push({
-        time: new Date(messageEvent.timestamp).toISOString(),
-        messageEvent: {
-          id: messageEvent.id,
-          type: createMessageEventType(messageEvent.type)
-        }
-      });
-    });
+    timeEvents.push(...messageEventTimedEvents.map(
+        (messageEvent) => ({
+          time: new Date(messageEvent.timestamp).toISOString(),
+          messageEvent: {
+            id: messageEvent.id,
+            type: createMessageEventType(messageEvent.type)
+          }
+        })));
   }
   return {
     timeEvent: timeEvents,
@@ -135,6 +133,7 @@ function createAttributeValue(value: string|number|
                               boolean): types.AttributeValue {
   switch (typeof value) {
     case 'number':
+      // TODO: Consider to change to doubleValue when available in V2 API.
       return {intValue: String(value)};
     case 'boolean':
       return {boolValue: value as boolean};

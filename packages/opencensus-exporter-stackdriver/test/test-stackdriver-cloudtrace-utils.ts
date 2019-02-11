@@ -172,6 +172,15 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       assert.equal(stackdriverTimeEvents.timeEvent.length, 6);
       assert.deepEqual(stackdriverTimeEvents.timeEvent, expectedTimeEvent);
     });
+
+    it('should return stackdriver TimeEvents when empty annotations and messageEvents',
+       () => {
+         const stackdriverTimeEvents = createTimeEvents([], [], 0, 0);
+
+         assert.equal(stackdriverTimeEvents.droppedAnnotationsCount, 0);
+         assert.equal(stackdriverTimeEvents.droppedMessageEventsCount, 0);
+         assert.equal(stackdriverTimeEvents.timeEvent.length, 0);
+       });
   });
 
   describe('createAttributes()', () => {

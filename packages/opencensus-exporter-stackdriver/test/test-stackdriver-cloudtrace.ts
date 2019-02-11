@@ -35,7 +35,6 @@ describe('Stackdriver Trace Exporter', function() {
 
   before(() => {
     nock.disableNetConnect();
-    nocks.noDetectResource();
     exporterOptions = {
       projectId: PROJECT_ID,
       bufferTimeout: 200,
@@ -44,6 +43,7 @@ describe('Stackdriver Trace Exporter', function() {
   });
 
   beforeEach(() => {
+    nocks.noDetectResource();
     exporter = new StackdriverTraceExporter(exporterOptions);
     tracer = new CoreTracer();
     tracer.start({samplingRate: 1});
