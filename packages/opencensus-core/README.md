@@ -14,18 +14,15 @@ npm install @opencensus/core
 
 ## Usage
 
-#### Set up a new Stats manager instance.
+#### Get the global Stats manager instance.
 
 To enable metrics, we’ll import a few items from OpenCensus Core package.
 
 ```javascript
-const { Stats, MeasureUnit, AggregationType } = require('@opencensus/core');
-
-// Create the Stats manager
-const stats = new Stats();
+const { globalStats, MeasureUnit, AggregationType, TagMap } = require('@opencensus/core');
 
 // The latency in milliseconds
-const mLatencyMs = stats.createMeasureDouble(
+const mLatencyMs = globalStats.createMeasureDouble(
   "repl/latency",
   MeasureUnit.MS,
   "The latency in milliseconds"
@@ -37,11 +34,12 @@ const mLatencyMs = stats.createMeasureDouble(
 We now determine how our metrics will be organized by creating ```Views```. We will also create the variable needed to add extra text meta-data to our metrics – ```methodTagKey```, ```statusTagKey```, and ```errorTagKey```.
 
 ```javascript
-const methodTagKey = "method";
-const statusTagKey = "status";
-const errorTagKey = "error";
+const methodTagKey = { name: "method" };
+const statusTagKey = { name: "status" };
+const errorTagKey = { name: "error" };
 
-const latencyView = stats.createView(
+// Create & Register the view.
+const latencyView = globalStats.createView(
   "demo/latency",
   mLatencyMs,
   AggregationType.DISTRIBUTION,
@@ -51,22 +49,23 @@ const latencyView = stats.createView(
   // [>=0ms, >=25ms, >=50ms, >=75ms, >=100ms, >=200ms, >=400ms, >=600ms, >=800ms, >=1s, >=2s, >=4s, >=6s]
   [0, 25, 50, 75, 100, 200, 400, 600, 800, 1000, 2000, 4000, 6000]
 );
+globalStats.registerView(latencyView);
 ```
 
 #### Recording Metrics:
 
-Now we will record the desired metrics. To do so, we will use ```stats.record()``` and pass in measurements.
+Now we will record the desired metrics. To do so, we will use ```globalStats.record()``` and pass in measurements.
 
 ```javascript
 const [_, startNanoseconds] = process.hrtime();
-const tags = {method: "repl", status: "OK"};
+const tags = new TagMap();
+tags.set(methodTagKey, { value: "REPL" });
+tags.set(statusTagKey, { value: "OK" });
 
-stats.record({
+globalStats.record([{
   measure: mLatencyMs,
-  tags,
   value: sinceInMilliseconds(startNanoseconds)
-});
-
+}], tags);
 
 function sinceInMilliseconds(startNanoseconds) {
   const [_, endNanoseconds] = process.hrtime();
