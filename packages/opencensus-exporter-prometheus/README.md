@@ -1,7 +1,7 @@
 # OpenCensus Prometheus Exporter for Node.js
 [![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] ![dependencies Status][dependencies-status] ![devDependencies Status][devdependencies-status] ![Apache License][license-image]
 
-The OpenCensus Prometheus Exporter allows the user to send collected stats with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to Prometheus.
+The OpenCensus Prometheus Exporter allows the user to send collected stats with [OpenCensus Core](https://github.com/census-instrumentation/opencensus-core) to Prometheus.
 
 This package is still at an early stage of development, and is subject to change.
 
@@ -15,9 +15,9 @@ npm install @opencensus/exporter-prometheus
 
 ## Usage
 
-Instance the exporter on your application.
+Create & register the exporter on your application.
 
-For javascript:
+For Javascript:
 ```javascript
 const { globalStats } = require('@opencensus/core');
 const { PrometheusStatsExporter } = require('@opencensus/exporter-prometheus');
@@ -36,7 +36,7 @@ Now, register the exporter.
 globalStats.registerExporter(exporter);
 ```
 
-Similarly for Typescript (Since the source is written in TypeScript):
+Similarly for TypeScript (Since the source is written in TypeScript):
 ```typescript
 import { PrometheusStatsExporter } from '@opencensus/exporter-prometheus';
 import { globalStats } from '@opencensus/core';

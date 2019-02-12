@@ -73,6 +73,19 @@ function sinceInMilliseconds(startNanoseconds) {
 }
 ```
 
+Measures can be of type `Int64` or `DOUBLE`, created by calling `createMeasureInt64` and `createMeasureDouble` respectively. Its units can be:
+
+| MeasureUnit | Usage |
+| ----------- | ----- |
+| `UNIT` | for general counts |
+| `BYTE` | bytes |
+| `KBYTE` | Kbytes |
+| `SEC` | seconds |
+| `MS` | millisecond |
+| `NS` | nanosecond |
+
+Views can have agregations of type `SUM`, `LAST_VALUE`, `COUNT` and `DISTRIBUTION`. To know more about Stats core concepts, please visit: [https://opencensus.io/core-concepts/metrics/](https://opencensus.io/core-concepts/metrics/)
+
 See [Quickstart/Metrics](https://opencensus.io/quickstart/nodejs/metrics/) for a full example of registering and collecting metrics.
 
 ## Useful links

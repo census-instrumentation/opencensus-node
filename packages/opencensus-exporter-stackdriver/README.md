@@ -1,7 +1,7 @@
 # OpenCensus Stackdriver Exporter for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Stackdriver Exporter allows the user to send collected traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to Stackdriver.
+OpenCensus Stackdriver Exporter allows the user to send collected traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) and stats with [OpenCensus Core](https://github.com/census-instrumentation/opencensus-core) to Stackdriver Cloud Tracing and Stackdriver Monitoring.
 
 This project is still at an early stage of development. It's subject to change.
 
@@ -35,7 +35,7 @@ var exporter = new StackdriverTraceExporter({projectId: "your-project-id"});
 tracing.registerExporter(exporter).start();
 ```
 
-Similarly for Typescript:
+Similarly for TypeScript:
 
 ```typescript
 import * as tracing from '@opencensus/nodejs';
@@ -92,7 +92,7 @@ const exporter = new StackdriverStatsExporter({ projectId: "your-project-id" });
 globalStats.registerExporter(exporter);
 ```
 
-Similarly for Typescript:
+Similarly for TypeScript:
 ```typescript
 import { globalStats } from '@opencensus/core';
 import { StackdriverStatsExporter } from '@opencensus/exporter-stackdriver';
