@@ -22,8 +22,9 @@ To use Stackdriver as your exporter, make sure you have enabled [Stackdriver Tra
 export GOOGLE_APPLICATION_CREDENTIALS=path/to/your/credential.json
 ```
 
-Instance the exporter on your application and pass your Project ID. For javascript:
+Create and register the exporter on your application and pass your Project ID.
 
+For Javascript:
 ```javascript
 const tracing = require('@opencensus/nodejs');
 const { StackdriverTraceExporter } = require('@opencensus/exporter-stackdriver');
@@ -60,7 +61,7 @@ Viewing your traces:
 
 With the above you should now be able to navigate to the Stackdriver UI at: <https://console.cloud.google.com/traces/traces>
 
-# OpenCensus Stackdriver Stats/Metrics Exporter
+# OpenCensus Stackdriver Stats(Metrics) Exporter
 ## Installation
 
 Install OpenCensus Stackdriver Exporter with:
@@ -77,9 +78,9 @@ To use Stackdriver as your exporter, make sure you have enabled [Stackdriver Mon
 export GOOGLE_APPLICATION_CREDENTIALS=path/to/your/credential.json
 ```
 
-Instance the exporter on your application.
+Create and register the exporter on your application.
 
-For javascript:
+For Javascript:
 ```javascript
 const { globalStats } = require('@opencensus/core');
 const { StackdriverStatsExporter } = require('@opencensus/exporter-stackdriver');
@@ -91,7 +92,7 @@ const exporter = new StackdriverStatsExporter({ projectId: "your-project-id" });
 globalStats.registerExporter(exporter);
 ```
 
-Similarly for Typescript (Since the source is written in TypeScript):
+Similarly for Typescript:
 ```typescript
 import { globalStats } from '@opencensus/core';
 import { StackdriverStatsExporter } from '@opencensus/exporter-stackdriver';
