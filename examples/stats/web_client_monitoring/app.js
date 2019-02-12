@@ -25,7 +25,7 @@ const assert = require('assert');
 const process = require("process");
 const bodyParser = require('body-parser');
 // [START web_client_monitoring_imports]
-const { Stats, MeasureUnit, AggregationType } = require('@opencensus/core');
+const { globalStats, MeasureUnit, AggregationType, TagMap } = require('@opencensus/core');
 const { StackdriverStatsExporter } = require('@opencensus/exporter-stackdriver');
 // [END web_client_monitoring_imports]
 
@@ -41,21 +41,22 @@ console.log(`Sending metrics data to project: ${project}`);
 
 // OpenCensus setup
 // [START web_client_monitoring_ocsetup]
-const stats = new Stats();
 const exporter = new StackdriverStatsExporter({projectId: project});
-stats.registerExporter(exporter);
-const mLatencyMs = stats.createMeasureDouble("webmetrics/latency",
+globalStats.registerExporter(exporter);
+const mLatencyMs = globalStats.createMeasureDouble("webmetrics/latency",
                        MeasureUnit.MS,
                        "Latency related to page loading");
-const mClickCount = stats.createMeasureInt64("webmetrics/click_count",
+const mClickCount = globalStats.createMeasureInt64("webmetrics/click_count",
                        MeasureUnit.UNIT,
                        "Number of clicks");
 const buckets = [0, 1, 2, 3, 4, 5, 6, 8, 10, 13, 16, 20, 25, 30, 40, 50, 65, 80,
                 100, 130, 160, 200, 250, 300, 400, 500, 650, 800, 1000, 2000,
                 5000, 10000, 20000, 50000, 100000];
-const tagPhase = "phase";
-const tagClient = "client";
-const latencyView = stats.createView(
+
+const tagPhase = { name: "phase" };
+const tagClient = { name: "client" };
+
+const latencyView = globalStats.createView(
   "webmetrics/latency",
   mLatencyMs,
   AggregationType.DISTRIBUTION,
@@ -63,13 +64,15 @@ const latencyView = stats.createView(
   "Distribution of latencies",
   buckets
 );
-const clickCountView = stats.createView(
+globalStats.registerView(latencyView);
+const clickCountView = globalStats.createView(
   "webmetrics/click_count",
   mClickCount,
   AggregationType.COUNT,
   [tagClient],
   "The number of button clicks"
 );
+globalStats.registerView(clickCountView);
 // [END web_client_monitoring_ocsetup]
 
 // Process the metrics data posted to the server
@@ -86,32 +89,35 @@ app.post("/metrics", (req, res) => {
   const valueDNSLookup = "dns_lookup";
   const valueLoad = "load";
   const valueWeb = "web";
-  let tags = { phase: valueDNSLookup, client: valueWeb };
+
+  const tags = new TagMap();
+  tags.set(tagPhase, { value: valueDNSLookup });
+  tags.set(tagClient, { value: valueWeb });
   // [START web_client_monitoring_record]
   try {
-    stats.record({
+    globalStats.record([{
       measure: mLatencyMs,
-      tags,
-      value: dnsTime
-    });
-    tags = { phase: valueTLSNegotiation, client: valueWeb };
-    stats.record({
+      value: 1
+    }], tags);
+
+    tags.set(tagPhase, { value: valueTLSNegotiation });
+    globalStats.record([{
       measure: mLatencyMs,
-      tags,
-      value: connectTime
-    });
-    tags = { phase: valueLoad, client: valueWeb };
-    stats.record({
+      value: 1
+    }], tags);
+
+    tags.set(tagPhase, { value: valueLoad });
+    globalStats.record([{
       measure: mLatencyMs,
-      tags,
-      value: totalTime
-    });
-    tags = { client: valueWeb };
-    stats.record({
+      value: 1
+    }], tags);
+
+    const tags1 = new TagMap();
+    tags1.set(tagClient, { value: valueWeb });
+    globalStats.record([{
       measure: mClickCount,
-      tags,
-      value: clickCount
-    });
+      value: 1
+    }], tags1);
     res.status(200).send("Received").end();
     console.log('Competed recording metrics');
   } catch (err) {
