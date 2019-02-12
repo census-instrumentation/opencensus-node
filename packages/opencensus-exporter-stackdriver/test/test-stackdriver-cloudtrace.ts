@@ -14,56 +14,27 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan} from '@opencensus/core';
-import {logger} from '@opencensus/core';
+import {CoreTracer, logger, RootSpan, version} from '@opencensus/core';
 import * as assert from 'assert';
-import * as fs from 'fs';
-// TODO change to use import when type package for hex2dec will be available
-const {hexToDec}: {[key: string]: (input: string) => string} =
-    require('hex2dec');
 import * as nock from 'nock';
 
-import {StackdriverExporterOptions, StackdriverTraceExporter, TranslatedTrace} from '../src/';
+import {Span, StackdriverExporterOptions, StackdriverTraceExporter} from '../src/';
 
 import * as nocks from './nocks';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-let PROJECT_ID = 'fake-project-id';
-
-function checkEnvironoment(): boolean {
-  return false;
-}
+const PROJECT_ID = 'fake-project-id';
 
 describe('Stackdriver Trace Exporter', function() {
   this.timeout(0);
 
   const testLogger = logger.logger();
-  let dryrun = true;
-  const GOOGLE_APPLICATION_CREDENTIALS =
-      process.env.GOOGLE_APPLICATION_CREDENTIALS as string;
-  const OPENCENSUS_NETWORK_TESTS =
-      process.env.OPENCENSUS_NETWORK_TESTS as string;
   let exporterOptions: StackdriverExporterOptions;
   let exporter: StackdriverTraceExporter;
   let tracer: CoreTracer;
 
   before(() => {
-    if (GOOGLE_APPLICATION_CREDENTIALS) {
-      dryrun = !fs.existsSync(GOOGLE_APPLICATION_CREDENTIALS) &&
-          !fs.existsSync(OPENCENSUS_NETWORK_TESTS);
-      if (!dryrun) {
-        const credentials = require(GOOGLE_APPLICATION_CREDENTIALS);
-        PROJECT_ID = credentials.project_id;
-        testLogger.debug(
-            'GOOGLE_APPLICATION_CREDENTIALS: %s',
-            GOOGLE_APPLICATION_CREDENTIALS);
-        testLogger.debug('projectId = %s', PROJECT_ID);
-      }
-    }
-    if (dryrun) {
-      nock.disableNetConnect();
-    }
-    testLogger.debug('dryrun=%s', dryrun);
+    nock.disableNetConnect();
     exporterOptions = {
       projectId: PROJECT_ID,
       bufferTimeout: 200,
@@ -72,17 +43,13 @@ describe('Stackdriver Trace Exporter', function() {
   });
 
   beforeEach(() => {
+    nocks.noDetectResource();
     exporter = new StackdriverTraceExporter(exporterOptions);
     tracer = new CoreTracer();
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(exporter);
-    if (!dryrun) {
-      process.env.GOOGLE_APPLICATION_CREDENTIALS =
-          GOOGLE_APPLICATION_CREDENTIALS;
-    }
   });
 
-  /* Should add spans to an exporter buffer */
   describe('onEndSpan()', () => {
     it('should add a root span to an exporter buffer', () => {
       const rootSpanOptions = {name: 'sdBufferTestRootSpan'};
@@ -105,39 +72,85 @@ describe('Stackdriver Trace Exporter', function() {
     });
   });
 
-  /* Should export spans to stackdriver */
-  describe('publish()', () => {
-    /* TODO: doesnt work with latest `gcloud auth application-default login`
-          https://github.com/census-instrumentation/opencensus-node/issues/182
-    it('should fail exporting by authentication error', () => {
-      process.env.GOOGLE_APPLICATION_CREDENTIALS = '';
-      if (dryrun) {
-        nocks.oauth2(body => true);
-      }
 
+  describe('translateSpan()', () => {
+    it('should translate to stackdriver spans', () => {
       return tracer.startRootSpan(
-          {name: 'sdNoExportTestRootSpan'}, async (rootSpan: RootSpan) => {
-            const span = tracer.startChildSpan('sdNoExportTestChildSpan');
+          {name: 'root-test'}, async (rootSpan: RootSpan) => {
+            const span = tracer.startChildSpan('spanTest');
             span.end();
             rootSpan.end();
 
-            return exporter.publish([rootSpan]).then(result => {
-              assert.ok(result.message.indexOf('authorize error') >= 0);
-              assert.strictEqual(
-                  exporter.failBuffer[0].traceId, rootSpan.spanContext.traceId);
-            });
+            const spanList = await exporter.translateSpan([rootSpan]);
+            assert.equal(spanList.length, 2);
+            assert.deepEqual(spanList, [
+              {
+                'attributes': {
+                  'attributeMap': {
+                    'g.co/agent': {
+                      'stringValue':
+                          {'value': `opencensus-node [${version}]`}
+                    }
+                  },
+                  'droppedAttributesCount': 0
+                },
+                'childSpanCount': null,
+                'displayName': {'value': 'root-test'},
+                'endTime': rootSpan.endTime.toISOString(),
+                'links': {'droppedLinksCount': 0, 'link': []},
+                'name': `projects/fake-project-id/traces/${
+                    rootSpan.traceId}/spans/${rootSpan.id}`,
+                'sameProcessAsParentSpan': true,
+                'spanId': rootSpan.id,
+                'stackTrace': null,
+                'startTime': rootSpan.startTime.toISOString(),
+                'status': {'code': 0},
+                'timeEvents': {
+                  'droppedAnnotationsCount': 0,
+                  'droppedMessageEventsCount': 0,
+                  'timeEvent': []
+                }
+              },
+              {
+                'attributes': {
+                  'attributeMap': {
+                    'g.co/agent': {
+                      'stringValue':
+                          {'value': `opencensus-node [${version}]`}
+                    }
+                  },
+                  'droppedAttributesCount': 0
+                },
+                'childSpanCount': null,
+                'displayName': {'value': 'spanTest'},
+                'endTime': span.endTime.toISOString(),
+                'links': {'droppedLinksCount': 0, 'link': []},
+                'name': `projects/fake-project-id/traces/${
+                    span.traceId}/spans/${span.id}`,
+                'parentSpanId': rootSpan.id,
+                'sameProcessAsParentSpan': true,
+                'spanId': span.id,
+                'stackTrace': null,
+                'startTime': span.startTime.toISOString(),
+                'status': {'code': 0},
+                'timeEvents': {
+                  'droppedAnnotationsCount': 0,
+                  'droppedMessageEventsCount': 0,
+                  'timeEvent': []
+                },
+              }
+            ]);
           });
     });
-    */
+  });
 
+  describe('publish()', () => {
     it('should fail exporting with wrong projectId', () => {
+      nock.enableNetConnect();
       const NOEXIST_PROJECT_ID = 'no-existent-project-id-99999';
-      if (dryrun) {
-        process.env.GOOGLE_APPLICATION_CREDENTIALS =
-            __dirname + '/fixtures/fakecredentials.json';
-        nocks.oauth2(body => true);
-        nocks.patchTraces(NOEXIST_PROJECT_ID, null, null, false);
-      }
+      process.env.GOOGLE_APPLICATION_CREDENTIALS =
+          __dirname + '/fixtures/fakecredentials.json';
+      nocks.oauth2(body => true);
       const failExporterOptions = {
         projectId: NOEXIST_PROJECT_ID,
         logger: logger.logger('debug')
@@ -153,7 +166,10 @@ describe('Stackdriver Trace Exporter', function() {
             rootSpan.end();
 
             return failExporter.publish([rootSpan]).then(result => {
-              assert.ok(result.message.indexOf('sendTrace error: ') >= 0);
+              assert.ok(
+                  result.message.indexOf(
+                      'batchWriteSpans error: Request had invalid authentication credentials.') >=
+                  0);
 
               assert.strictEqual(
                   failExporter.failBuffer[0].traceId,
@@ -167,33 +183,29 @@ describe('Stackdriver Trace Exporter', function() {
           {name: 'sdExportTestRootSpan'}, async (rootSpan: RootSpan) => {
             const span = tracer.startChildSpan('sdExportTestChildSpan');
 
-            if (dryrun) {
-              nocks.oauth2(body => true);
-              nocks.patchTraces(
-                  PROJECT_ID, (body: {traces: TranslatedTrace[]}): boolean => {
-                    assert.strictEqual(body.traces.length, 1);
-                    const {spans} = body.traces[0];
-                    assert.strictEqual(spans.length, 2);
-                    assert.strictEqual(hexToDec(rootSpan.id), spans[1].spanId);
-                    assert.strictEqual(hexToDec(span.id), spans[0].spanId);
-                    return true;
-                  }, null, false);
-            }
-
+            nocks.oauth2(body => true);
+            nocks.batchWrite(PROJECT_ID, (body: {spans: Span[]}): boolean => {
+              assert.strictEqual(body.spans.length, 2);
+              const spans = body.spans;
+              assert.strictEqual(spans[0].spanId, rootSpan.id);
+              assert.strictEqual(spans[1].spanId, span.id);
+              return true;
+            }, null, false);
             span.end();
             rootSpan.end();
 
             return exporter.publish([rootSpan]).then(result => {
-              assert.ok(result.indexOf('sendTrace sucessfully') >= 0);
+              assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
             });
           });
     });
 
     it('should fail exporting by network error', async () => {
       nock('https://cloudtrace.googleapis.com')
-          .persist()
           .intercept(
-              '/v1/projects/' + exporterOptions.projectId + '/traces', 'patch')
+              '/v2/projects/' + exporterOptions.projectId +
+                  '/traces:batchWrite',
+              'post')
           .reply(443, 'Simulated Network Error');
 
       nocks.oauth2(body => true);
@@ -205,7 +217,9 @@ describe('Stackdriver Trace Exporter', function() {
             rootSpan.end();
 
             return exporter.publish([rootSpan]).then(result => {
-              assert.ok(result.message.indexOf('Simulated Network Error') >= 0);
+              assert.ok(
+                  result.message.indexOf(
+                      'batchWriteSpans error: Simulated Network Error') >= 0);
             });
           });
     });

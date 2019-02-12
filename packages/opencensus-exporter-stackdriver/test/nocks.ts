@@ -97,13 +97,13 @@ export function hostname(status: number|(() => string), reply?: () => string) {
       .reply(status, reply, {'Metadata-Flavor': 'Google'});
 }
 
-export function patchTraces<T extends {} = {}>(
+export function batchWrite<T extends {} = {}>(
     project: string, validator?: (body: T) => boolean, reply?: () => string,
     withError?: boolean) {
   validator = validator || accept;
   const interceptor =
       nock('https://cloudtrace.googleapis.com')
-          .patch('/v1/projects/' + project + '/traces', validator);
+          .post('/v2/projects/' + project + '/traces:batchWrite', validator);
   let scope: nock.Scope;
   if (withError) {
     scope = interceptor.replyWithError(reply);
