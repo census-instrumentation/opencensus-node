@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Add `compressedSize` and `uncompressedSize` params to `Span.addMessageEvent`
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.

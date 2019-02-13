@@ -209,8 +209,13 @@ export abstract class SpanBase implements types.Span {
    * @param type The type of message event.
    * @param id An identifier for the message event.
    * @param timestamp A time in milliseconds. Defaults to Date.now()
+   * @param compressedSize The number of uncompressed bytes sent or received
+   * @param uncompressedSize The number of compressed bytes sent or received. If
+   *     zero or undefined, assumed to be the same size as uncompressed.
    */
-  addMessageEvent(type: types.MessageEventType, id: string, timestamp = 0) {
+  addMessageEvent(
+      type: types.MessageEventType, id: string, timestamp = 0,
+      uncompressedSize?: number, compressedSize?: number) {
     if (this.messageEvents.length >=
         this.activeTraceParams.numberOfMessageEventsPerSpan) {
       this.messageEvents.shift();
@@ -218,9 +223,11 @@ export abstract class SpanBase implements types.Span {
     }
 
     this.messageEvents.push({
-      'type': type,
-      'id': id,
-      'timestamp': timestamp ? timestamp : Date.now(),
+      type,
+      id,
+      timestamp: timestamp ? timestamp : Date.now(),
+      uncompressedSize,
+      compressedSize,
     } as types.MessageEvent);
   }
 

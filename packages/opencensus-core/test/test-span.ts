@@ -21,7 +21,6 @@ import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link} from '../src/trace/model/types';
 
-
 // TODO: we should evaluate a way to merge similar test cases between span and
 // rootspan
 
@@ -304,9 +303,18 @@ describe('Span', () => {
       span.start();
 
       span.addMessageEvent(
-          types.MessageEventType.UNSPECIFIED, 'message_event_test_id');
+          types.MessageEventType.UNSPECIFIED, /* id */ '1',
+          /* timestamp */ 1550000000000, /* uncompressedSize */ 55,
+          /** compressedSize */ 40);
 
       assert.ok(span.messageEvents.length > 0);
+      assert.deepEqual(span.messageEvents, [{
+                         type: types.MessageEventType.UNSPECIFIED,
+                         id: '1',
+                         timestamp: 1550000000000,
+                         uncompressedSize: 55,
+                         compressedSize: 40,
+                       }]);
       assert.equal(span.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(span.messageEvents[0]));
     });
