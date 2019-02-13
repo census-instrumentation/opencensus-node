@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-all",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "This package has dependencies to all default instrumentation packages.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -38,10 +38,10 @@
     "access": "public"
   },
   "dependencies": {
-    "@opencensus/instrumentation-grpc": "^0.0.8",
-    "@opencensus/instrumentation-http": "^0.0.8",
-    "@opencensus/instrumentation-http2": "^0.0.8",
-    "@opencensus/instrumentation-https": "^0.0.8",
-    "@opencensus/instrumentation-mongodb": "^0.0.8"
+    "@opencensus/instrumentation-grpc": "^0.0.9",
+    "@opencensus/instrumentation-http": "^0.0.9",
+    "@opencensus/instrumentation-http2": "^0.0.9",
+    "@opencensus/instrumentation-https": "^0.0.9",
+    "@opencensus/instrumentation-mongodb": "^0.0.9"
   }
 }
