@@ -20,7 +20,7 @@ import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
 import {TraceParams} from '../config/types';
 import {Propagation} from '../propagation/types';
-import {SamplerBuilder, TraceParamasBuilder} from '../sampler/sampler';
+import {SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 
 import {RootSpan} from './root-span';
@@ -64,13 +64,14 @@ export class CoreTracer implements types.Tracer {
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger = logger.logger();
   /** A configuration object for trace parameters */
-  traceParams: TraceParams = this.DEFAULT_TRACE_PARAMS;
+  activeTraceParams: TraceParams;
 
   /** Constructs a new TraceImpl instance. */
   constructor() {
     this.activeLocal = false;
     this.contextManager = cls.createNamespace();
     this.clearCurrentTrace();
+    this.activeTraceParams = {};
   }
 
   /** Gets the current root span. */
@@ -100,16 +101,16 @@ export class CoreTracer implements types.Tracer {
     this.logger = this.config.logger || logger.logger();
     this.sampler = SamplerBuilder.getSampler(config.samplingRate);
     if (config.traceParams) {
-      this.traceParams.numberOfAnnontationEventsPerSpan =
-          TraceParamasBuilder.getNumberOfAnnotationEventsPerSpan(
+      this.activeTraceParams.numberOfAnnontationEventsPerSpan =
+          TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
               config.traceParams);
-      this.traceParams.numberOfAttributesPerSpan =
-          TraceParamasBuilder.getNumberOfAttributesPerSpan(config.traceParams);
-      this.traceParams.numberOfMessageEventsPerSpan =
-          TraceParamasBuilder.getNumberOfMessageEventsPerSpan(
+      this.activeTraceParams.numberOfAttributesPerSpan =
+          TraceParamsBuilder.getNumberOfAttributesPerSpan(config.traceParams);
+      this.activeTraceParams.numberOfMessageEventsPerSpan =
+          TraceParamsBuilder.getNumberOfMessageEventsPerSpan(
               config.traceParams);
-      this.traceParams.numberOfLinksPerSpan =
-          TraceParamasBuilder.getNumberOfLinksPerSpan(config.traceParams);
+      this.activeTraceParams.numberOfLinksPerSpan =
+          TraceParamsBuilder.getNumberOfLinksPerSpan(config.traceParams);
     }
     return this;
   }
@@ -250,16 +251,16 @@ export class CoreTracer implements types.Tracer {
   /**
    * Starts a span.
    * @param name The span name.
-   * @param type The span type.
+   * @param kind optional The span kind.
    * @param parentSpanId The parent span ID.
    */
-  startChildSpan(name?: string, type?: string): types.Span {
+  startChildSpan(name?: string, kind?: types.SpanKind): types.Span {
     let newSpan: types.Span = null;
     if (!this.currentRootSpan) {
       this.logger.debug(
           'no current trace found - must start a new root span first');
     } else {
-      newSpan = this.currentRootSpan.startChildSpan(name, type);
+      newSpan = this.currentRootSpan.startChildSpan(name, kind);
     }
     return newSpan;
   }

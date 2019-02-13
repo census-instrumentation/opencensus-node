@@ -16,6 +16,8 @@
 
 import {StatsEventListener} from '../exporters/types';
 import {Metric} from '../metrics/export/types';
+import {TagMap} from '../tags/tag-map';
+import {TagKey, TagValue} from '../tags/types';
 
 /** Main interface for stats. */
 export interface Stats {
@@ -31,7 +33,7 @@ export interface Stats {
    */
   createView(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagKeys: string[], description: string,
+      tagKeys: TagKey[], description: string,
       bucketBoundaries?: number[]): View;
 
   /**
@@ -62,8 +64,11 @@ export interface Stats {
   /**
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
+   * @param tags optional The tags to which the value is applied.
+   *  tags could either be explicitly passed to the method, or implicitly
+   *  read from current execution context.
    */
-  record(...measurements: Measurement[]): void;
+  record(measurements: Measurement[], tags?: TagMap): void;
 
   /**
    * Remove all registered Views and exporters from the stats.
@@ -81,12 +86,6 @@ export interface Stats {
    * @param exporter An stats exporter
    */
   registerExporter(exporter: StatsEventListener): void;
-}
-
-
-/** Tags are maps of names -> values */
-export interface Tags {
-  [key: string]: string;
 }
 
 /**
@@ -140,8 +139,6 @@ export interface Measurement {
    * up to Number.MAX_SAFE_INTERGER.
    */
   readonly value: number;
-  /** The tags to which the value is applied */
-  readonly tags: Tags;
 }
 
 /**
@@ -176,15 +173,16 @@ export interface View {
    *
    * Measurements with measurement type INT64 will have its value truncated.
    * @param measurement The measurement to record
+   * @param tags The tags to which the value is applied
    */
-  recordMeasurement(measurement: Measurement): void;
+  recordMeasurement(measurement: Measurement, tags: TagMap): void;
   /**
    * Returns a snapshot of an AggregationData for that tags/labels values.
-   * @param tags The desired data's tags
+   * @param tagValues The desired data's tag values.
    */
-  getSnapshot(tags: Tags): AggregationData;
+  getSnapshot(tagValues: TagValue[]): AggregationData;
   /** Gets the view's tag keys */
-  getColumns(): string[];
+  getColumns(): TagKey[];
   /** Gets view`s metric */
   getMetric(start: number): Metric;
 }
@@ -204,8 +202,8 @@ export enum AggregationType {
 export interface AggregationMetadata {
   /** The aggregation type of the aggregation data */
   readonly type: AggregationType;
-  /** The tags/labels that this AggregationData collects and aggregates */
-  readonly tags: Tags;
+  /** The tagValues that this AggregationData collects and aggregates */
+  readonly tagValues: TagValue[];
   /** The latest timestamp a new data point was recorded */
   timestamp: number;
 }

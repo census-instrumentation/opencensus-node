@@ -26,6 +26,12 @@ import {Annotation, Attributes, Link} from '../src/trace/model/types';
 // rootspan
 
 const tracer = new CoreTracer();
+tracer.activeTraceParams = {
+  numberOfAttributesPerSpan: 32,
+  numberOfLinksPerSpan: 32,
+  numberOfAnnontationEventsPerSpan: 32,
+  numberOfMessageEventsPerSpan: 32
+};
 
 describe('Span', () => {
   /**
@@ -186,6 +192,20 @@ describe('Span', () => {
             span.attributes['testKey' + attType], 'testValue' + attType);
       });
     });
+
+    it('should drop extra attributes', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+      for (let i = 0; i < 40; i++) {
+        span.addAttribute('attr' + i, 100);
+      }
+
+      assert.equal(Object.keys(span.attributes).length, 32);
+      assert.equal(span.droppedAttributesCount, 8);
+    });
   });
 
   /**
@@ -208,7 +228,22 @@ describe('Span', () => {
       span.addAnnotation('description test', {} as Attributes, Date.now());
 
       assert.ok(span.annotations.length > 0);
+      assert.equal(span.droppedAnnotationsCount, 0);
       assert.ok(instanceOfAnnotation(span.annotations[0]));
+    });
+
+    it('should drop extra annotations', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+      for (let i = 0; i < 40; i++) {
+        span.addAnnotation('description test', {} as Attributes, Date.now());
+      }
+
+      assert.equal(span.annotations.length, 32);
+      assert.equal(span.droppedAnnotationsCount, 8);
     });
   });
 
@@ -228,11 +263,27 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
 
-      const LINK_TYPE = 'PARENT_LINKED_SPAN';
-      span.addLink(span.traceId, rootSpan.id, LINK_TYPE);
+      span.addLink(
+          span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
 
       assert.ok(span.links.length > 0);
+      assert.equal(span.droppedLinksCount, 0);
       assert.ok(instanceOfLink(span.links[0]));
+    });
+
+    it('should drop extra links', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+      const span = new Span(rootSpan);
+      span.start();
+
+      for (let i = 0; i < 35; i++) {
+        span.addLink(
+            span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
+      }
+
+      assert.equal(span.links.length, 32);
+      assert.equal(span.droppedLinksCount, 3);
     });
   });
 
@@ -252,10 +303,55 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
 
-      span.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
+      span.addMessageEvent(
+          types.MessageEventType.UNSPECIFIED, 'message_event_test_id');
 
       assert.ok(span.messageEvents.length > 0);
+      assert.equal(span.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(span.messageEvents[0]));
+    });
+
+    it('should drop extra  Message Event', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+      for (let i = 0; i < 35; i++) {
+        span.addMessageEvent(
+            types.MessageEventType.UNSPECIFIED, 'message_event_test_id');
+      }
+
+      assert.equal(span.messageEvents.length, 32);
+      assert.equal(span.droppedMessageEventsCount, 3);
+    });
+  });
+
+  describe('setStatus()', () => {
+    it('should return default status', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      const span = new Span(rootSpan);
+      span.start();
+
+      assert.equal(rootSpan.status.code, 0);
+      assert.equal(rootSpan.status.message, null);
+      assert.equal(span.status.code, 0);
+      assert.equal(span.status.message, null);
+    });
+
+    it('should set an error status', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+      const span = new Span(rootSpan);
+      span.start();
+      span.setStatus(types.CanonicalCode.PERMISSION_DENIED, 'This is an error');
+
+      assert.equal(rootSpan.status.code, 0);
+      assert.equal(rootSpan.status.message, null);
+      assert.equal(span.status.code, 7);
+      assert.equal(span.status.message, 'This is an error');
     });
   });
 });

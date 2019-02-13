@@ -17,7 +17,6 @@
 import {BucketOptions, DistributionBucket, DistributionValue, LabelKey, LabelValue, Metric, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
 import * as os from 'os';
 import * as path from 'path';
-
 import {Distribution, LabelDescriptor, MetricDescriptor, MetricKind, MonitoredResource, Point, TimeSeries, ValueType} from './types';
 
 const OPENCENSUS_TASK = 'opencensus_task';
@@ -138,7 +137,8 @@ function createMetric(
   const labels: {[key: string]: string} = {};
   for (let i = 0; i < labelValues.length; i++) {
     const value = labelValues[i].value;
-    if (value && metricDescriptor.labelKeys[i]) {
+    if (value !== null && value !== undefined &&
+        metricDescriptor.labelKeys[i]) {
       labels[metricDescriptor.labelKeys[i].key] = value;
     } else {
       // TODO(mayurkale) : consider to throw an error when LabelValue and

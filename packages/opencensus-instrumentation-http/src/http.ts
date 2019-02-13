@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {BasePlugin, Func, HeaderGetter, HeaderSetter, RootSpan, Span, Tracer} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, RootSpan, Span, SpanKind, Tracer} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as httpModule from 'http';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as uuid from 'uuid';
+
 import {HttpPluginConfig, IgnoreMatcher} from './types';
 
 
@@ -173,7 +174,7 @@ export class HttpPlugin extends BasePlugin {
 
         const traceOptions = {
           name: path,
-          kind: 'SERVER',
+          kind: SpanKind.SERVER,
           spanContext: propagation ? propagation.extract(getter) : null
         };
 
@@ -215,12 +216,12 @@ export class HttpPlugin extends BasePlugin {
                 HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
                 response.statusCode.toString());
 
-            rootSpan.status =
-                HttpPlugin.convertTraceStatus(response.statusCode);
+            rootSpan.setStatus(
+                HttpPlugin.parseResponseStatus(response.statusCode));
 
             // Message Event ID is not defined
             rootSpan.addMessageEvent(
-                'MessageEventTypeRecv', uuid.v4().split('-').join(''));
+                MessageEventType.RECEIVED, uuid.v4().split('-').join(''));
 
             rootSpan.end();
             return returned;
@@ -289,7 +290,7 @@ export class HttpPlugin extends BasePlugin {
         plugin.logger.debug('%s plugin outgoingRequest', plugin.moduleName);
         const traceOptions = {
           name: `${method || 'GET'} ${pathname}`,
-          kind: 'CLIENT',
+          kind: SpanKind.CLIENT,
         };
 
 
@@ -365,11 +366,11 @@ export class HttpPlugin extends BasePlugin {
               HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
               response.statusCode.toString());
 
-          span.status = HttpPlugin.convertTraceStatus(response.statusCode);
+          span.setStatus(HttpPlugin.parseResponseStatus(response.statusCode));
 
           // Message Event ID is not defined
           span.addMessageEvent(
-              'MessageEventTypeSent', uuid.v4().split('-').join(''));
+              MessageEventType.SENT, uuid.v4().split('-').join(''));
 
           span.end();
         });
@@ -378,7 +379,7 @@ export class HttpPlugin extends BasePlugin {
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ERROR_NAME, error.name);
           span.addAttribute(
               HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE, error.message);
-          span.status = TraceStatusCodes.UNKNOWN;
+          span.setStatus(CanonicalCode.UNKNOWN, error.message);
           span.end();
         });
       });
@@ -387,7 +388,7 @@ export class HttpPlugin extends BasePlugin {
         span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ERROR_NAME, error.name);
         span.addAttribute(
             HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE, error.message);
-        span.status = TraceStatusCodes.UNKNOWN;
+        span.setStatus(CanonicalCode.UNKNOWN, error.message);
         span.end();
       });
 
@@ -397,55 +398,38 @@ export class HttpPlugin extends BasePlugin {
   }
 
   /**
-   * Converts an HTTP status code to an OpenCensus Trace status code.
-   * @param statusCode The HTTP status code to convert.
+   * Parse OpenCensus Status from HTTP response status code.
+   * @param statusCode The HTTP response status code.
    */
-  static convertTraceStatus(statusCode: number): number {
+  static parseResponseStatus(statusCode: number): number {
     if (statusCode < 200 || statusCode > 504) {
-      return TraceStatusCodes.UNKNOWN;
+      return CanonicalCode.UNKNOWN;
     } else if (statusCode >= 200 && statusCode < 400) {
-      return TraceStatusCodes.OK;
+      return CanonicalCode.OK;
     } else {
       switch (statusCode) {
         case (400):
-          return TraceStatusCodes.INVALID_ARGUMENT;
+          return CanonicalCode.INVALID_ARGUMENT;
         case (504):
-          return TraceStatusCodes.DEADLINE_EXCEEDED;
+          return CanonicalCode.DEADLINE_EXCEEDED;
         case (404):
-          return TraceStatusCodes.NOT_FOUND;
+          return CanonicalCode.NOT_FOUND;
         case (403):
-          return TraceStatusCodes.PERMISSION_DENIED;
+          return CanonicalCode.PERMISSION_DENIED;
         case (401):
-          return TraceStatusCodes.UNAUTHENTICATED;
+          return CanonicalCode.UNAUTHENTICATED;
         case (429):
-          return TraceStatusCodes.RESOURCE_EXHAUSTED;
+          return CanonicalCode.RESOURCE_EXHAUSTED;
         case (501):
-          return TraceStatusCodes.UNIMPLEMENTED;
+          return CanonicalCode.UNIMPLEMENTED;
         case (503):
-          return TraceStatusCodes.UNAVAILABLE;
+          return CanonicalCode.UNAVAILABLE;
         default:
-          return TraceStatusCodes.UNKNOWN;
+          return CanonicalCode.UNKNOWN;
       }
     }
   }
 }
-
-/**
- * An enumeration of OpenCensus Trace status codes.
- */
-export enum TraceStatusCodes {
-  UNKNOWN = 2,
-  OK = 0,
-  INVALID_ARGUMENT = 3,
-  DEADLINE_EXCEEDED = 4,
-  NOT_FOUND = 5,
-  PERMISSION_DENIED = 7,
-  UNAUTHENTICATED = 16,
-  RESOURCE_EXHAUSTED = 8,
-  UNIMPLEMENTED = 12,
-  UNAVAILABLE = 14
-}
-
 
 const plugin = new HttpPlugin('http');
 export {plugin};

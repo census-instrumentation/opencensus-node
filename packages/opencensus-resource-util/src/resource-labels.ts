@@ -28,9 +28,6 @@ export const AWS_ACCOUNT_KEY = 'aws.com/ec2/account_id';
 /** AWS key that represents the VM instance identifier assigned by AWS. */
 export const AWS_INSTANCE_ID_KEY = 'aws.com/ec2/instance_id';
 
-/** AWS key that represents a prefix for region value. */
-export const AWS_REGION_VALUE_PREFIX = 'aws:';
-
 /** GCP GCE key that represents a type of the resource. */
 export const GCP_GCE_INSTANCE_TYPE = 'cloud.google.com/gce/instance';
 

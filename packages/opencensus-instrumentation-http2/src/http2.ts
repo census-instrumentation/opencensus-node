@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Func, HeaderGetter, HeaderSetter, Span, TraceOptions, Tracer} from '@opencensus/core';
+import {Func, HeaderGetter, HeaderSetter, MessageEventType, Span, SpanKind, TraceOptions, Tracer} from '@opencensus/core';
 import {HttpPlugin} from '@opencensus/instrumentation-http';
 import * as http from 'http';
 import * as http2 from 'http2';
@@ -98,7 +98,7 @@ export class Http2Plugin extends HttpPlugin {
 
         const traceOptions = {
           name: `${headers[':method'] || 'GET'} ${headers[':path']}`,
-          kind: 'CLIENT',
+          kind: SpanKind.CLIENT,
         };
 
         // Checks if this outgoing request is part of an operation by checking
@@ -141,8 +141,8 @@ export class Http2Plugin extends HttpPlugin {
         span.addAttribute(
             Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE,
             `${responseHeaders[':status']}`);
-        span.status =
-            Http2Plugin.convertTraceStatus(+responseHeaders[':status']);
+        span.setStatus(
+            Http2Plugin.parseResponseStatus(+responseHeaders[':status']));
       });
 
       request.on('end', () => {
@@ -163,7 +163,7 @@ export class Http2Plugin extends HttpPlugin {
         }
 
         span.addMessageEvent(
-            'MessageEventTypeSent', uuid.v4().split('-').join(''));
+            MessageEventType.SENT, uuid.v4().split('-').join(''));
 
         span.end();
       });
@@ -217,7 +217,7 @@ export class Http2Plugin extends HttpPlugin {
 
         const traceOptions = {
           name: headers[':path'],
-          kind: 'SERVER',
+          kind: SpanKind.SERVER,
           spanContext: propagation ? propagation.extract(getter) : null
         } as TraceOptions;
 
@@ -258,10 +258,10 @@ export class Http2Plugin extends HttpPlugin {
                 Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
             rootSpan.addAttribute(
                 Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE, `${statusCode}`);
-            rootSpan.status = Http2Plugin.convertTraceStatus(statusCode);
+            rootSpan.setStatus(Http2Plugin.parseResponseStatus(statusCode));
 
             rootSpan.addMessageEvent(
-                'MessageEventTypeRecv', uuid.v4().split('-').join(''));
+                MessageEventType.RECEIVED, uuid.v4().split('-').join(''));
 
             rootSpan.end();
             return returned;

@@ -56,9 +56,10 @@ describe('RootSpan', () => {
       // TODO: Suggetion: make sure that root.spans.length is 1,
       // and that it's the same as the earlier (shadowed) span object
       root.start();
-      const span = root.startChildSpan('spanName', 'spanType');
+      const span = root.startChildSpan('spanName', types.SpanKind.CLIENT);
       assert.strictEqual(root.spans.length, 1);
       assert.strictEqual(span, root.spans[0]);
+      assert.strictEqual(span.kind, types.SpanKind.CLIENT);
       assert.strictEqual(root.parentSpanId, null);
 
       for (const span of root.spans) {
@@ -97,7 +98,7 @@ describe('RootSpan', () => {
     before(() => {
       root = new RootSpan(tracer);
       root.start();
-      span = root.startChildSpan('spanName', 'spanType');
+      span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
     });
 
     it('should create span instance', () => {
@@ -115,7 +116,7 @@ describe('RootSpan', () => {
   describe('startSpan() before start rootspan', () => {
     it('should not create span', () => {
       const root = new RootSpan(tracer);
-      const span = root.startChildSpan('spanName', 'spanType');
+      const span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
       assert.strictEqual(span, null);
     });
   });
@@ -128,7 +129,7 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer);
       root.start();
       root.end();
-      const span = root.startChildSpan('spanName', 'spanType');
+      const span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
       assert.strictEqual(span, null);
     });
   });
@@ -163,7 +164,7 @@ describe('RootSpan', () => {
     it('should end all spans inside rootspan', () => {
       const root = new RootSpan(tracer);
       root.start();
-      root.startChildSpan('spanName', 'spanType');
+      root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
       root.end();
 
       for (const span of root.spans) {
@@ -206,6 +207,7 @@ describe('RootSpan', () => {
       rootSpan.addAnnotation('description test', {} as Attributes, Date.now());
 
       assert.ok(rootSpan.annotations.length > 0);
+      assert.equal(rootSpan.droppedAnnotationsCount, 0);
       assert.ok(instanceOfAnnotation(rootSpan.annotations[0]));
     });
   });
@@ -226,10 +228,11 @@ describe('RootSpan', () => {
       const span = new Span(rootSpan);
       span.start();
 
-      const LINK_TYPE = 'CHILD_LINKED_SPAN';
-      rootSpan.addLink(rootSpan.traceId, span.id, LINK_TYPE);
+      rootSpan.addLink(
+          rootSpan.traceId, span.id, types.LinkType.CHILD_LINKED_SPAN);
 
       assert.ok(rootSpan.links.length > 0);
+      assert.equal(rootSpan.droppedLinksCount, 0);
       assert.ok(instanceOfLink(rootSpan.links[0]));
     });
   });
@@ -247,9 +250,11 @@ describe('RootSpan', () => {
       const rootSpan = new RootSpan(tracer);
       rootSpan.start();
 
-      rootSpan.addMessageEvent('TYPE_UNSPECIFIED', 'message_event_test_id');
+      rootSpan.addMessageEvent(
+          types.MessageEventType.UNSPECIFIED, 'message_event_test_id');
 
       assert.ok(rootSpan.messageEvents.length > 0);
+      assert.equal(rootSpan.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(rootSpan.messageEvents[0]));
     });
   });

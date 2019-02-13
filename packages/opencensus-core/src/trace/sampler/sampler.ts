@@ -100,39 +100,43 @@ export class SamplerBuilder {
   }
 }
 
-/** Builder Class of TraceParams */
-export class TraceParamasBuilder {
-  private static readonly MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN = 32;
-  private static readonly MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN = 128;
-  private static readonly MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN = 32;
-  private static readonly MAX_NUMBER_OF_LINKS_PER_SPAN = 32;
 
+/** Default Limit for Annotations per span */
+export const DEFAULT_SPAN_MAX_NUM_ANNOTATIONS = 32;
+/** Default limit for Message events per span */
+export const DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS = 128;
+/** Default limit for Attributes per span */
+export const DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
+/** Default limit for Links per span */
+export const DEFAULT_SPAN_MAX_NUM_LINKS = 32;
+
+/** Builder Class of TraceParams */
+export class TraceParamsBuilder {
   static getNumberOfAnnotationEventsPerSpan(traceParameters: TraceParams):
       number {
     return traceParameters.numberOfAnnontationEventsPerSpan >
-            this.MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN ?
-        this.MAX_NUMBER_OF_ANNOTATION_EVENTS_PER_SPAN :
+            DEFAULT_SPAN_MAX_NUM_ANNOTATIONS ?
+        DEFAULT_SPAN_MAX_NUM_ANNOTATIONS :
         traceParameters.numberOfAnnontationEventsPerSpan;
-  }
-
-  static getNumberOfMessageEventsPerSpan(traceParameters: TraceParams): number {
-    return traceParameters.numberOfMessageEventsPerSpan >
-            this.MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN ?
-        this.MAX_NUMBER_OF_MESSAGE_EVENTS_PER_SPAN :
-        traceParameters.numberOfMessageEventsPerSpan;
   }
 
   static getNumberOfAttributesPerSpan(traceParameters: TraceParams): number {
     return traceParameters.numberOfAttributesPerSpan >
-            this.MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN ?
-        this.MAX_NUMBER_OF_ATTRIBUTES_PER_SPAN :
+            DEFAULT_SPAN_MAX_NUM_ATTRIBUTES ?
+        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES :
         traceParameters.numberOfAttributesPerSpan;
   }
 
+  static getNumberOfMessageEventsPerSpan(traceParameters: TraceParams): number {
+    return traceParameters.numberOfMessageEventsPerSpan >
+            DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS ?
+        DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS :
+        traceParameters.numberOfMessageEventsPerSpan;
+  }
+
   static getNumberOfLinksPerSpan(traceParameters: TraceParams): number {
-    return traceParameters.numberOfLinksPerSpan >
-            this.MAX_NUMBER_OF_LINKS_PER_SPAN ?
-        this.MAX_NUMBER_OF_LINKS_PER_SPAN :
+    return traceParameters.numberOfLinksPerSpan > DEFAULT_SPAN_MAX_NUM_LINKS ?
+        DEFAULT_SPAN_MAX_NUM_LINKS :
         traceParameters.numberOfLinksPerSpan;
   }
 }

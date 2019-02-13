@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import {B3Format} from '@opencensus/propagation-b3';
 import * as assert from 'assert';
@@ -327,12 +327,11 @@ describe('GrpcPlugin() ', function() {
                                                        false;
 
   function assertSpan(
-      span: Span, spanName: string, kind: string, status: grpcModule.status) {
+      span: Span, spanName: string, kind: SpanKind, status: grpcModule.status) {
     assert.strictEqual(span.name, spanName);
     assert.strictEqual(span.kind, kind);
     assert.strictEqual(
-        span.status, GrpcPlugin.convertGrpcStatusToSpanStatus(status));
-
+        span.status.code, GrpcPlugin.convertGrpcStatusToSpanStatus(status));
     assert.strictEqual(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_KIND], kind);
     assert.strictEqual(
         span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE], `${status}`);
@@ -340,6 +339,8 @@ describe('GrpcPlugin() ', function() {
     if (status !== grpcModule.status.OK) {
       assert.ok(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME]);
       assert.ok(span.attributes[GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE]);
+    } else {
+      assert.equal(span.status.message, undefined);
     }
   }
 
@@ -372,10 +373,10 @@ describe('GrpcPlugin() ', function() {
                          const serverRoot = rootSpanVerifier.endedRootSpans[0];
                          const clientRoot = rootSpanVerifier.endedRootSpans[1];
                          assertSpan(
-                             serverRoot, spanName, 'SERVER',
+                             serverRoot, spanName, SpanKind.SERVER,
                              grpcModule.status.OK);
                          assertSpan(
-                             clientRoot, spanName, 'CLIENT',
+                             clientRoot, spanName, SpanKind.CLIENT,
                              grpcModule.status.OK);
 
                          assertPropagation(clientRoot, serverRoot);
@@ -402,7 +403,7 @@ describe('GrpcPlugin() ', function() {
 
                            serverRoot = rootSpanVerifier.endedRootSpans[0];
                            assertSpan(
-                               serverRoot, spanName, 'SERVER',
+                               serverRoot, spanName, SpanKind.SERVER,
                                grpcModule.status.OK);
                          });
                  root.end();
@@ -410,7 +411,8 @@ describe('GrpcPlugin() ', function() {
                  const clientChild =
                      rootSpanVerifier.endedRootSpans[1].spans[0];
                  assertSpan(
-                     clientChild, spanName, 'CLIENT', grpcModule.status.OK);
+                     clientChild, spanName, SpanKind.CLIENT,
+                     grpcModule.status.OK);
                  // propagation
                  assertPropagation(clientChild, serverRoot);
                });
@@ -450,8 +452,10 @@ describe('GrpcPlugin() ', function() {
 
                      const serverRoot = rootSpanVerifier.endedRootSpans[0];
                      const clientRoot = rootSpanVerifier.endedRootSpans[1];
-                     assertSpan(serverRoot, spanName, 'SERVER', errorCode);
-                     assertSpan(clientRoot, spanName, 'CLIENT', errorCode);
+                     assertSpan(
+                         serverRoot, spanName, SpanKind.SERVER, errorCode);
+                     assertSpan(
+                         clientRoot, spanName, SpanKind.CLIENT, errorCode);
                      assertPropagation(clientRoot, serverRoot);
                    });
              });
@@ -475,13 +479,14 @@ describe('GrpcPlugin() ', function() {
                            rootSpanVerifier.endedRootSpans.length, 1);
 
                        serverRoot = rootSpanVerifier.endedRootSpans[0];
-                       assertSpan(serverRoot, spanName, 'SERVER', errorCode);
+                       assertSpan(
+                           serverRoot, spanName, SpanKind.SERVER, errorCode);
                      });
                  root.end();
                  assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
                  const clientChild =
                      rootSpanVerifier.endedRootSpans[1].spans[0];
-                 assertSpan(clientChild, spanName, 'CLIENT', errorCode);
+                 assertSpan(clientChild, spanName, SpanKind.CLIENT, errorCode);
                  // propagation
                  assertPropagation(clientChild, serverRoot);
                });

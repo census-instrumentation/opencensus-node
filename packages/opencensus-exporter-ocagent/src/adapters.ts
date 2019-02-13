@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, Link, MessageEvent, RootSpan, Span} from '@opencensus/core';
-
+import {Annotation, Attributes, Link, LinkType, MessageEvent, MessageEventType, RootSpan, Span, SpanKind} from '@opencensus/core';
 import {google, opencensus} from './types';
 
 /**
@@ -66,12 +65,12 @@ const hexStringToUint8Array = (hex: string): Uint8Array|null => {
  * enum type.
  */
 const spanKindToEnum =
-    (value: string): opencensus.proto.trace.v1.Span.SpanKind => {
-      switch (value) {
-        case 'SERVER': {
+    (kind: SpanKind): opencensus.proto.trace.v1.Span.SpanKind => {
+      switch (kind) {
+        case SpanKind.SERVER: {
           return opencensus.proto.trace.v1.Span.SpanKind.SERVER;
         }
-        case 'CLIENT': {
+        case SpanKind.CLIENT: {
           return opencensus.proto.trace.v1.Span.SpanKind.CLIENT;
         }
         default: {
@@ -85,7 +84,8 @@ const spanKindToEnum =
  * @param attributes Attributes
  * @returns opencensus.proto.trace.v1.Span.Attributes
  */
-const adaptAttributes = (attributes: Attributes):
+const adaptAttributes = (attributes: Attributes,
+                         droppedAttributesCount: number):
                             opencensus.proto.trace.v1.Span.Attributes|null => {
   if (!attributes) {
     return null;
@@ -122,7 +122,7 @@ const adaptAttributes = (attributes: Attributes):
     attributeMap[name] = {stringValue, intValue, boolValue};
   });
 
-  return {attributeMap, droppedAttributesCount: null};
+  return {attributeMap, droppedAttributesCount};
 };
 
 /**
@@ -131,13 +131,13 @@ const adaptAttributes = (attributes: Attributes):
  * @param value
  * @return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type
  */
-const adaptMessageEventType = (value: string): opencensus.proto.trace.v1.Span
-                                  .TimeEvent.MessageEvent.Type => {
-  switch (value) {
-    case 'MessageEventTypeSent': {
+const adaptMessageEventType = (type: MessageEventType): opencensus.proto.trace
+                                  .v1.Span.TimeEvent.MessageEvent.Type => {
+  switch (type) {
+    case MessageEventType.SENT: {
       return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type.SENT;
     }
-    case 'MessageEventTypeRecv': {
+    case MessageEventType.RECEIVED: {
       return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type
           .RECEIVED;
     }
@@ -157,7 +157,8 @@ const adaptMessageEventType = (value: string): opencensus.proto.trace.v1.Span
  * @returns opencensus.proto.trace.v1.Span.TimeEvents
  */
 const adaptTimeEvents =
-    (annotations: Annotation[], messageEvents: MessageEvent[]):
+    (annotations: Annotation[], messageEvents: MessageEvent[],
+     droppedAnnotationsCount: number, droppedMessageEventsCount: number):
         opencensus.proto.trace.v1.Span.TimeEvents => {
       const timeEvents: opencensus.proto.trace.v1.Span.TimeEvent[] = [];
 
@@ -167,7 +168,7 @@ const adaptTimeEvents =
             time: null,
             annotation: {
               description: stringToTruncatableString(annotation.description),
-              attributes: adaptAttributes(annotation.attributes)
+              attributes: adaptAttributes(annotation.attributes, 0)
             }
           });
         });
@@ -188,19 +189,10 @@ const adaptTimeEvents =
 
       return {
         timeEvent: timeEvents,
-        droppedAnnotationsCount: null,
-        droppedMessageEventsCount: null
+        droppedAnnotationsCount,
+        droppedMessageEventsCount
       };
     };
-
-/**
- * Adapts a statusCode number to a `opencensus.proto.trace.v1.Status` type.
- * @param statusCode number
- * @returns opencensus.proto.trace.v1.Status
- */
-const adaptStatus = (statusCode: number): opencensus.proto.trace.v1.Status => {
-  return {code: statusCode, message: null};
-};
 
 /**
  * Adapts a traceState string to a `opencensus.proto.trace.v1.Span.Tracestate`
@@ -231,11 +223,11 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
 
   let type;
   switch (link.type) {
-    case 'CHILD_LINKED_SPAN': {
+    case LinkType.CHILD_LINKED_SPAN: {
       type = opencensus.proto.trace.v1.Span.Link.Type.CHILD_LINKED_SPAN;
       break;
     }
-    case 'PARENT_LINKED_SPAN': {
+    case LinkType.PARENT_LINKED_SPAN: {
       type = opencensus.proto.trace.v1.Span.Link.Type.PARENT_LINKED_SPAN;
       break;
     }
@@ -244,7 +236,7 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
     }
   }
 
-  const attributes = adaptAttributes(link.attributes);
+  const attributes = adaptAttributes(link.attributes, 0);
 
   return {traceId, spanId, type, attributes};
 };
@@ -254,10 +246,10 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
  * @param links Link[]
  * @returns opencensus.proto.trace.v1.Span.Links
  */
-const adaptLinks =
-    (links: Link[] = []): opencensus.proto.trace.v1.Span.Links => {
-      return {link: links.map(adaptLink), droppedLinksCount: null};
-    };
+const adaptLinks = (links: Link[] = [], droppedLinksCount: number):
+                       opencensus.proto.trace.v1.Span.Links => {
+  return {link: links.map(adaptLink), droppedLinksCount};
+};
 
 /**
  * Adapts a boolean to a `google.protobuf.BoolValue` type.
@@ -281,11 +273,13 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
     kind: spanKindToEnum(span.kind),
     startTime: millisToTimestamp(span.startTime),
     endTime: millisToTimestamp(span.endTime),
-    attributes: adaptAttributes(span.attributes),
+    attributes: adaptAttributes(span.attributes, span.droppedAttributesCount),
     stackTrace: null,  // Unsupported by nodejs
-    timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
-    links: adaptLinks(span.links),
-    status: adaptStatus(span.status),
+    timeEvents: adaptTimeEvents(
+        span.annotations, span.messageEvents, span.droppedAnnotationsCount,
+        span.droppedMessageEventsCount),
+    links: adaptLinks(span.links, span.droppedLinksCount),
+    status: span.status,
     sameProcessAsParentSpan: adaptBoolean(!span.remoteParent),
     childSpanCount: null,
   };

@@ -16,6 +16,7 @@
 
 import * as loggerTypes from '../common/types';
 import {Measurement, View} from '../stats/types';
+import {TagKey, TagValue} from '../tags/types';
 import * as modelTypes from '../trace/model/types';
 
 import {ExporterBuffer} from './exporter-buffer';
@@ -93,7 +94,8 @@ export class ConsoleStatsExporter implements types.StatsEventListener {
    * @param view recorded view from measurement
    * @param measurement recorded measurement
    */
-  onRecord(views: View[], measurement: Measurement) {
+  onRecord(
+      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {
     console.log(`Measurement recorded: ${measurement.measure.name}`);
   }
 

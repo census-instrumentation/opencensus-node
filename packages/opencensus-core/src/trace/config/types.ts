@@ -75,7 +75,7 @@ export interface TracingConfig {
 /** Global configuration of trace service */
 export interface TraceParams {
   /**
-   * numberOfAnnontationEventsPerSpan is max number of annotation events per
+   * numberOfAnnontationEventsPerSpan is number of annotation events per
    * span
    */
   numberOfAnnontationEventsPerSpan?: number;

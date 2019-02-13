@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, View} from '@opencensus/core';
+import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, version, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
-
+import {getDefaultResource} from './common-utils';
 import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-stats-utils';
-import {StackdriverExporterOptions, TimeSeries} from './types';
+import {MonitoredResource, StackdriverExporterOptions, TimeSeries} from './types';
 
-google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
+const OC_USER_AGENT = {
+  product: 'opencensus-node',
+  version
+};
+const OC_HEADER = {
+  'x-opencensus-outgoing-request': 0x1
+};
+
+google.options({headers: OC_HEADER});
 const monitoring = google.monitoring('v3');
 const GOOGLEAPIS_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 
@@ -36,11 +44,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
   static readonly DEFAULT_DISPLAY_NAME_PREFIX: string = 'OpenCensus';
   static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
       'custom.googleapis.com/opencensus';
-  static readonly GLOBAL: string = 'global';
   static readonly PERIOD: number = 60000;
   private registeredMetricDescriptors: Map<string, OCMetricDescriptor> =
       new Map();
-
+  private DEFAULT_RESOURCE: Promise<MonitoredResource>;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
@@ -54,6 +61,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
         options.prefix || StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX;
     this.logger = options.logger || logger.logger();
     this.onMetricUploadError = options.onMetricUploadError;
+    this.DEFAULT_RESOURCE = getDefaultResource(this.projectId);
   }
 
   /**
@@ -132,11 +140,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * be uploaded to StackDriver.
    * @param metricsList The List of Metric.
    */
-  private createTimeSeries(metricsList: Metric[]) {
+  private async createTimeSeries(metricsList: Metric[]) {
     const timeSeries: TimeSeries[] = [];
-    const resourceLabels = {project_id: this.projectId};
-    const monitoredResource = {type: 'global', labels: resourceLabels};
-
+    const monitoredResource = await this.DEFAULT_RESOURCE;
     for (const metric of metricsList) {
       timeSeries.push(...createTimeSeriesList(
           metric, monitoredResource, this.metricPrefix));
@@ -154,10 +160,13 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        monitoring.projects.timeSeries.create(request, (err: Error) => {
-          this.logger.debug('sent time series', request.resource.timeSeries);
-          err ? reject(err) : resolve();
-        });
+        monitoring.projects.timeSeries.create(
+            request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
+            (err?: Error) => {
+              this.logger.debug(
+                  'sent time series', request.resource.timeSeries);
+              err ? reject(err) : resolve();
+            });
       });
     });
   }
@@ -176,10 +185,12 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        monitoring.projects.metricDescriptors.create(request, (err: Error) => {
-          this.logger.debug('sent metric descriptor', request.resource);
-          err ? reject(err) : resolve();
-        });
+        monitoring.projects.metricDescriptors.create(
+            request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
+            (err?: Error) => {
+              this.logger.debug('sent metric descriptor', request.resource);
+              err ? reject(err) : resolve();
+            });
       });
     });
   }
@@ -223,8 +234,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
 
   /**
    * Is called whenever a measure is recorded.
-   * @param views The views associated with the measure
-   * @param measurement The measurement recorded
+   * @param views The views related to the measurement
+   * @param measurement The recorded measurement
+   * @param tags The tags to which the value is applied
    */
-  onRecord(views: View[], measurement: Measurement) {}
+  onRecord(
+      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {}
 }

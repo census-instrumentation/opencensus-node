@@ -16,8 +16,12 @@
 import {Logger} from '../../common/types';
 import {Clock} from '../../internal/clock';
 import {randomSpanId} from '../../internal/util';
+import * as configTypes from '../config/types';
 import * as types from './types';
 
+const STATUS_OK = {
+  code: types.CanonicalCode.OK
+};
 
 /** Defines a base model for spans. */
 export abstract class SpanBase implements types.Span {
@@ -50,11 +54,22 @@ export abstract class SpanBase implements types.Span {
   /** The resource name of the span */
   name: string = null;
   /** Kind of span. */
-  kind: string = null;
+  kind: types.SpanKind = types.SpanKind.UNSPECIFIED;
   /** A final status for this span */
-  status: number;
+  status: types.Status = STATUS_OK;
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
+  /** Trace Parameters */
+  activeTraceParams: configTypes.TraceParams;
+
+  /** The number of dropped attributes. */
+  droppedAttributesCount = 0;
+  /** The number of dropped links. */
+  droppedLinksCount = 0;
+  /** The number of dropped annotations. */
+  droppedAnnotationsCount = 0;
+  /** The number of dropped message events. */
+  droppedMessageEventsCount = 0;
 
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
@@ -133,6 +148,16 @@ export abstract class SpanBase implements types.Span {
    * @param value The result of an operation.
    */
   addAttribute(key: string, value: string|number|boolean) {
+    if (this.attributes[key]) {
+      delete this.attributes[key];
+    }
+
+    if (Object.keys(this.attributes).length >=
+        this.activeTraceParams.numberOfAttributesPerSpan) {
+      this.droppedAttributesCount++;
+      const attributeKeyToDelete = Object.keys(this.attributes).shift();
+      delete this.attributes[attributeKeyToDelete];
+    }
     this.attributes[key] = value;
   }
 
@@ -144,6 +169,11 @@ export abstract class SpanBase implements types.Span {
    */
   addAnnotation(
       description: string, attributes?: types.Attributes, timestamp = 0) {
+    if (this.annotations.length >=
+        this.activeTraceParams.numberOfAnnontationEventsPerSpan) {
+      this.annotations.shift();
+      this.droppedAnnotationsCount++;
+    }
     this.annotations.push({
       'description': description,
       'attributes': attributes,
@@ -159,8 +189,13 @@ export abstract class SpanBase implements types.Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: string,
+      traceId: string, spanId: string, type: types.LinkType,
       attributes?: types.Attributes) {
+    if (this.links.length >= this.activeTraceParams.numberOfLinksPerSpan) {
+      this.links.shift();
+      this.droppedLinksCount++;
+    }
+
     this.links.push({
       'traceId': traceId,
       'spanId': spanId,
@@ -175,12 +210,27 @@ export abstract class SpanBase implements types.Span {
    * @param id An identifier for the message event.
    * @param timestamp A time in milliseconds. Defaults to Date.now()
    */
-  addMessageEvent(type: string, id: string, timestamp = 0) {
+  addMessageEvent(type: types.MessageEventType, id: string, timestamp = 0) {
+    if (this.messageEvents.length >=
+        this.activeTraceParams.numberOfMessageEventsPerSpan) {
+      this.messageEvents.shift();
+      this.droppedMessageEventsCount++;
+    }
+
     this.messageEvents.push({
       'type': type,
       'id': id,
       'timestamp': timestamp ? timestamp : Date.now(),
     } as types.MessageEvent);
+  }
+
+  /**
+   * Sets a status to the span.
+   * @param code The canonical status code.
+   * @param message optional A developer-facing error message.
+   */
+  setStatus(code: types.CanonicalCode, message?: string) {
+    this.status = {code, message};
   }
 
   /** Starts the span. */

@@ -18,17 +18,15 @@ import * as defaultLogger from '../common/console-logger';
 import {getTimestampWithProcessHRTime, timestampFromMillis} from '../common/time-util';
 import * as loggerTypes from '../common/types';
 import {DistributionValue, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
-
+import {TagMap} from '../tags/tag-map';
+import {TagKey, TagValue} from '../tags/types';
+import {isValidTagKey} from '../tags/validation';
 import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
-import {AggregationData, AggregationType, Measure, Measurement, Tags, View} from './types';
+import {AggregationData, AggregationType, Measure, Measurement, View} from './types';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
-const UNIT_SEPARATOR = String.fromCharCode(31);
-
-// String that has only printable characters
-const invalidString = /[^\u0020-\u007e]/;
 
 export class BaseView implements View {
   /**
@@ -46,11 +44,11 @@ export class BaseView implements View {
    * If no Tags are provided, then, all data is recorded in a single
    * aggregation.
    */
-  private rows: {[key: string]: AggregationData} = {};
+  private tagValueAggregationMap: {[key: string]: AggregationData} = {};
   /**
    * A list of tag keys that represents the possible column labels
    */
-  private columns: string[];
+  private columns: TagKey[];
   /**
    * An Aggregation describes how data collected is aggregated.
    * There are four aggregation types: count, sum, lastValue and distirbution.
@@ -75,10 +73,6 @@ export class BaseView implements View {
   // @ts-ignore
   private logger: loggerTypes.Logger;
   /**
-   * Max Length of a TagKey
-   */
-  private readonly MAX_LENGTH: number = 256;
-  /**
    * Creates a new View instance. This constructor is used by Stats. User should
    * prefer using Stats.createView() instead.
    * @param name The view name
@@ -92,7 +86,7 @@ export class BaseView implements View {
    */
   constructor(
       name: string, measure: Measure, aggregation: AggregationType,
-      tagsKeys: string[], description: string, bucketBoundaries?: number[],
+      tagsKeys: TagKey[], description: string, bucketBoundaries?: number[],
       logger = defaultLogger) {
     if (aggregation === AggregationType.DISTRIBUTION && !bucketBoundaries) {
       throw new Error('No bucketBoundaries specified');
@@ -101,7 +95,7 @@ export class BaseView implements View {
     this.name = name;
     this.description = description;
     this.measure = measure;
-    this.columns = tagsKeys;
+    this.columns = this.validateTagKeys(tagsKeys);
     this.aggregation = aggregation;
     this.startTime = Date.now();
     this.bucketBoundaries = new BucketBoundaries(bucketBoundaries);
@@ -109,7 +103,7 @@ export class BaseView implements View {
   }
 
   /** Gets the view's tag keys */
-  getColumns(): string[] {
+  getColumns(): TagKey[] {
     return this.columns;
   }
 
@@ -119,80 +113,36 @@ export class BaseView implements View {
    *
    * Measurements with measurement type INT64 will have its value truncated.
    * @param measurement The measurement to record
+   * @param tags The tags to which the value is applied
    */
-  recordMeasurement(measurement: Measurement) {
-    // Checks if measurement has valid tags
-    if (this.invalidTags(measurement.tags)) {
-      return;
+  recordMeasurement(measurement: Measurement, tags: TagMap) {
+    const tagValues = Recorder.getTagValues(tags.tags, this.columns);
+    const encodedTags = this.encodeTagValues(tagValues);
+    if (!this.tagValueAggregationMap[encodedTags]) {
+      this.tagValueAggregationMap[encodedTags] =
+          this.createAggregationData(tagValues);
     }
 
-    // Checks if measurement has all tags in views
-    for (const tagKey of this.columns) {
-      if (!Object.keys(measurement.tags).some((key) => key === tagKey)) {
-        return;
-      }
-    }
-
-    const encodedTags = this.encodeTags(measurement.tags);
-    if (!this.rows[encodedTags]) {
-      this.rows[encodedTags] = this.createAggregationData(measurement.tags);
-    }
-
-    Recorder.addMeasurement(this.rows[encodedTags], measurement);
+    Recorder.addMeasurement(
+        this.tagValueAggregationMap[encodedTags], measurement);
   }
 
   /**
-   * Encodes a Tags object into a key sorted string.
-   * @param tags The tags to encode
+   * Encodes a TagValue object into a value sorted string.
+   * @param tagValues The tagValues to encode
    */
-  private encodeTags(tags: Tags): string {
-    return Object.keys(tags)
+  private encodeTagValues(tagValues: TagValue[]): string {
+    return tagValues.map((tagValue) => tagValue ? tagValue.value : null)
         .sort()
-        .map(tagKey => {
-          return tagKey + UNIT_SEPARATOR + tags[tagKey];
-        })
         .join(RECORD_SEPARATOR);
   }
 
   /**
-   * Checks if tag keys and values are valid.
-   * @param tags The tags to be checked
-   */
-  private invalidTags(tags: Tags): boolean {
-    const result: boolean =
-        this.invalidPrintableCharacters(tags) || this.invalidLength(tags);
-    if (result) {
-      this.logger.warn(
-          'Unable to create tagkey/tagvalue with the specified tags.');
-    }
-    return result;
-  }
-
-  /**
-   * Checks if tag keys and values have only printable characters.
-   * @param tags The tags to be checked
-   */
-  private invalidPrintableCharacters(tags: Tags): boolean {
-    return Object.keys(tags).some(tagKey => {
-      return invalidString.test(tagKey) || invalidString.test(tags[tagKey]);
-    });
-  }
-
-  /**
-   * Checks if length of tagkey is greater than 0 & less than 256.
-   * @param tags The tags to be checked
-   */
-  private invalidLength(tags: Tags): boolean {
-    return Object.keys(tags).some(tagKey => {
-      return tagKey.length <= 0 || tagKey.length >= this.MAX_LENGTH;
-    });
-  }
-  /**
    * Creates an empty aggregation data for a given tags.
-   * @param tags The tags for that aggregation data
+   * @param tagValues The tags for that aggregation data
    */
-  private createAggregationData(tags: Tags): AggregationData {
-    const aggregationMetadata = {tags, timestamp: Date.now()};
+  private createAggregationData(tagValues: TagValue[]): AggregationData {
+    const aggregationMetadata = {tagValues, timestamp: Date.now()};
     const {buckets, bucketCounts} = this.bucketBoundaries;
     const bucketsCopy = Object.assign([], buckets);
     const bucketCountsCopy = Object.assign([], bucketCounts);
@@ -247,10 +197,11 @@ export class BaseView implements View {
 
     const timeseries: TimeSeries[] = [];
 
-    Object.keys(this.rows).forEach(key => {
-      const {tags} = this.rows[key];
-      const labelValues: LabelValue[] = MetricUtils.tagsToLabelValues(tags);
-      const point: Point = this.toPoint(now, this.getSnapshot(tags));
+    Object.keys(this.tagValueAggregationMap).forEach(key => {
+      const {tagValues} = this.tagValueAggregationMap[key];
+      const labelValues: LabelValue[] =
+          MetricUtils.tagValuesToLabelValues(tagValues);
+      const point: Point = this.toPoint(now, this.getSnapshot(tagValues));
 
       if (startTimestamp) {
         timeseries.push({startTimestamp, labelValues, points: [point]});
@@ -294,7 +245,22 @@ export class BaseView implements View {
    * @param tags The desired data's tags
    * @returns {AggregationData}
    */
-  getSnapshot(tags: Tags): AggregationData {
-    return this.rows[this.encodeTags(tags)];
+  getSnapshot(tagValues: TagValue[]): AggregationData {
+    return this.tagValueAggregationMap[this.encodeTagValues(tagValues)];
+  }
+
+  /** Determines whether the given TagKeys are valid. */
+  private validateTagKeys(tagKeys: TagKey[]): TagKey[] {
+    const tagKeysCopy = Object.assign([], tagKeys);
+    tagKeysCopy.forEach((tagKey) => {
+      if (!isValidTagKey(tagKey)) {
+        throw new Error(`Invalid TagKey name: ${tagKey}`);
+      }
+    });
+    const tagKeysSet = new Set(tagKeysCopy.map(tagKey => tagKey.name));
+    if (tagKeysSet.size !== tagKeysCopy.length) {
+      throw new Error('Columns have duplicate');
+    }
+    return tagKeysCopy;
   }
 }

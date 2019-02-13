@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, Span, SpanEventListener} from '@opencensus/core';
+import {CoreTracer, RootSpan, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import {accessSync} from 'fs';
@@ -71,7 +71,7 @@ function accessCollection(url: string, dbName: string, collectionName: string):
  */
 function assertSpan(
     rootSpanVerifier: RootSpanVerifier, expectedName: string,
-    expectedKind: string) {
+    expectedKind: SpanKind) {
   assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
   assert.strictEqual(rootSpanVerifier.endedRootSpans[0].spans.length, 1);
   assert.strictEqual(
@@ -156,7 +156,7 @@ describe('MongoDBPlugin', () => {
           assert.ifError(err);
           assertSpan(
               rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
-              'db.mongodb.query');
+              SpanKind.SERVER);
           done();
         });
       });
@@ -170,7 +170,7 @@ describe('MongoDBPlugin', () => {
           assert.ifError(err);
           assertSpan(
               rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
-              'db.mongodb.query');
+              SpanKind.SERVER);
           done();
         });
       });
@@ -184,7 +184,7 @@ describe('MongoDBPlugin', () => {
           assert.ifError(err);
           assertSpan(
               rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
-              'db.mongodb.query');
+              SpanKind.SERVER);
           done();
         });
       });
@@ -201,7 +201,7 @@ describe('MongoDBPlugin', () => {
           assert.ifError(err);
           assertSpan(
               rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.cursor`,
-              'db.mongodb.query');
+              SpanKind.SERVER);
           done();
         });
       });
@@ -218,7 +218,7 @@ describe('MongoDBPlugin', () => {
           assert.ifError(err);
           assertSpan(
               rootSpanVerifier, `${DB_NAME}.$cmd.createIndexes`,
-              'db.mongodb.query');
+              SpanKind.SERVER);
           done();
         });
       });
@@ -231,7 +231,7 @@ describe('MongoDBPlugin', () => {
           rootSpan.end();
           assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${DB_NAME}.$cmd.count`, 'db.mongodb.query');
+              rootSpanVerifier, `${DB_NAME}.$cmd.count`, SpanKind.SERVER);
           done();
         });
       });

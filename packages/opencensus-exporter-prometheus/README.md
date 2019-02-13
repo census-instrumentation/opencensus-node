@@ -1,7 +1,7 @@
 # OpenCensus Prometheus Exporter for Node.js
 [![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] ![dependencies Status][dependencies-status] ![devDependencies Status][devdependencies-status] ![Apache License][license-image]
 
-The OpenCensus Prometheus Exporter allows the user to send collected stats with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to Prometheus.
+The OpenCensus Prometheus Exporter allows the user to send collected stats with [OpenCensus Core](https://github.com/census-instrumentation/opencensus-core) to Prometheus.
 
 This package is still at an early stage of development, and is subject to change.
 
@@ -15,49 +15,38 @@ npm install @opencensus/exporter-prometheus
 
 ## Usage
 
-Instance the exporter on your application. 
+Create & register the exporter on your application.
 
-For javascript:
+For Javascript:
 ```javascript
-const { Stats } = require('@opencensus/core');
+const { globalStats } = require('@opencensus/core');
 const { PrometheusStatsExporter } = require('@opencensus/exporter-prometheus');
 
 // Add your port and startServer to the Prometheus options
 const exporter = new PrometheusStatsExporter({
   port: 9464,
-  startServer: false
+  startServer: true
 });
 ```
 
 Now, register the exporter.
 
 ```javascript
-// Our Stats manager
-const stats = new Stats();
-
 // Pass the created exporter to Stats
-stats.registerExporter(exporter);
-
-// Run the server
-exporter.startServer(function callback() {
-  // Callback
-});
+globalStats.registerExporter(exporter);
 ```
 
-Similarly for Typescript (Since the source is written in TypeScript):
+Similarly for TypeScript (Since the source is written in TypeScript):
 ```typescript
 import { PrometheusStatsExporter } from '@opencensus/exporter-prometheus';
-import { Stats } from '@opencensus/core';
+import { globalStats } from '@opencensus/core';
 
 // Add your port and startServer to the Prometheus options
-const options = {port: 9464, startServer: false};
+const options = {port: 9464, startServer: true};
 const exporter = new PrometheusStatsExporter(options);
 
-// Our Stats manager
-const stats = new Stats();
-
 // Pass the created exporter to Stats
-stats.registerExporter(exporter);
+globalStats.registerExporter(exporter);
 ```
 
 Viewing your metrics:
@@ -80,6 +69,6 @@ With the above you should now be able to navigate to the Prometheus UI at: <http
 [devdependencies-status]:
 https://david-dm.org/census-instrumentation/opencensus-node/dev-status.svg?path=packages/opencensus-exporter-prometheus
 
-## LICENSE 
+## LICENSE
 
 Apache License 2.0

@@ -3,37 +3,102 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+
+## 0.0.9 - 2019-02-12
 - Add Metrics API.
 - Add Resource API.
+- Add Tags API.
 - Add Gauges (`DoubleGauge`, `LongGauge`, `DerivedDoubleGauge`, `DerivedLongGauge`) APIs.
 - Add support for supplying instrumentation configuration via tracing option. Option argument added to instrumentation interface.
 - Add ignoreIncomingPaths and ignoreOutgoingUrls support to the http and https tracing instrumentations.
 - Add ```opencensus-resource-util``` to auto detect AWS, GCE and Kubernetes(K8S) monitored resource, based on the environment where the application is running.
+- Add optional `uncompressedSize` and `compressedSize` fields to `MessageEvent` interface.
+- Add a ```setStatus``` method in the Span.
+- OpenCensus Stackdriver Trace Exporter is updated to use Stackdriver Trace V2 APIs.
 
  **This release has multiple breaking changes. Please test your code accordingly after upgrading.**
 
 - Modify `Logger` interface: `level` made optional, `silly` removed.
 - The ```new Stats()``` has been deprecated on Stats class. The global singleton ```globalStats``` object should be used instead. Also, ```registerView()``` is separated out from ```createView()```.
+- Use ```TagKey```, ```TagValue``` and ```TagMap``` to create the tag keys, tag values.
+- The `status` field on `Span` is no longer a number, use `CanonicalCode` instead.
+- Add enum type for `MessageEvent`, `Link` and `SpanKind`, instead of string.
 
 ##### Old code
 ```js
 const { Stats } = require("@opencensus/core");
 const stats = new Stats();
 
+// Counts/groups the lengths of lines read in.
+const mLineLengths = stats.createMeasureInt64(
+  "demo/line_lengths",
+  MeasureUnit.BYTE,
+  "The distribution of line lengths"
+);
+
+// Create tag keys
+const tagKeys = ["method", "status"];
+
 // Create and register the view
-stats.createView(...);
+stats.createView(
+  "demo/lines_in",
+  mLineLengths,
+  AggregationType.COUNT,
+  tagKeys,
+  "The number of lines from standard input"
+);
+
+// Records measurements
+stats.record({
+  measure: mLineLengths,
+  tags,
+  value: 2
+});
+
 ```
 
 ##### New code
 ```js
-// Get the global singleton stats object
+// Gets the global stats instance
 const { globalStats } = require("@opencensus/core");
 
-// Create the view
-const view = globalStats.createView(...);
+// Counts/groups the lengths of lines read in.
+const mLineLengths = globalStats.createMeasureInt64(
+  "demo/line_lengths",
+  MeasureUnit.BYTE,
+  "The distribution of line lengths"
+);
 
-// register the view
+// Creates the method and status key
+const methodKey = {name: "method"};
+const statusKey = {name: "status"};
+
+// Creates the view
+const view = globalStats.createView(
+  "demo/lines_in",
+  mLineLengths,
+  AggregationType.COUNT,
+  [methodKey, statusKey],
+  "The number of lines from standard input"
+);
+
+// Registers the view
 globalStats.registerView(view);
+
+// Creates tags map -> key/value pair
+const tagMap = new TagMap();
+tagMap.set(methodKey, {value: 'REPL'});
+tagMap.set(statusKey, {value: 'OK'});
+
+// Creates measurements (measure + value)
+const measurements = [{
+  measure: mLineLengths,
+  value: 2
+}];
+
+// Records measurement with tagMap
+globalStats.record(measurements, tagMap);
 ```
 
 ## 0.0.8 - 2018-12-14

@@ -16,7 +16,7 @@
 
 import {globalStats, LabelKey, Logger, MeasureUnit, Metrics} from '@opencensus/core';
 import * as assert from 'assert';
-
+import * as nock from 'nock';
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
 import {MetricKind, StackdriverExporterOptions, ValueType} from '../src/types';
 
@@ -65,8 +65,8 @@ describe('Stackdriver Stats Exporter', () => {
 
     before(() => {
       exporterOptions = {period: 0, projectId: PROJECT_ID, logger: mockLogger};
+      nocks.noDetectResource();
       exporter = new StackdriverStatsExporter(exporterOptions);
-
       nocks.oauth2();
     });
 

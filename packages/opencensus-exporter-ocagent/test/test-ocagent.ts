@@ -15,7 +15,7 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {RootSpan, TraceOptions, Tracing} from '@opencensus/core';
+import {CanonicalCode, LinkType, MessageEventType, RootSpan, SpanKind, TraceOptions, Tracing} from '@opencensus/core';
 import * as nodeTracing from '@opencensus/nodejs';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
@@ -172,8 +172,16 @@ describe('OpenCensus Agent Exporter', () => {
       bufferSize: 1,
       bufferTimeout: 0
     });
-    tracing = nodeTracing.start(
-        {exporter: ocAgentExporter, samplingRate: INITIAL_SAMPLER_PROBABILITY});
+    tracing = nodeTracing.start({
+      exporter: ocAgentExporter,
+      samplingRate: INITIAL_SAMPLER_PROBABILITY,
+      traceParams: {
+        numberOfAttributesPerSpan: 4,
+        numberOfLinksPerSpan: 3,
+        numberOfAnnontationEventsPerSpan: 2,
+        numberOfMessageEventsPerSpan: 3
+      }
+    });
   });
 
   afterEach(() => {
@@ -194,7 +202,8 @@ describe('OpenCensus Agent Exporter', () => {
           spanContext: {traceId: hexId(), spanId: hexId(), options: 0x1}
         },
         (rootSpan: RootSpan) => {
-          const childSpan = rootSpan.startChildSpan(CHILD_SPAN_NAME, '');
+          const childSpan =
+              rootSpan.startChildSpan(CHILD_SPAN_NAME, SpanKind.UNSPECIFIED);
 
           // When the stream is connected, we end both spans, which should
           // trigger the spans to be sent to the agent.
@@ -317,7 +326,7 @@ describe('OpenCensus Agent Exporter', () => {
   it('should adapt a span correctly', (done) => {
     const rootSpanOptions: TraceOptions = {
       name: 'root',
-      kind: 'SERVER',
+      kind: SpanKind.SERVER,
       spanContext: {
         traceId: hexId(),
         spanId: hexId(),
@@ -328,32 +337,44 @@ describe('OpenCensus Agent Exporter', () => {
 
     tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
       // Status
-      rootSpan.status = 200;
+      rootSpan.setStatus(CanonicalCode.OK);
 
       // Attribute
+      rootSpan.addAttribute('my_first_attribute', 'foo');
+      rootSpan.addAttribute('my_second_attribute', 'foo2');
       rootSpan.addAttribute('my_attribute_string', 'bar2');
+      rootSpan.addAttribute('my_first_attribute', 'foo1');
       rootSpan.addAttribute('my_attribute_number', 456);
       rootSpan.addAttribute('my_attribute_boolean', false);
 
       // Annotation
       rootSpan.addAnnotation(
           'my_annotation', {myString: 'bar', myNumber: 123, myBoolean: true});
+      rootSpan.addAnnotation(
+          'my_annotation1', {myString: 'bar1', myNumber: 456, myBoolean: true});
+      rootSpan.addAnnotation(
+          'my_annotation2', {myString: 'bar2', myNumber: 789, myBoolean: true});
+      rootSpan.addAnnotation(
+          'my_annotation3', {myString: 'bar3', myNumber: 789, myBoolean: true});
 
-      // Metric Event
+      // Message Event
       const timeStamp = 123456789;
-      rootSpan.addMessageEvent('MessageEventTypeSent', 'ffff', timeStamp);
-      rootSpan.addMessageEvent('MessageEventTypeRecv', 'ffff', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.SENT, 'aaaa', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.SENT, 'ffff', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.RECEIVED, 'ffff', timeStamp);
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any
       rootSpan.addMessageEvent(null as any, 'ffff', timeStamp);
 
       // Links
-      rootSpan.addLink('ffff', 'ffff', 'CHILD_LINKED_SPAN', {
+      rootSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
+      rootSpan.addLink('bbbbb', 'bbbbb', LinkType.CHILD_LINKED_SPAN);
+      rootSpan.addLink('ffff', 'ffff', LinkType.CHILD_LINKED_SPAN, {
         'child_link_attribute_string': 'foo1',
         'child_link_attribute_number': 123,
         'child_link_attribute_boolean': true,
       });
-      rootSpan.addLink('ffff', 'ffff', 'PARENT_LINKED_SPAN');
+      rootSpan.addLink('ffff', 'ffff', LinkType.PARENT_LINKED_SPAN);
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any
       rootSpan.addLink('ffff', 'ffff', null as any);
@@ -385,12 +406,11 @@ describe('OpenCensus Agent Exporter', () => {
                 span.tracestate.entries,
                 [{key: 'foo', value: 'bar'}, {key: 'baz', value: 'buzz'}]);
 
-            // Status
             if (!span.status) {
               assert.fail('span.status is null or undefined');
-              return;
+            } else {
+              assert.deepEqual(span.status, {code: 0, message: ''});
             }
-            assert.equal(span.status.code, 200);
 
             // Attributes
             if (!span.attributes) {
@@ -398,6 +418,10 @@ describe('OpenCensus Agent Exporter', () => {
               return;
             }
             assert.deepEqual(span.attributes.attributeMap, {
+              my_first_attribute: {
+                value: 'stringValue',
+                stringValue: {value: 'foo1', truncatedByteCount: 0}
+              },
               my_attribute_string: {
                 value: 'stringValue',
                 stringValue: {value: 'bar2', truncatedByteCount: 0}
@@ -405,30 +429,50 @@ describe('OpenCensus Agent Exporter', () => {
               my_attribute_number: {value: 'intValue', intValue: '456'},
               my_attribute_boolean: {value: 'boolValue', boolValue: false}
             });
+            assert.equal(span.attributes.droppedAttributesCount, 1);
 
             // Time Events
             assert.deepEqual(span.timeEvents, {
-              droppedAnnotationsCount: 0,
-              droppedMessageEventsCount: 0,
+              droppedAnnotationsCount: 2,
+              droppedMessageEventsCount: 1,
               timeEvent: [
                 {
                   value: 'annotation',
                   time: null,
                   annotation: {
                     description:
-                        {value: 'my_annotation', truncatedByteCount: 0},
+                        {value: 'my_annotation2', truncatedByteCount: 0},
                     attributes: {
                       attributeMap: {
                         myString: {
                           value: 'stringValue',
-                          stringValue: {value: 'bar', truncatedByteCount: 0}
+                          stringValue: {value: 'bar2', truncatedByteCount: 0}
                         },
-                        myNumber: {value: 'intValue', intValue: '123'},
+                        myNumber: {value: 'intValue', intValue: '789'},
                         myBoolean: {value: 'boolValue', boolValue: true}
                       },
                       droppedAttributesCount: 0
                     }
-                  }
+                  },
+                },
+                {
+                  value: 'annotation',
+                  time: null,
+                  annotation: {
+                    description:
+                        {value: 'my_annotation3', truncatedByteCount: 0},
+                    attributes: {
+                      attributeMap: {
+                        myString: {
+                          value: 'stringValue',
+                          stringValue: {value: 'bar3', truncatedByteCount: 0}
+                        },
+                        myNumber: {value: 'intValue', intValue: '789'},
+                        myBoolean: {value: 'boolValue', boolValue: true}
+                      },
+                      droppedAttributesCount: 0
+                    }
+                  },
                 },
                 {
                   messageEvent: {
@@ -466,7 +510,7 @@ describe('OpenCensus Agent Exporter', () => {
             // Links
             const buff = Buffer.from([255, 255]);
             assert.deepEqual(span.links, {
-              droppedLinksCount: 0,
+              droppedLinksCount: 2,
               link: [
                 {
                   type: 'CHILD_LINKED_SPAN',
@@ -507,4 +551,175 @@ describe('OpenCensus Agent Exporter', () => {
       rootSpan.end();
     });
   });
+
+  it('should adapt a span correctly without overflowing trace param limits',
+     (done) => {
+       const rootSpanOptions: TraceOptions = {
+         name: 'root',
+         kind: SpanKind.SERVER,
+         spanContext: {
+           traceId: hexId(),
+           spanId: hexId(),
+           traceState: 'foo=bar,baz=buzz',
+           options: 0x1
+         }
+       };
+
+       tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
+         // Status
+         rootSpan.setStatus(CanonicalCode.OK);
+
+         // Attribute
+         rootSpan.addAttribute('my_first_attribute', 'foo');
+         rootSpan.addAttribute('my_second_attribute', 'foo2');
+
+         // Annotation
+         rootSpan.addAnnotation(
+             'my_annotation',
+             {myString: 'bar', myNumber: 123, myBoolean: true});
+
+         // Message Event
+         const timeStamp = 123456789;
+         rootSpan.addMessageEvent(MessageEventType.SENT, 'ffff', timeStamp);
+         rootSpan.addMessageEvent(MessageEventType.RECEIVED, 'ffff', timeStamp);
+
+         // Links
+         rootSpan.addLink('ffff', 'ffff', LinkType.CHILD_LINKED_SPAN, {
+           'child_link_attribute_string': 'foo1',
+           'child_link_attribute_number': 123,
+           'child_link_attribute_boolean': true,
+         });
+         rootSpan.addLink('ffff', 'ffff', LinkType.PARENT_LINKED_SPAN);
+
+         server.on(
+             MockAgentEvent.ExportStreamMessageReceived,
+             (message: opencensus.proto.agent.trace.v1
+                  .ExportTraceServiceRequest) => {
+               assert.equal(message.spans.length, 1);
+               const span = message.spans[0];
+               // Name / Context
+               if (!span.name) {
+                 assert.fail('span.name is null or undefined');
+                 return;
+               }
+               assert.equal(span.name.value, 'root');
+               assert.equal(span.kind, 'SERVER');
+
+               if (!span.tracestate) {
+                 assert.fail('span.tracestate is null or undefined');
+                 return;
+               }
+               assert.deepEqual(
+                   span.tracestate.entries,
+                   [{key: 'foo', value: 'bar'}, {key: 'baz', value: 'buzz'}]);
+
+               if (!span.status) {
+                 assert.fail('span.status is null or undefined');
+               } else {
+                 assert.deepEqual(span.status, {code: 0, message: ''});
+               }
+
+               // Attributes
+               if (!span.attributes) {
+                 assert.fail('span.attributes is null or undefined');
+                 return;
+               }
+               assert.deepEqual(span.attributes.attributeMap, {
+                 my_first_attribute: {
+                   value: 'stringValue',
+                   stringValue: {value: 'foo', truncatedByteCount: 0}
+                 },
+                 my_second_attribute: {
+                   value: 'stringValue',
+                   stringValue: {value: 'foo2', truncatedByteCount: 0}
+                 }
+               });
+               assert.equal(span.attributes.droppedAttributesCount, 0);
+
+               // Time Events
+               assert.deepEqual(span.timeEvents, {
+                 droppedAnnotationsCount: 0,
+                 droppedMessageEventsCount: 0,
+                 timeEvent: [
+                   {
+                     value: 'annotation',
+                     time: null,
+                     annotation: {
+                       description:
+                           {value: 'my_annotation', truncatedByteCount: 0},
+                       attributes: {
+                         attributeMap: {
+                           myString: {
+                             value: 'stringValue',
+                             stringValue:
+                                 {value: 'bar', truncatedByteCount: 0}
+                           },
+                           myNumber: {value: 'intValue', intValue: '123'},
+                           myBoolean: {value: 'boolValue', boolValue: true}
+                         },
+                         droppedAttributesCount: 0
+                       }
+                     }
+                   },
+                   {
+                     messageEvent: {
+                       compressedSize: '0',
+                       id: '65535',
+                       type: 'SENT',
+                       uncompressedSize: '0'
+                     },
+                     time: {seconds: '123456', nanos: 789000000},
+                     value: 'messageEvent'
+                   },
+                   {
+                     value: 'messageEvent',
+                     messageEvent: {
+                       compressedSize: '0',
+                       id: '65535',
+                       type: 'RECEIVED',
+                       uncompressedSize: '0'
+                     },
+                     time: {seconds: '123456', nanos: 789000000},
+                   }
+                 ]
+               });
+
+               // Links
+               const buff = Buffer.from([255, 255]);
+               assert.deepEqual(span.links, {
+                 droppedLinksCount: 0,
+                 link: [
+                   {
+                     type: 'CHILD_LINKED_SPAN',
+                     traceId: buff,
+                     spanId: buff,
+                     attributes: {
+                       droppedAttributesCount: 0,
+                       attributeMap: {
+                         child_link_attribute_string: {
+                           value: 'stringValue',
+                           stringValue: {value: 'foo1', truncatedByteCount: 0}
+                         },
+                         child_link_attribute_number:
+                             {value: 'intValue', intValue: '123'},
+                         child_link_attribute_boolean:
+                             {value: 'boolValue', boolValue: true}
+                       }
+                     }
+                   },
+                   {
+                     type: 'PARENT_LINKED_SPAN',
+                     traceId: buff,
+                     spanId: buff,
+                     attributes: null
+                   }
+                 ]
+               });
+
+               done();
+             });
+
+         rootSpan.end();
+       });
+     });
 });

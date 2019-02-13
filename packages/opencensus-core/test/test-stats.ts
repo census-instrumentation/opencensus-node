@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {BaseView, globalStats, StatsEventListener} from '../src';
+import {BaseView, globalStats, StatsEventListener, TagKey, TagMap, TagValue} from '../src';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';
 
 class TestExporter implements StatsEventListener {
@@ -26,7 +26,8 @@ class TestExporter implements StatsEventListener {
     this.registeredViews.push(view);
   }
 
-  onRecord(views: View[], measurement: Measurement) {
+  onRecord(
+      views: View[], measurement: Measurement, tagMap: Map<TagKey, TagValue>) {
     this.recordedMeasurements.push(measurement);
   }
 
@@ -46,8 +47,12 @@ describe('Stats', () => {
   });
 
   const viewName = 'testViewName';
-  const tags = {tagKey1: 'tagValue1', tagKey2: 'tagValue2'};
-  const tagKeys = Object.keys(tags);
+  const tagKeys = [{name: 'testKey1'}, {name: 'testKey2'}];
+  const tagValues = [{value: 'testValue1'}, {value: 'testValue2'}];
+  const tagMap = new TagMap();
+  tagMap.set(tagKeys[0], tagValues[0]);
+  tagMap.set(tagKeys[1], tagValues[1]);
+
   const measureName = 'testMeasureDouble';
   const measureUnit = MeasureUnit.UNIT;
   const description = 'test description';
@@ -159,43 +164,49 @@ describe('Stats', () => {
     });
 
     it('should record a single measurement', () => {
-      const measurement = {measure, tags, value: 1};
+      const measurement = {measure, value: 1};
       assert.strictEqual(testExporter.recordedMeasurements.length, 0);
-      globalStats.record(measurement);
+      globalStats.record([measurement], tagMap);
       assert.strictEqual(testExporter.recordedMeasurements.length, 1);
       assert.deepEqual(testExporter.recordedMeasurements[0], measurement);
-      aggregationData =
-          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
+      aggregationData = testExporter.registeredViews[0].getSnapshot(
+                            tagValues) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement.value);
     });
 
     it('should not record a single negative measurement', () => {
       globalStats.registerExporter(testExporter);
-      const measurement = {measure, tags, value: -1};
-      globalStats.record(measurement);
+      const measurement = {measure, value: -1};
+      globalStats.record([measurement], tagMap);
       assert.strictEqual(testExporter.recordedMeasurements.length, 0);
     });
 
+    it('should record when tagMap is not passed', () => {
+      globalStats.registerExporter(testExporter);
+      const measurement = {measure, value: 10};
+      globalStats.record([measurement]);
+      console.log(JSON.stringify(testExporter.recordedMeasurements));
+      assert.strictEqual(testExporter.recordedMeasurements.length, 2);
+    });
+
     it('should record multiple measurements', () => {
-      const measurement1 = {measure, tags, value: 1};
-      const measurement2 = {measure, tags, value: 1};
+      const measurement1 = {measure, value: 1};
+      const measurement2 = {measure, value: 1};
       assert.strictEqual(testExporter.recordedMeasurements.length, 0);
-      globalStats.record(measurement1, measurement2);
+      globalStats.record([measurement1, measurement2], tagMap);
       assert.strictEqual(testExporter.recordedMeasurements.length, 2);
       assert.deepEqual(testExporter.recordedMeasurements[0], measurement1);
       assert.deepEqual(testExporter.recordedMeasurements[1], measurement2);
-      aggregationData =
-          testExporter.registeredViews[0].getSnapshot(tags) as LastValueData;
+      aggregationData = testExporter.registeredViews[0].getSnapshot(
+                            tagValues) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement2.value);
     });
 
     it('should skip whole multiple measurment if one of value is negative',
        () => {
-         const measurments = [
-           {measure, tags, value: 1}, {measure, tags, value: -1},
-           {measure, tags, value: 1}
-         ];
-         globalStats.record(...measurments);
+         const measurments =
+             [{measure, value: 1}, {measure, value: -1}, {measure, value: 1}];
+         globalStats.record(measurments, tagMap);
          assert.equal(testExporter.recordedMeasurements.length, 0);
        });
   });

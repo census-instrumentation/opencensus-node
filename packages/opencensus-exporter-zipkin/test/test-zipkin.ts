@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
+import {CoreTracer, RootSpan, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as mocha from 'mocha';
@@ -82,7 +82,7 @@ describe('Zipkin Exporter', function() {
       tracer.start(defaultConfig);
 
       tracer.startRootSpan({name: 'root-test'}, (rootSpan: RootSpan) => {
-        const span = rootSpan.startChildSpan('spanTest', 'spanType');
+        const span = rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
         span.end();
         rootSpan.end();
         assert.ok(exporter.buffer.getQueue().length > 0);
@@ -99,7 +99,7 @@ describe('Zipkin Exporter', function() {
 
       return tracer.startRootSpan(
           {name: 'root-test'}, async (rootSpan: RootSpan) => {
-            const span = rootSpan.startChildSpan('spanTest', 'spanType');
+            const span = rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
             span.end();
             rootSpan.end();
             return exporter.publish([rootSpan, rootSpan]).then((result) => {
@@ -124,7 +124,8 @@ describe('Zipkin Exporter', function() {
 
          return tracer.startRootSpan(
              {name: 'root-test'}, async (rootSpan: RootSpan) => {
-               const span = rootSpan.startChildSpan('spanTest', 'spanType');
+               const span =
+                   rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
                span.end();
                rootSpan.end();
                return exporter.publish([rootSpan]).then((result) => {

@@ -16,8 +16,10 @@
 
 import * as assert from 'assert';
 import * as uuid from 'uuid';
+
 import {randomSpanId} from '../src/internal/util';
 import {TracerConfig} from '../src/trace/config/types';
+import {TraceParams} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
@@ -192,7 +194,7 @@ describe('Tracer', () => {
   });
 
   describe('startRootSpan() with context propagation', () => {
-    const traceOptions = {name: 'rootName', kind: 'spanType'} as
+    const traceOptions = {name: 'rootName', kind: types.SpanKind.UNSPECIFIED} as
         types.TraceOptions;
 
     it('should create new RootSpan instance, no propagation', () => {
@@ -238,14 +240,38 @@ describe('Tracer', () => {
       });
     });
 
-    it('should create a tracer with default TraceParams', () => {
-      const tracer = new CoreTracer();
-      tracer.start(defaultConfig);
-      assert.equal(tracer.traceParams.numberOfAnnontationEventsPerSpan, 32);
-      assert.equal(tracer.traceParams.numberOfAttributesPerSpan, 32);
-      assert.equal(tracer.traceParams.numberOfLinksPerSpan, 32);
-      assert.equal(tracer.traceParams.numberOfMessageEventsPerSpan, 128);
-    });
+    it('should create a tracer with default TraceParams when no parameters are specified upon initialisation',
+       () => {
+         const tracer = new CoreTracer();
+         tracer.start(defaultConfig);
+         assert.equal(
+             tracer.activeTraceParams.numberOfAnnontationEventsPerSpan,
+             undefined);
+         assert.equal(
+             tracer.activeTraceParams.numberOfAttributesPerSpan, undefined);
+         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, undefined);
+         assert.equal(
+             tracer.activeTraceParams.numberOfMessageEventsPerSpan, undefined);
+       });
+
+    it('should create a tracer with default TraceParams when parameters with values higher than maximum limit are specified upon initialisation',
+       () => {
+         const traceParametersWithHigherThanMaximumValues: TraceParams = {
+           numberOfAnnontationEventsPerSpan: 50,
+           numberOfMessageEventsPerSpan: 200,
+           numberOfAttributesPerSpan: 37,
+           numberOfLinksPerSpan: 45
+         };
+         defaultConfig.traceParams = traceParametersWithHigherThanMaximumValues;
+         const tracer = new CoreTracer();
+         tracer.start(defaultConfig);
+         assert.equal(
+             tracer.activeTraceParams.numberOfAnnontationEventsPerSpan, 32);
+         assert.equal(tracer.activeTraceParams.numberOfAttributesPerSpan, 32);
+         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, 32);
+         assert.equal(
+             tracer.activeTraceParams.numberOfMessageEventsPerSpan, 128);
+       });
   });
 
 
@@ -269,7 +295,7 @@ describe('Tracer', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
-        span = tracer.startChildSpan('spanName', 'spanType');
+        span = tracer.startChildSpan('spanName', types.SpanKind.CLIENT);
       });
     });
     it('should create a Span instance', () => {
@@ -278,7 +304,7 @@ describe('Tracer', () => {
     it('should start a span', () => {
       assert.ok(span.started);
       assert.strictEqual(span.name, 'spanName');
-      assert.strictEqual(span.kind, 'spanType');
+      assert.strictEqual(span.kind, types.SpanKind.CLIENT);
     });
   });
 
@@ -287,7 +313,8 @@ describe('Tracer', () => {
     it('should not create a Span instance, without a rootspan', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      const span = tracer.startChildSpan('spanName', 'spanType');
+      const span =
+          tracer.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
       assert.equal(span, null);
     });
   });

@@ -16,10 +16,10 @@
 
 import * as assert from 'assert';
 
-import {BaseView} from '../src';
+import {BaseView, TagMap, TagValue} from '../src';
 import {TEST_ONLY} from '../src/common/time-util';
 import {DistributionValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
-import {AggregationType, DistributionData, Measure, Measurement, MeasureType, MeasureUnit, Tags, View} from '../src/stats/types';
+import {AggregationType, DistributionData, Measure, MeasureType, MeasureUnit, View} from '../src/stats/types';
 
 /** The order of how close values must be to be considerated almost equal */
 const EPSILON = 6;
@@ -59,10 +59,10 @@ function assertDistributionData(
 }
 
 function assertView(
-    view: View, measurement: Measurement, recordedValues: number[],
-    aggregationType: AggregationType) {
+    view: View, recordedValues: number[], aggregationType: AggregationType,
+    tagValues: TagValue[]) {
   assert.strictEqual(view.aggregation, aggregationType);
-  const aggregationData = view.getSnapshot(measurement.tags);
+  const aggregationData = view.getSnapshot(tagValues);
   switch (aggregationData.type) {
     case AggregationType.SUM:
       const acc = recordedValues.reduce((acc, cur) => acc + cur);
@@ -113,19 +113,62 @@ describe('BaseView', () => {
 
   describe('getColumns()', () => {
     it('should access the given tag keys', () => {
-      const tagKeys = ['testKey1', 'testKey2'];
+      const tagKeys = [{name: 'testKey1'}, {name: 'testKey2'}];
       const view = new BaseView(
           'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
           'description test');
 
-      assert.strictEqual(view.getColumns(), tagKeys);
+      assert.deepStrictEqual(view.getColumns(), tagKeys);
+    });
+  });
+
+  describe('createView()', () => {
+    it('should throw error when keys are duplicate', () => {
+      const tagKeys =
+          [{name: 'testKey1'}, {name: 'testKey1'}, {name: 'testKey2'}];
+      assert.throws(() => {
+        const view = new BaseView(
+            'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
+            'description test');
+        assert.deepStrictEqual(view.getColumns(), tagKeys);
+      }, /^Error: Columns have duplicate$/);
+    });
+
+    it('should throw error when keys are undefined', () => {
+      const tagKeys = [{name: 'testKey1'}, undefined, {name: 'testKey2'}];
+      assert.throws(() => {
+        const view = new BaseView(
+            'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
+            'description test');
+        assert.deepStrictEqual(view.getColumns(), tagKeys);
+      }, /^Error: Invalid TagKey name: undefined$/);
+    });
+
+    it('should throw error when keys contains null', () => {
+      const tagKeys = [{name: 'testKey1'}, null, {name: 'testKey2'}];
+      assert.throws(() => {
+        const view = new BaseView(
+            'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
+            'description test');
+        assert.deepStrictEqual(view.getColumns(), tagKeys);
+      }, /^Error: Invalid TagKey name: null$/);
     });
   });
 
   describe('recordMeasurement()', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const bucketBoundaries = [2, 4, 6];
-    const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
+    const tagKey1 = {name: 'testKey1'};
+    const tagKey2 = {name: 'testKey2'};
+    const tagKeys = [tagKey1, tagKey2];
+    const tagKey3 = {name: 'testKey3'};
+    const tagValue1 = {value: 'testValue1'};
+    const tagValue2 = {value: 'testValue2'};
+    const tagValue3 = {value: 'testValue3'};
+
+    const tags = new TagMap();
+    tags.set(tagKey1, tagValue1);
+    tags.set(tagKey2, tagValue2);
 
     for (const aggregationTestCase of aggregationTestCases) {
       it(`should record measurements on a View with ${
@@ -133,15 +176,15 @@ describe('BaseView', () => {
          () => {
            const view = new BaseView(
                'test/view/name', measure, aggregationTestCase.aggregationType,
-               ['testKey1', 'testKey2'], 'description test', bucketBoundaries);
+               tagKeys, 'description test', bucketBoundaries);
            const recordedValues = [];
            for (const value of measurementValues) {
              recordedValues.push(value);
-             const measurement = {measure, tags, value};
-             view.recordMeasurement(measurement);
+             const measurement = {measure, value};
+             view.recordMeasurement(measurement, tags);
              assertView(
-                 view, measurement, recordedValues,
-                 aggregationTestCase.aggregationType);
+                 view, recordedValues, aggregationTestCase.aggregationType,
+                 [tagValue1, tagValue2]);
            }
          });
     }
@@ -149,74 +192,30 @@ describe('BaseView', () => {
     it('should ignore negative bucket bounds', () => {
       const negativeBucketBoundaries = [-Infinity, -4, -2, 0, 2, 4, 6];
       const view = new BaseView(
-          'test/view/name', measure, AggregationType.DISTRIBUTION,
-          ['testKey1', 'testKey2'], 'description test',
-          negativeBucketBoundaries);
+          'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
+          'description test', negativeBucketBoundaries);
       const recordedValues = [];
       for (const value of measurementValues) {
         recordedValues.push(value);
-        const measurement = {measure, tags, value};
-        view.recordMeasurement(measurement);
+        const measurement = {measure, value};
+        view.recordMeasurement(measurement, tags);
       }
-      const data = view.getSnapshot(tags) as DistributionData;
+      const data = view.getSnapshot([tagValue1, tagValue2]) as DistributionData;
       assert.deepStrictEqual(data.buckets, [2, 4, 6]);
       assert.deepStrictEqual(data.bucketCounts, [1, 2, 2, 0]);
     });
 
     const view = new BaseView(
-        'test/view/name', measure, AggregationType.LAST_VALUE,
-        ['testKey1', 'testKey2'], 'description test');
+        'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
+        'description test');
 
     it('should not record a measurement when it have wrong tag keys', () => {
-      const measurement = {measure, tags: {testKey3: 'testValue'}, value: 10};
-      view.recordMeasurement(measurement);
-      assert.ok(!view.getSnapshot(measurement.tags));
+      const tagMap = new TagMap();
+      tagMap.set(tagKey3, tagValue3);
+      const measurement = {measure, value: 10};
+      view.recordMeasurement(measurement, tagMap);
+      assert.ok(!view.getSnapshot([tagValue3]));
     });
-
-    it('should not record a measurement when tags are not valid', () => {
-      const measurement = {
-        measure,
-        tags: {testKey3: String.fromCharCode(30) + 'testValue'},
-        value: 10
-      };
-      view.recordMeasurement(measurement);
-      assert.ok(!view.getSnapshot(measurement.tags));
-    });
-
-    it('should not record a measurement when it have not enough tag keys',
-       () => {
-         const measurement = {
-           measure,
-           tags: {testKey1: 'testValue'},
-           value: 10
-         };
-         view.recordMeasurement(measurement);
-         assert.ok(!view.getSnapshot(measurement.tags));
-       });
-
-    it('should not record a measurement when a tag key is longer than 255 characters',
-       () => {
-         const tagkey = 'a'.repeat(256);
-         const measurement = {
-           measure,
-           tags: {[tagkey]: 'testValue'},
-           value: 10
-         };
-         view.recordMeasurement(measurement);
-         assert.ok(!view.getSnapshot(measurement.tags));
-       });
-
-    it('should not record a measurement when tag key is 0 character long',
-       () => {
-         const tagkey = '';
-         const measurement = {
-           measure,
-           tags: {[tagkey]: 'testValue'},
-           value: 10
-         };
-         view.recordMeasurement(measurement);
-         assert.ok(!view.getSnapshot(measurement.tags));
-       });
   });
 
   describe('getMetric()', () => {
@@ -227,16 +226,29 @@ describe('BaseView', () => {
     const mockStartTimestamp: Timestamp = {seconds: 1546540757, nanos: 282e6};
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
-    const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
-    const tags1: Tags = {testKey1: 'testValue1', testKey2: 'testValue1'};
+    const tagKey1 = {name: 'testKey1'};
+    const tagKey2 = {name: 'testKey2'};
+    const tagKeys = [tagKey1, tagKey2];
+    const tagValue1 = {value: 'testValue1'};
+    const tagValue2 = {value: 'testValue2'};
+    const tagValue3 = {value: 'testValue3'};
+    const tagValue4 = {value: 'testValue4'};
+
+    const tags = new TagMap();
+    tags.set(tagKey1, tagValue1);
+    tags.set(tagKey2, tagValue2);
+
+    const tagMap = new TagMap();
+    tagMap.set(tagKey1, tagValue3);
+    tagMap.set(tagKey2, tagValue4);
 
     for (const aggregationTestCase of aggregationTestCases) {
       const view: View = new BaseView(
           'test/view/name', measure, aggregationTestCase.aggregationType,
-          ['testKey1', 'testKey2'], 'description test', buckets);
+          tagKeys, 'description test', buckets);
       for (const value of measurementValues) {
-        const measurement = {measure, tags, value};
-        view.recordMeasurement(measurement);
+        const measurement = {measure, value};
+        view.recordMeasurement(measurement, tags);
       }
 
       beforeEach(() => {
@@ -296,20 +308,20 @@ describe('BaseView', () => {
             it('should have labelValues', () => {
               assert.ok(labelValues);
               assert.deepStrictEqual(
-                  labelValues, [{value: 'testValue'}, {value: 'testValue'}]);
+                  labelValues, [{value: 'testValue1'}, {value: 'testValue2'}]);
             });
           });
     }
 
     describe('DISTRIBUTION aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.DISTRIBUTION,
-          ['testKey1', 'testKey2'], 'description test', buckets);
+          'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
+          'description test', buckets);
       let total = 0;
       for (const value of measurementValues) {
         total += value;
-        const measurement = {measure, tags, value};
-        view.recordMeasurement(measurement);
+        const measurement = {measure, value};
+        view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
@@ -340,15 +352,15 @@ describe('BaseView', () => {
         'DISTRIBUTION aggregation type: record with measurements in succession from a single view and single measure',
         () => {
           const view: View = new BaseView(
-              'test/view/name', measure, AggregationType.DISTRIBUTION,
-              ['testKey1', 'testKey2'], 'description test', buckets);
+              'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
+              'description test', buckets);
           let total = 0;
           for (const value of measurementValues) {
             total += value;
-            const measurement = {measure, tags, value};
-            const measurement1 = {measure, tags: tags1, value};
-            view.recordMeasurement(measurement);
-            view.recordMeasurement(measurement1);
+            const measurement = {measure, value};
+            const measurement1 = {measure, value};
+            view.recordMeasurement(measurement, tags);
+            view.recordMeasurement(measurement1, tagMap);
           }
 
           it('should have points', () => {
@@ -376,8 +388,8 @@ describe('BaseView', () => {
               sumOfSquaredDeviation: 10.427999999999997
             });
             assert.deepEqual(
-                labelValues1, [{'value': 'testValue'}, {'value': 'testValue'}]);
-
+                labelValues1,
+                [{'value': 'testValue1'}, {'value': 'testValue2'}]);
             assert.ok(points2);
             [point] = points2;
             ({timestamp, value} = point);
@@ -396,17 +408,17 @@ describe('BaseView', () => {
             });
             assert.deepEqual(
                 labelValues2,
-                [{'value': 'testValue1'}, {'value': 'testValue1'}]);
+                [{'value': 'testValue3'}, {'value': 'testValue4'}]);
           });
         });
 
     describe('COUNT aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.COUNT,
-          ['testKey1', 'testKey2'], 'description test', buckets);
+          'test/view/name', measure, AggregationType.COUNT, tagKeys,
+          'description test', buckets);
       for (const value of measurementValues) {
-        const measurement = {measure, tags, value};
-        view.recordMeasurement(measurement);
+        const measurement = {measure, value};
+        view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
@@ -428,13 +440,13 @@ describe('BaseView', () => {
 
     describe('SUM aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.SUM,
-          ['testKey1', 'testKey2'], 'description test', buckets);
+          'test/view/name', measure, AggregationType.SUM, tagKeys,
+          'description test', buckets);
       let total = 0;
       for (const value of measurementValues) {
         total += value;
-        const measurement = {measure, tags, value};
-        view.recordMeasurement(measurement);
+        const measurement = {measure, value};
+        view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
@@ -456,11 +468,11 @@ describe('BaseView', () => {
 
     describe('LAST_VALUE aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.LAST_VALUE,
-          ['testKey1', 'testKey2'], 'description test', buckets);
+          'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
+          'description test', buckets);
       for (const value of measurementValues) {
-        const measurement = {measure, tags, value};
-        view.recordMeasurement(measurement);
+        const measurement = {measure, value};
+        view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
@@ -480,30 +492,38 @@ describe('BaseView', () => {
   });
 
   describe('getSnapshots()', () => {
-    const tags: Tags = {testKey1: 'testValue', testKey2: 'testValue'};
     let view: View;
+    const tagKey1 = {name: 'testKey1'};
+    const tagKey2 = {name: 'testKey2'};
+    const tagKeys = [tagKey1, tagKey2];
+    const tagValue1 = {value: 'testValue1'};
+    const tagValue2 = {value: 'testValue2'};
+
+    const tags = new TagMap();
+    tags.set(tagKey1, tagValue1);
+    tags.set(tagKey2, tagValue2);
 
     before(() => {
       view = new BaseView(
-          'test/view/name', measure, AggregationType.LAST_VALUE,
-          ['testKey1', 'testKey2'], 'description test');
+          'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
+          'description test');
 
-      const measurement = {measure, tags, value: 10};
-      view.recordMeasurement(measurement);
+      const measurement = {measure, value: 10};
+      view.recordMeasurement(measurement, tags);
     });
 
     it('should not get aggregation data when wrong tags values are given',
        () => {
          assert.ok(!view.getSnapshot(
-             {testKey1: 'wrongTagValue', testKey2: 'wrongTagValue'}));
+             [{value: 'wrongTagValue'}, {value: 'wrongTagValue'}]));
        });
 
     it('should not get aggregation data when not enough tags are given', () => {
-      assert.ok(!view.getSnapshot({testKey1: 'testValue'}));
+      assert.ok(!view.getSnapshot([tagValue1]));
     });
 
     it('should get aggregation data when tags are correct', () => {
-      assert.ok(view.getSnapshot(tags));
+      assert.ok(view.getSnapshot([tagValue1, tagValue2]));
     });
   });
 });

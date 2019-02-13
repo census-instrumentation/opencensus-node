@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanKind} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import {request} from 'http';
 
 const spanKindTranslation: {[k: string]: string} = {
   CLIENT: 'EXIT',
   SERVER: 'ENTRY',
-  LOCAL: 'INTERMEDIATE',
+  UNSPECIFIED: 'INTERMEDIATE',
 };
 
 type InstanaSpan = {
@@ -109,8 +109,8 @@ export class InstanaTraceExporter implements Exporter {
       timestamp: span.startTime.getTime(),
       duration: span.duration,
       name: span.name,
-      type: spanKindTranslation[span.kind] || span.kind,
-      error: span.status != null && span.status !== 0,
+      type: spanKindTranslation[span.kind],
+      error: span.status != null && span.status.code !== 0,
       data: Object.keys(span.attributes)
                 .reduce(
                     (agg: {[k: string]: string}, key) => {

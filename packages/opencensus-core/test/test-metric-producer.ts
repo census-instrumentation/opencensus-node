@@ -16,7 +16,7 @@
 
 import * as assert from 'assert';
 
-import {AggregationType, globalStats, Measurement, MeasureUnit, Tags, View} from '../src';
+import {AggregationType, globalStats, Measurement, MeasureUnit, TagMap, View} from '../src';
 import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
 import {MetricProducerForStats} from '../src/stats/metric-producer';
 
@@ -31,15 +31,18 @@ describe('Metric producer for stats', () => {
 
   const measureDouble = globalStats.createMeasureDouble(
       'opencensus.io/test/double', MeasureUnit.UNIT, 'Measure Double');
-  const tags: Tags = {testKey1: 'testValue1', testKey2: 'testValue2'};
+  const tagKeys = [{name: 'testKey1'}, {name: 'testKey2'}];
+  const tagMap = new TagMap();
+  tagMap.set(tagKeys[0], {value: 'testValue1'});
+  tagMap.set(tagKeys[1], {value: 'testValue2'});
   const labelKeys: LabelKey[] = [
     {'key': 'testKey1', 'description': ''},
     {'key': 'testKey2', 'description': ''}
   ];
   const labelValues: LabelValue[] =
       [{'value': 'testValue1'}, {'value': 'testValue2'}];
-  const measurement1: Measurement = {measure: measureDouble, value: 25, tags};
-  const measurement2: Measurement = {measure: measureDouble, value: 300, tags};
+  const measurement1: Measurement = {measure: measureDouble, value: 25};
+  const measurement2: Measurement = {measure: measureDouble, value: 300};
 
   // expected constants
   const expectedMetricDescriptor1 = {
@@ -73,10 +76,9 @@ describe('Metric producer for stats', () => {
 
   it('should add sum stats', () => {
     const view: View = globalStats.createView(
-        viewName1, measureDouble, AggregationType.SUM, Object.keys(tags),
-        description);
+        viewName1, measureDouble, AggregationType.SUM, tagKeys, description);
     globalStats.registerView(view);
-    view.recordMeasurement(measurement1);
+    view.recordMeasurement(measurement1, tagMap);
 
     const metrics = metricProducerForStats.getMetrics();
 
@@ -94,10 +96,10 @@ describe('Metric producer for stats', () => {
   it('should add count stats',
      () => {
        const view: View = globalStats.createView(
-           viewName2, measureDouble, AggregationType.COUNT, Object.keys(tags),
+           viewName2, measureDouble, AggregationType.COUNT, tagKeys,
            description);
        globalStats.registerView(view);
-       view.recordMeasurement(measurement1);
+       view.recordMeasurement(measurement1, tagMap);
 
        let metrics = metricProducerForStats.getMetrics();
 
@@ -118,18 +120,18 @@ describe('Metric producer for stats', () => {
        assert.equal(actualTimeSeries2[0].points[0].value, 1);
 
        // update count view
-       view.recordMeasurement(measurement2);
+       view.recordMeasurement(measurement2, tagMap);
        metrics = metricProducerForStats.getMetrics();
        assert.deepStrictEqual(metrics[1].timeseries[0].points[0].value, 2);
      });
 
   it('should add lastValue stats', () => {
     const view: View = globalStats.createView(
-        viewName3, measureDouble, AggregationType.LAST_VALUE, Object.keys(tags),
+        viewName3, measureDouble, AggregationType.LAST_VALUE, tagKeys,
         description);
     globalStats.registerView(view);
-    view.recordMeasurement(measurement1);
-    view.recordMeasurement(measurement2);
+    view.recordMeasurement(measurement1, tagMap);
+    view.recordMeasurement(measurement2, tagMap);
 
     const metrics = metricProducerForStats.getMetrics();
 
@@ -155,14 +157,13 @@ describe('Metric producer for stats', () => {
   it('should add distribution stats', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
-
     const view: View = globalStats.createView(
-        viewName3, measureDouble, AggregationType.DISTRIBUTION,
-        Object.keys(tags), description, buckets);
+        viewName3, measureDouble, AggregationType.DISTRIBUTION, tagKeys,
+        description, buckets);
     globalStats.registerView(view);
     for (const value of measurementValues) {
-      const measurement: Measurement = {measure: measureDouble, value, tags};
-      view.recordMeasurement(measurement);
+      const measurement: Measurement = {measure: measureDouble, value};
+      view.recordMeasurement(measurement, tagMap);
     }
 
     const metrics = metricProducerForStats.getMetrics();
