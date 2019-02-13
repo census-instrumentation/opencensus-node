@@ -19,11 +19,7 @@ import * as assert from 'assert';
 import {TraceParams} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
-<<<<<<< HEAD
-import {SamplerBuilder, TraceParamasBuilder} from '../src/trace/sampler/sampler';
-=======
 import {SamplerBuilder, TraceParamsBuilder} from '../src/trace/sampler/sampler';
->>>>>>> 82b26d253e576ece9bc559be0689c1480eaf9ce2
 
 const tracer = new CoreTracer();
 
@@ -116,11 +112,7 @@ describe('Sampler', () => {
   describe('getNumberOfAnnotationEventsPerSpan', () => {
     it('should return  12', () => {
       assert.equal(
-<<<<<<< HEAD
-          TraceParamasBuilder.getNumberOfAnnotationEventsPerSpan(
-=======
           TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
->>>>>>> 82b26d253e576ece9bc559be0689c1480eaf9ce2
               traceParameters),
           12);
     });
@@ -128,36 +120,20 @@ describe('Sampler', () => {
   describe('getNumberOfMessageEventsPerSpan', () => {
     it('should return 5', () => {
       assert.equal(
-<<<<<<< HEAD
-          TraceParamasBuilder.getNumberOfMessageEventsPerSpan(traceParameters),
-=======
           TraceParamsBuilder.getNumberOfMessageEventsPerSpan(traceParameters),
->>>>>>> 82b26d253e576ece9bc559be0689c1480eaf9ce2
           5);
     });
   });
   describe('getNumberOfAttributesPerSpan', () => {
     it('should return 10', () => {
       assert.equal(
-<<<<<<< HEAD
-          TraceParamasBuilder.getNumberOfAttributesPerSpan(traceParameters),
-          10);
-=======
           TraceParamsBuilder.getNumberOfAttributesPerSpan(traceParameters), 10);
->>>>>>> 82b26d253e576ece9bc559be0689c1480eaf9ce2
     });
   });
   describe('getNumberOfLinksPerSpan', () => {
     it('should return 7', () => {
       assert.equal(
-<<<<<<< HEAD
-          TraceParamasBuilder.getNumberOfLinksPerSpan(traceParameters), 7);
-    });
-  });
-});
-=======
           TraceParamsBuilder.getNumberOfLinksPerSpan(traceParameters), 7);
     });
   });
 });
->>>>>>> 82b26d253e576ece9bc559be0689c1480eaf9ce2
