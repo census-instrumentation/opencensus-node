@@ -192,7 +192,13 @@ export interface MessageEvent {
   timestamp: number;
   /** Indicates whether the message was sent or received. */
   type: MessageEventType;
-  /** An identifier for the MessageEvent's message. */
+  /**
+   * An identifier for the MessageEvent's message. This should be a hexadecimal
+   * value that fits within 64-bits. Message event ids should start with 1 for
+   * both sent and received messages and increment by 1 for each message
+   * sent/received. See:
+   * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/gRPC.md#message-events
+   */
   id: string;
   /** The number of uncompressed bytes sent or received. */
   uncompressedSize?: number;
