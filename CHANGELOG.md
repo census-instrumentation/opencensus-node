@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+
+## 0.0.9 - 2019-02-12
 - Add Metrics API.
 - Add Resource API.
 - Add Tags API.
