@@ -40,7 +40,7 @@ interface TranslatedSpan {
   id: string;
   parentId?: string;
   kind: string;
-  timestamp: number;
+  timestamp: number;  // in microseconds
   duration: number;
   debug: boolean;
   shared: boolean;
@@ -50,7 +50,7 @@ interface TranslatedSpan {
 }
 
 interface Annotation {
-  timestamp?: number;
+  timestamp?: number;  // in microseconds
   value?: string;
 }
 
@@ -177,6 +177,7 @@ export class ZipkinTraceExporter implements Exporter {
     return spanTraslated;
   }
 
+  /** Converts OpenCensus Attributes ans Status to Zipkin Tags format. */
   private createTags(
       attributes: coreTypes.Attributes, status: coreTypes.Status) {
     const tags: {[key: string]: string} = {};
@@ -190,6 +191,10 @@ export class ZipkinTraceExporter implements Exporter {
     return tags;
   }
 
+  /**
+   * Converts OpenCensus Annotation and MessageEvent to Zipkin Annotations
+   * format.
+   */
   private createAnnotations(
       annotationTimedEvents: coreTypes.Annotation[],
       messageEventTimedEvents: coreTypes.MessageEvent[]) {
