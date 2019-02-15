@@ -42,7 +42,7 @@ const GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC = globalStats.createMeasureInt64(
     'Number of response messages received per RPC (always 1 for non-streaming RPCs).');
 
 /**
- * {@link Measure} for gRPC client uncompressed response bytes.
+ * {@link Measure} for total bytes received across all response messages per RPC
  *
  */
 const GRPC_CLIENT_RECEIVED_BYTES_PER_RPC = globalStats.createMeasureInt64(

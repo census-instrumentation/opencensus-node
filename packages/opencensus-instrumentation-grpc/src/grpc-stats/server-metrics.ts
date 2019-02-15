@@ -74,7 +74,6 @@ const GRPC_SERVER_METHOD = {
  * <p>{@link #GRPC_SERVER_STATUS} is set when an incoming request finishes and
  * is only available around metrics recorded at the end of the incoming request.
  *
- * @since 0.13
  */
 const GRPC_SERVER_STATUS = {
   name: 'grpc_server_status'
@@ -104,7 +103,6 @@ const GRPC_SERVER_SENT_BYTES_PER_RPC_VIEW = globalStats.createView(
 /**
  * {@link View} for server server latency in milliseconds.
  *
- * @since 0.13
  */
 const GRPC_SERVER_SERVER_LATENCY_VIEW = globalStats.createView(
     'grpc.io/server/server_latency', GRPC_SERVER_SERVER_LATENCY,
@@ -129,7 +127,6 @@ const GRPC_SERVER_COMPLETED_RPC_VIEW = globalStats.createView(
 /**
  * {@link View} for server sent messages per RPC.
  *
- * @since 0.13
  */
 const GRPC_SERVER_SENT_MESSAGES_PER_RPC_VIEW = globalStats.createView(
     'grpc.io/server/sent_messages_per_rpc', GRPC_SERVER_SENT_MESSAGES_PER_RPC,
@@ -140,7 +137,6 @@ const GRPC_SERVER_SENT_MESSAGES_PER_RPC_VIEW = globalStats.createView(
 /**
  * {@link View} for server received bytes per RPC.
  *
- * @since 0.13
  */
 const GRPC_SERVER_RECEIVED_BYTES_PER_RPC_VIEW = globalStats.createView(
     'grpc.io/server/received_bytes_per_rpc', GRPC_SERVER_RECEIVED_BYTES_PER_RPC,
