@@ -20,17 +20,17 @@ import {GRPC_BASIC_SERVER_VIEWS} from './server-metrics';
 
 /**
  * Common histogram bucket boundaries for bytes received/sets Views.
- * 
- */ 
+ *
+ */
 export const DEFAULT_BYTES_DISTRIBUTION: number[] = [
   0, 1024, 2048, 4096, 16384, 65536, 262144, 1048576, 4194304, 16777216,
   67108864, 268435456, 1073741824, 4294967296
 ];
 
-/** 
+/**
  * Common histogram bucket boundaries for latency and elapsed-time Views.
- * 
- */ 
+ *
+ */
 export const DEFAULT_MILLI_SECONDS_DISTRIBUTION: number[] = [
   0,   0.01, 0.05, 0.1,  0.3,   0.6,   0.8,   1,     2,   3,   4,
   5,   6,    8,    10,   13,    16,    20,    25,    30,  40,  50,
@@ -40,7 +40,7 @@ export const DEFAULT_MILLI_SECONDS_DISTRIBUTION: number[] = [
 
 /**
  * Common histogram bucket boundaries for request/response count Views.
- * 
+ *
  */
 export const DEFAULT_MESSAGE_COUNT_DISTRIBUTION: number[] = [
   0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
