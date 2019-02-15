@@ -17,7 +17,8 @@
 import {CanonicalCode, CoreTracer, MessageEventType, RootSpan, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as nock from 'nock';
-import {ZipkinExporterOptions, ZipkinTraceExporter} from '../src/zipkin';
+
+import {MICROS_PER_MILLI, ZipkinExporterOptions, ZipkinTraceExporter} from '../src/zipkin';
 
 /** Zipkin host url */
 const zipkinHost = 'http://localhost:9411';
@@ -121,23 +122,23 @@ describe('Zipkin Exporter', function() {
         span.end();
         rootSpan.end();
 
-        const spanTraslated = exporter.translateSpan(rootSpan);
-        assert.deepEqual(spanTraslated, {
+        const rootSpanTranslated = exporter.translateSpan(rootSpan);
+        assert.deepEqual(rootSpanTranslated, {
           'annotations': [],
           'debug': true,
-          'duration': Math.round(rootSpan.duration * 1000),
+          'duration': Math.round(rootSpan.duration * MICROS_PER_MILLI),
           'id': rootSpan.id,
           'kind': 'SERVER',
           'localEndpoint': {'serviceName': 'opencensus-tests'},
           'name': 'root-test',
           'shared': true,
           'tags': {'census.status_code': '0'},
-          'timestamp': rootSpan.startTime.getTime() * 1000,
+          'timestamp': rootSpan.startTime.getTime() * MICROS_PER_MILLI,
           'traceId': rootSpan.traceId
         });
 
-        const spanTraslated1 = exporter.translateSpan(span);
-        assert.deepEqual(spanTraslated1, {
+        const chilsSpanTranslated = exporter.translateSpan(span);
+        assert.deepEqual(chilsSpanTranslated, {
           'annotations': [
             {'timestamp': 1550213104708000, 'value': 'processing'},
             {'timestamp': 1550213104708000, 'value': 'done'},
@@ -146,7 +147,7 @@ describe('Zipkin Exporter', function() {
             {'timestamp': 1550213104708000, 'value': 'UNSPECIFIED'}
           ],
           'debug': true,
-          'duration': Math.round(span.duration * 1000),
+          'duration': Math.round(span.duration * MICROS_PER_MILLI),
           'id': span.id,
           'kind': 'CLIENT',
           'localEndpoint': {'serviceName': 'opencensus-tests'},
@@ -160,7 +161,7 @@ describe('Zipkin Exporter', function() {
             'my-str-attribute': 'value',
             'my-bool-attribute': 'true'
           },
-          'timestamp': span.startTime.getTime() * 1000,
+          'timestamp': span.startTime.getTime() * MICROS_PER_MILLI,
           'traceId': span.traceId
         });
       });

@@ -23,11 +23,12 @@ import * as url from 'url';
 const STATUS_CODE = 'census.status_code';
 const STATUS_DESCRIPTION = 'census.status_description';
 
-const messageEventTypeTranslation: {[k: number]: string} = {
+const MESSAGE_EVENT_TYPE_TRANSLATION: {[k: number]: string} = {
   0: 'UNSPECIFIED',
   1: 'SENT',
   2: 'RECEIVED'
 };
+export const MICROS_PER_MILLI = 1000;
 
 export interface ZipkinExporterOptions extends ExporterConfig {
   url?: string;
@@ -162,8 +163,8 @@ export class ZipkinTraceExporter implements Exporter {
       // Zipkin API for span kind only accept
       // (CLIENT|SERVER|PRODUCER|CONSUMER)
       kind: span.kind === SpanKind.CLIENT ? 'CLIENT' : 'SERVER',
-      timestamp: span.startTime.getTime() * 1000,
-      duration: Math.round(span.duration * 1000),
+      timestamp: span.startTime.getTime() * MICROS_PER_MILLI,
+      duration: Math.round(span.duration * MICROS_PER_MILLI),
       debug: true,
       shared: true,
       localEndpoint: {serviceName: this.serviceName},
@@ -200,17 +201,17 @@ export class ZipkinTraceExporter implements Exporter {
       messageEventTimedEvents: coreTypes.MessageEvent[]) {
     let annotations: Annotation[] = [];
     if (annotationTimedEvents) {
-      annotations =
-          annotationTimedEvents.map((annotation) => ({
-                                      timestamp: annotation.timestamp * 1000,
-                                      value: annotation.description
-                                    }));
+      annotations = annotationTimedEvents.map(
+          (annotation) => ({
+            timestamp: annotation.timestamp * MICROS_PER_MILLI,
+            value: annotation.description
+          }));
     }
     if (messageEventTimedEvents) {
       annotations.push(...messageEventTimedEvents.map(
           (messageEvent) => ({
-            timestamp: messageEvent.timestamp * 1000,
-            value: messageEventTypeTranslation[messageEvent.type]
+            timestamp: messageEvent.timestamp * MICROS_PER_MILLI,
+            value: MESSAGE_EVENT_TYPE_TRANSLATION[messageEvent.type]
           })));
     }
     return annotations;
