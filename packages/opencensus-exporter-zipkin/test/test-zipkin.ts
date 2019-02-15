@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, SpanKind, TracerConfig} from '@opencensus/core';
+import {CanonicalCode, CoreTracer, MessageEventType, RootSpan, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
-import * as http from 'http';
-import * as mocha from 'mocha';
 import * as nock from 'nock';
-
 import {ZipkinExporterOptions, ZipkinTraceExporter} from '../src/zipkin';
-
-/** Interface with request response model */
-interface RequestResponse {
-  statusCode: number;
-  statusMessage: string;
-}
 
 /** Zipkin host url */
 const zipkinHost = 'http://localhost:9411';
@@ -106,6 +97,73 @@ describe('Zipkin Exporter', function() {
               assert.equal(result.statusCode, 202);
             });
           });
+    });
+  });
+
+  describe('translateSpan()', () => {
+    it('should translate traces to Zipkin format', () => {
+      const exporter = new ZipkinTraceExporter(zipkinOptions);
+      const tracer = new CoreTracer();
+      tracer.start(defaultConfig);
+
+      return tracer.startRootSpan({name: 'root-test'}, (rootSpan: RootSpan) => {
+        const span = rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
+        span.addAttribute('my-int-attribute', 100);
+        span.addAttribute('my-str-attribute', 'value');
+        span.addAttribute('my-bool-attribute', true);
+        span.setStatus(CanonicalCode.RESOURCE_EXHAUSTED, 'RESOURCE_EXHAUSTED');
+
+        span.addAnnotation('processing', {}, 1550213104708);
+        span.addMessageEvent(MessageEventType.SENT, '1', 1550213104708);
+        span.addMessageEvent(MessageEventType.RECEIVED, '2', 1550213104708);
+        span.addMessageEvent(MessageEventType.UNSPECIFIED, '3', 1550213104708);
+        span.addAnnotation('done', {}, 1550213104708);
+        span.end();
+        rootSpan.end();
+
+        const spanTraslated = exporter.translateSpan(rootSpan);
+        assert.deepEqual(spanTraslated, {
+          'annotations': [],
+          'debug': true,
+          'duration': Math.round(rootSpan.duration * 1000),
+          'id': rootSpan.id,
+          'kind': 'SERVER',
+          'localEndpoint': {'serviceName': 'opencensus-tests'},
+          'name': 'root-test',
+          'shared': true,
+          'tags': {'census.status_code': '0'},
+          'timestamp': rootSpan.startTime.getTime() * 1000,
+          'traceId': rootSpan.traceId
+        });
+
+        const spanTraslated1 = exporter.translateSpan(span);
+        assert.deepEqual(spanTraslated1, {
+          'annotations': [
+            {'timestamp': 1550213104708000, 'value': 'processing'},
+            {'timestamp': 1550213104708000, 'value': 'done'},
+            {'timestamp': 1550213104708000, 'value': 'SENT'},
+            {'timestamp': 1550213104708000, 'value': 'RECEIVED'},
+            {'timestamp': 1550213104708000, 'value': 'UNSPECIFIED'}
+          ],
+          'debug': true,
+          'duration': Math.round(span.duration * 1000),
+          'id': span.id,
+          'kind': 'CLIENT',
+          'localEndpoint': {'serviceName': 'opencensus-tests'},
+          'name': 'spanTest',
+          'parentId': rootSpan.id,
+          'shared': true,
+          'tags': {
+            'census.status_code': '8',
+            'census.status_description': 'RESOURCE_EXHAUSTED',
+            'my-int-attribute': '100',
+            'my-str-attribute': 'value',
+            'my-bool-attribute': 'true'
+          },
+          'timestamp': span.startTime.getTime() * 1000,
+          'traceId': span.traceId
+        });
+      });
     });
   });
 

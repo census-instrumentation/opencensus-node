@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import * as coreTypes from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanKind} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
-import {prototype} from 'events';
 import * as http from 'http';
 import * as url from 'url';
+
+const STATUS_CODE = 'census.status_code';
+const STATUS_DESCRIPTION = 'census.status_description';
+
+const messageEventTypeTranslation: {[k: number]: string} = {
+  0: 'UNSPECIFIED',
+  1: 'SENT',
+  2: 'RECEIVED'
+};
 
 export interface ZipkinExporterOptions extends ExporterConfig {
   url?: string;
@@ -36,6 +45,13 @@ interface TranslatedSpan {
   debug: boolean;
   shared: boolean;
   localEndpoint: {serviceName: string};
+  annotations: Annotation[];
+  tags: {[key: string]: string};
+}
+
+interface Annotation {
+  timestamp?: number;
+  value?: string;
 }
 
 /** Zipkin Exporter manager class */
@@ -138,21 +154,61 @@ export class ZipkinTraceExporter implements Exporter {
    * @param span Span to be translated
    * @param rootSpan Only necessary if the span has rootSpan
    */
-  private translateSpan(span: Span|RootSpan): TranslatedSpan {
+  translateSpan(span: Span|RootSpan): TranslatedSpan {
     const spanTraslated = {
       traceId: span.traceId,
       name: span.name,
       id: span.id,
-      parentId: span.parentSpanId,
-      kind: 'SERVER',
+      // Zipkin API for span kind only accept
+      // (CLIENT|SERVER|PRODUCER|CONSUMER)
+      kind: span.kind === SpanKind.CLIENT ? 'CLIENT' : 'SERVER',
       timestamp: span.startTime.getTime() * 1000,
       duration: Math.round(span.duration * 1000),
       debug: true,
       shared: true,
-      localEndpoint: {serviceName: this.serviceName}
+      localEndpoint: {serviceName: this.serviceName},
+      tags: this.createTags(span.attributes, span.status),
+      annotations: this.createAnnotations(span.annotations, span.messageEvents)
     } as TranslatedSpan;
 
+    if (span.parentSpanId) {
+      spanTraslated.parentId = span.parentSpanId;
+    }
     return spanTraslated;
+  }
+
+  private createTags(
+      attributes: coreTypes.Attributes, status: coreTypes.Status) {
+    const tags: {[key: string]: string} = {};
+    for (const key of Object.keys(attributes)) {
+      tags[key] = String(attributes[key]);
+    }
+    tags[STATUS_CODE] = String(status.code);
+    if (status.message) {
+      tags[STATUS_DESCRIPTION] = status.message;
+    }
+    return tags;
+  }
+
+  private createAnnotations(
+      annotationTimedEvents: coreTypes.Annotation[],
+      messageEventTimedEvents: coreTypes.MessageEvent[]) {
+    let annotations: Annotation[] = [];
+    if (annotationTimedEvents) {
+      annotations =
+          annotationTimedEvents.map((annotation) => ({
+                                      timestamp: annotation.timestamp * 1000,
+                                      value: annotation.description
+                                    }));
+    }
+    if (messageEventTimedEvents) {
+      annotations.push(...messageEventTimedEvents.map(
+          (messageEvent) => ({
+            timestamp: messageEvent.timestamp * 1000,
+            value: messageEventTypeTranslation[messageEvent.type]
+          })));
+    }
+    return annotations;
   }
 
   // TODO: review return of method publish from exporter interface - today is
