@@ -418,8 +418,13 @@ export interface Span {
    * @param type The type of message event.
    * @param id An identifier for the message event.
    * @param timestamp A timestamp for this event.
+   * @param uncompressedSize The number of uncompressed bytes sent or received.
+   * @param compressedSize The number of compressed bytes sent or received. If
+   *     zero or undefined, assumed to be the same size as uncompressed.
    */
-  addMessageEvent(type: MessageEventType, id: string, timestamp?: number): void;
+  addMessageEvent(
+      type: MessageEventType, id: string, timestamp?: number,
+      uncompressedSize?: number, compressedSize?: number): void;
 
   /**
    * Sets a status to the span.
