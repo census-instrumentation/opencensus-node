@@ -360,7 +360,8 @@ describe('OpenCensus Agent Exporter', () => {
       // Message Event
       const timeStamp = 123456789;
       rootSpan.addMessageEvent(MessageEventType.SENT, 'aaaa', timeStamp);
-      rootSpan.addMessageEvent(MessageEventType.SENT, 'ffff', timeStamp);
+      rootSpan.addMessageEvent(
+          MessageEventType.SENT, 'ffff', timeStamp, 100, 12);
       rootSpan.addMessageEvent(MessageEventType.RECEIVED, 'ffff', timeStamp);
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any
@@ -476,10 +477,10 @@ describe('OpenCensus Agent Exporter', () => {
                 },
                 {
                   messageEvent: {
-                    compressedSize: '0',
+                    compressedSize: '12',
                     id: '65535',
                     type: 'SENT',
-                    uncompressedSize: '0'
+                    uncompressedSize: '100'
                   },
                   time: {seconds: '123456', nanos: 789000000},
                   value: 'messageEvent'

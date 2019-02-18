@@ -97,7 +97,13 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       {description: 'my_annotation2', timestamp: ts, attributes: {}}
     ];
     const messageEvents: coreTypes.MessageEvent[] = [
-      {id: 'aaaa', timestamp: ts, type: coreTypes.MessageEventType.SENT},
+      {
+        id: 'aaaa',
+        timestamp: ts,
+        type: coreTypes.MessageEventType.SENT,
+        compressedSize: 100,
+        uncompressedSize: 12
+      },
       {id: 'ffff', timestamp: ts, type: coreTypes.MessageEventType.RECEIVED}, {
         id: 'eeee',
         timestamp: ts,
@@ -142,23 +148,21 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       },
       {
         messageEvent: {
+          compressedSize: '100',
           id: 'aaaa',
           type: 1,
+          uncompressedSize: '12'
         },
         time: '1970-01-02T10:17:36.789Z',
       },
       {
-        messageEvent: {
-          id: 'ffff',
-          type: 2,
-        },
+        messageEvent:
+            {compressedSize: '0', id: 'ffff', type: 2, uncompressedSize: '0'},
         time: '1970-01-02T10:17:36.789Z',
       },
       {
-        messageEvent: {
-          id: 'eeee',
-          type: 0,
-        },
+        messageEvent:
+            {compressedSize: '0', id: 'eeee', type: 0, uncompressedSize: '0'},
         time: '1970-01-02T10:17:36.789Z',
       }
     ];

@@ -181,7 +181,9 @@ const adaptTimeEvents =
             messageEvent: {
               // tslint:disable-next-line:ban Needed to parse hexadecimal.
               id: parseInt(messageEvent.id, 16),
-              type: adaptMessageEventType(messageEvent.type)
+              type: adaptMessageEventType(messageEvent.type),
+              uncompressedSize: messageEvent.uncompressedSize || 0,
+              compressedSize: messageEvent.compressedSize || 0
             }
           });
         });
