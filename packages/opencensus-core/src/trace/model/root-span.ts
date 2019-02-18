@@ -106,8 +106,9 @@ export class RootSpan extends SpanBase implements types.RootSpan {
    * @param kind Span kind.
    * @param parentSpanId Span parent ID.
    */
-  startChildSpan(name: string, kind: types.SpanKind, parentSpanId?: string):
-      types.Span {
+  startChildSpan(
+      nameOrOptions?: string|types.SpanOptions, kind?: types.SpanKind,
+      parentSpanId?: string): types.Span {
     if (this.ended) {
       this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,
@@ -121,11 +122,21 @@ export class RootSpan extends SpanBase implements types.RootSpan {
       return null;
     }
     const newSpan = new Span(this);
-    if (name) {
-      newSpan.name = name;
+    let spanName;
+    let spanKind;
+    if (typeof nameOrOptions === 'object') {
+      spanName = nameOrOptions.name;
+      spanKind = nameOrOptions.kind;
+    } else {
+      spanName = nameOrOptions;
+      spanKind = kind;
     }
-    if (kind) {
-      newSpan.kind = kind;
+
+    if (spanName) {
+      newSpan.name = spanName;
+    }
+    if (spanKind) {
+      newSpan.kind = spanKind;
     }
     newSpan.start();
     this.spansLocal.push(newSpan);

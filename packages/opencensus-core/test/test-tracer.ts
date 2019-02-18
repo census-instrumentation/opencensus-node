@@ -291,8 +291,9 @@ describe('Tracer', () => {
   /** Should create and start a Span instance into a rootSpan */
   describe('startChildSpan()', () => {
     let span: types.Span;
+    let tracer: types.Tracer;
     before(() => {
-      const tracer = new CoreTracer();
+      tracer = new CoreTracer();
       tracer.start(defaultConfig);
       tracer.startRootSpan(options, (rootSpan) => {
         span = tracer.startChildSpan('spanName', types.SpanKind.CLIENT);
@@ -306,6 +307,37 @@ describe('Tracer', () => {
       assert.strictEqual(span.name, 'spanName');
       assert.strictEqual(span.kind, types.SpanKind.CLIENT);
     });
+
+    it('should start a span with SpanObject', () => {
+      let spanWithObject: types.Span;
+      tracer.startRootSpan(options, (rootSpan) => {
+        spanWithObject = tracer.startChildSpan(
+            {name: 'my-span', kind: types.SpanKind.SERVER});
+      });
+      assert.ok(spanWithObject.started);
+      assert.strictEqual(spanWithObject.name, 'my-span');
+      assert.strictEqual(spanWithObject.kind, types.SpanKind.SERVER);
+    });
+
+    it('should start a span with SpanObject-name', () => {
+      let spanWithObject: types.Span;
+      tracer.startRootSpan(options, (rootSpan) => {
+        spanWithObject = tracer.startChildSpan({name: 'my-span1'});
+      });
+      assert.ok(spanWithObject.started);
+      assert.strictEqual(spanWithObject.name, 'my-span1');
+      assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
+    });
+
+    it('should start a span without params', () => {
+      let spanWithObject: types.Span;
+      tracer.startRootSpan(options, (rootSpan) => {
+        spanWithObject = tracer.startChildSpan();
+      });
+      assert.ok(spanWithObject.started);
+      assert.strictEqual(spanWithObject.name, null);
+      assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
+    });
   });
 
   /** Should not create a Span instance */
@@ -313,8 +345,8 @@ describe('Tracer', () => {
     it('should not create a Span instance, without a rootspan', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      const span =
-          tracer.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
+      const span = tracer.startChildSpan(
+          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
       assert.equal(span, null);
     });
   });

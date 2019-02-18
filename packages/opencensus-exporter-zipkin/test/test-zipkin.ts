@@ -74,7 +74,8 @@ describe('Zipkin Exporter', function() {
       tracer.start(defaultConfig);
 
       tracer.startRootSpan({name: 'root-test'}, (rootSpan: RootSpan) => {
-        const span = rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
+        const span =
+            rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
         span.end();
         rootSpan.end();
         assert.ok(exporter.buffer.getQueue().length > 0);
@@ -91,7 +92,8 @@ describe('Zipkin Exporter', function() {
 
       return tracer.startRootSpan(
           {name: 'root-test'}, async (rootSpan: RootSpan) => {
-            const span = rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
+            const span = rootSpan.startChildSpan(
+                {name: 'spanTest', kind: SpanKind.CLIENT});
             span.end();
             rootSpan.end();
             return exporter.publish([rootSpan, rootSpan]).then((result) => {
@@ -108,7 +110,8 @@ describe('Zipkin Exporter', function() {
       tracer.start(defaultConfig);
 
       return tracer.startRootSpan({name: 'root-test'}, (rootSpan: RootSpan) => {
-        const span = rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
+        const span =
+            rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
         span.addAttribute('my-int-attribute', 100);
         span.addAttribute('my-str-attribute', 'value');
         span.addAttribute('my-bool-attribute', true);
@@ -183,8 +186,8 @@ describe('Zipkin Exporter', function() {
 
          return tracer.startRootSpan(
              {name: 'root-test'}, async (rootSpan: RootSpan) => {
-               const span =
-                   rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
+               const span = rootSpan.startChildSpan(
+                   {name: 'spanTest', kind: SpanKind.CLIENT});
                span.end();
                rootSpan.end();
                return exporter.publish([rootSpan]).then((result) => {

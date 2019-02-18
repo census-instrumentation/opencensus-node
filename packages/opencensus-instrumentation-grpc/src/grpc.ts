@@ -328,7 +328,7 @@ export class GrpcPlugin extends BasePlugin {
               plugin.makeGrpcClientRemoteCall(original, args, this, plugin));
         } else {
           const span = plugin.tracer.startChildSpan(
-              traceOptions.name, traceOptions.kind);
+              {name: traceOptions.name, kind: traceOptions.kind});
           return (plugin.makeGrpcClientRemoteCall(
               original, args, this, plugin))(span);
         }
