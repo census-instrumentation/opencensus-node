@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import * as coreTypes from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanKind} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
-import {prototype} from 'events';
 import * as http from 'http';
 import * as url from 'url';
+
+const STATUS_CODE = 'census.status_code';
+const STATUS_DESCRIPTION = 'census.status_description';
+
+const MESSAGE_EVENT_TYPE_TRANSLATION: {[k: number]: string} = {
+  0: 'UNSPECIFIED',
+  1: 'SENT',
+  2: 'RECEIVED'
+};
+export const MICROS_PER_MILLI = 1000;
 
 export interface ZipkinExporterOptions extends ExporterConfig {
   url?: string;
@@ -31,11 +41,18 @@ interface TranslatedSpan {
   id: string;
   parentId?: string;
   kind: string;
-  timestamp: number;
+  timestamp: number;  // in microseconds
   duration: number;
   debug: boolean;
   shared: boolean;
   localEndpoint: {serviceName: string};
+  annotations: Annotation[];
+  tags: {[key: string]: string};
+}
+
+interface Annotation {
+  timestamp?: number;  // in microseconds
+  value?: string;
 }
 
 /** Zipkin Exporter manager class */
@@ -138,21 +155,66 @@ export class ZipkinTraceExporter implements Exporter {
    * @param span Span to be translated
    * @param rootSpan Only necessary if the span has rootSpan
    */
-  private translateSpan(span: Span|RootSpan): TranslatedSpan {
+  translateSpan(span: Span|RootSpan): TranslatedSpan {
     const spanTraslated = {
       traceId: span.traceId,
       name: span.name,
       id: span.id,
-      parentId: span.parentSpanId,
-      kind: 'SERVER',
-      timestamp: span.startTime.getTime() * 1000,
-      duration: Math.round(span.duration * 1000),
+      // Zipkin API for span kind only accept
+      // (CLIENT|SERVER|PRODUCER|CONSUMER)
+      kind: span.kind === SpanKind.CLIENT ? 'CLIENT' : 'SERVER',
+      timestamp: span.startTime.getTime() * MICROS_PER_MILLI,
+      duration: Math.round(span.duration * MICROS_PER_MILLI),
       debug: true,
       shared: true,
-      localEndpoint: {serviceName: this.serviceName}
+      localEndpoint: {serviceName: this.serviceName},
+      tags: this.createTags(span.attributes, span.status),
+      annotations: this.createAnnotations(span.annotations, span.messageEvents)
     } as TranslatedSpan;
 
+    if (span.parentSpanId) {
+      spanTraslated.parentId = span.parentSpanId;
+    }
     return spanTraslated;
+  }
+
+  /** Converts OpenCensus Attributes ans Status to Zipkin Tags format. */
+  private createTags(
+      attributes: coreTypes.Attributes, status: coreTypes.Status) {
+    const tags: {[key: string]: string} = {};
+    for (const key of Object.keys(attributes)) {
+      tags[key] = String(attributes[key]);
+    }
+    tags[STATUS_CODE] = String(status.code);
+    if (status.message) {
+      tags[STATUS_DESCRIPTION] = status.message;
+    }
+    return tags;
+  }
+
+  /**
+   * Converts OpenCensus Annotation and MessageEvent to Zipkin Annotations
+   * format.
+   */
+  private createAnnotations(
+      annotationTimedEvents: coreTypes.Annotation[],
+      messageEventTimedEvents: coreTypes.MessageEvent[]) {
+    let annotations: Annotation[] = [];
+    if (annotationTimedEvents) {
+      annotations = annotationTimedEvents.map(
+          (annotation) => ({
+            timestamp: annotation.timestamp * MICROS_PER_MILLI,
+            value: annotation.description
+          }));
+    }
+    if (messageEventTimedEvents) {
+      annotations.push(...messageEventTimedEvents.map(
+          (messageEvent) => ({
+            timestamp: messageEvent.timestamp * MICROS_PER_MILLI,
+            value: MESSAGE_EVENT_TYPE_TRANSLATION[messageEvent.type]
+          })));
+    }
+    return annotations;
   }
 
   // TODO: review return of method publish from exporter interface - today is

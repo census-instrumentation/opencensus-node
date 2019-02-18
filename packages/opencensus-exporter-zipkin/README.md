@@ -27,16 +27,16 @@ Instance the exporter on your application and pass the options, it must contain 
 For javascript:
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
-var zipkin = require('@opencensus/exporter-zipkin');
+const tracing = require('@opencensus/nodejs');
+const zipkin = require('@opencensus/exporter-zipkin');
 
 // Add your zipkin url (ex http://localhost:9411/api/v2/spans)
 // and application name to the Zipkin options
-var options = {
+const options = {
   url: 'your-zipkin-url',
   serviceName: 'your-application-name'
 }
-var exporter = new zipkin.ZipkinTraceExporter(options);
+const exporter = new zipkin.ZipkinTraceExporter(options);
 ```
 
 Similarly for Typescript:
@@ -65,10 +65,13 @@ or
 ```javascript
 tracing.registerExporter(exporter).start();
 ```
+## Viewing your traces:
+Please visit the Zipkin UI endpoint http://localhost:9411
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
 - To checkout the OpenCensus for Node.js, visit: <https://github.com/census-instrumentation/opencensus-node>
+- For Zipkin project at https://zipkin.io/
 - For help or feedback on this project, join us on [gitter](https://gitter.im/census-instrumentation/Lobby)
 
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
