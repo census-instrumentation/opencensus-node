@@ -20,9 +20,7 @@ import {B3Format} from '@opencensus/propagation-b3';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
 import * as path from 'path';
-
-import {GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
-
+import {GrpcModule, GrpcPlugin, plugin, RECV_PREFIX, SendUnaryDataCallback, SENT_PREFIX} from '../src/';
 
 const PROTO_PATH = __dirname + '/fixtures/grpc-instrumentation-test.proto';
 const grpcPort = 50051;
@@ -361,7 +359,7 @@ describe('GrpcPlugin() ', function() {
                  method.description}`,
              async () => {
                assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-               const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
+               const spanName = `pkg_test.GrpcTester/${method.methodName}`;
                const args = [client, method.request];
                await method.method.apply(this, args)
                    .then(
@@ -373,11 +371,11 @@ describe('GrpcPlugin() ', function() {
                          const serverRoot = rootSpanVerifier.endedRootSpans[0];
                          const clientRoot = rootSpanVerifier.endedRootSpans[1];
                          assertSpan(
-                             serverRoot, spanName, SpanKind.SERVER,
-                             grpcModule.status.OK);
+                             serverRoot, `${RECV_PREFIX}.${spanName}`,
+                             SpanKind.SERVER, grpcModule.status.OK);
                          assertSpan(
-                             clientRoot, spanName, SpanKind.CLIENT,
-                             grpcModule.status.OK);
+                             clientRoot, `${SENT_PREFIX}.${spanName}`,
+                             SpanKind.CLIENT, grpcModule.status.OK);
 
                          assertPropagation(clientRoot, serverRoot);
                        });
@@ -388,7 +386,7 @@ describe('GrpcPlugin() ', function() {
              () => {
                assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
                const options = {name: 'TestRootSpan'};
-               const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
+               const spanName = `pkg_test.GrpcTester/${method.methodName}`;
                let serverRoot: RootSpan;
                return tracer.startRootSpan(options, async (root: RootSpan) => {
                  assert.strictEqual(root.name, options.name);
@@ -403,15 +401,15 @@ describe('GrpcPlugin() ', function() {
 
                            serverRoot = rootSpanVerifier.endedRootSpans[0];
                            assertSpan(
-                               serverRoot, spanName, SpanKind.SERVER,
-                               grpcModule.status.OK);
+                               serverRoot, `${RECV_PREFIX}.${spanName}`,
+                               SpanKind.SERVER, grpcModule.status.OK);
                          });
                  root.end();
                  assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
                  const clientChild =
                      rootSpanVerifier.endedRootSpans[1].spans[0];
                  assertSpan(
-                     clientChild, spanName, SpanKind.CLIENT,
+                     clientChild, `${SENT_PREFIX}.${spanName}`, SpanKind.CLIENT,
                      grpcModule.status.OK);
                  // propagation
                  assertPropagation(clientChild, serverRoot);
@@ -440,7 +438,7 @@ describe('GrpcPlugin() ', function() {
                  method.description} - status = ${key}`,
              async () => {
                assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-               const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
+               const spanName = `pkg_test.GrpcTester/${method.methodName}`;
                const errRequest = (method.request instanceof Array) ?
                    method.request.slice(0, method.request.length) :
                    method.request;
@@ -453,9 +451,11 @@ describe('GrpcPlugin() ', function() {
                      const serverRoot = rootSpanVerifier.endedRootSpans[0];
                      const clientRoot = rootSpanVerifier.endedRootSpans[1];
                      assertSpan(
-                         serverRoot, spanName, SpanKind.SERVER, errorCode);
+                         serverRoot, `${RECV_PREFIX}.${spanName}`,
+                         SpanKind.SERVER, errorCode);
                      assertSpan(
-                         clientRoot, spanName, SpanKind.CLIENT, errorCode);
+                         clientRoot, `${SENT_PREFIX}.${spanName}`,
+                         SpanKind.CLIENT, errorCode);
                      assertPropagation(clientRoot, serverRoot);
                    });
              });
@@ -465,7 +465,7 @@ describe('GrpcPlugin() ', function() {
              () => {
                assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
                const options = {name: 'TestRootSpan'};
-               const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
+               const spanName = `pkg_test.GrpcTester/${method.methodName}`;
                let serverRoot: RootSpan;
                return tracer.startRootSpan(options, async (root: RootSpan) => {
                  assert.strictEqual(root.name, options.name);
@@ -480,13 +480,16 @@ describe('GrpcPlugin() ', function() {
 
                        serverRoot = rootSpanVerifier.endedRootSpans[0];
                        assertSpan(
-                           serverRoot, spanName, SpanKind.SERVER, errorCode);
+                           serverRoot, `${RECV_PREFIX}.${spanName}`,
+                           SpanKind.SERVER, errorCode);
                      });
                  root.end();
                  assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
                  const clientChild =
                      rootSpanVerifier.endedRootSpans[1].spans[0];
-                 assertSpan(clientChild, spanName, SpanKind.CLIENT, errorCode);
+                 assertSpan(
+                     clientChild, `${SENT_PREFIX}.${spanName}`, SpanKind.CLIENT,
+                     errorCode);
                  // propagation
                  assertPropagation(clientChild, serverRoot);
                });

@@ -18,11 +18,11 @@ import {BasePlugin, CanonicalCode, HeaderGetter, HeaderSetter, PluginInternalFil
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
-import * as path from 'path';
-import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 
 const findIndex = lodash.findIndex;
+export const SENT_PREFIX = 'Sent';
+export const RECV_PREFIX = 'Recv';
 
 //
 // Types definitions
@@ -143,7 +143,7 @@ export class GrpcPlugin extends BasePlugin {
   private getPatchServer() {
     return (originalRegister: RegisterMethod) => {
       const plugin = this;
-      plugin.logger.debug('pathcServer');
+      plugin.logger.debug('patchServer');
       return function register<RequestType, ResponseType>(
           // tslint:disable-next-line:no-any
           this: grpcTypes.Server&{handlers: any}, name: string,
@@ -171,7 +171,7 @@ export class GrpcPlugin extends BasePlugin {
                 };
 
                 const traceOptions = {
-                  name: `grpc.${name.replace('/', '')}`,
+                  name: `${RECV_PREFIX}.${name.replace('/', '')}`,
                   kind: SpanKind.SERVER,
                   spanContext: propagation ? propagation.extract(getter) : null
                 };
@@ -313,7 +313,7 @@ export class GrpcPlugin extends BasePlugin {
           this: grpcTypes.Client,
       ) {
         const traceOptions = {
-          name: `grpc.${original.path.replace('/', '')}`,
+          name: `${SENT_PREFIX}.${original.path.replace('/', '')}`,
           kind: SpanKind.CLIENT,
         };
         const args = Array.prototype.slice.call(arguments);
