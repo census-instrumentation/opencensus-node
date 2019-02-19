@@ -210,6 +210,19 @@ describe('RootSpan', () => {
       assert.equal(rootSpan.droppedAnnotationsCount, 0);
       assert.ok(instanceOfAnnotation(rootSpan.annotations[0]));
     });
+
+    it('should add an annotation without attributes and timestamp', () => {
+      const rootSpan = new RootSpan(tracer);
+      rootSpan.start();
+
+      rootSpan.addAnnotation('description test');
+
+      assert.ok(rootSpan.annotations.length > 0);
+      assert.equal(rootSpan.droppedAnnotationsCount, 0);
+      assert.equal(rootSpan.annotations[0].description, 'description test');
+      assert.deepEqual(rootSpan.annotations[0].attributes, {});
+      assert.ok(rootSpan.annotations[0].timestamp > 0);
+    });
   });
 
   /**
