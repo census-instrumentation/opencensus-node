@@ -176,7 +176,7 @@ export abstract class SpanBase implements types.Span {
     }
     this.annotations.push({
       'description': description,
-      'attributes': attributes,
+      'attributes': attributes || {},
       'timestamp': timestamp ? timestamp : Date.now(),
     } as types.Annotation);
   }
@@ -200,7 +200,7 @@ export abstract class SpanBase implements types.Span {
       'traceId': traceId,
       'spanId': spanId,
       'type': type,
-      'attributes': attributes
+      'attributes': attributes || {}
     } as types.Link);
   }
 

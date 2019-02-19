@@ -535,13 +535,15 @@ describe('OpenCensus Agent Exporter', () => {
                   type: 'PARENT_LINKED_SPAN',
                   traceId: buff,
                   spanId: buff,
-                  attributes: null
+                  attributes:
+                      {'attributeMap': {}, 'droppedAttributesCount': 0}
                 },
                 {
                   type: 'TYPE_UNSPECIFIED',
                   traceId: buff,
                   spanId: buff,
-                  attributes: null
+                  attributes:
+                      {'attributeMap': {}, 'droppedAttributesCount': 0}
                 }
               ]
             });
@@ -712,7 +714,8 @@ describe('OpenCensus Agent Exporter', () => {
                      type: 'PARENT_LINKED_SPAN',
                      traceId: buff,
                      spanId: buff,
-                     attributes: null
+                     attributes:
+                         {'attributeMap': {}, 'droppedAttributesCount': 0}
                    }
                  ]
                });
