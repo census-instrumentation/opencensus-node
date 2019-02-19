@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - Add optional `compressedSize` and `uncompressedSize` params to `Span.addMessageEvent`
 - Add support for ```tags```, ```status``` and ```annotation``` in Zipkin exporter.
+- Add support for Binary propagation format.
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.
