@@ -479,7 +479,7 @@ export class GrpcPlugin extends BasePlugin {
    * Returns a span context on a Metadata object if it exists and is
    * well-formed, or null otherwise.
    * @param metadata The Metadata object from which span context should be
-   * retrieved.
+   *     retrieved.
    */
   static getSpanContext(metadata: grpcTypes.Metadata): SpanContext|null {
     const metadataValue = metadata.getMap()[GRPC_TRACE_KEY] as Buffer;
@@ -498,7 +498,7 @@ export class GrpcPlugin extends BasePlugin {
   /**
    * Set span context on a Metadata object if it exists.
    * @param metadata The Metadata object to which a span context should be
-   * added.
+   *     added.
    * @param spanContext The span context.
    */
   static setSpanContext(metadata: grpcTypes.Metadata, spanContext: SpanContext):
