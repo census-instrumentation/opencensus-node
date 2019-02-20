@@ -22,7 +22,7 @@ import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
 
 /** The metadata key under which span context is stored as a binary value. */
-const GRPC_TRACE_KEY = 'grpc-trace-bin';
+export const GRPC_TRACE_KEY = 'grpc-trace-bin';
 const findIndex = lodash.findIndex;
 
 //
@@ -162,7 +162,6 @@ export class GrpcPlugin extends BasePlugin {
                 if (spanContext) {
                   traceOptions.spanContext = spanContext;
                 }
-
                 plugin.logger.debug(
                     'path func: %s', JSON.stringify(traceOptions));
 
