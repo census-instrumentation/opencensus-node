@@ -16,13 +16,10 @@
 
 import {CoreTracer, RootSpan, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import {logger} from '@opencensus/core';
-import {B3Format} from '@opencensus/propagation-b3';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
 import * as path from 'path';
-
 import {GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
-
 
 const PROTO_PATH = __dirname + '/fixtures/grpc-instrumentation-test.proto';
 const grpcPort = 50051;
@@ -244,7 +241,7 @@ describe('GrpcPlugin() ', function() {
   let client: TestGrpcClient;
   const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
-  tracer.start({samplingRate: 1, propagation: new B3Format(), logger: log});
+  tracer.start({samplingRate: 1, logger: log});
 
   it('should return a plugin', () => {
     assert.ok(plugin instanceof GrpcPlugin);

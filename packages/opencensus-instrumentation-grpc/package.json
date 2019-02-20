@@ -40,7 +40,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@opencensus/propagation-b3": "^0.0.9",
+    "@opencensus/propagation-binaryformat": "^0.0.1",
     "@types/end-of-stream": "^1.4.0",
     "@types/lodash": "^4.14.109",
     "@types/mocha": "^5.2.5",
