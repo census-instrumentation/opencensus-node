@@ -16,19 +16,16 @@
 
 import {CoreTracer, RootSpan, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import {logger} from '@opencensus/core';
-import {B3Format} from '@opencensus/propagation-b3';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
 import * as path from 'path';
 
-import {GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
-
+import {GRPC_TRACE_KEY, GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
 
 const PROTO_PATH = __dirname + '/fixtures/grpc-instrumentation-test.proto';
 const grpcPort = 50051;
 const MAX_ERROR_STATUS = grpcModule.status.UNAUTHENTICATED;
 const log = logger.logger();
-
 
 const replicate = (request: TestRequestResponse) => {
   const result: TestRequestResponse[] = [];
@@ -244,7 +241,7 @@ describe('GrpcPlugin() ', function() {
   let client: TestGrpcClient;
   const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
-  tracer.start({samplingRate: 1, propagation: new B3Format(), logger: log});
+  tracer.start({samplingRate: 1, logger: log});
 
   it('should return a plugin', () => {
     assert.ok(plugin instanceof GrpcPlugin);
@@ -493,6 +490,96 @@ describe('GrpcPlugin() ', function() {
              });
         }
       });
+    });
+  });
+  describe('setSpanContext', () => {
+    const metadata = new grpcModule.Metadata();
+    const spanContext = {
+      traceId: '3ad17e665f514aabb896341f670179ed',
+      spanId: '3aaeb440a89d9e82',
+      options: 0x1
+    };
+
+    it('should set span context', () => {
+      GrpcPlugin.setSpanContext(metadata, spanContext);
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.deepEqual(actualSpanContext, spanContext);
+    });
+  });
+
+  describe('getSpanContext', () => {
+    const metadata = new grpcModule.Metadata();
+    it('should return null when span context is not set', () => {
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.equal(actualSpanContext, null);
+    });
+
+    it('should return valid span context', () => {
+      const buffer = new Buffer([
+        0x00, 0x00, 0xdf, 0x6a, 0x20, 0x38, 0xfa, 0x78, 0xc4, 0xcd,
+        0x42, 0x20, 0x91, 0x26, 0x24, 0x9c, 0x31, 0xc7, 0x01, 0xc2,
+        0xb7, 0xce, 0x7a, 0x57, 0x2a, 0x37, 0xc6, 0x02, 0x01
+      ]);
+      const expectedSpanContext = {
+        traceId: 'df6a2038fa78c4cd42209126249c31c7',
+        spanId: 'c2b7ce7a572a37c6',
+        options: 1
+      };
+      metadata.set(GRPC_TRACE_KEY, buffer);
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.deepEqual(actualSpanContext, expectedSpanContext);
+    });
+
+    it('should return null for unsupported version', () => {
+      const buffer = new Buffer([
+        0x66, 0x64, 0xdf, 0x6a, 0x20, 0x38, 0xfa, 0x78, 0xc4, 0xcd,
+        0x42, 0x20, 0x91, 0x26, 0x24, 0x9c, 0x31, 0xc7, 0x01, 0xc2,
+        0xb7, 0xce, 0x7a, 0x57, 0x2a, 0x37, 0xc6, 0x02, 0x01
+      ]);
+      metadata.set(GRPC_TRACE_KEY, buffer);
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.deepEqual(actualSpanContext, null);
+    });
+
+    it('should return null when unexpected trace ID offset', () => {
+      const buffer = new Buffer([
+        0x00, 0x04, 0xdf, 0x6a, 0x20, 0x38, 0xfa, 0x78, 0xc4, 0xcd,
+        0x42, 0x20, 0x91, 0x26, 0x24, 0x9c, 0x31, 0xc7, 0x01, 0xc2,
+        0xb7, 0xce, 0x7a, 0x57, 0x2a, 0x37, 0xc6, 0x02, 0x01
+      ]);
+      metadata.set(GRPC_TRACE_KEY, buffer);
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.deepEqual(actualSpanContext, null);
+    });
+
+    it('should return null when unexpected span ID offset', () => {
+      const buffer = new Buffer([
+        0x00, 0x00, 0xdf, 0x6a, 0x20, 0x38, 0xfa, 0x78, 0xc4, 0xcd,
+        0x42, 0x20, 0x91, 0x26, 0x24, 0x9c, 0x31, 0xc7, 0x03, 0xc2,
+        0xb7, 0xce, 0x7a, 0x57, 0x2a, 0x37, 0xc6, 0x02, 0x01
+      ]);
+      metadata.set(GRPC_TRACE_KEY, buffer);
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.deepEqual(actualSpanContext, null);
+    });
+
+    it('should return null when unexpected options offset', () => {
+      const buffer = new Buffer([
+        0x00, 0x00, 0xdf, 0x6a, 0x20, 0x38, 0xfa, 0x78, 0xc4, 0xcd,
+        0x42, 0x20, 0x91, 0x26, 0x24, 0x9c, 0x31, 0xc7, 0x03, 0xc2,
+        0xb7, 0xce, 0x7a, 0x57, 0x2a, 0x37, 0xc6, 0x00, 0x01
+      ]);
+      metadata.set(GRPC_TRACE_KEY, buffer);
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.deepEqual(actualSpanContext, null);
+    });
+
+    it('should return null when invalid input i.e. truncated', () => {
+      const buffer =
+          new Buffer([0x00, 0x00, 0xdf, 0x6a, 0x20, 0x38, 0xfa, 0x78, 0xc4]);
+      metadata.set(GRPC_TRACE_KEY, buffer);
+      const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
+      assert.deepEqual(actualSpanContext, null);
     });
   });
 });

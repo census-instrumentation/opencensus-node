@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, HeaderGetter, HeaderSetter, PluginInternalFiles, RootSpan, Span, SpanKind} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, PluginInternalFiles, RootSpan, Span, SpanContext, SpanKind, TraceOptions} from '@opencensus/core';
+import {deserializeSpanContext, serializeSpanContext} from '@opencensus/propagation-binaryformat';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
-import * as path from 'path';
-import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 
+/** The metadata key under which span context is stored as a binary value. */
+export const GRPC_TRACE_KEY = 'grpc-trace-bin';
 const findIndex = lodash.findIndex;
 
 //
@@ -48,7 +49,7 @@ type ServerCallWithMeta = ServerCall&{
 &EventEmitter;
 
 export type SendUnaryDataCallback =
-    (error: grpcTypes.ServiceError,
+    (error: grpcTypes.ServiceError|null,
      // tslint:disable-next-line:no-any
      value?: any, trailer?: grpcTypes.Metadata, flags?: grpcTypes.writeFlags) =>
         void;
@@ -57,17 +58,6 @@ type GrpcClientFunc = typeof Function&{
   path: string;
   requestStream: boolean;
   responseStream: boolean;
-};
-
-
-type HandlerSet = {
-  // tslint:disable-next-line:no-any
-  func: grpcTypes.handleCall<any, any>;
-  // tslint:disable-next-line:no-any
-  serialize: grpcTypes.serialize<any>;
-  // tslint:disable-next-line:no-any
-  deserialize: grpcTypes.deserialize<any>;
-  type: string;
 };
 
 // tslint:disable:variable-name
@@ -162,20 +152,18 @@ export class GrpcPlugin extends BasePlugin {
                   this: typeof handlerSet, call: ServerCallWithMeta,
                   callback: SendUnaryDataCallback) {
                 const self = this;
-                const propagation = plugin.tracer.propagation;
-                const headers = call.metadata.getMap();
-                const getter: HeaderGetter = {
-                  getHeader(name: string) {
-                    return headers[name] as string;
-                  }
+
+                const traceOptions: TraceOptions = {
+                  name: `grpc.${name.replace('/', '')}`,
+                  kind: SpanKind.SERVER
                 };
 
-                const traceOptions = {
-                  name: `grpc.${name.replace('/', '')}`,
-                  kind: SpanKind.SERVER,
-                  spanContext: propagation ? propagation.extract(getter) : null
-                };
-                plugin.logger.debug('path func: %s', traceOptions.name);
+                const spanContext = GrpcPlugin.getSpanContext(call.metadata);
+                if (spanContext) {
+                  traceOptions.spanContext = spanContext;
+                }
+                plugin.logger.debug(
+                    'path func: %s', JSON.stringify(traceOptions));
 
                 return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
                   if (!rootSpan) {
@@ -183,8 +171,10 @@ export class GrpcPlugin extends BasePlugin {
                   }
 
                   rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, name);
-                  rootSpan.addAttribute(
-                      GrpcPlugin.ATTRIBUTE_GRPC_KIND, traceOptions.kind);
+                  if (traceOptions.kind) {
+                    rootSpan.addAttribute(
+                        GrpcPlugin.ATTRIBUTE_GRPC_KIND, traceOptions.kind);
+                  }
 
                   switch (type) {
                     case 'unary':
@@ -206,7 +196,6 @@ export class GrpcPlugin extends BasePlugin {
     };
   }
 
-
   /**
    * Handler Unary and Client Stream Calls
    */
@@ -219,10 +208,12 @@ export class GrpcPlugin extends BasePlugin {
         // tslint:disable-next-line:no-any
         value: any, trailer: grpcTypes.Metadata, flags: grpcTypes.writeFlags) {
       if (err) {
-        rootSpan.setStatus(
-            GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
-        rootSpan.addAttribute(
-            GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
+        if (err.code) {
+          rootSpan.setStatus(
+              GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
+          rootSpan.addAttribute(
+              GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
+        }
         rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
         rootSpan.addAttribute(
             GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
@@ -351,10 +342,13 @@ export class GrpcPlugin extends BasePlugin {
       // tslint:disable-next-line:no-any
       const wrappedFn = (err: grpcTypes.ServiceError, res: any) => {
         if (err) {
-          span.setStatus(
-              GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
-          span.addAttribute(
-              GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
+          if (err.code) {
+            span.setStatus(
+                GrpcPlugin.convertGrpcStatusToSpanStatus(err.code),
+                err.message);
+            span.addAttribute(
+                GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
+          }
           span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
           span.addAttribute(
               GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
@@ -386,24 +380,13 @@ export class GrpcPlugin extends BasePlugin {
         }
       }
 
-      const metadata = this.getMetadata(original, args, span);
-
-      const setter: HeaderSetter = {
-        setHeader(name: string, value: string) {
-          metadata.set(name, value);
-        }
-      };
-
-      const propagation = plugin.tracer.propagation;
-      if (propagation) {
-        propagation.inject(setter, span.spanContext);
-      }
+      const metadata = this.getMetadata(original, args);
+      GrpcPlugin.setSpanContext(metadata, span.spanContext);
 
       span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, original.path);
       span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_KIND, span.kind);
 
       const call = original.apply(self, args);
-
       plugin.tracer.wrapEmitter(call);
 
       // if server stream or bidi
@@ -444,7 +427,7 @@ export class GrpcPlugin extends BasePlugin {
    *  https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/src/plugins/plugin-grpc.ts#L96)
    */
   // tslint:disable-next-line:no-any
-  private getMetadata(original: GrpcClientFunc, args: any[], span: Span):
+  private getMetadata(original: GrpcClientFunc, args: any[]):
       grpcTypes.Metadata {
     let metadata: grpcTypes.Metadata;
 
@@ -489,6 +472,40 @@ export class GrpcPlugin extends BasePlugin {
    */
   static convertGrpcStatusToSpanStatus(statusCode: grpcTypes.status): number {
     return statusCode;
+  }
+
+  /**
+   * Returns a span context on a Metadata object if it exists and is
+   * well-formed, or null otherwise.
+   * @param metadata The Metadata object from which span context should be
+   *     retrieved.
+   */
+  static getSpanContext(metadata: grpcTypes.Metadata): SpanContext|null {
+    const metadataValue = metadata.getMap()[GRPC_TRACE_KEY] as Buffer;
+    // Entry doesn't exist.
+    if (!metadataValue) {
+      return null;
+    }
+    const spanContext = deserializeSpanContext(metadataValue);
+    // Value is malformed.
+    if (!spanContext) {
+      return null;
+    }
+    return spanContext;
+  }
+
+  /**
+   * Set span context on a Metadata object if it exists.
+   * @param metadata The Metadata object to which a span context should be
+   *     added.
+   * @param spanContext The span context.
+   */
+  static setSpanContext(metadata: grpcTypes.Metadata, spanContext: SpanContext):
+      void {
+    const serializedSpanContext = serializeSpanContext(spanContext);
+    if (serializedSpanContext) {
+      metadata.set(GRPC_TRACE_KEY, serializedSpanContext);
+    }
   }
 }
 
