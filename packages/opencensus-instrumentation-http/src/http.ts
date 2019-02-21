@@ -323,7 +323,7 @@ export class HttpPlugin extends BasePlugin {
         } else {
           plugin.logger.debug('outgoingRequest starting a child span');
           const span = plugin.tracer.startChildSpan(
-              traceOptions.name, traceOptions.kind);
+              {name: traceOptions.name, kind: traceOptions.kind});
           return (plugin.getMakeRequestTraceFunction(request, options, plugin))(
               span);
         }

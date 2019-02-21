@@ -60,8 +60,8 @@ describe('Instana Exporter', function() {
           .startRootSpan(
               {name: 'root-test'},
               async (rootSpan: RootSpan) => {
-                const span =
-                    rootSpan.startChildSpan('spanTest', SpanKind.CLIENT);
+                const span = rootSpan.startChildSpan(
+                    {name: 'spanTest', kind: SpanKind.CLIENT});
                 span.end();
                 rootSpan.end();
                 return exporter.publish([rootSpan, rootSpan]);

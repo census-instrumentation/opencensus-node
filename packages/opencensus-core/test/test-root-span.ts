@@ -56,7 +56,9 @@ describe('RootSpan', () => {
       // TODO: Suggetion: make sure that root.spans.length is 1,
       // and that it's the same as the earlier (shadowed) span object
       root.start();
-      const span = root.startChildSpan('spanName', types.SpanKind.CLIENT);
+      const span =
+          root.startChildSpan({name: 'spanName', kind: types.SpanKind.CLIENT});
+
       assert.strictEqual(root.spans.length, 1);
       assert.strictEqual(span, root.spans[0]);
       assert.strictEqual(span.kind, types.SpanKind.CLIENT);
