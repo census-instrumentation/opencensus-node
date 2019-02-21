@@ -22,9 +22,7 @@ const { plugin } = require('@opencensus/instrumentation-grpc');
 const { StackdriverTraceExporter } =
     require('@opencensus/exporter-stackdriver');
 
-let tracer;
-
-setupOpencensusAndExporters();
+const tracer = setupTracerAndExporters();
 
 const PROTO_PATH = path.join(__dirname, 'protos/defs.proto');
 const PROTO_OPTIONS = { keepCase: true, enums: String, defaults: true, oneofs: true };
@@ -52,7 +50,7 @@ function main () {
   server.start();
 }
 
-function setupOpencensusAndExporters () {
+function setupTracerAndExporters () {
   // Enable OpenCensus exporters to export traces to Stackdriver CloudTrace.
   // Exporters use Application Default Credentials (ADCs) to authenticate.
   // See https://developers.google.com/identity/protocols/application-default-credentials
@@ -73,7 +71,7 @@ function setupOpencensusAndExporters () {
   tracing.registerExporter(exporter).start();
 
   // Starts tracing and set sampling rate
-  tracer = tracing.start({
+  const tracer = tracing.start({
     samplingRate: 1 // For demo purposes, always sample
   }).tracer;
 
@@ -83,6 +81,8 @@ function setupOpencensusAndExporters () {
 
   // Enables GRPC plugin: Method that enables the instrumentation patch.
   plugin.enable(grpc, tracer, version, /** plugin options */{}, basedir);
+
+  return tracer;
 }
 
 main();

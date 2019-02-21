@@ -2,7 +2,7 @@
 
 Our service takes in a payload containing bytes and capitalizes them.
 
-Using OpenCensus Node, we can collect traces of our system and export them to the backend of our choice, to give observability to our distributed systems.
+Using OpenCensus Node, we can collect traces of our system and export them to the backend of our choice(we are using Stackdriver for this example), to give observability to our distributed systems.
 
 
 ## Installation
@@ -12,6 +12,7 @@ $ # from this directory
 $ npm install
 ```
 
+Setup [Stackdriver Tracing and Monitoring](https://opencensus.io/codelabs/stackdriver/#0)
 
 ## Run the Application
 
