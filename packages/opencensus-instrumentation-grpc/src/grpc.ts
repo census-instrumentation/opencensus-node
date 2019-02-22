@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, PluginInternalFiles, RootSpan, Span, SpanContext, SpanKind, TraceOptions} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, PluginInternalFiles, RootSpan, Span, SpanContext, SpanKind, TagMap, TraceOptions} from '@opencensus/core';
 import {deserializeSpanContext, serializeSpanContext} from '@opencensus/propagation-binaryformat';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
+import * as clientMetrics from './grpc-stats/client-metrics';
+import * as serverMetrics from './grpc-stats/server-metrics';
+
+const sizeof = require('object-sizeof');
 
 /** The metadata key under which span context is stored as a binary value. */
 export const GRPC_TRACE_KEY = 'grpc-trace-bin';
@@ -44,7 +48,9 @@ type ServerCall = typeof grpcTypes.ServerUnaryCall|
 
 type ServerCallWithMeta = ServerCall&{
   metadata: grpcTypes.Metadata;
-  status: Status
+  status: Status;
+  // tslint:disable-next-line:no-any
+  request?: any
 }
 &EventEmitter;
 
@@ -203,6 +209,7 @@ export class GrpcPlugin extends BasePlugin {
       plugin: GrpcPlugin, rootSpan: RootSpan, call: ServerCallWithMeta,
       callback: SendUnaryDataCallback,
       original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
+    const startTime = Date.now();
     function patchedCallback(
         err: grpcTypes.ServiceError,
         // tslint:disable-next-line:no-any
@@ -223,6 +230,14 @@ export class GrpcPlugin extends BasePlugin {
             GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
             grpcTypes.status.OK.toString());
       }
+
+      // record stats
+      const tags = new TagMap();
+      tags.set(serverMetrics.GRPC_SERVER_METHOD, {value: rootSpan.name});
+      const req = call.hasOwnProperty('request') ? call.request : {};
+      GrpcPlugin.recordStats(
+          rootSpan.kind, tags, value, req, Date.now() - startTime);
+
       rootSpan.end();
       return callback(err, value, trailer, flags);
     }
@@ -334,6 +349,8 @@ export class GrpcPlugin extends BasePlugin {
       // tslint:disable-next-line:no-any
       original: GrpcClientFunc, args: any[], self: grpcTypes.Client,
       plugin: GrpcPlugin) {
+    const startTime = Date.now();
+    const originalArgs = args;
     /**
      * Patches a callback so that the current span for this trace is also ended
      * when the callback is invoked.
@@ -358,6 +375,13 @@ export class GrpcPlugin extends BasePlugin {
               GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
               grpcTypes.status.OK.toString());
         }
+
+        // record stats
+        const tags = new TagMap();
+        tags.set(clientMetrics.GRPC_CLIENT_METHOD, {value: span.name});
+        GrpcPlugin.recordStats(
+            span.kind, tags, originalArgs, res, Date.now() - startTime);
+
         span.end();
         callback(err, res);
       };
@@ -505,6 +529,64 @@ export class GrpcPlugin extends BasePlugin {
     const serializedSpanContext = serializeSpanContext(spanContext);
     if (serializedSpanContext) {
       metadata.set(GRPC_TRACE_KEY, serializedSpanContext);
+    }
+  }
+
+  /** Method to record stats for client and server. */
+  static recordStats(
+      // tslint:disable-next-line:no-any
+      kind: SpanKind, tags: TagMap, argsOrValue: any, reqOrRes: any,
+      ms: number) {
+    try {
+      const measureList = [];
+      switch (kind) {
+        case SpanKind.CLIENT:
+          measureList.push({
+            measure: clientMetrics.GRPC_CLIENT_SENT_BYTES_PER_RPC,
+            value: sizeof(argsOrValue)
+          });
+          measureList.push({
+            measure: clientMetrics.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC,
+            value: sizeof(reqOrRes)
+          });
+          measureList.push({
+            measure: clientMetrics.GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC,
+            value: 1
+          });
+          measureList.push({
+            measure: clientMetrics.GRPC_CLIENT_SENT_MESSAGES_PER_RPC,
+            value: 1
+          });
+          measureList.push({
+            measure: clientMetrics.GRPC_CLIENT_ROUNDTRIP_LATENCY,
+            value: ms
+          });
+          break;
+        case SpanKind.SERVER:
+          measureList.push({
+            measure: serverMetrics.GRPC_SERVER_RECEIVED_BYTES_PER_RPC,
+            value: sizeof(reqOrRes)
+          });
+          measureList.push({
+            measure: serverMetrics.GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC,
+            value: 1
+          });
+          measureList.push({
+            measure: serverMetrics.GRPC_SERVER_SENT_BYTES_PER_RPC,
+            value: sizeof(argsOrValue)
+          });
+          measureList.push({
+            measure: serverMetrics.GRPC_SERVER_SENT_MESSAGES_PER_RPC,
+            value: 1
+          });
+          measureList.push(
+              {measure: serverMetrics.GRPC_SERVER_SERVER_LATENCY, value: ms});
+          break;
+        default:
+          break;
+      }
+      plugin.stats.record(measureList, tags);
+    } catch (ignore) {
     }
   }
 }
