@@ -74,6 +74,12 @@ function assertSpan(
     expectedKind: SpanKind) {
   assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
   assert.strictEqual(rootSpanVerifier.endedRootSpans[0].spans.length, 1);
+  // we are forced to ignore the error because 'truncated' is a private
+  // field but needed to verify that the span are correctly ended.
+  // @ts-ignore
+  const isTruncated = rootSpanVerifier.endedRootSpans[0].spans[0].truncated;
+  assert.strictEqual(
+      isTruncated, false, 'the span should not have been truncated');
   assert.strictEqual(
       rootSpanVerifier.endedRootSpans[0].spans[0].name, expectedName);
   assert.strictEqual(
