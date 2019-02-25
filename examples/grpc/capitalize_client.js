@@ -46,6 +46,12 @@ function main () {
     });
   });
 
+  /**
+   * The default export interval is 60 seconds. The thread with the
+   * StackdriverStatsExporter must live for at least the interval past any
+   * metrics that must be collected, or some risk being lost if they are
+   * recorded after the last export.
+   */
   setTimeout(() => {
     console.log('done.');
   }, 60000);
