@@ -14,18 +14,43 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, Span, SpanEventListener, SpanKind} from '@opencensus/core';
+import {CoreTracer, globalStats, Measurement, RootSpan, Span, SpanEventListener, SpanKind, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
 import * as path from 'path';
 
 import {GRPC_TRACE_KEY, GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
+import * as clientMetrics from '../src/grpc-stats/client-metrics';
+import * as serverMetrics from '../src/grpc-stats/server-metrics';
+import {registerAllGrpcViews} from '../src/grpc-stats/stats-common';
 
 const PROTO_PATH = __dirname + '/fixtures/grpc-instrumentation-test.proto';
 const grpcPort = 50051;
 const MAX_ERROR_STATUS = grpcModule.status.UNAUTHENTICATED;
 const log = logger.logger();
+
+
+class TestExporter implements StatsEventListener {
+  registeredViews: View[] = [];
+  recordedMeasurements: Measurement[] = [];
+
+  onRegisterView(view: View) {
+    this.registeredViews.push(view);
+  }
+
+  onRecord(
+      views: View[], measurement: Measurement, tagMap: Map<TagKey, TagValue>) {
+    this.recordedMeasurements.push(measurement);
+  }
+
+  start(): void {}
+
+  clean() {
+    this.registeredViews = [];
+    this.recordedMeasurements = [];
+  }
+}
 
 const replicate = (request: TestRequestResponse) => {
   const result: TestRequestResponse[] = [];
@@ -242,6 +267,7 @@ describe('GrpcPlugin() ', function() {
   const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start({samplingRate: 1, logger: log});
+  const testExporter = new TestExporter();
 
   it('should return a plugin', () => {
     assert.ok(plugin instanceof GrpcPlugin);
@@ -250,15 +276,18 @@ describe('GrpcPlugin() ', function() {
   before(() => {
     const basedir = path.dirname(require.resolve('grpc'));
     const version = require(path.join(basedir, 'package.json')).version;
-    plugin.enable(grpcModule, tracer, version, {}, basedir);
+    plugin.enable(grpcModule, tracer, version, {}, basedir, globalStats);
     tracer.registerSpanEventListener(rootSpanVerifier);
     const proto = grpcModule.load(PROTO_PATH).pkg_test;
     server = startServer(grpcModule, proto);
     client = createClient(grpcModule, proto);
+    globalStats.registerExporter(testExporter);
   });
 
   beforeEach(() => {
     rootSpanVerifier.endedRootSpans = [];
+    testExporter.clean();
+    registerAllGrpcViews(globalStats);
   });
 
   after(() => {
@@ -341,6 +370,49 @@ describe('GrpcPlugin() ', function() {
     }
   }
 
+  function assertStats(testExporter: TestExporter) {
+    assert.equal(testExporter.registeredViews.length, 12);
+    assert.equal(testExporter.recordedMeasurements.length, 10);
+    assert.strictEqual(
+        testExporter.recordedMeasurements[0].measure,
+        serverMetrics.GRPC_SERVER_RECEIVED_BYTES_PER_RPC);
+    assert.equal(testExporter.recordedMeasurements[0].value, 14);
+    assert.deepStrictEqual(testExporter.recordedMeasurements[1], {
+      measure: serverMetrics.GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC,
+      value: 1
+    });
+    assert.strictEqual(
+        testExporter.recordedMeasurements[2].measure,
+        serverMetrics.GRPC_SERVER_SENT_BYTES_PER_RPC);
+    assert.equal(testExporter.recordedMeasurements[2].value, 14);
+    assert.deepStrictEqual(
+        testExporter.recordedMeasurements[3],
+        {measure: serverMetrics.GRPC_SERVER_SENT_MESSAGES_PER_RPC, value: 1});
+    assert.strictEqual(
+        testExporter.recordedMeasurements[4].measure,
+        serverMetrics.GRPC_SERVER_SERVER_LATENCY);
+
+    assert.strictEqual(
+        testExporter.recordedMeasurements[5].measure,
+        clientMetrics.GRPC_CLIENT_SENT_BYTES_PER_RPC);
+    assert.equal(testExporter.recordedMeasurements[5].value, 107);
+    assert.strictEqual(
+        testExporter.recordedMeasurements[6].measure,
+        clientMetrics.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC);
+    assert.equal(testExporter.recordedMeasurements[6].value, 14);
+    assert.deepStrictEqual(testExporter.recordedMeasurements[7], {
+      measure: clientMetrics.GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC,
+      value: 1
+    });
+    assert.deepStrictEqual(
+        testExporter.recordedMeasurements[8],
+        {measure: clientMetrics.GRPC_CLIENT_SENT_MESSAGES_PER_RPC, value: 1});
+    assert.strictEqual(
+        testExporter.recordedMeasurements[9].measure,
+        clientMetrics.GRPC_CLIENT_ROUNDTRIP_LATENCY);
+    assert.ok(testExporter.recordedMeasurements[9].value > 0);
+  }
+
   // Check if sourceSpan was propagated to targetSpan
   function assertPropagation(sourceSpan: Span, targetSpan: Span) {
     assert.strictEqual(targetSpan.traceId, sourceSpan.traceId);
@@ -375,7 +447,9 @@ describe('GrpcPlugin() ', function() {
                          assertSpan(
                              clientRoot, spanName, SpanKind.CLIENT,
                              grpcModule.status.OK);
-
+                         if (method.method === grpcClient.unaryMethod) {
+                           assertStats(testExporter);
+                         }
                          assertPropagation(clientRoot, serverRoot);
                        });
              });

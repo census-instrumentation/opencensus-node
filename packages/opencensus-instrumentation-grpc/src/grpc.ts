@@ -22,7 +22,6 @@ import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
 import * as clientMetrics from './grpc-stats/client-metrics';
 import * as serverMetrics from './grpc-stats/server-metrics';
-
 const sizeof = require('object-sizeof');
 
 /** The metadata key under which span context is stored as a binary value. */
@@ -534,9 +533,11 @@ export class GrpcPlugin extends BasePlugin {
 
   /** Method to record stats for client and server. */
   static recordStats(
-      // tslint:disable-next-line:no-any
-      kind: SpanKind, tags: TagMap, argsOrValue: any, reqOrRes: any,
-      ms: number) {
+      kind: SpanKind, tags: TagMap, argsOrValue: {}, reqOrRes: {}, ms: number) {
+    if (!plugin.stats) {
+      return;
+    }
+
     try {
       const measureList = [];
       switch (kind) {
