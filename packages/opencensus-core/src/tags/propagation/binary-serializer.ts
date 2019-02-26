@@ -15,15 +15,14 @@
  */
 
 // import {TextDecoder} from 'util';
-
-import {VarInt} from '../../internal/util';
+import * as VarInt from '../../internal/VarInt';
 import {TagMap} from '../tag-map';
 import {TagKey, TagValue} from '../types';
 
 export let VERSION_ID = 0;
 export let TAG_FIELD_ID = 0;
 // This size limit only applies to the bytes representing tag keys and values.
-const TAG_MAP_SERIALIZED_SIZE_LIMIT = 0;
+const TAG_MAP_SERIALIZED_SIZE_LIMIT = 8192;
 
 // Serializes a TagMap to the on-the-wire format.
 export function serializeBinary(tagMap: TagMap): Int8Array {
