@@ -36,7 +36,7 @@ export interface OCAgentExporterOptions extends ExporterConfig {
 const DEFAULT_OPTIONS: OCAgentExporterOptions = {
   serviceName: 'Anonymous Service',
   host: 'localhost',
-  port: 50051,
+  port: 55678,
   credentials: grpc.credentials.createInsecure(),
   logger: logger.logger()
 };
