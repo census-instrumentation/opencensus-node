@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Add support for Binary propagation format.
 - Add support for object(```SpanOptions```) as an argument for ```startChildSpan``` function, similar to ```startRootSpan```.
 - Add proto files to exporter-ocagent package. Fixes issue #174. 
+- Remove `ConfigStream` behavior from exporter-ocagent. This was unstable and is not currently supported by any other language instrumentation.
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.
