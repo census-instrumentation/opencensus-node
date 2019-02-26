@@ -101,10 +101,7 @@ export class OCAgentExporter implements Exporter {
     const traceServiceProtoPath =
         'opencensus/proto/agent/trace/v1/trace_service.proto';
     const includeDirs = [
-      // opencensus.proto
-      __dirname + '../../../src/protos',
-      // google.proto
-      __dirname + '../../../node_modules/google-proto-files'
+      __dirname + '/protos',
     ];
     // tslint:disable-next-line:no-any
     const proto: any =

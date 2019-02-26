@@ -11,11 +11,13 @@
     "clean": "rimraf build/*",
     "check": "gts check",
     "compile": "tsc -p .",
+    "postcompile": "npm run protos:copy",
     "watch": "nodemon --exec tsc -p .",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run check"
+    "posttest": "npm run check",
+    "protos:copy": "cp -R src/protos build/src/protos && cp -R node_modules/google-proto-files/google build/src/protos/google"
   },
   "keywords": [
     "opencensus",
@@ -31,6 +33,7 @@
   "files": [
     "build/src/**/*.js",
     "build/src/**/*.d.ts",
+    "build/src/**/*.proto",
     "doc",
     "CHANGELOG.md",
     "LICENSE",
