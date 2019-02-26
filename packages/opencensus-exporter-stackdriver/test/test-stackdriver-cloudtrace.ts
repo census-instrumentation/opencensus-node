@@ -168,8 +168,7 @@ describe('Stackdriver Trace Exporter', function() {
             return failExporter.publish([rootSpan]).then(result => {
               assert.ok(
                   result.message.indexOf(
-                      'batchWriteSpans error: Request had invalid authentication credentials.') >=
-                  0);
+                      'batchWriteSpans error: Invalid Credentials') >= 0);
 
               assert.strictEqual(
                   failExporter.failBuffer[0].traceId,
