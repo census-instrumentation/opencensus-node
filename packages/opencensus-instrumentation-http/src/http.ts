@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, RootSpan, Span, SpanKind, Tracer} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, RootSpan, Span, SpanKind, TraceOptions} from '@opencensus/core';
 import * as httpModule from 'http';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as uuid from 'uuid';
-
 import {HttpPluginConfig, IgnoreMatcher} from './types';
-
 
 export type HttpGetCallback = (res: httpModule.IncomingMessage) => void;
 export type HttpModule = typeof httpModule;
@@ -44,8 +41,6 @@ export class HttpPlugin extends BasePlugin {
   // NOT ON OFFICIAL SPEC
   static ATTRIBUTE_HTTP_ERROR_NAME = 'http.error_name';
   static ATTRIBUTE_HTTP_ERROR_MESSAGE = 'http.error_message';
-
-  protected options: HttpPluginConfig;
 
   /** Constructs a new HttpPlugin instance. */
   constructor(moduleName: string) {
@@ -172,8 +167,7 @@ export class HttpPlugin extends BasePlugin {
 
         const request: httpModule.IncomingMessage = args[0];
         const response: httpModule.ServerResponse = args[1];
-        const path = url.parse(request.url).pathname;
-
+        const path = request.url ? url.parse(request.url).pathname || '' : '';
         plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
 
         if (plugin.isIgnored(
@@ -189,11 +183,13 @@ export class HttpPlugin extends BasePlugin {
           }
         };
 
-        const traceOptions = {
-          name: path,
-          kind: SpanKind.SERVER,
-          spanContext: propagation ? propagation.extract(getter) : null
-        };
+        const traceOptions: TraceOptions = {name: path, kind: SpanKind.SERVER};
+        if (propagation) {
+          const spanContext = propagation.extract(getter);
+          if (spanContext) {
+            traceOptions.spanContext = spanContext;
+          }
+        }
 
         return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
           if (!rootSpan) return original.apply(this, arguments);
@@ -209,7 +205,7 @@ export class HttpPlugin extends BasePlugin {
             response.end = originalEnd;
             const returned = response.end.apply(this, arguments);
 
-            const requestUrl = url.parse(request.url);
+            const requestUrl = request.url ? url.parse(request.url) : null;
             const host = headers.host || 'localhost';
             const userAgent =
                 (headers['user-agent'] || headers['User-Agent']) as string;
@@ -220,12 +216,17 @@ export class HttpPlugin extends BasePlugin {
                     /^(.*)(\:[0-9]{1,5})/,
                     '$1',
                     ));
+
             rootSpan.addAttribute(
-                HttpPlugin.ATTRIBUTE_HTTP_METHOD, request.method);
-            rootSpan.addAttribute(
-                HttpPlugin.ATTRIBUTE_HTTP_PATH, requestUrl.pathname);
-            rootSpan.addAttribute(
-                HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path);
+                HttpPlugin.ATTRIBUTE_HTTP_METHOD, request.method || 'GET');
+
+            if (requestUrl) {
+              rootSpan.addAttribute(
+                  HttpPlugin.ATTRIBUTE_HTTP_PATH, requestUrl.pathname || '');
+              rootSpan.addAttribute(
+                  HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path || '');
+            }
+
             rootSpan.addAttribute(
                 HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
 
@@ -267,13 +268,13 @@ export class HttpPlugin extends BasePlugin {
         }
 
         // Makes sure the url is an url object
-        let pathname = '';
-        let method = 'GET';
+        let pathname;
+        let method;
         let origin = '';
         if (typeof (options) === 'string') {
           const parsedUrl = url.parse(options);
           options = parsedUrl;
-          pathname = parsedUrl.pathname;
+          pathname = parsedUrl.pathname || '';
           origin = `${parsedUrl.protocol || 'http:'}//${parsedUrl.host}`;
         } else {
           // Do not trace ourselves
@@ -285,9 +286,11 @@ export class HttpPlugin extends BasePlugin {
           }
 
           try {
-            pathname = (options as url.URL).pathname ||
-                url.parse(options.path).pathname;
-            method = options.method;
+            pathname = (options as url.URL).pathname;
+            if (!pathname) {
+              pathname = options.path ? url.parse(options.path).pathname : '';
+            }
+            method = options.method || 'GET';
             origin = `${options.protocol || 'http:'}//${options.host}`;
           } catch (e) {
           }
@@ -371,19 +374,25 @@ export class HttpPlugin extends BasePlugin {
           const userAgent =
               headers ? (headers['user-agent'] || headers['User-Agent']) : null;
 
-          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, options.hostname);
+          if (options.hostname) {
+            span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, options.hostname);
+          }
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_METHOD, method);
-          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_PATH, options.path);
-          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ROUTE, options.path);
+          if (options.path) {
+            span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_PATH, options.path);
+            span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_ROUTE, options.path);
+          }
+
           if (userAgent) {
             span.addAttribute(
                 HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent.toString());
           }
-          span.addAttribute(
-              HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
-              response.statusCode.toString());
-
-          span.setStatus(HttpPlugin.parseResponseStatus(response.statusCode));
+          if (response.statusCode) {
+            span.addAttribute(
+                HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
+                response.statusCode.toString());
+            span.setStatus(HttpPlugin.parseResponseStatus(response.statusCode));
+          }
 
           // Message Event ID is not defined
           span.addMessageEvent(
