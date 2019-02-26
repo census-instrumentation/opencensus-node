@@ -166,9 +166,8 @@ describe('Stackdriver Trace Exporter', function() {
             rootSpan.end();
 
             return failExporter.publish([rootSpan]).then(result => {
-              assert.ok(
-                  result.message.indexOf(
-                      'batchWriteSpans error: Invalid Credentials') >= 0);
+              assert.equal(result.code, 401);
+              assert.ok(result.message.indexOf('batchWriteSpans error') >= 0);
 
               assert.strictEqual(
                   failExporter.failBuffer[0].traceId,
