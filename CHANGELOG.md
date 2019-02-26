@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Add support for ```tags```, ```status``` and ```annotation``` in Zipkin exporter.
 - Add support for Binary propagation format.
 - Add support for object(```SpanOptions```) as an argument for ```startChildSpan``` function, similar to ```startRootSpan```.
+- Add proto files to exporter-ocagent package. Fixes issue #174. 
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.
