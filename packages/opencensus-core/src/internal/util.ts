@@ -33,3 +33,44 @@ const spanRandomBuffer = randomFillSync ?
 export function randomSpanId() {
   return spanRandomBuffer().toString('hex');
 }
+
+/**
+ * Common methods to encode and decode varints and varlongs into ByteBuffers
+ * and arrays.
+ */
+export class VarInt {
+  static varIntSize(i: number): number {
+    let result = 0;
+    do {
+      result++;
+      i >>>= 7;
+    } while (i !== 0);
+    return result;
+  }
+
+  static putVarInt(v: number, sink: Int8Array, offset: number): number {
+    do {
+      const bits = v & 0x7F;
+      v >>>= 7;
+      const b = bits + ((v !== 0) ? 0x80 : 0);
+      sink[offset++] = b;
+    } while (v !== 0);
+    return offset;
+  }
+
+  static getVarInt(src: Int8Array, offset: number, dst: number[]): number {
+    let result = 0;
+    let shift = 0;
+    let b;
+    do {
+      if (shift >= 32) {
+        throw new Error('varint too lond');
+      }
+      b = src[offset++];
+      result |= (b & 0x7F) << shift;
+      shift += 7;
+    } while ((b & 0x80) !== 0);
+    dst[0] = result;
+    return offset;
+  }
+}
