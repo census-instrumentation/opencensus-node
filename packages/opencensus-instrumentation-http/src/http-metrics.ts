@@ -226,14 +226,14 @@ export function registerAllViews(globalStats: Stats) {
 
 /** Register all default client views. */
 export function registerAllClientViews(globalStats: Stats) {
-  for (const CLIENT_VIEW of HTTP_BASIC_CLIENT_VIEWS) {
-    globalStats.registerView(CLIENT_VIEW);
+  for (const view of HTTP_BASIC_CLIENT_VIEWS) {
+    globalStats.registerView(view);
   }
 }
 
 /** Register all default server views. */
 export function registerAllServerViews(globalStats: Stats) {
-  for (const SERVER_VIEW of HTTP_BASIC_SERVER_VIEWS) {
-    globalStats.registerView(SERVER_VIEW);
+  for (const view of HTTP_BASIC_SERVER_VIEWS) {
+    globalStats.registerView(view);
   }
 }
