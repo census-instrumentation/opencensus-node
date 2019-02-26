@@ -26,14 +26,6 @@ import * as uuid from 'uuid';
 import {OCAgentExporter} from '../src';
 import {opencensus} from '../src/types';
 
-// Constants
-
-/**
- * Amount of time to wait before validating a configuration change message was
- * successfully processed.
- */
-const CONFIG_CHANGE_TIMEOUT = 15;
-
 // Mock Agent
 
 /**
@@ -242,86 +234,6 @@ describe('OpenCensus Agent Exporter', () => {
               });
         });
   });
-
-  it('should receive probability sampler configuration changes from agent',
-     (done) => {
-       /**
-        * Have the server send a configuration change to use a probability
-        * sampler with the given probability, then validate that the current
-        * tracer sampler was updated correctly.
-        */
-       const runProbabilityTest = (testProbability: number): Promise<void> => {
-         server.sendConfigurationChangeProbability(testProbability);
-         return new Promise(resolve => {
-           setTimeout(() => {
-             const sampler = tracing.tracer.sampler.description;
-             // Validate sampler type
-             assert.ok(
-                 sampler.startsWith('probability'),
-                 `sampler ${sampler} is not of type 'probability'`);
-
-             // Validate set probability
-             assert.ok(
-                 sampler.endsWith(`(${testProbability})`),
-                 `sampler ${sampler} is not using probability ${
-                     testProbability}`);
-             resolve();
-           }, CONFIG_CHANGE_TIMEOUT);
-         });
-       };
-
-       /**
-        * Have the server send a configuration change to use a constant sampler
-        * with the given decision, then validate that the current tracer sampler
-        * was updated correctly.
-        */
-       const runConstantTest = (decision: boolean): Promise<void> => {
-         server.sendConfigurationChangeConstant(decision);
-         const expectedSamplerDescription = decision ? 'always' : 'never';
-         return new Promise(resolve => {
-           setTimeout(() => {
-             const sampler = tracing.tracer.sampler.description;
-             // Validate sampler type
-             assert.equal(
-                 sampler, expectedSamplerDescription,
-                 `sampler ${sampler} is not of type ${
-                     expectedSamplerDescription}`);
-             resolve();
-           }, CONFIG_CHANGE_TIMEOUT);
-         });
-       };
-
-       /**
-        * Have the server send a configuration change to use a rate limited
-        * sampler with the given decision, then validate that the current
-        * tracer sampler was not updated, because the rate limited sampler
-        * is currently unsupported.
-        */
-       const runRateLimitedTest = (qps: number): Promise<void> => {
-         // Expected is the current sampler
-         const expectedSamplerDescription = tracing.tracer.sampler.description;
-         server.sendConfigurationChangeRateLimited(qps);
-         return new Promise(resolve => {
-           setTimeout(() => {
-             const sampler = tracing.tracer.sampler.description;
-             assert.equal(
-                 sampler, expectedSamplerDescription,
-                 'rate limited sampler should not be applied');
-             resolve();
-           }, CONFIG_CHANGE_TIMEOUT);
-         });
-       };
-
-       // Wait for the configuration stream to be connected, then run the test
-       // suite.
-       server.once(MockAgentEvent.ConfigStreamConnected, async () => {
-         await runProbabilityTest(0.5);
-         await runConstantTest(true);
-         await runConstantTest(false);
-         await runRateLimitedTest(1.0);
-         done();
-       });
-     });
 
   it('should adapt a span correctly', (done) => {
     const rootSpanOptions: TraceOptions = {

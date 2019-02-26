@@ -55,6 +55,7 @@
     "@types/shimmer": "^1.0.1",
     "@types/uuid": "^3.4.3",
     "codecov": "^3.1.0",
+    "google-proto-files": "^0.18.0",
     "gts": "^0.9.0",
     "mocha": "^6.0.0",
     "ncp": "^2.0.0",
@@ -70,6 +71,6 @@
     "@opencensus/core": "^0.0.9",
     "@opencensus/nodejs": "^0.0.9",
     "google-proto-files": "^0.18.0",
-    "grpc": "^1.15.1"
+    "grpc": "^1.18.0"
   }
 }
