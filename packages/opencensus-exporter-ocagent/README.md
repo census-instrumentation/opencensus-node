@@ -1,7 +1,7 @@
 # OpenCensus Agent Exporter for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Agent Exporter allows the user to send collected traces with OpenCensus Node.js to the OpenCensus Agent, and to receive tracer configuration changes from the OpenCensus Agent.
+OpenCensus Agent Exporter allows the user to send collected traces with OpenCensus Node.js to the OpenCensus Agent or Collector.
 
 This project is still at an early stage of development, it's subject to change.
 
@@ -59,7 +59,7 @@ Option          | Type                    | Description
 ----------------|-------------------------|-
 `serviceName`   | string                  | Name of the service. Defaults to `Anonymous Service`.
 `host`          | string                  | Host or ip of the agent. Defaults to `localhost`.
-`port`          | number                  | Port of the agent. Defaults to `50051`.
+`port`          | number                  | Port of the agent. Defaults to `55678`.
 `credentials`   | grpc.ChannelCredentials | Credentials to use for grpc connection to agent. Defaults to `grpc.credentials.createInsecure()`.
 `attributes`    | {[key: string]: string} | Map of key-value pairs to associate with the Node.
 `bufferSize`    | number                  | Maximum size of the span buffer.
