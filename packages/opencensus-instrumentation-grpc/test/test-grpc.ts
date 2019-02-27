@@ -19,7 +19,6 @@ import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
 import * as path from 'path';
-
 import {GRPC_TRACE_KEY, GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
 import * as clientMetrics from '../src/grpc-stats/client-metrics';
 import * as serverMetrics from '../src/grpc-stats/server-metrics';
@@ -29,7 +28,6 @@ const PROTO_PATH = __dirname + '/fixtures/grpc-instrumentation-test.proto';
 const grpcPort = 50051;
 const MAX_ERROR_STATUS = grpcModule.status.UNAUTHENTICATED;
 const log = logger.logger();
-
 
 class TestExporter implements StatsEventListener {
   registeredViews: View[] = [];
