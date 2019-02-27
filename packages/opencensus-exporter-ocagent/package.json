@@ -67,7 +67,7 @@
     "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@grpc/proto-loader": "^0.3.0",
+    "@grpc/proto-loader": "^0.4.0",
     "@opencensus/core": "^0.0.9",
     "@opencensus/nodejs": "^0.0.9",
     "grpc": "^1.18.0"
