@@ -15,13 +15,12 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {Exporter, ExporterBuffer, ExporterConfig, logger, Logger, RootSpan, SamplerBuilder, version as coreVersion} from '@opencensus/core';
-import * as tracing from '@opencensus/nodejs';
+import {Exporter, ExporterBuffer, ExporterConfig, logger, Logger, RootSpan, version as coreVersion} from '@opencensus/core';
 import * as grpc from 'grpc';
 import * as os from 'os';
 
 import {adaptRootSpan, createNode} from './adapters';
-import {opencensus, TraceServiceClient, TraceServiceConfigStream, TraceServiceExportStream} from './types';
+import {opencensus, TraceServiceClient, TraceServiceExportStream} from './types';
 
 /**
  * Options for OpenCensus Agent Exporter configuration.
@@ -37,7 +36,7 @@ export interface OCAgentExporterOptions extends ExporterConfig {
 const DEFAULT_OPTIONS: OCAgentExporterOptions = {
   serviceName: 'Anonymous Service',
   host: 'localhost',
-  port: 50051,
+  port: 55678,
   credentials: grpc.credentials.createInsecure(),
   logger: logger.logger()
 };
@@ -65,7 +64,6 @@ export class OCAgentExporter implements Exporter {
 
   // Connection objects
   private traceServiceClient: TraceServiceClient;
-  private configStream: TraceServiceConfigStream|undefined;
   private exportStream: TraceServiceExportStream|undefined;
 
   // Resolved configuration options
@@ -101,10 +99,7 @@ export class OCAgentExporter implements Exporter {
     const traceServiceProtoPath =
         'opencensus/proto/agent/trace/v1/trace_service.proto';
     const includeDirs = [
-      // opencensus.proto
-      __dirname + '../../../src/protos',
-      // google.proto
-      __dirname + '../../../node_modules/google-proto-files'
+      __dirname + '/protos',
     ];
     // tslint:disable-next-line:no-any
     const proto: any =
@@ -141,7 +136,6 @@ export class OCAgentExporter implements Exporter {
     }
 
     this.activeLocal = true;
-    this.connectToConfigStream();
     this.connectToExportStream();
   }
 
@@ -153,9 +147,6 @@ export class OCAgentExporter implements Exporter {
       return;
     }
 
-    if (this.configStream) {
-      this.configStream.end();
-    }
     if (this.exportStream) {
       this.exportStream.end();
     }
@@ -189,44 +180,13 @@ export class OCAgentExporter implements Exporter {
       if (this.shouldAttemptReconnect(status)) {
         this.logger.error(
             `OCAgent: export stream disconnected; attempting reconnect`);
-        setImmediate(() => this.connectToExportStream());
+        setTimeout(() => this.connectToExportStream(), 250);
       }
     });
     this.exportStream.on(StreamEvent.Error, (err) => {
       // no-op: Swallow errors to keep the process alive. Not listening
       // to this event will exit the process on an error.
       this.logger.error('OCAgent: export stream error', err);
-    });
-  }
-
-  /**
-   * Creates a connection to the config stream. If the stream cannot be
-   * connected to or if the stream is broken at any point, we attempt to
-   * reconnect.
-   */
-  private connectToConfigStream() {
-    if (!this.active) {
-      return;
-    }
-
-    this.configStream = this.traceServiceClient.config();
-    this.configStream.on(StreamEvent.Data, this.updateLibraryConfig.bind(this));
-    this.configStream.on(StreamEvent.Metadata, () => {
-      this.logger.info('OCAgent: config stream connected');
-    });
-    this.configStream.on(StreamEvent.Status, (status: grpc.StatusObject) => {
-      // Attempt reconnect if appropriate. The grpc client will perform a
-      // backoff internally.
-      if (this.shouldAttemptReconnect(status)) {
-        this.logger.error(
-            `OCAgent: config stream disconnected; attempting reconnect`);
-        setImmediate(() => this.connectToConfigStream());
-      }
-    });
-    this.configStream.on(StreamEvent.Error, (err) => {
-      // no-op: Swallow errors to keep the process alive. Not listening
-      // to this event will exit the process on an error.
-      this.logger.error('OCAgent: config stream error', err);
     });
   }
 
@@ -242,41 +202,6 @@ export class OCAgentExporter implements Exporter {
         return true;
       default:
         return false;
-    }
-  }
-
-  /**
-   * Updates the current tracer configuration from the given update
-   * configuration.
-   * @param update opencensus.proto.agent.trace.v1.UpdatedLibraryConfig
-   */
-  private updateLibraryConfig(
-      update: opencensus.proto.agent.trace.v1.UpdatedLibraryConfig) {
-    const {tracer} = tracing;
-    if (tracer && update.config) {
-      // Determine the probabilty from the sampler type
-      let probability = -1;
-      if (update.config.constantSampler &&
-          update.config.constantSampler.decision != null) {
-        probability = update.config.constantSampler.decision ? 1.0 : 0.0;
-      } else if (
-          update.config.probabilitySampler &&
-          update.config.probabilitySampler.samplingProbability != null) {
-        probability = update.config.probabilitySampler.samplingProbability;
-      } else if (
-          update.config.rateLimitingSampler &&
-          update.config.rateLimitingSampler.qps != null) {
-        // no-op
-        this.logger.warn('OCAgent: RateLimitingSampler is not supported');
-        return;
-      }
-
-      // If we have a valid probability, create a new sampler
-      if (probability >= 0 && probability <= 1) {
-        this.logger.info(
-            `OCAgent: updating sampler probability=${probability}`);
-        tracer.sampler = SamplerBuilder.getSampler(probability);
-      }
     }
   }
 
