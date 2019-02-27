@@ -1,0 +1,32 @@
+{
+  "name": "http-example",
+  "version": "0.0.1",
+  "description": "Example of HTTP integration with OpenCensus",
+  "repository": "census-instrumentation/opencensus-node",
+  "keywords": [
+    "opencensus",
+    "http",
+    "tracing",
+    "stats",
+    "metrics"
+  ],
+  "author": "OpenCensus Authors",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "scripts": {
+    "lint": "semistandard *.js",
+    "fix": "semistandard --fix"
+  },
+  "dependencies": {
+    "@opencensus/exporter-zipkin": "^0.0.9",
+    "@opencensus/instrumentation-http": "^0.0.9",
+    "@opencensus/nodejs": "^0.0.9",
+    "@opencensus/propagation-tracecontext": "^0.0.9",
+    "http": "*"
+  },
+  "devDependencies": {
+    "semistandard": "^13.0.1"
+  }
+}
