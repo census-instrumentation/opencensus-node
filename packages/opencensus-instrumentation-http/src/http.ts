@@ -227,8 +227,10 @@ export class HttpPlugin extends BasePlugin {
                   HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path || '');
             }
 
-            rootSpan.addAttribute(
-                HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
+            if (userAgent) {
+              rootSpan.addAttribute(
+                  HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
+            }
 
             rootSpan.addAttribute(
                 HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
@@ -326,7 +328,7 @@ export class HttpPlugin extends BasePlugin {
         } else {
           plugin.logger.debug('outgoingRequest starting a child span');
           const span = plugin.tracer.startChildSpan(
-              {name: traceOptions.name, kind: traceOptions.kind});
+              traceOptions.name, traceOptions.kind);
           return (plugin.getMakeRequestTraceFunction(request, options, plugin))(
               span);
         }
