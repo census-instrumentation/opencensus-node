@@ -24,7 +24,7 @@ const { TraceContextFormat } = require('@opencensus/propagation-tracecontext');
 const tracer = setupTracerAndExporters();
 
 /** Starts a HTTP server that receives requests on sample server port. */
-function start (port) {
+function startServer (port) {
   // Creates a server
   const server = http.createServer(handleRequest);
   // Starts the server
@@ -81,4 +81,4 @@ function setupTracerAndExporters () {
   return tracer;
 }
 
-start(8080);
+startServer(8080);

@@ -25,6 +25,10 @@ const tracer = setupTracerAndExporters();
 
 /** A function which makes requests and handles response. */
 function makeRequest () {
+  // Root spans typically correspond to incoming requests, while child spans
+  // typically correspond to outgoing requests. Here, we have manually created
+  // the root span, which is created to track work that happens outside of the
+  // request lifecycle entirely.
   tracer.startRootSpan({ name: 'octutorialsClient.makeRequest' }, rootSpan => {
     http.get({
       host: 'localhost',
@@ -33,7 +37,7 @@ function makeRequest () {
     }, (response) => {
       let body = [];
       response.on('data', chunk => body.push(chunk));
-      response.on('end',  () => {
+      response.on('end', () => {
         console.log(body);
         rootSpan.end();
       });
