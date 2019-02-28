@@ -15,8 +15,11 @@
  */
 import * as path from 'path';
 import * as semver from 'semver';
+
 import {Logger} from '../../common/types';
+import {Stats} from '../../stats/types';
 import * as modelTypes from '../model/types';
+
 import * as types from './types';
 
 /**
@@ -49,6 +52,8 @@ export abstract class BasePlugin implements types.Plugin {
   protected basedir: string;
   /** plugin options */
   protected options: types.PluginConfig;
+  /** A stats object. */
+  protected stats: Stats;
 
   /**
    * Constructs a new BasePlugin instance.
@@ -65,17 +70,19 @@ export abstract class BasePlugin implements types.Plugin {
    * @param version module version description
    * @param options plugin options
    * @param basedir module absolute path
+   * @param stats a stats instance
    */
   private setPluginContext(
       // tslint:disable-next-line:no-any
       moduleExports: any, tracer: modelTypes.Tracer, version: string,
-      options: types.PluginConfig, basedir?: string) {
+      options: types.PluginConfig, basedir?: string, stats?: Stats) {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
     this.basedir = basedir;
     this.logger = tracer.logger;
     this.options = options;
+    this.stats = stats;
     this.internalFilesExports = this.loadInternalFiles();
   }
 
@@ -91,12 +98,14 @@ export abstract class BasePlugin implements types.Plugin {
    * @param version version of the current instaled module to patch
    * @param options plugin options
    * @param basedir module absolute path
+   * @param stats a stats instance
    */
   enable<T>(
       // tslint:disable-next-line:no-any
       moduleExports: T, tracer: modelTypes.Tracer, version: string,
-      options: types.PluginConfig, basedir: string) {
-    this.setPluginContext(moduleExports, tracer, version, options, basedir);
+      options: types.PluginConfig, basedir: string, stats?: Stats) {
+    this.setPluginContext(
+        moduleExports, tracer, version, options, basedir, stats);
     return this.applyPatch();
   }
 
