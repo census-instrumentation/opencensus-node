@@ -57,7 +57,7 @@
   "dependencies": {
     "@opencensus/core": "^0.0.9",
     "@opencensus/instrumentation-all": "^0.0.9",
-    "extend": "^3.0.1",
+    "extend": "^3.0.2",
     "require-in-the-middle": "^3.0.0"
   }
 }
