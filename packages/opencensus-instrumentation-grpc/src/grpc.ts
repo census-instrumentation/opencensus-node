@@ -20,8 +20,8 @@ import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
-import * as clientMetrics from './grpc-stats/client-metrics';
-import * as serverMetrics from './grpc-stats/server-metrics';
+import * as clientStats from './grpc-stats/client-stats';
+import * as serverStats from './grpc-stats/server-stats';
 const sizeof = require('object-sizeof');
 
 /** The metadata key under which span context is stored as a binary value. */
@@ -232,7 +232,7 @@ export class GrpcPlugin extends BasePlugin {
 
       // record stats
       const tags = new TagMap();
-      tags.set(serverMetrics.GRPC_SERVER_METHOD, {value: rootSpan.name});
+      tags.set(serverStats.GRPC_SERVER_METHOD, {value: rootSpan.name});
       const req = call.hasOwnProperty('request') ? call.request : {};
       GrpcPlugin.recordStats(
           rootSpan.kind, tags, value, req, Date.now() - startTime);
@@ -377,7 +377,7 @@ export class GrpcPlugin extends BasePlugin {
 
         // record stats
         const tags = new TagMap();
-        tags.set(clientMetrics.GRPC_CLIENT_METHOD, {value: span.name});
+        tags.set(clientStats.GRPC_CLIENT_METHOD, {value: span.name});
         GrpcPlugin.recordStats(
             span.kind, tags, originalArgs, res, Date.now() - startTime);
 
@@ -543,45 +543,43 @@ export class GrpcPlugin extends BasePlugin {
       switch (kind) {
         case SpanKind.CLIENT:
           measureList.push({
-            measure: clientMetrics.GRPC_CLIENT_SENT_BYTES_PER_RPC,
+            measure: clientStats.GRPC_CLIENT_SENT_BYTES_PER_RPC,
             value: sizeof(argsOrValue)
           });
           measureList.push({
-            measure: clientMetrics.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC,
+            measure: clientStats.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC,
             value: sizeof(reqOrRes)
           });
           measureList.push({
-            measure: clientMetrics.GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC,
+            measure: clientStats.GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC,
             value: 1
           });
           measureList.push({
-            measure: clientMetrics.GRPC_CLIENT_SENT_MESSAGES_PER_RPC,
-            value: 1
-          });
-          measureList.push({
-            measure: clientMetrics.GRPC_CLIENT_ROUNDTRIP_LATENCY,
-            value: ms
-          });
-          break;
-        case SpanKind.SERVER:
-          measureList.push({
-            measure: serverMetrics.GRPC_SERVER_RECEIVED_BYTES_PER_RPC,
-            value: sizeof(reqOrRes)
-          });
-          measureList.push({
-            measure: serverMetrics.GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC,
-            value: 1
-          });
-          measureList.push({
-            measure: serverMetrics.GRPC_SERVER_SENT_BYTES_PER_RPC,
-            value: sizeof(argsOrValue)
-          });
-          measureList.push({
-            measure: serverMetrics.GRPC_SERVER_SENT_MESSAGES_PER_RPC,
+            measure: clientStats.GRPC_CLIENT_SENT_MESSAGES_PER_RPC,
             value: 1
           });
           measureList.push(
-              {measure: serverMetrics.GRPC_SERVER_SERVER_LATENCY, value: ms});
+              {measure: clientStats.GRPC_CLIENT_ROUNDTRIP_LATENCY, value: ms});
+          break;
+        case SpanKind.SERVER:
+          measureList.push({
+            measure: serverStats.GRPC_SERVER_RECEIVED_BYTES_PER_RPC,
+            value: sizeof(reqOrRes)
+          });
+          measureList.push({
+            measure: serverStats.GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC,
+            value: 1
+          });
+          measureList.push({
+            measure: serverStats.GRPC_SERVER_SENT_BYTES_PER_RPC,
+            value: sizeof(argsOrValue)
+          });
+          measureList.push({
+            measure: serverStats.GRPC_SERVER_SENT_MESSAGES_PER_RPC,
+            value: 1
+          });
+          measureList.push(
+              {measure: serverStats.GRPC_SERVER_SERVER_LATENCY, value: ms});
           break;
         default:
           break;

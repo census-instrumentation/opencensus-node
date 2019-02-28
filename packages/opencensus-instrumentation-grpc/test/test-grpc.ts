@@ -20,8 +20,8 @@ import * as assert from 'assert';
 import * as grpcModule from 'grpc';
 import * as path from 'path';
 import {GRPC_TRACE_KEY, GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
-import * as clientMetrics from '../src/grpc-stats/client-metrics';
-import * as serverMetrics from '../src/grpc-stats/server-metrics';
+import * as clientStats from '../src/grpc-stats/client-stats';
+import * as serverStats from '../src/grpc-stats/server-stats';
 import {registerAllGrpcViews} from '../src/grpc-stats/stats-common';
 
 const PROTO_PATH = __dirname + '/fixtures/grpc-instrumentation-test.proto';
@@ -373,41 +373,39 @@ describe('GrpcPlugin() ', function() {
     assert.equal(testExporter.recordedMeasurements.length, 10);
     assert.strictEqual(
         testExporter.recordedMeasurements[0].measure,
-        serverMetrics.GRPC_SERVER_RECEIVED_BYTES_PER_RPC);
+        serverStats.GRPC_SERVER_RECEIVED_BYTES_PER_RPC);
     assert.equal(testExporter.recordedMeasurements[0].value, 14);
-    assert.deepStrictEqual(testExporter.recordedMeasurements[1], {
-      measure: serverMetrics.GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC,
-      value: 1
-    });
+    assert.deepStrictEqual(
+        testExporter.recordedMeasurements[1],
+        {measure: serverStats.GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC, value: 1});
     assert.strictEqual(
         testExporter.recordedMeasurements[2].measure,
-        serverMetrics.GRPC_SERVER_SENT_BYTES_PER_RPC);
+        serverStats.GRPC_SERVER_SENT_BYTES_PER_RPC);
     assert.equal(testExporter.recordedMeasurements[2].value, 14);
     assert.deepStrictEqual(
         testExporter.recordedMeasurements[3],
-        {measure: serverMetrics.GRPC_SERVER_SENT_MESSAGES_PER_RPC, value: 1});
+        {measure: serverStats.GRPC_SERVER_SENT_MESSAGES_PER_RPC, value: 1});
     assert.strictEqual(
         testExporter.recordedMeasurements[4].measure,
-        serverMetrics.GRPC_SERVER_SERVER_LATENCY);
+        serverStats.GRPC_SERVER_SERVER_LATENCY);
 
     assert.strictEqual(
         testExporter.recordedMeasurements[5].measure,
-        clientMetrics.GRPC_CLIENT_SENT_BYTES_PER_RPC);
+        clientStats.GRPC_CLIENT_SENT_BYTES_PER_RPC);
     assert.equal(testExporter.recordedMeasurements[5].value, 107);
     assert.strictEqual(
         testExporter.recordedMeasurements[6].measure,
-        clientMetrics.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC);
+        clientStats.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC);
     assert.equal(testExporter.recordedMeasurements[6].value, 14);
-    assert.deepStrictEqual(testExporter.recordedMeasurements[7], {
-      measure: clientMetrics.GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC,
-      value: 1
-    });
+    assert.deepStrictEqual(
+        testExporter.recordedMeasurements[7],
+        {measure: clientStats.GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC, value: 1});
     assert.deepStrictEqual(
         testExporter.recordedMeasurements[8],
-        {measure: clientMetrics.GRPC_CLIENT_SENT_MESSAGES_PER_RPC, value: 1});
+        {measure: clientStats.GRPC_CLIENT_SENT_MESSAGES_PER_RPC, value: 1});
     assert.strictEqual(
         testExporter.recordedMeasurements[9].measure,
-        clientMetrics.GRPC_CLIENT_ROUNDTRIP_LATENCY);
+        clientStats.GRPC_CLIENT_ROUNDTRIP_LATENCY);
     assert.ok(testExporter.recordedMeasurements[9].value > 0);
   }
 
