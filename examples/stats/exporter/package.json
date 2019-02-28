@@ -3,7 +3,10 @@
   "version": "0.0.8",
   "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
   "repository": "census-instrumentation/opencensus-node",
-  "scripts": {},
+  "scripts": {
+    "lint": "semistandard *.js",
+    "fix": "semistandard --fix"
+  },
   "keywords": [
     "opencensus",
     "nodejs",
@@ -20,11 +23,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "gts": "^0.9.0"
+    "semistandard": "^13.0.1"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.8",
-    "@opencensus/exporter-prometheus": "^0.0.8",
-    "@opencensus/exporter-stackdriver": "^0.0.8"
+    "@opencensus/core": "^0.0.9",
+    "@opencensus/exporter-prometheus": "^0.0.9",
+    "@opencensus/exporter-stackdriver": "^0.0.9"
   }
 }
