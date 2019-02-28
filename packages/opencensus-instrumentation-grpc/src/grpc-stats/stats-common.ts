@@ -15,8 +15,8 @@
  */
 
 import {Stats} from '@opencensus/core';
-import {GRPC_BASIC_CLIENT_VIEWS} from './client-metrics';
-import {GRPC_BASIC_SERVER_VIEWS} from './server-metrics';
+import {GRPC_BASIC_CLIENT_VIEWS} from './client-stats';
+import {GRPC_BASIC_SERVER_VIEWS} from './server-stats';
 
 /** Method to register all GRPC Views. */
 export function registerAllGrpcViews(globalStats: Stats) {
