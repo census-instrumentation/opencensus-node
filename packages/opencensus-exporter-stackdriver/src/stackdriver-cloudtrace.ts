@@ -77,7 +77,8 @@ export class StackdriverTraceExporter implements Exporter {
     const spanList: Span[] = [];
     rootSpans.forEach(rootSpan => {
       // RootSpan data
-      spanList.push(this.createSpan(rootSpan, resourceLabel));
+      spanList.push(
+          this.createSpan(rootSpan, resourceLabel, rootSpan.numberOfChildren));
       rootSpan.spans.forEach(span => {
         // Builds spans data
         spanList.push(this.createSpan(span, resourceLabel));
@@ -87,7 +88,8 @@ export class StackdriverTraceExporter implements Exporter {
   }
 
   private createSpan(
-      span: OCSpan, resourceLabels: Record<string, AttributeValue>): Span {
+      span: OCSpan, resourceLabels: Record<string, AttributeValue>,
+      numberOfChildren = 0): Span {
     const spanName =
         `projects/${this.projectId}/traces/${span.traceId}/spans/${span.id}`;
 
@@ -105,8 +107,8 @@ export class StackdriverTraceExporter implements Exporter {
       links: createLinks(span.links, span.droppedLinksCount),
       status: {code: span.status.code},
       sameProcessAsParentSpan: !span.remoteParent,
-      childSpanCount: null,  // TODO: Consider to add count after pull/332
-      stackTrace: null,      // Unsupported by nodejs
+      childSpanCount: numberOfChildren,
+      stackTrace: null,  // Unsupported by nodejs
     };
     if (span.parentSpanId) {
       spanBuilder.parentSpanId = span.parentSpanId;

@@ -94,7 +94,7 @@ describe('Stackdriver Trace Exporter', function() {
                   },
                   'droppedAttributesCount': 0
                 },
-                'childSpanCount': null,
+                'childSpanCount': 1,
                 'displayName': {'value': 'root-test'},
                 'endTime': rootSpan.endTime.toISOString(),
                 'links': {'droppedLinksCount': 0, 'link': []},
@@ -121,7 +121,7 @@ describe('Stackdriver Trace Exporter', function() {
                   },
                   'droppedAttributesCount': 0
                 },
-                'childSpanCount': null,
+                'childSpanCount': 0,
                 'displayName': {'value': 'spanTest'},
                 'endTime': span.endTime.toISOString(),
                 'links': {'droppedLinksCount': 0, 'link': []},
