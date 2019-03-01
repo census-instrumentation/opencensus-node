@@ -18,10 +18,10 @@ npm install @opencensus/exporter-ocagent
 Instance the exporter on your application. For javascript:
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
-var ocagent = require('@opencensus/exporter-ocagent');
+const tracing = require('@opencensus/nodejs');
+const ocagent = require('@opencensus/exporter-ocagent');
 
-var exporter = new ocagent.OCAgentExporter({
+const exporter = new ocagent.OCAgentExporter({
   // ... configuration options ...
 });
 
@@ -55,7 +55,7 @@ tracing.registerExporter(exporter).start();
 
 The following options are available through the construtor options.
 
-Option          | Type                    | Description 
+Option          | Type                    | Description
 ----------------|-------------------------|-
 `serviceName`   | string                  | Name of the service. Defaults to `Anonymous Service`.
 `host`          | string                  | Host or ip of the agent. Defaults to `localhost`.

@@ -19,17 +19,17 @@ Zpages always runs on localhost, but you can change the port in the options. If 
 To use Zpages, instance the exporter on your application and pass the options. For javascript:
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
-var zpages = require('@opencensus/exporter-zipkin');
+const tracing = require('@opencensus/nodejs');
+const zpages = require('@opencensus/exporter-zipkin');
 
 // Add your zipkin url and application name to the Zipkin options
-var options = {
+const options = {
   port: 8080,   // default
   startServer: true,  // default
   spanNames: ['predefined/span1', 'predefined/span2']
 }
 
-var exporter = new zpages.ZpagesExporter(options);
+const exporter = new zpages.ZpagesExporter(options);
 ```
 
 Similarly for Typescript:

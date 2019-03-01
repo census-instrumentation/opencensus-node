@@ -1,7 +1,7 @@
 # OpenCensus for Node.js
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. Right now OpenCensus for Node.js supports custom tracing and automatic tracing for HTTP and HTTPS.
+OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data.
 
 The library is in alpha stage and the API is subject to change.
 
@@ -22,7 +22,7 @@ npm install @opencensus/nodejs
 OpenCensus for Node.js has automatic instrumentation for [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md) and [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md) out of the box. This means that spans are automatically created for operations of those packages. To use it, simply start the tracing instance.
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
+const tracing = require('@opencensus/nodejs');
 tracing.start();
 ```
 
@@ -35,7 +35,7 @@ tracing.start();
 
 ### Manually Instrument an Application
 
-In addition to automatic tracing, it is possible to manually create your own root and child spans. 
+In addition to automatic tracing, it is possible to manually create your own root and child spans.
 
 ```typescript
 const rootSpanOptions = { name: 'your root span' };
@@ -100,4 +100,3 @@ If no exporter is registered in the tracing instance, as default, a console log 
 
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
 [gitter-url]: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
