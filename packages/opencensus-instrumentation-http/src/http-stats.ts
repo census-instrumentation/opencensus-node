@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {AggregationType, globalStats, MeasureUnit, Stats, View} from '@opencensus/core';
+import {AggregationType, globalStats, Measure, MeasureUnit, Stats, View} from '@opencensus/core';
 
 /**
  * {@link Measure} for the client-side total bytes sent in request body (not
  * including headers). This is uncompressed bytes.
  */
-export const HTTP_CLIENT_SENT_BYTES = globalStats.createMeasureInt64(
+export const HTTP_CLIENT_SENT_BYTES: Measure = globalStats.createMeasureInt64(
     'opencensus.io/http/client/sent_bytes', MeasureUnit.BYTE,
     'Client-side total bytes sent in request body (uncompressed)');
 
@@ -31,15 +31,16 @@ export const HTTP_CLIENT_SENT_BYTES = globalStats.createMeasureInt64(
  * the Content-Length header. This is uncompressed bytes. Responses with no
  * body should record 0 for this value.
  */
-export const HTTP_CLIENT_RECEIVED_BYTES = globalStats.createMeasureInt64(
-    'opencensus.io/http/client/received_bytes', MeasureUnit.BYTE,
-    'Client-side total bytes received in response bodies (uncompressed)');
+export const HTTP_CLIENT_RECEIVED_BYTES: Measure =
+    globalStats.createMeasureInt64(
+        'opencensus.io/http/client/received_bytes', MeasureUnit.BYTE,
+        'Client-side total bytes received in response bodies (uncompressed)');
 
 /**
  * {@link Measure} for the client-side time between first byte of request
  * headers sent to last byte of response received, or terminal error.
  */
-export const HTTP_CLIENT_ROUNDTRIP_LATENCY = globalStats.createMeasureDouble(
+export const HTTP_CLIENT_ROUNDTRIP_LATENCY: Measure = globalStats.createMeasureDouble(
     'opencensus.io/http/client/roundtrip_latency', MeasureUnit.MS,
     'Client-side time between first byte of request headers sent to last byte of response received, or terminal error');
 
@@ -47,9 +48,10 @@ export const HTTP_CLIENT_ROUNDTRIP_LATENCY = globalStats.createMeasureDouble(
  * {@link Measure} for the server-side total bytes received in request body
  * (not including headers). This is uncompressed bytes.
  */
-export const HTTP_SERVER_RECEIVED_BYTES = globalStats.createMeasureInt64(
-    'opencensus.io/http/server/received_bytes', MeasureUnit.BYTE,
-    'Server-side total bytes received in request body (uncompressed)');
+export const HTTP_SERVER_RECEIVED_BYTES: Measure =
+    globalStats.createMeasureInt64(
+        'opencensus.io/http/server/received_bytes', MeasureUnit.BYTE,
+        'Server-side total bytes received in request body (uncompressed)');
 
 /**
  * {@link Measure} for the server-side total bytes sent in response bodies
@@ -58,7 +60,7 @@ export const HTTP_SERVER_RECEIVED_BYTES = globalStats.createMeasureInt64(
  * Content-Length header. This is uncompressed bytes. Responses with no
  * body should record 0 for this value.
  */
-export const HTTP_SERVER_SENT_BYTES = globalStats.createMeasureInt64(
+export const HTTP_SERVER_SENT_BYTES: Measure = globalStats.createMeasureInt64(
     'opencensus.io/http/server/sent_bytes', MeasureUnit.BYTE,
     'Server-side total bytes sent in response bodies (uncompressed)');
 
@@ -66,7 +68,7 @@ export const HTTP_SERVER_SENT_BYTES = globalStats.createMeasureInt64(
  * {@link Measure} for the server-side time between first byte of request
  * headers received to last byte of response sent, or terminal error.
  */
-export const HTTP_SERVER_LATENCY = globalStats.createMeasureDouble(
+export const HTTP_SERVER_LATENCY: Measure = globalStats.createMeasureDouble(
     'opencensus.io/http/server/server_latency', MeasureUnit.MS,
     'Server-side time between first byte of request headers received to last byte of response sent, or terminal error');
 

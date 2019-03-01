@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, RootSpan, Span, SpanKind, TraceOptions} from '@opencensus/core';
-import * as httpModule from 'http';
+import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, Span, SpanKind, TagMap, TraceOptions} from '@opencensus/core';
+import {ClientRequest, ClientResponse, IncomingMessage, request, RequestOptions, ServerResponse} from 'http';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as uuid from 'uuid';
-import {HttpPluginConfig, IgnoreMatcher} from './types';
+import * as stats from './http-stats';
+import {IgnoreMatcher} from './types';
 
-export type HttpGetCallback = (res: httpModule.IncomingMessage) => void;
-export type HttpModule = typeof httpModule;
-export type RequestFunction = typeof httpModule.request;
+export type HttpGetCallback = (res: IncomingMessage) => void;
+export type RequestFunction = typeof request;
+
+function isOpenCensusRequest(options: RequestOptions) {
+  return options && options.headers &&
+      !!options.headers['x-opencensus-outgoing-request'];
+}
 
 /** Http instrumentation plugin for Opencensus */
 export class HttpPlugin extends BasePlugin {
@@ -47,10 +52,7 @@ export class HttpPlugin extends BasePlugin {
     super(moduleName);
   }
 
-
-  /**
-   * Patches HTTP incoming and outcoming request functions.
-   */
+  /** Patches HTTP incoming and outcoming request functions. */
   protected applyPatch() {
     this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
@@ -72,9 +74,8 @@ export class HttpPlugin extends BasePlugin {
         // https://nodejs.org/dist/latest/docs/api/http.html#http_http_get_options_callback
         // https://github.com/googleapis/cloud-trace-nodejs/blob/master/src/plugins/plugin-http.ts#L198
         return function getTrace(
-            options: httpModule.RequestOptions|string,
-            callback: HttpGetCallback) {
-          const req = httpModule.request(options, callback);
+            options: RequestOptions|string, callback: HttpGetCallback) {
+          const req = request(options, callback);
           req.end();
           return req;
         };
@@ -94,7 +95,6 @@ export class HttpPlugin extends BasePlugin {
 
     return this.moduleExports;
   }
-
 
   /** Unpatches all HTTP patched function. */
   protected applyUnpatch(): void {
@@ -149,7 +149,6 @@ export class HttpPlugin extends BasePlugin {
     }
   }
 
-
   /**
    * Creates spans for incoming requests, restoring spans' context if applied.
    */
@@ -164,10 +163,11 @@ export class HttpPlugin extends BasePlugin {
         if (event !== 'request') {
           return original.apply(this, arguments);
         }
-
-        const request: httpModule.IncomingMessage = args[0];
-        const response: httpModule.ServerResponse = args[1];
+        const startTime = Date.now();
+        const request: IncomingMessage = args[0];
+        const response: ServerResponse = args[1];
         const path = request.url ? url.parse(request.url).pathname || '' : '';
+        const method = request.method || 'GET';
         plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
 
         if (plugin.isIgnored(
@@ -201,7 +201,7 @@ export class HttpPlugin extends BasePlugin {
           // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/master/src/plugins/plugin-connect.ts#L75)
           const originalEnd = response.end;
 
-          response.end = function(this: httpModule.ServerResponse) {
+          response.end = function(this: ServerResponse) {
             response.end = originalEnd;
             const returned = response.end.apply(this, arguments);
 
@@ -209,6 +209,7 @@ export class HttpPlugin extends BasePlugin {
             const host = headers.host || 'localhost';
             const userAgent =
                 (headers['user-agent'] || headers['User-Agent']) as string;
+            const tags = new TagMap();
 
             rootSpan.addAttribute(
                 HttpPlugin.ATTRIBUTE_HTTP_HOST,
@@ -217,21 +218,18 @@ export class HttpPlugin extends BasePlugin {
                     '$1',
                     ));
 
-            rootSpan.addAttribute(
-                HttpPlugin.ATTRIBUTE_HTTP_METHOD, request.method || 'GET');
-
+            rootSpan.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_METHOD, method);
             if (requestUrl) {
               rootSpan.addAttribute(
                   HttpPlugin.ATTRIBUTE_HTTP_PATH, requestUrl.pathname || '');
               rootSpan.addAttribute(
                   HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path || '');
+              tags.set(stats.HTTP_SERVER_ROUTE, {value: requestUrl.path || ''});
             }
-
             if (userAgent) {
               rootSpan.addAttribute(
                   HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT, userAgent);
             }
-
             rootSpan.addAttribute(
                 HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
                 response.statusCode.toString());
@@ -243,6 +241,12 @@ export class HttpPlugin extends BasePlugin {
             rootSpan.addMessageEvent(
                 MessageEventType.RECEIVED, uuid.v4().split('-').join(''));
 
+            tags.set(stats.HTTP_SERVER_METHOD, {value: method});
+            tags.set(
+                stats.HTTP_SERVER_STATUS,
+                {value: response.statusCode.toString()});
+            HttpPlugin.recordStats(rootSpan.kind, tags, Date.now() - startTime);
+
             rootSpan.end();
             return returned;
           };
@@ -253,20 +257,17 @@ export class HttpPlugin extends BasePlugin {
     };
   }
 
-
   /**
    * Creates spans for outgoing requests, sending spans' context for distributed
    * tracing.
    */
   protected getPatchOutgoingRequestFunction() {
-    return (original: Func<httpModule.ClientRequest>): Func<
-               httpModule.ClientRequest> => {
+    return (original: Func<ClientRequest>): Func<ClientRequest> => {
       const plugin = this;
       return function outgoingRequest(
-                 options: httpModule.RequestOptions|string,
-                 callback): httpModule.ClientRequest {
+          options: RequestOptions|string, callback): ClientRequest {
         if (!options) {
-          return original.apply(this, arguments);
+          return original.apply(this, [options, callback]);
         }
 
         // Makes sure the url is an url object
@@ -280,11 +281,10 @@ export class HttpPlugin extends BasePlugin {
           origin = `${parsedUrl.protocol || 'http:'}//${parsedUrl.host}`;
         } else {
           // Do not trace ourselves
-          if (options.headers &&
-              options.headers['x-opencensus-outgoing-request']) {
+          if (isOpenCensusRequest(options)) {
             plugin.logger.debug(
                 'header with "x-opencensus-outgoing-request" - do not trace');
-            return original.apply(this, arguments);
+            return original.apply(this, [options, callback]);
           }
 
           try {
@@ -294,12 +294,12 @@ export class HttpPlugin extends BasePlugin {
             }
             method = options.method || 'GET';
             origin = `${options.protocol || 'http:'}//${options.host}`;
-          } catch (e) {
+          } catch (ignore) {
           }
         }
 
-        const request: httpModule.ClientRequest =
-            original.apply(this, arguments);
+        const request: ClientRequest =
+            original.apply(this, [options, callback]);
 
         if (plugin.isIgnored(
                 origin + pathname, request,
@@ -314,7 +314,6 @@ export class HttpPlugin extends BasePlugin {
           name: `${method || 'GET'} ${pathname}`,
           kind: SpanKind.CLIENT,
         };
-
 
         // Checks if this outgoing request is part of an operation by checking
         // if there is a current root span, if so, we create a child span. In
@@ -343,10 +342,10 @@ export class HttpPlugin extends BasePlugin {
    * @param options The arguments to the original function.
    */
   private getMakeRequestTraceFunction(
-      // tslint:disable-next-line:no-any
-      request: httpModule.ClientRequest, options: httpModule.RequestOptions,
-      plugin: HttpPlugin): Func<httpModule.ClientRequest> {
-    return (span: Span): httpModule.ClientRequest => {
+      request: ClientRequest, options: RequestOptions,
+      plugin: HttpPlugin): Func<ClientRequest> {
+    return (span: Span): ClientRequest => {
+      const startTime = Date.now();
       plugin.logger.debug('makeRequestTrace');
 
       if (!span) {
@@ -365,16 +364,18 @@ export class HttpPlugin extends BasePlugin {
         propagation.inject(setter, span.spanContext);
       }
 
-      request.on('response', (response: httpModule.ClientResponse) => {
+      request.on('response', (response: ClientResponse) => {
         plugin.tracer.wrapEmitter(response);
         plugin.logger.debug('outgoingRequest on response()');
-
         response.on('end', () => {
           plugin.logger.debug('outgoingRequest on end()');
           const method = response.method ? response.method : 'GET';
           const headers = options.headers;
           const userAgent =
               headers ? (headers['user-agent'] || headers['User-Agent']) : null;
+
+          const tags = new TagMap();
+          tags.set(stats.HTTP_CLIENT_METHOD, {value: method});
 
           if (options.hostname) {
             span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, options.hostname);
@@ -394,12 +395,16 @@ export class HttpPlugin extends BasePlugin {
                 HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE,
                 response.statusCode.toString());
             span.setStatus(HttpPlugin.parseResponseStatus(response.statusCode));
+            tags.set(
+                stats.HTTP_CLIENT_STATUS,
+                {value: response.statusCode.toString()});
           }
 
           // Message Event ID is not defined
           span.addMessageEvent(
               MessageEventType.SENT, uuid.v4().split('-').join(''));
 
+          HttpPlugin.recordStats(span.kind, tags, Date.now() - startTime);
           span.end();
         });
 
@@ -455,6 +460,30 @@ export class HttpPlugin extends BasePlugin {
         default:
           return CanonicalCode.UNKNOWN;
       }
+    }
+  }
+
+  /** Method to record stats for client and server. */
+  static recordStats(kind: SpanKind, tags: TagMap, ms: number) {
+    if (!plugin.stats) {
+      return;
+    }
+
+    try {
+      const measureList = [];
+      switch (kind) {
+        case SpanKind.CLIENT:
+          measureList.push(
+              {measure: stats.HTTP_CLIENT_ROUNDTRIP_LATENCY, value: ms});
+          break;
+        case SpanKind.SERVER:
+          measureList.push({measure: stats.HTTP_SERVER_LATENCY, value: ms});
+          break;
+        default:
+          break;
+      }
+      plugin.stats.record(measureList, tags);
+    } catch (ignore) {
     }
   }
 }

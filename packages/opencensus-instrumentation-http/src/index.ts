@@ -15,3 +15,4 @@
  */
 
 export * from './http';
+export {registerAllClientViews, registerAllServerViews, registerAllViews} from './http-stats';

@@ -15,11 +15,4 @@
  */
 
 export * from './grpc';
-
-import {registerAllGrpcViews, registerClientGrpcBasicViews, registerServerGrpcBasicViews} from './grpc-stats/stats-common';
-
-export {
-  registerAllGrpcViews,
-  registerClientGrpcBasicViews,
-  registerServerGrpcBasicViews
-};
+export {registerAllGrpcViews, registerClientGrpcBasicViews, registerServerGrpcBasicViews} from './grpc-stats/stats-common';

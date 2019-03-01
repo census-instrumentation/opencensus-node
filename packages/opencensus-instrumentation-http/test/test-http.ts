@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import {CoreTracer, HeaderGetter, HeaderSetter, Propagation, RootSpan, Span, SpanContext, SpanEventListener} from '@opencensus/core';
-import {logger} from '@opencensus/core';
+import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, Propagation, RootSpan, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as nock from 'nock';
 import * as shimmer from 'shimmer';
-import {plugin} from '../src/';
-import {HttpPlugin} from '../src/';
-
+import {HttpPlugin, plugin} from '../src/';
+import * as stats from '../src/http-stats';
 
 function doNock(
     url: string, path: string, httpCode: number, respBody: string,
@@ -31,6 +29,29 @@ function doNock(
   nock(url).get(path).times(i).reply(httpCode, respBody);
 }
 
+class TestExporter implements StatsEventListener {
+  registeredViews: View[] = [];
+  recordedMeasurements: Measurement[] = [];
+  recorededTags: Array<Map<TagKey, TagValue>> = [];
+
+  onRegisterView(view: View) {
+    this.registeredViews.push(view);
+  }
+
+  onRecord(
+      views: View[], measurement: Measurement, tagMap: Map<TagKey, TagValue>) {
+    this.recordedMeasurements.push(measurement);
+    this.recorededTags.push(tagMap);
+  }
+
+  start(): void {}
+
+  clean() {
+    this.registeredViews = [];
+    this.recordedMeasurements = [];
+    this.recorededTags = [];
+  }
+}
 
 const httpRequest = {
   get: (options: {}|string) => {
@@ -99,6 +120,34 @@ function assertSpanAttributes(
       `${httpStatusCode}`);
 }
 
+function assertClientStats(
+    testExporter: TestExporter, httpStatusCode: number, httpMethod: string) {
+  const tags = new TagMap();
+  tags.set(stats.HTTP_CLIENT_METHOD, {value: httpMethod});
+  tags.set(stats.HTTP_CLIENT_STATUS, {value: `${httpStatusCode}`});
+  assert.strictEqual(testExporter.registeredViews.length, 8);
+  assert.strictEqual(testExporter.recordedMeasurements.length, 1);
+  assert.strictEqual(
+      testExporter.recordedMeasurements[0].measure,
+      stats.HTTP_CLIENT_ROUNDTRIP_LATENCY);
+  assert.ok(testExporter.recordedMeasurements[0].value >= 0);
+  assert.deepStrictEqual(testExporter.recorededTags[0], tags.tags);
+}
+
+function assertServerStats(
+    testExporter: TestExporter, httpStatusCode: number, httpMethod: string,
+    path: string) {
+  const tags = new TagMap();
+  tags.set(stats.HTTP_SERVER_METHOD, {value: httpMethod});
+  tags.set(stats.HTTP_SERVER_STATUS, {value: `${httpStatusCode}`});
+  tags.set(stats.HTTP_SERVER_ROUTE, {value: path});
+  assert.strictEqual(testExporter.registeredViews.length, 8);
+  assert.strictEqual(testExporter.recordedMeasurements.length, 1);
+  assert.strictEqual(
+      testExporter.recordedMeasurements[0].measure, stats.HTTP_SERVER_LATENCY);
+  assert.ok(testExporter.recordedMeasurements[0].value >= 0);
+  assert.deepStrictEqual(testExporter.recorededTags[0], tags.tags);
+}
 
 describe('HttpPlugin', () => {
   const hostName = 'fake.service.io';
@@ -111,7 +160,7 @@ describe('HttpPlugin', () => {
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start(
       {samplingRate: 1, logger: log, propagation: new DummyPropagation()});
-
+  const testExporter = new TestExporter();
 
   it('should return a plugin', () => {
     assert.ok(plugin instanceof HttpPlugin);
@@ -130,7 +179,7 @@ describe('HttpPlugin', () => {
             (url: string) => url === `${urlHost}/ignored/function`
           ]
         },
-        '');
+        '', globalStats);
     tracer.registerSpanEventListener(rootSpanVerifier);
     server = http.createServer((request, response) => {
       response.end('Test Server Response');
@@ -144,11 +193,14 @@ describe('HttpPlugin', () => {
       serverPort = (server.address() as any).port;
     });
     nock.disableNetConnect();
+    globalStats.registerExporter(testExporter);
   });
 
   beforeEach(() => {
     rootSpanVerifier.endedRootSpans = [];
     nock.cleanAll();
+    testExporter.clean();
+    stats.registerAllViews(globalStats);
   });
 
   after(() => {
@@ -170,6 +222,7 @@ describe('HttpPlugin', () => {
 
         const span = rootSpanVerifier.endedRootSpans[0];
         assertSpanAttributes(span, 200, 'GET', hostName, testPath);
+        assertClientStats(testExporter, 200, 'GET');
       });
     });
 
@@ -193,6 +246,7 @@ describe('HttpPlugin', () => {
              const span = rootSpanVerifier.endedRootSpans[0];
              assertSpanAttributes(
                  span, httpErrorCodes[i], 'GET', hostName, testPath);
+             assertClientStats(testExporter, httpErrorCodes[i], 'GET');
            });
          });
     }
@@ -210,6 +264,7 @@ describe('HttpPlugin', () => {
           assert.strictEqual(root.traceId, root.spans[0].traceId);
           const span = root.spans[0];
           assertSpanAttributes(span, 200, 'GET', hostName, testPath);
+          assertClientStats(testExporter, 200, 'GET');
         });
       });
     });
@@ -233,6 +288,7 @@ describe('HttpPlugin', () => {
                const span = root.spans[0];
                assertSpanAttributes(
                    span, httpErrorCodes[i], 'GET', hostName, testPath);
+               assertClientStats(testExporter, httpErrorCodes[i], 'GET');
              });
            });
          });
@@ -303,6 +359,7 @@ describe('HttpPlugin', () => {
 
            const span = rootSpanVerifier.endedRootSpans[0];
            assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
+           assertClientStats(testExporter, 301, 'GET');
          });
          nock.disableNetConnect();
        });
@@ -333,6 +390,7 @@ describe('HttpPlugin', () => {
         const span = rootSpanVerifier.endedRootSpans[0];
         assertSpanAttributes(
             span, 200, 'GET', 'localhost', testPath, 'Android');
+        assertServerStats(testExporter, 200, 'GET', testPath);
       });
     });
 
@@ -353,6 +411,7 @@ describe('HttpPlugin', () => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
         await httpRequest.get(options);
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+        assert.strictEqual(testExporter.recordedMeasurements.length, 0);
       });
     }
   });
@@ -372,6 +431,7 @@ describe('HttpPlugin', () => {
       assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
       await httpRequest.get(options).then((result) => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+        assert.strictEqual(testExporter.recordedMeasurements.length, 0);
       });
     });
   });
