@@ -16,18 +16,12 @@
 
 import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
 import * as crypto from 'crypto';
-
 import {isValidOption, isValidSpanId, isValidTraceId, isValidVersion} from './validators';
 
 // Header names
-const TRACE_PARENT = 'traceparent';
-const TRACE_STATE = 'tracestate';
-
-// Option flags
-const REQUESTED_FLAG = 0x1;
-const RECORDED_FLAG = 0x2;
-
-const DEFAULT_OPTIONS = 0x0;
+export const TRACE_PARENT = 'traceparent';
+export const TRACE_STATE = 'tracestate';
+export const DEFAULT_OPTIONS = 0x0;
 
 /**
  * Propagates span context through Trace Context format propagation.
@@ -47,12 +41,12 @@ export class TraceContextFormat implements Propagation {
    * context is returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext {
+  extract(getter: HeaderGetter): SpanContext|null {
     if (getter) {
       // Construct empty span context that we will fill
       const spanContext: SpanContext = {
-        traceId: undefined,
-        spanId: undefined,
+        traceId: '',
+        spanId: '',
         options: DEFAULT_OPTIONS,
         traceState: undefined
       };
