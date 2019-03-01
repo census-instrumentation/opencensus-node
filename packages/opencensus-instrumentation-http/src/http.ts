@@ -15,7 +15,7 @@
  */
 
 import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, Span, SpanKind, TagMap, TraceOptions} from '@opencensus/core';
-import * as httpModule from 'http';
+import {ClientRequest, ClientResponse, IncomingMessage, request, RequestOptions, ServerResponse} from 'http';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
@@ -23,12 +23,10 @@ import * as uuid from 'uuid';
 import * as stats from './http-stats';
 import {IgnoreMatcher} from './types';
 
-export type HttpGetCallback = (res: httpModule.IncomingMessage) => void;
-export type HttpModule = typeof httpModule;
-export type RequestFunction = typeof httpModule.request;
+export type HttpGetCallback = (res: IncomingMessage) => void;
+export type RequestFunction = typeof request;
 
-// tslint:disable-next-line:no-any
-function isOpenCensusRequest(options: any) {
+function isOpenCensusRequest(options: RequestOptions) {
   return options && options.headers &&
       !!options.headers['x-opencensus-outgoing-request'];
 }
@@ -54,10 +52,7 @@ export class HttpPlugin extends BasePlugin {
     super(moduleName);
   }
 
-
-  /**
-   * Patches HTTP incoming and outcoming request functions.
-   */
+  /** Patches HTTP incoming and outcoming request functions. */
   protected applyPatch() {
     this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
@@ -79,9 +74,8 @@ export class HttpPlugin extends BasePlugin {
         // https://nodejs.org/dist/latest/docs/api/http.html#http_http_get_options_callback
         // https://github.com/googleapis/cloud-trace-nodejs/blob/master/src/plugins/plugin-http.ts#L198
         return function getTrace(
-            options: httpModule.RequestOptions|string,
-            callback: HttpGetCallback) {
-          const req = httpModule.request(options, callback);
+            options: RequestOptions|string, callback: HttpGetCallback) {
+          const req = request(options, callback);
           req.end();
           return req;
         };
@@ -101,7 +95,6 @@ export class HttpPlugin extends BasePlugin {
 
     return this.moduleExports;
   }
-
 
   /** Unpatches all HTTP patched function. */
   protected applyUnpatch(): void {
@@ -171,8 +164,8 @@ export class HttpPlugin extends BasePlugin {
           return original.apply(this, arguments);
         }
         const startTime = Date.now();
-        const request: httpModule.IncomingMessage = args[0];
-        const response: httpModule.ServerResponse = args[1];
+        const request: IncomingMessage = args[0];
+        const response: ServerResponse = args[1];
         const path = request.url ? url.parse(request.url).pathname || '' : '';
         const method = request.method || 'GET';
         plugin.logger.debug('%s plugin incomingRequest', plugin.moduleName);
@@ -208,7 +201,7 @@ export class HttpPlugin extends BasePlugin {
           // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/master/src/plugins/plugin-connect.ts#L75)
           const originalEnd = response.end;
 
-          response.end = function(this: httpModule.ServerResponse) {
+          response.end = function(this: ServerResponse) {
             response.end = originalEnd;
             const returned = response.end.apply(this, arguments);
 
@@ -264,26 +257,16 @@ export class HttpPlugin extends BasePlugin {
     };
   }
 
-
   /**
    * Creates spans for outgoing requests, sending spans' context for distributed
    * tracing.
    */
   protected getPatchOutgoingRequestFunction() {
-    return (original: Func<httpModule.ClientRequest>): Func<
-               httpModule.ClientRequest> => {
+    return (original: Func<ClientRequest>): Func<ClientRequest> => {
       const plugin = this;
       return function outgoingRequest(
-                 options: httpModule.RequestOptions|string,
-                 callback): httpModule.ClientRequest {
+          options: RequestOptions|string, callback): ClientRequest {
         if (!options) {
-          return original.apply(this, [options, callback]);
-        }
-
-        // Do not trace ourselves
-        if (isOpenCensusRequest(options)) {
-          plugin.logger.debug(
-              'header with "x-opencensus-outgoing-request" - do not trace');
           return original.apply(this, [options, callback]);
         }
 
@@ -297,6 +280,13 @@ export class HttpPlugin extends BasePlugin {
           pathname = parsedUrl.pathname || '';
           origin = `${parsedUrl.protocol || 'http:'}//${parsedUrl.host}`;
         } else {
+          // Do not trace ourselves
+          if (isOpenCensusRequest(options)) {
+            plugin.logger.debug(
+                'header with "x-opencensus-outgoing-request" - do not trace');
+            return original.apply(this, [options, callback]);
+          }
+
           try {
             pathname = (options as url.URL).pathname;
             if (!pathname) {
@@ -308,7 +298,7 @@ export class HttpPlugin extends BasePlugin {
           }
         }
 
-        const request: httpModule.ClientRequest =
+        const request: ClientRequest =
             original.apply(this, [options, callback]);
 
         if (plugin.isIgnored(
@@ -324,7 +314,6 @@ export class HttpPlugin extends BasePlugin {
           name: `${method || 'GET'} ${pathname}`,
           kind: SpanKind.CLIENT,
         };
-
 
         // Checks if this outgoing request is part of an operation by checking
         // if there is a current root span, if so, we create a child span. In
@@ -353,9 +342,9 @@ export class HttpPlugin extends BasePlugin {
    * @param options The arguments to the original function.
    */
   private getMakeRequestTraceFunction(
-      request: httpModule.ClientRequest, options: httpModule.RequestOptions,
-      plugin: HttpPlugin): Func<httpModule.ClientRequest> {
-    return (span: Span): httpModule.ClientRequest => {
+      request: ClientRequest, options: RequestOptions,
+      plugin: HttpPlugin): Func<ClientRequest> {
+    return (span: Span): ClientRequest => {
       const startTime = Date.now();
       plugin.logger.debug('makeRequestTrace');
 
@@ -375,7 +364,7 @@ export class HttpPlugin extends BasePlugin {
         propagation.inject(setter, span.spanContext);
       }
 
-      request.on('response', (response: httpModule.ClientResponse) => {
+      request.on('response', (response: ClientResponse) => {
         plugin.tracer.wrapEmitter(response);
         plugin.logger.debug('outgoingRequest on response()');
         response.on('end', () => {
