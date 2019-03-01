@@ -11,7 +11,9 @@ All notable changes to this project will be documented in this file.
 - Add proto files to exporter-ocagent package. Fixes issue [#174](https://github.com/census-instrumentation/opencensus-node/issues/174).
 - Remove `ConfigStream` behavior from exporter-ocagent. This was unstable and is not currently supported by any other language instrumentation.
 - Change default exporter-ocagent port to `55678` to match the default OC Agent port.
+- Add support for recording gRPC stats.
 - Add support for recording HTTP stats.
+- Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-instrumentation-http], [opencensus-instrumentation-grpc] and [opencensus-propagation-tracecontext] packages.
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.

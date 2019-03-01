@@ -185,7 +185,6 @@ describe('Stats', () => {
       globalStats.registerExporter(testExporter);
       const measurement = {measure, value: 10};
       globalStats.record([measurement]);
-      console.log(JSON.stringify(testExporter.recordedMeasurements));
       assert.strictEqual(testExporter.recordedMeasurements.length, 2);
     });
 
