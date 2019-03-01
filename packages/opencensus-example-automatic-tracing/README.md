@@ -15,10 +15,10 @@ npm install @opencensus/nodejs
 OpenCensus is able to automatically trace HTTP requests, therefore, you just need to require OpenCensus in your application with:
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
+const tracing = require('@opencensus/nodejs');
 tracing.start();
 
-var http = require('http');
+const http = require('http');
 http.createServer(function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.write('Hello World!');

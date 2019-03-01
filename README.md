@@ -1,7 +1,7 @@
-# OpenCensus Libraries for Node.js
+# OpenCensus - A stats collection and distributed tracing framework
 [![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] [![codecov][codecov-image]][codecov-url] ![Apache License][license-image]
 
-OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. Right now OpenCensus for Node.js supports custom tracing and automatic tracing for HTTP and HTTPS. Please visit the [OpenCensus Node.js package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) for usage.
+OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. It currently includes 3 apis: stats, tracing and tags. Please visit the [OpenCensus Node.js package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) for tracing usage and [OpenCensus Core package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-core) for stats usage.
 
 The library is in alpha stage and the API is subject to change.
 
@@ -31,6 +31,7 @@ OpenCensus collects distributed tracing. It is able to do so by propagating span
 - [B3 Propagation](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-propagation-b3/README.md)
 - [Stackdriver Propagation](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-propagation-stackdriver/README.md)
 - [Trace Context Propagation](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-propagation-tracecontext/README.md)
+- [Binary Format Propagation](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-propagation-binaryformat/README.md)
 
 ## Exporters
 

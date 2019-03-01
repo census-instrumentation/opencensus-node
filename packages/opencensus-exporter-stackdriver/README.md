@@ -30,7 +30,7 @@ const tracing = require('@opencensus/nodejs');
 const { StackdriverTraceExporter } = require('@opencensus/exporter-stackdriver');
 
 // Add your project id to the Stackdriver options
-var exporter = new StackdriverTraceExporter({projectId: "your-project-id"});
+const exporter = new StackdriverTraceExporter({projectId: "your-project-id"});
 
 tracing.registerExporter(exporter).start();
 ```

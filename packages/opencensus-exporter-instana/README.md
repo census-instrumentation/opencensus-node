@@ -14,11 +14,11 @@ npm install @opencensus/exporter-instana
 ```
 
 ## Usage
-To use Instana as your exporter, first ensure that you have an [Instana agent running on your system](https://docs.instana.io/quick_start/getting_started/) and reporting to your environment. The Instana OpenCensus exporter directly communicates with the Instana agent in order to transmit data to Instana. 
+To use Instana as your exporter, first ensure that you have an [Instana agent running on your system](https://docs.instana.io/quick_start/getting_started/) and reporting to your environment. The Instana OpenCensus exporter directly communicates with the Instana agent in order to transmit data to Instana.
 
 ```javascript
-var tracing = require('@opencensus/nodejs');
-var instana = require('@opencensus/exporter-instana');
+const tracing = require('@opencensus/nodejs');
+const instana = require('@opencensus/exporter-instana');
 
 tracing.start({
   exporter: new instana.InstanaTraceExporter()

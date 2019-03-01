@@ -30,7 +30,7 @@ const options = {
   port: 6832; // optional
   maxPacketSize: 65000; // optional
 }
-var exporter = new JaegerTraceExporter(options);
+const exporter = new JaegerTraceExporter(options);
 ```
 
 Now, register the exporter and start tracing.
