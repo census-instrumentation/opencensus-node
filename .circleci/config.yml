@@ -5,6 +5,7 @@ release_tags: &release_tags
 
 test_env: &test_env
   OPENCENSUS_MONGODB_TESTS: 1
+  OPENCENSUS_REDIS_TESTS: 1
 
 # "Include" for unit tests definition.
 unit_tests: &unit_tests
@@ -23,6 +24,8 @@ unit_tests: &unit_tests
 
 mongo_service: &mongo_service
   image: mongo
+redis_service: &redis_service
+  image: redis
 
 version: 2.0
 workflows:
@@ -55,6 +58,7 @@ jobs:
         user: node
         environment: *test_env
       - *mongo_service
+      - *redis_service
     <<: *unit_tests
   node8:
     docker:
@@ -62,6 +66,7 @@ jobs:
         user: node
         environment: *test_env
       - *mongo_service
+      - *redis_service
     <<: *unit_tests
   node10:
     docker:
@@ -69,6 +74,7 @@ jobs:
         user: node
         environment: *test_env
       - *mongo_service
+      - *redis_service
     <<: *unit_tests
   node11:
     docker:
@@ -76,6 +82,7 @@ jobs:
         user: node
         environment: *test_env
       - *mongo_service
+      - *redis_service
     <<: *unit_tests
   publish_npm:
     docker:
