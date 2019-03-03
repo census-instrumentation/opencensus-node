@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@opencensus/exporter-zipkin": "^0.0.9",
-    "@opencensus/instrumentation-http": "^0.0.9",
     "@opencensus/nodejs": "^0.0.9",
     "@opencensus/propagation-tracecontext": "^0.0.9",
     "http": "*"

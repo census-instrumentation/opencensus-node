@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-const path = require('path');
-const http = require('http');
 const tracing = require('@opencensus/nodejs');
-const { plugin } = require('@opencensus/instrumentation-http');
 const { ZipkinTraceExporter } = require('@opencensus/exporter-zipkin');
 const { TraceContextFormat } = require('@opencensus/propagation-tracecontext');
 
+/**
+ * The trace instance needs to be initialized first, if you want to enable
+ * automatic tracing for built-in plugins (HTTP in this case).
+ * https://github.com/census-instrumentation/opencensus-node#plugins
+ */
 const tracer = setupTracerAndExporters();
+
+const http = require('http');
 
 /** Starts a HTTP server that receives requests on sample server port. */
 function startServer (port) {
@@ -65,18 +69,13 @@ function setupTracerAndExporters () {
   // Creates Zipkin exporter
   const exporter = new ZipkinTraceExporter(zipkinOptions);
 
-  // Starts tracing and set sampling rate
-  const tracer = tracing.registerExporter(exporter).start({
+  // Starts tracing and set sampling rate, exporter and propagation
+  const tracer = tracing.start({
+    exporter,
     samplingRate: 1, // For demo purposes, always sample
-    propagation: new TraceContextFormat()
+    propagation: new TraceContextFormat(),
+    logLevel: 1 // show errors, if any
   }).tracer;
-
-  // Defines basedir and version
-  const basedir = path.dirname(require.resolve('http'));
-  const version = process.versions.node;
-
-  // Enables HTTP plugin: Method that enables the instrumentation patch.
-  plugin.enable(http, tracer, version, /** plugin options */{}, basedir);
 
   return tracer;
 }
