@@ -35,7 +35,7 @@ export interface ZipkinExporterOptions extends ExporterConfig {
   serviceName: string;
 }
 
-interface TranslatedSpan {
+export interface TranslatedSpan {
   traceId: string;
   name: string;
   id: string;
@@ -50,7 +50,7 @@ interface TranslatedSpan {
   tags: {[key: string]: string};
 }
 
-interface Annotation {
+export interface Annotation {
   timestamp?: number;  // in microseconds
   value?: string;
 }
