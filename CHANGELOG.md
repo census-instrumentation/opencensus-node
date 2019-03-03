@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-instrumentation-http], [opencensus-instrumentation-grpc] and [opencensus-propagation-tracecontext] packages.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on  [opencensus-exporter-zipkin] packages.
 
-## 0.0.9 - 2019-02-12p
+## 0.0.9 - 2019-02-12
 - Add Metrics API.
 - Add Resource API.
 - Add Tags API.
