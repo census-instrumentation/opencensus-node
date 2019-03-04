@@ -29,8 +29,7 @@ const postPath = '/api/v2/spans';
  * true to use a real zipkin service
  * false to use a nock server
  */
-const OPENCENSUS_NETWORK_TESTS =
-    ['true', 'TRUE', '1'].indexOf(process.env.OPENCENSUS_NETWORK_TESTS) > -1;
+const OPENCENSUS_NETWORK_TESTS = process.env.OPENCENSUS_NETWORK_TESTS;
 
 /** Default options for zipkin tests */
 const zipkinOptions = {

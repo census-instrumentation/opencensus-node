@@ -1,7 +1,12 @@
-# OpenCensus Zipkin Exporter for Node.js
+# OpenCensus Zipkin Trace Exporter
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Zipkin Exporter allows the user to send collected traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to Zipkin.
+OpenCensus Zipkin Trace Exporter allows the user to send collected traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to Zipkin.
+
+[Zipkin](http://zipkin.io/) is a distributed
+tracing system. It helps gather timing data needed to troubleshoot
+latency problems in microservice architectures. It manages both the
+collection and lookup of this data.
 
 This project is still at an early stage of development. It's subject to change.
 
@@ -15,7 +20,7 @@ npm install @opencensus/exporter-zipkin
 
 ## Usage
 
-To use Zipkin as your exporter, first, download from any of the three available options on [Quickstart](https://zipkin.io/pages/quickstart.html): through Docker, on Java or manually compiling the source code. Tests were executed running Zipkin with Java, through the following commands on terminal:
+To use [Zipkin](http://zipkin.io/) as your exporter, first, download from any of the three available options on [Quickstart](https://zipkin.io/pages/quickstart.html): through Docker, on Java or manually compiling the source code. Tests were executed running Zipkin with Java, through the following commands on terminal:
 
 ```bash
 wget -O zipkin.jar 'https://search.maven.org/remote_content?g=io.zipkin.java&a=zipkin-server&v=LATEST&c=exec'
