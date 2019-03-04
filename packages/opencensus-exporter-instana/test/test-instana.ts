@@ -16,17 +16,8 @@
 
 import {CoreTracer, RootSpan, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
-import * as http from 'http';
-import * as mocha from 'mocha';
 import * as nock from 'nock';
-
 import {InstanaTraceExporter} from '../src/instana';
-
-/** Interface with request response model */
-interface RequestResponse {
-  statusCode: number;
-  statusMessage: string;
-}
 
 /** Default config for traces tests */
 const defaultConfig: TracerConfig = {

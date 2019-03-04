@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanKind} from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import {request} from 'http';
 
