@@ -15,9 +15,7 @@
  */
 
 import {BasePlugin, Func, Span, SpanKind} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
 import * as mongodb from 'mongodb';
-import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 
 export type MongoDB = typeof mongodb;
@@ -26,7 +24,6 @@ export type MongoDB = typeof mongodb;
 export class MongoDBPlugin extends BasePlugin {
   private readonly SERVER_FNS = ['insert', 'update', 'remove', 'auth'];
   private readonly CURSOR_FNS_FIRST = ['_find', '_getmore'];
-  private readonly SPAN_MONGODB_QUERY_TYPE = 'db.mongodb.query';
 
   /** Constructs a new MongoDBPlugin instance. */
   constructor(moduleName: string) {
@@ -78,9 +75,10 @@ export class MongoDBPlugin extends BasePlugin {
       return function(
                  // tslint:disable-next-line:no-any
                  this: mongodb.Server, ns: string, command: any,
-                 // tslint:disable-next-line:no-any
-                 ...args: any[]): mongodb.Server {
-        let resultHandler = args[args.length - 1];
+                 options: {}|Function,
+                 callback: Function|undefined): mongodb.Server {
+        const resultHandler =
+            typeof options === 'function' ? options : callback;
         if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
             typeof resultHandler === 'function') {
           let type: string;
@@ -96,9 +94,15 @@ export class MongoDBPlugin extends BasePlugin {
             type = 'command';
           }
 
-          const span = plugin.tracer.startChildSpan(
-              {name: `${ns}.${type}`, kind: SpanKind.SERVER});
-          resultHandler = plugin.patchEnd(span, resultHandler);
+          const span =
+              plugin.tracer.startChildSpan(`${ns}.${type}`, SpanKind.SERVER);
+          if (typeof options === 'function') {
+            return original.call(
+                this, ns, command, plugin.patchEnd(span, options));
+          } else {
+            return original.call(
+                this, ns, command, options, plugin.patchEnd(span, callback));
+          }
         }
 
         return original.apply(this, arguments);
@@ -110,19 +114,27 @@ export class MongoDBPlugin extends BasePlugin {
   private getPatchQuery() {
     const plugin = this;
     return (original: Func<mongodb.Server>) => {
-      // tslint:disable-next-line:no-any
-      return function(this: mongodb.Server, ns: string, ...args: any[]):
-          mongodb.Server {
-            let resultHandler = args[args.length - 1];
-            if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
-                typeof resultHandler === 'function') {
-              const span = plugin.tracer.startChildSpan(
-                  {name: `${ns}.query`, kind: SpanKind.SERVER});
-              resultHandler = plugin.patchEnd(span, resultHandler);
-            }
+      return function(
+                 // tslint:disable-next-line:no-any
+                 this: mongodb.Server, ns: string, command: any, options: any,
+                 callback: Function): mongodb.Server {
+        const resultHandler =
+            typeof options === 'function' ? options : callback;
+        if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
+            typeof resultHandler === 'function') {
+          const span =
+              plugin.tracer.startChildSpan(`${ns}.query`, SpanKind.SERVER);
+          if (typeof options === 'function') {
+            return original.call(
+                this, ns, command, plugin.patchEnd(span, options));
+          } else {
+            return original.call(
+                this, ns, command, options, plugin.patchEnd(span, callback));
+          }
+        }
 
-            return original.apply(this, arguments);
-          };
+        return original.apply(this, arguments);
+      };
     };
   }
 
@@ -136,11 +148,11 @@ export class MongoDBPlugin extends BasePlugin {
         if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
             typeof resultHandler === 'function') {
           const span = plugin.tracer.startChildSpan(
-              {name: `${this.ns}.cursor`, kind: SpanKind.SERVER});
+              `${this.ns}.cursor`, SpanKind.SERVER);
           resultHandler = plugin.patchEnd(span, resultHandler);
         }
 
-        return original.apply(this, arguments);
+        return original.call(this, resultHandler);
       };
     };
   }
