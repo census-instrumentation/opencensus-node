@@ -15,21 +15,22 @@
  */
 
 import {CanonicalCode, CoreTracer, LinkType, MessageEventType} from '../src';
-import {NoopRootSpan} from '../src/trace/model/no-op/noop-root-span';
+import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
 
 const tracer = new CoreTracer();
 
-describe('NoopRootSpan()', () => {
+describe('NoRecordRootSpan()', () => {
   it('do not crash', () => {
-    const noopRootSpan = new NoopRootSpan(tracer);
-    noopRootSpan.addAnnotation('MyAnnotation');
-    noopRootSpan.addAnnotation('MyAnnotation', {myString: 'bar'});
-    noopRootSpan.addAnnotation(
+    const noRecordRootSpan = new NoRecordRootSpan(tracer);
+    noRecordRootSpan.addAnnotation('MyAnnotation');
+    noRecordRootSpan.addAnnotation('MyAnnotation', {myString: 'bar'});
+    noRecordRootSpan.addAnnotation(
         'MyAnnotation', {myString: 'bar', myNumber: 123, myBoolean: true});
-    noopRootSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
-    noopRootSpan.addMessageEvent(MessageEventType.RECEIVED, 'aaaa', 123456789);
-    noopRootSpan.addAttribute('my_first_attribute', 'foo');
-    noopRootSpan.setStatus(CanonicalCode.OK);
-    noopRootSpan.startChildSpan();
+    noRecordRootSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
+    noRecordRootSpan.addMessageEvent(
+        MessageEventType.RECEIVED, 'aaaa', 123456789);
+    noRecordRootSpan.addAttribute('my_first_attribute', 'foo');
+    noRecordRootSpan.setStatus(CanonicalCode.OK);
+    noRecordRootSpan.startChildSpan();
   });
 });

@@ -16,16 +16,16 @@
 
 import * as logger from '../../../common/console-logger';
 import * as types from '../types';
-import {NoopSpanBase} from './noop-span-base';
+import {NoRecordSpanBase} from './no-record-span-base';
 
-/** No-Op implementation of the Span */
-export class NoopSpan extends NoopSpanBase implements types.Span {
+/** Implementation for the Span class that does not record trace events. */
+export class NoRecordSpan extends NoRecordSpanBase implements types.Span {
   private root: types.RootSpan;
   /** set isRootSpan = false */
   readonly isRootSpan = false;
 
   /**
-   * Constructs a new NoopSpanImpl instance.
+   * Constructs a new NoRecordSpanImpl instance.
    * @param root
    */
   constructor(root: types.RootSpan) {
@@ -35,7 +35,7 @@ export class NoopSpan extends NoopSpanBase implements types.Span {
     this.parentSpanId = root.id;
   }
 
-  /** Gets trace id of noop span. */
+  /** Gets trace id of no-record span. */
   get traceId(): string {
     return this.root.traceId;
   }

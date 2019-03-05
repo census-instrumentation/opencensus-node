@@ -15,22 +15,22 @@
  */
 
 import {CanonicalCode, CoreTracer, LinkType, MessageEventType} from '../src';
-import {NoopRootSpan} from '../src/trace/model/no-op/noop-root-span';
-import {NoopSpan} from '../src/trace/model/no-op/noop-span';
+import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
+import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
 
 const tracer = new CoreTracer();
 
-describe('NoopSpan()', () => {
+describe('NoRecordSpan()', () => {
   it('do not crash', () => {
-    const root = new NoopRootSpan(tracer);
-    const noopSpan = new NoopSpan(root);
-    noopSpan.addAnnotation('MyAnnotation');
-    noopSpan.addAnnotation('MyAnnotation', {myString: 'bar'});
-    noopSpan.addAnnotation(
+    const root = new NoRecordRootSpan(tracer);
+    const noRecordSpan = new NoRecordSpan(root);
+    noRecordSpan.addAnnotation('MyAnnotation');
+    noRecordSpan.addAnnotation('MyAnnotation', {myString: 'bar'});
+    noRecordSpan.addAnnotation(
         'MyAnnotation', {myString: 'bar', myNumber: 123, myBoolean: true});
-    noopSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
-    noopSpan.addMessageEvent(MessageEventType.RECEIVED, 'aaaa', 123456789);
-    noopSpan.addAttribute('my_first_attribute', 'foo');
-    noopSpan.setStatus(CanonicalCode.OK);
+    noRecordSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
+    noRecordSpan.addMessageEvent(MessageEventType.RECEIVED, 'aaaa', 123456789);
+    noRecordSpan.addAttribute('my_first_attribute', 'foo');
+    noRecordSpan.setStatus(CanonicalCode.OK);
   });
 });

@@ -20,7 +20,7 @@ import * as uuid from 'uuid';
 import {randomSpanId} from '../src/internal/util';
 import {TracerConfig} from '../src/trace/config/types';
 import {TraceParams} from '../src/trace/config/types';
-import {NoopRootSpan} from '../src/trace/model/no-op/noop-root-span';
+import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
@@ -171,24 +171,25 @@ describe('Tracer', () => {
   });
 
   describe('startRootSpan() with sampler never', () => {
-    it('should start the new noopRootSpan instance', () => {
+    it('should start the new NoRecordRootSpan instance', () => {
       const tracer = new CoreTracer();
       const config = {samplingRate: 0} as TracerConfig;
       tracer.start(config);
       tracer.startRootSpan(options, (rootSpan) => {
-        assert.ok(rootSpan instanceof NoopRootSpan);
+        assert.ok(rootSpan instanceof NoRecordRootSpan);
       });
     });
   });
 
   describe('startRootSpan() before start()', () => {
-    it('should start the new noopRootSpan instance, tracer not started', () => {
-      const tracer = new CoreTracer();
-      assert.strictEqual(tracer.active, false);
-      tracer.startRootSpan(options, (rootSpan) => {
-        assert.ok(rootSpan instanceof NoopRootSpan);
-      });
-    });
+    it('should start the new NoRecordRootSpan instance, tracer not started',
+       () => {
+         const tracer = new CoreTracer();
+         assert.strictEqual(tracer.active, false);
+         tracer.startRootSpan(options, (rootSpan) => {
+           assert.ok(rootSpan instanceof NoRecordRootSpan);
+         });
+       });
   });
 
   describe('startRootSpan() with context propagation', () => {

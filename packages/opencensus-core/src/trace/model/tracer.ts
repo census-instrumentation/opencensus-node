@@ -23,7 +23,7 @@ import {Propagation} from '../propagation/types';
 import {SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 
-import {NoopRootSpan} from './no-op/noop-root-span';
+import {NoRecordRootSpan} from './no-record/no-record-root-span';
 import {RootSpan} from './root-span';
 import * as types from './types';
 
@@ -153,9 +153,9 @@ export class CoreTracer implements types.Tracer {
       } else {
         this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
       }
-      const noopRootSpan = new NoopRootSpan(this, options);
-      this.currentRootSpan = noopRootSpan;
-      return fn(noopRootSpan);
+      const noRecordRootSpan = new NoRecordRootSpan(this, options);
+      this.currentRootSpan = noRecordRootSpan;
+      return fn(noRecordRootSpan);
     });
   }
 

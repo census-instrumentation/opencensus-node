@@ -22,9 +22,8 @@ const STATUS_OK = {
   code: types.CanonicalCode.OK
 };
 
-/** No-Op implementation of the SpanBase */
-export abstract class NoopSpanBase implements types.Span {
-  protected className: string;
+/** Implementation for the SpanBase class that does not record trace events. */
+export abstract class NoRecordSpanBase implements types.Span {
   /** Indicates if this span was started */
   private startedLocal = false;
   /** Indicates if this span was ended */
@@ -70,7 +69,6 @@ export abstract class NoopSpanBase implements types.Span {
 
   /** Constructs a new SpanBaseModel instance. */
   constructor() {
-    this.className = this.constructor.name;
     this.id = randomSpanId();
   }
 

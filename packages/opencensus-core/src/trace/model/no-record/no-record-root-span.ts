@@ -17,11 +17,12 @@
 import * as uuid from 'uuid';
 import * as logger from '../../../common/console-logger';
 import * as types from '../types';
-import {NoopSpan} from './noop-span';
-import {NoopSpanBase} from './noop-span-base';
+import {NoRecordSpan} from './no-record-span';
+import {NoRecordSpanBase} from './no-record-span-base';
 
-/** No-Op implementation of the RootSpan */
-export class NoopRootSpan extends NoopSpanBase implements types.RootSpan {
+/** Implementation for the RootSpan class that does not record trace events. */
+export class NoRecordRootSpan extends NoRecordSpanBase implements
+    types.RootSpan {
   /** A tracer object */
   private tracer: types.Tracer;
   /** Its trace ID. */
@@ -32,9 +33,9 @@ export class NoopRootSpan extends NoopSpanBase implements types.RootSpan {
   readonly isRootSpan = true;
 
   /**
-   * Constructs a new NoopRootSpanImpl instance.
+   * Constructs a new NoRecordRootSpanImpl instance.
    * @param tracer A tracer object.
-   * @param context A trace options object to build the noop root span.
+   * @param context A trace options object to build the no-record root span.
    */
   constructor(tracer: types.Tracer, context?: types.TraceOptions) {
     super();
@@ -92,7 +93,7 @@ export class NoopRootSpan extends NoopSpanBase implements types.RootSpan {
   startChildSpan(
       nameOrOptions?: string|types.SpanOptions, kind?: types.SpanKind,
       parentSpanId?: string): types.Span {
-    const newSpan = new NoopSpan(this);
+    const newSpan = new NoRecordSpan(this);
     let spanName;
     let spanKind;
     if (typeof nameOrOptions === 'object') {
