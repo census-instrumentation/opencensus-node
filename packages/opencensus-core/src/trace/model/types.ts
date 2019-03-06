@@ -232,6 +232,8 @@ export interface TraceOptions {
   spanContext?: SpanContext;
   /** Span kind */
   kind?: SpanKind;
+  /** Determines the sampling rate. Ranges from 0.0 to 1.0 */
+  samplingRate?: number;
 }
 
 /** Defines the span options */

@@ -33,12 +33,17 @@ tracer.activeTraceParams = {
 };
 
 describe('Span', () => {
+  const name = 'MySpanName';
+  const kind = types.SpanKind.SERVER;
+  const traceId = 'd4cda95b652f4a1592b449d5929fda1b';
+  const parentSpanId = '';
+
   /**
    * Should create a span
    */
   describe('new Span()', () => {
     it('should create a Span instance', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const span = new Span(rootSpan);
       assert.ok(span instanceof Span);
     });
@@ -49,7 +54,7 @@ describe('Span', () => {
    */
   describe('get traceId()', () => {
     it('should return the trace id', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       const span = new Span(rootSpan);
       assert.equal(span.traceId, rootSpan.traceId);
@@ -61,7 +66,7 @@ describe('Span', () => {
    */
   describe('get spanContext', () => {
     it('should the span context of span', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -80,7 +85,7 @@ describe('Span', () => {
   describe('get time properties before start()', () => {
     let span: types.Span;
     before(() => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       span = new Span(rootSpan);
     });
@@ -100,7 +105,7 @@ describe('Span', () => {
    */
   describe('start()', () => {
     it('should start a span instance', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -115,7 +120,7 @@ describe('Span', () => {
    */
   describe('start() an already started span', () => {
     it('should not change the initial startTime', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       const span = new Span(rootSpan);
       span.start();
@@ -131,7 +136,7 @@ describe('Span', () => {
    */
   describe('end()', () => {
     it('should end a span instance', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -147,7 +152,7 @@ describe('Span', () => {
    */
   describe('end() before start()', () => {
     it('should not end a span instance', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -162,7 +167,7 @@ describe('Span', () => {
    */
   describe('end() an already ended span', () => {
     it('should not change the endTime', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       const span = new Span(rootSpan);
       span.start();
@@ -179,7 +184,7 @@ describe('Span', () => {
    */
   describe('addAtribute()', () => {
     it('should add an attribute', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -193,7 +198,7 @@ describe('Span', () => {
     });
 
     it('should drop extra attributes', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -218,7 +223,7 @@ describe('Span', () => {
             'attributes' in object;
       }
 
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -232,7 +237,7 @@ describe('Span', () => {
     });
 
     it('should drop extra annotations', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -256,7 +261,7 @@ describe('Span', () => {
         return 'traceId' in object && 'spanId' in object && 'type' in object;
       }
 
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -271,7 +276,7 @@ describe('Span', () => {
     });
 
     it('should drop extra links', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       const span = new Span(rootSpan);
       span.start();
@@ -296,7 +301,7 @@ describe('Span', () => {
         return 'type' in object && 'id' in object;
       }
 
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -320,7 +325,7 @@ describe('Span', () => {
     });
 
     it('should drop extra  Message Event', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -337,7 +342,7 @@ describe('Span', () => {
 
   describe('setStatus()', () => {
     it('should return default status', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
       const span = new Span(rootSpan);
@@ -350,7 +355,7 @@ describe('Span', () => {
     });
 
     it('should set an error status', () => {
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       const span = new Span(rootSpan);
       span.start();

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as uuid from 'uuid';
 import * as logger from '../../../common/console-logger';
 import * as types from '../types';
 import {NoRecordSpan} from './no-record-span';
@@ -35,22 +34,25 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   /**
    * Constructs a new NoRecordRootSpanImpl instance.
    * @param tracer A tracer object.
-   * @param context A trace options object to build the no-record root span.
+   * @param name The displayed name for the new span.
+   * @param kind The kind of new span.
+   * @param traceId The trace Id.
+   * @param parentSpanId The id of the parent span, or empty if the new span is
+   *     a root span.
+   * @param traceState Optional traceState.
    */
-  constructor(tracer: types.Tracer, context?: types.TraceOptions) {
+  constructor(
+      tracer: types.Tracer, name: string, kind: types.SpanKind, traceId: string,
+      parentSpanId: string, traceState?: types.TraceState) {
     super();
     this.tracer = tracer;
-    this.traceIdLocal =
-        context && context.spanContext && context.spanContext.traceId ?
-        context.spanContext.traceId :
-        (uuid.v4().split('-').join(''));
-    this.name = context && context.name ? context.name : 'undefined';
-    if (context && context.spanContext) {
-      this.parentSpanId = context.spanContext.spanId || '';
-      this.traceStateLocal = context.spanContext.traceState;
+    this.traceIdLocal = traceId;
+    this.name = name;
+    this.kind = kind;
+    this.parentSpanId = parentSpanId;
+    if (traceState) {
+      this.traceStateLocal = traceState;
     }
-    this.kind =
-        context && context.kind ? context.kind : types.SpanKind.UNSPECIFIED;
     this.logger = this.tracer.logger || logger.logger();
   }
 

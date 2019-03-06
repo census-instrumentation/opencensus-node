@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as uuid from 'uuid';
 import * as logger from '../../common/console-logger';
 import * as loggerTypes from '../../common/types';
 import * as cls from '../../internal/cls';
@@ -22,11 +23,9 @@ import {TraceParams} from '../config/types';
 import {Propagation} from '../propagation/types';
 import {SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
-
 import {NoRecordRootSpan} from './no-record/no-record-root-span';
 import {RootSpan} from './root-span';
 import * as types from './types';
-
 
 /**
  * This class represent a tracer.
@@ -125,35 +124,39 @@ export class CoreTracer implements types.Tracer {
   startRootSpan<T>(
       options: types.TraceOptions, fn: (root: types.RootSpan) => T): T {
     return this.contextManager.runAndReturn((root) => {
+      let traceId;
+      if (options && options.spanContext && options.spanContext.traceId) {
+        traceId = options.spanContext.traceId;
+      } else {
+        // New root span.
+        traceId = uuid.v4().split('-').join('');
+      }
+      const name = options && options.name ? options.name : 'span';
+      const kind =
+          options && options.kind ? options.kind : types.SpanKind.UNSPECIFIED;
+
+      let parentSpanId = '';
+      let traceState;
+      if (options && options.spanContext) {
+        // New child span.
+        parentSpanId = options.spanContext.spanId || '';
+        traceState = options.spanContext.traceState;
+      }
+
       if (this.active) {
-        let propagatedSample = null;
-
-        // if there is a context propagation, keep the decision
-        if (options && options.spanContext) {
-          if (options.spanContext.options) {
-            propagatedSample =
-                ((options.spanContext.options & this.IS_SAMPLED) !== 0);
-          }
-          if (!propagatedSample) {
-            options.spanContext = null;
-          }
-        }
-        const aRoot = new RootSpan(this, options);
-
-        let sampleDecision: boolean = propagatedSample;
-        if (!sampleDecision) {
-          sampleDecision = this.sampler.shouldSample(aRoot.traceId);
-        }
-
+        const sampleDecision = this.makeSamplingDecision(options, traceId);
         if (sampleDecision) {
-          this.currentRootSpan = aRoot;
-          aRoot.start();
-          return fn(aRoot);
+          const rootSpan =
+              new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
+          this.currentRootSpan = rootSpan;
+          rootSpan.start();
+          return fn(rootSpan);
         }
       } else {
         this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
       }
-      const noRecordRootSpan = new NoRecordRootSpan(this, options);
+      const noRecordRootSpan = new NoRecordRootSpan(
+          this, name, kind, traceId, parentSpanId, traceState);
       this.currentRootSpan = noRecordRootSpan;
       return fn(noRecordRootSpan);
     });
@@ -282,5 +285,29 @@ export class CoreTracer implements types.Tracer {
     }
     const namespace = this.contextManager;
     namespace.bindEmitter(emitter);
+  }
+
+  /** Determine whether to sample request or not. */
+  private makeSamplingDecision(options: types.TraceOptions, traceId: string):
+      boolean {
+    // If users set a specific sampler in the TraceOptions, use it.
+    if (options && options.samplingRate !== undefined &&
+        options.samplingRate !== null) {
+      return SamplerBuilder.getSampler(options.samplingRate)
+          .shouldSample(traceId);
+    }
+    let propagatedSample = null;
+    // if there is a context propagation, keep the decision
+    if (options && options.spanContext && options.spanContext.options) {
+      propagatedSample =
+          ((options.spanContext.options & this.IS_SAMPLED) !== 0);
+    }
+
+    let sampleDecision: boolean = propagatedSample;
+    if (!sampleDecision) {
+      // Use the default global sampler
+      sampleDecision = this.sampler.shouldSample(traceId);
+    }
+    return sampleDecision;
   }
 }

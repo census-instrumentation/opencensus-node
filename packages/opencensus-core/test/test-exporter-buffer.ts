@@ -22,7 +22,6 @@ import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
 
-
 const exporter = new NoopExporter();
 const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 2000;  // time in milliseconds
@@ -34,11 +33,16 @@ const defaultBufferConfig = {
   logger: logger.logger()
 };
 
+const name = 'MySpanName';
+const kind = SpanKind.SERVER;
+const traceId = 'd4cda95b652f4a1592b449d5929fda1b';
+const parentSpanId = '';
 
 const createRootSpans = (num: number): RootSpan[] => {
   const rootSpans = [];
   for (let i = 0; i < num; i++) {
-    const rootSpan = new RootSpan(tracer, {name: `rootSpan.${i}`});
+    const rootSpan =
+        new RootSpan(tracer, `rootSpan.${i}`, kind, traceId, parentSpanId);
     rootSpan.start();
     for (let j = 0; j < 10; j++) {
       rootSpan.startChildSpan(`childSpan.${i}.${j}`, SpanKind.CLIENT);
@@ -79,7 +83,8 @@ describe('ExporterBuffer', () => {
   describe('addToBuffer', () => {
     it('should add one item to the Buffer', () => {
       const buffer = new ExporterBuffer(exporter, defaultBufferConfig);
-      buffer.addToBuffer(new RootSpan(tracer));
+      buffer.addToBuffer(
+          new RootSpan(tracer, name, kind, traceId, parentSpanId));
       assert.strictEqual(buffer.getQueue().length, 1);
     });
   });
@@ -95,7 +100,8 @@ describe('ExporterBuffer', () => {
         buffer.addToBuffer(rootSpan);
       }
       assert.strictEqual(buffer.getQueue().length, buffer.getBufferSize());
-      buffer.addToBuffer(new RootSpan(tracer));
+      buffer.addToBuffer(
+          new RootSpan(tracer, name, kind, traceId, parentSpanId));
       assert.strictEqual(buffer.getQueue().length, 0);
     });
   });
@@ -106,7 +112,8 @@ describe('ExporterBuffer', () => {
   describe('addToBuffer force flush by timeout ', () => {
     it('should flush by timeout', (done) => {
       const buffer = new ExporterBuffer(exporter, defaultBufferConfig);
-      buffer.addToBuffer(new RootSpan(tracer));
+      buffer.addToBuffer(
+          new RootSpan(tracer, name, kind, traceId, parentSpanId));
       assert.strictEqual(buffer.getQueue().length, 1);
       setTimeout(() => {
         assert.strictEqual(buffer.getQueue().length, 0);
