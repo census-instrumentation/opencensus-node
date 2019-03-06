@@ -55,14 +55,30 @@ function assertSpan(
   }
 }
 
+/**
+ * Access the redis client.
+ * @param url The redis URL to access.
+ */
+function accessCollection(url: string): Promise<redis.RedisClient> {
+  return new Promise((resolve, reject) => {
+    const client = redis.createClient({url});
+    client.on('error', (err) => {
+      reject(err);
+      return;
+    });
+    resolve(client);
+  });
+}
+
 describe('RedisPlugin', () => {
   // For these tests, mongo must be runing. Add OPENCENSUS_REDIS_TESTS to run
   // these tests.
   const OPENCENSUS_REDIS_TESTS = process.env.OPENCENSUS_REDIS_TESTS;
   const OPENCENSUS_REDIS_HOST = process.env.OPENCENSUS_REDIS_HOST;
-  const shouldTest = OPENCENSUS_REDIS_TESTS === '1';
-  if (!shouldTest) {
+  let shouldTest = true;
+  if (!OPENCENSUS_REDIS_TESTS) {
     console.log('Skipping test-redis. Run REDIS to test');
+    shouldTest = false;
   }
 
   const URL = `redis://${OPENCENSUS_REDIS_HOST || 'localhost'}:6379`;
@@ -77,11 +93,17 @@ describe('RedisPlugin', () => {
     tracer.start({samplingRate: 1, logger: logger.logger(1)});
     tracer.registerSpanEventListener(rootSpanVerifier);
     plugin.enable(redis, tracer, VERSION, {}, '');
-    client = redis.createClient({url: URL});
-    client.on('error', (err) => {
-      done(err);
-    });
-    client.on('ready', done);
+    accessCollection(URL)
+        .then(result => {
+          client = result;
+          done();
+        })
+        .catch((err: Error) => {
+          console.log(
+              'Skipping test-redis. Could not connect. Run Redis to test');
+          shouldTest = false;
+          done();
+        });
   });
 
   beforeEach(function redisBeforeEach(done) {
