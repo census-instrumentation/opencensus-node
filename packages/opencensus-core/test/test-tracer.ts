@@ -20,6 +20,7 @@ import * as uuid from 'uuid';
 import {randomSpanId} from '../src/internal/util';
 import {TracerConfig} from '../src/trace/config/types';
 import {TraceParams} from '../src/trace/config/types';
+import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
@@ -169,26 +170,24 @@ describe('Tracer', () => {
     });
   });
 
-  /** Should not start the new RootSpan instance */
   describe('startRootSpan() with sampler never', () => {
-    it('should not start the new RootSpan instance', () => {
+    it('should start the new NoRecordRootSpan instance', () => {
       const tracer = new CoreTracer();
       const config = {samplingRate: 0} as TracerConfig;
       tracer.start(config);
       tracer.startRootSpan(options, (rootSpan) => {
-        assert.strictEqual(rootSpan, null);
+        assert.ok(rootSpan instanceof NoRecordRootSpan);
       });
     });
   });
 
-  /** Should not create the new RootSpan instance */
   describe('startRootSpan() before start()', () => {
-    it('should not create the new RootSpan instance, tracer not started',
+    it('should start the new NoRecordRootSpan instance, tracer not started',
        () => {
          const tracer = new CoreTracer();
          assert.strictEqual(tracer.active, false);
          tracer.startRootSpan(options, (rootSpan) => {
-           assert.equal(rootSpan, null);
+           assert.ok(rootSpan instanceof NoRecordRootSpan);
          });
        });
   });

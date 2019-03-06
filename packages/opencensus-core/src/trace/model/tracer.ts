@@ -23,6 +23,7 @@ import {Propagation} from '../propagation/types';
 import {SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 
+import {NoRecordRootSpan} from './no-record/no-record-root-span';
 import {RootSpan} from './root-span';
 import * as types from './types';
 
@@ -124,11 +125,10 @@ export class CoreTracer implements types.Tracer {
   startRootSpan<T>(
       options: types.TraceOptions, fn: (root: types.RootSpan) => T): T {
     return this.contextManager.runAndReturn((root) => {
-      let newRoot = null;
       if (this.active) {
         let propagatedSample = null;
 
-        // if there is a context propagation, keep the decistion
+        // if there is a context propagation, keep the decision
         if (options && options.spanContext) {
           if (options.spanContext.options) {
             propagatedSample =
@@ -148,12 +148,14 @@ export class CoreTracer implements types.Tracer {
         if (sampleDecision) {
           this.currentRootSpan = aRoot;
           aRoot.start();
-          newRoot = aRoot;
+          return fn(aRoot);
         }
       } else {
         this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
       }
-      return fn(newRoot);
+      const noRecordRootSpan = new NoRecordRootSpan(this, options);
+      this.currentRootSpan = noRecordRootSpan;
+      return fn(noRecordRootSpan);
     });
   }
 
