@@ -66,7 +66,9 @@ function accessCollection(url: string): Promise<redis.RedisClient> {
       reject(err);
       return;
     });
-    resolve(client);
+    client.on('ready', () => {
+      resolve(client);
+    });
   });
 }
 
