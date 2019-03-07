@@ -86,6 +86,13 @@ export interface Stats {
    * @param exporter An stats exporter
    */
   registerExporter(exporter: StatsEventListener): void;
+
+  /**
+   * Unregisters an exporter. It should be called whenever the exporter is not
+   * needed anymore.
+   * @param exporter An stats exporter
+   */
+  unregisterExporter(exporter: StatsEventListener): void;
 }
 
 /**

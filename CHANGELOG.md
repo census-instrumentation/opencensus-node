@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on  [opencensus-exporter-zipkin] packages.
 - Add NoRecordRootSpan, NoRecordSpan and NoRecordSpanBase.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-exporter-instana] package.
+- Add an API `globalStats.unregisterExporter()`.
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.

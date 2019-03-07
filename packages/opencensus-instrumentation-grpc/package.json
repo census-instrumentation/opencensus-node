@@ -59,7 +59,7 @@
     "protobufjs": "^6.8.6",
     "rimraf": "^2.6.2",
     "ts-node": "^8.0.0",
-    "typescript": "~2.7.2"
+    "typescript": "~2.8.3"
   },
   "dependencies": {
     "@opencensus/core": "^0.0.9",

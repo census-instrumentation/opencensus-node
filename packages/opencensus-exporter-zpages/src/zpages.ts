@@ -134,6 +134,9 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
     // TODO(mayurkale): dependency with PR#253.
   }
 
+  /** Stops the exporter. */
+  stop(): void {}
+
   /**
    * Send a trace to traces array
    * @param trace the rootSpan to be sent to the array list
