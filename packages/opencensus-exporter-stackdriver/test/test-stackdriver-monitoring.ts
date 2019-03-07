@@ -71,7 +71,7 @@ describe('Stackdriver Stats Exporter', () => {
     });
 
     afterEach(() => {
-      exporter.close();
+      exporter.stop();
       mockLogger.cleanAll();
       globalStats.clear();
     });

@@ -95,6 +95,11 @@ export class PrometheusStatsExporter implements StatsEventListener {
     // // it to backend (dependency with PR#253).
   }
 
+  /** Stops the exporter. */
+  stop(): void {
+    this.stopServer();
+  }
+
   private getLabelValues(columns: TagKey[], tags: Map<TagKey, TagValue>):
       labelValues {
     const labels: labelValues = {};

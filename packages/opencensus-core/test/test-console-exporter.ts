@@ -25,13 +25,17 @@ const defaultBufferConfig = {
   bufferSize: 1,
   bufferTimeout: 20000  // time in milliseconds
 };
+const name = 'MySpanName';
+const kind = SpanKind.SERVER;
+const traceId = 'd4cda95b652f4a1592b449d5929fda1b';
+const parentSpanId = '';
 
 describe('NoopExporter', () => {
   /** Should do nothing when calling onEndSpan() */
   describe('onEndSpan()', () => {
     it('should do nothing', () => {
       const exporter = new NoopExporter();
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       exporter.onEndSpan(rootSpan);
       assert.ok(true);
     });
@@ -41,7 +45,7 @@ describe('NoopExporter', () => {
   describe('publish()', () => {
     it('should do nothing', () => {
       const exporter = new NoopExporter();
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const queue: RootSpan[] = [rootSpan];
 
       return exporter.publish(queue);
@@ -61,11 +65,11 @@ describe('ConsoleLogExporter', () => {
 
       const exporter = new ConsoleExporter(defaultBufferConfig);
 
-      const rootSpan1 = new RootSpan(tracer);
+      const rootSpan1 = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       exporter.onEndSpan(rootSpan1);
       assert.strictEqual(capturedText, '');
 
-      const rootSpan2 = new RootSpan(tracer);
+      const rootSpan2 = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       exporter.onEndSpan(rootSpan2);
       [rootSpan1, rootSpan2].map(rootSpan => {
         assert.ok(capturedText.indexOf(rootSpan.traceId) >= 0);
@@ -85,7 +89,7 @@ describe('ConsoleLogExporter', () => {
       });
 
       const exporter = new ConsoleExporter(defaultBufferConfig);
-      const rootSpan = new RootSpan(tracer);
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       rootSpan.startChildSpan('name', SpanKind.UNSPECIFIED, rootSpan.traceId);
       const queue: RootSpan[] = [rootSpan];

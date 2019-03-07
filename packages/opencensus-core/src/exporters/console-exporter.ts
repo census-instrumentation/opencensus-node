@@ -106,4 +106,7 @@ export class ConsoleStatsExporter implements types.StatsEventListener {
   start(): void {
     // TODO(mayurkale): dependency with PR#253.
   }
+
+  /** Stops the exporter. */
+  stop(): void {}
 }

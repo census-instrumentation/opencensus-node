@@ -17,13 +17,7 @@
 import {HeaderGetter, HeaderSetter, SpanContext} from '@opencensus/core';
 import * as assert from 'assert';
 
-import {TraceContextFormat} from '../src/';
-
-// Header names
-const TRACE_PARENT = 'traceparent';
-const TRACE_STATE = 'tracestate';
-
-const DEFAULT_OPTIONS = 0x0;
+import {DEFAULT_OPTIONS, TRACE_PARENT, TRACE_STATE, TraceContextFormat} from '../src/';
 
 const traceContextFormat = new TraceContextFormat();
 
@@ -34,8 +28,8 @@ describe('TraceContextPropagation', () => {
 
   beforeEach(() => {
     emptySpanContext = {
-      traceId: undefined,
-      spanId: undefined,
+      traceId: '',
+      spanId: '',
       options: DEFAULT_OPTIONS,
       traceState: undefined
     };
@@ -44,7 +38,7 @@ describe('TraceContextPropagation', () => {
   // Generates the appropriate `traceparent` header for the given SpanContext
   const traceParentHeaderFromSpanContext =
       (spanContext: SpanContext): string => {
-        const {traceId, spanId, options} = spanContext;
+        const {traceId, spanId} = spanContext;
         return `00-${traceId}-${spanId}-${
             Buffer.from([spanContext.options]).toString('hex')}`;
       };
@@ -57,8 +51,9 @@ describe('TraceContextPropagation', () => {
       // Construct headers from the generated span context
       const headers: Record<string, string> = {};
       headers[TRACE_PARENT] = traceParentHeaderFromSpanContext(spanContext);
-      headers[TRACE_STATE] = spanContext.traceState;
-
+      if (spanContext.traceState) {
+        headers[TRACE_STATE] = spanContext.traceState;
+      }
       const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
@@ -135,7 +130,6 @@ describe('TraceContextPropagation', () => {
       };
 
       Object.getOwnPropertyNames(testCases).forEach(testCase => {
-        const traceState = '';
         const headers: Headers = {
           [TRACE_PARENT]: testCases[testCase],
           [TRACE_STATE]: '',
@@ -179,8 +173,10 @@ describe('TraceContextPropagation', () => {
         };
 
         const extractedSpanContext = traceContextFormat.extract(getter);
-        assert.strictEqual(
-            extractedSpanContext.options, DEFAULT_OPTIONS, testCase);
+        if (extractedSpanContext !== null) {
+          assert.strictEqual(
+              extractedSpanContext.options, DEFAULT_OPTIONS, testCase);
+        }
       });
     });
 
@@ -205,17 +201,12 @@ describe('TraceContextPropagation', () => {
     it('should gracefully handle an unset header', () => {
       const getter: HeaderGetter = {
         getHeader(name: string) {
-          return null;
+          return undefined;
         }
       };
 
       const extractedSpanContext = traceContextFormat.extract(getter);
       assert.deepEqual(extractedSpanContext, emptySpanContext);
-    });
-
-    it('should gracefully handle null getter', () => {
-      const spanContext = traceContextFormat.extract(null);
-      assert.equal(spanContext, null);
     });
   });
 
@@ -250,24 +241,6 @@ describe('TraceContextPropagation', () => {
 
       traceContextFormat.inject(setter, spanContext);
       assert.strictEqual(headers[TRACE_STATE], 'foo=bar');
-    });
-
-    it('should gracefully handle null setter or context', () => {
-      // Null setter
-      const spanContext = traceContextFormat.generate();
-      try {
-        traceContextFormat.inject(null, spanContext);
-      } catch (err) {
-        assert.fail(err);
-      }
-
-      // Null context
-      const setter: HeaderSetter = {setHeader(name: string, value: string) {}};
-      try {
-        traceContextFormat.inject(setter, null);
-      } catch (err) {
-        assert.fail(err);
-      }
     });
   });
 

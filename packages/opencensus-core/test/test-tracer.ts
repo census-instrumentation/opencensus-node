@@ -20,6 +20,7 @@ import * as uuid from 'uuid';
 import {randomSpanId} from '../src/internal/util';
 import {TracerConfig} from '../src/trace/config/types';
 import {TraceParams} from '../src/trace/config/types';
+import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
@@ -169,26 +170,57 @@ describe('Tracer', () => {
     });
   });
 
-  /** Should not start the new RootSpan instance */
   describe('startRootSpan() with sampler never', () => {
-    it('should not start the new RootSpan instance', () => {
-      const tracer = new CoreTracer();
-      const config = {samplingRate: 0} as TracerConfig;
+    const tracer = new CoreTracer();
+    const config = {samplingRate: 0} as TracerConfig;
+
+    it('should start the new NoRecordRootSpan instance', () => {
       tracer.start(config);
       tracer.startRootSpan(options, (rootSpan) => {
-        assert.strictEqual(rootSpan, null);
+        assert.ok(rootSpan instanceof NoRecordRootSpan);
       });
     });
+
+    it('should start the new RootSpan instance when always sampling provided at span level',
+       () => {
+         tracer.start(config);
+         tracer.startRootSpan({name: 'test', samplingRate: 1}, (rootSpan) => {
+           assert.ok(rootSpan);
+           assert.ok(tracer.currentRootSpan instanceof RootSpan);
+           assert.strictEqual(tracer.currentRootSpan, rootSpan);
+         });
+       });
   });
 
-  /** Should not create the new RootSpan instance */
+  describe('startRootSpan() with sampler always', () => {
+    const tracer = new CoreTracer();
+    const config = {samplingRate: 1} as TracerConfig;
+
+    it('should start the new RootSpan instance', () => {
+      tracer.start(config);
+      tracer.startRootSpan(options, (rootSpan) => {
+        assert.ok(rootSpan);
+        assert.ok(tracer.currentRootSpan instanceof RootSpan);
+        assert.strictEqual(tracer.currentRootSpan, rootSpan);
+      });
+    });
+
+    it('should start the new NoRecordRootSpan instance when never sampling provided at span level',
+       () => {
+         tracer.start(config);
+         tracer.startRootSpan({name: 'test', samplingRate: 0}, (rootSpan) => {
+           assert.ok(rootSpan instanceof NoRecordRootSpan);
+         });
+       });
+  });
+
   describe('startRootSpan() before start()', () => {
-    it('should not create the new RootSpan instance, tracer not started',
+    it('should start the new NoRecordRootSpan instance, tracer not started',
        () => {
          const tracer = new CoreTracer();
          assert.strictEqual(tracer.active, false);
          tracer.startRootSpan(options, (rootSpan) => {
-           assert.equal(rootSpan, null);
+           assert.ok(rootSpan instanceof NoRecordRootSpan);
          });
        });
   });
@@ -227,18 +259,20 @@ describe('Tracer', () => {
       });
     });
 
-    it('should create the new RootSpan with no propagation', () => {
-      const tracer = new CoreTracer();
-      tracer.start(defaultConfig);
-      traceOptions.spanContext.options = 0x0;
-      tracer.startRootSpan(traceOptions, (rootSpan) => {
-        assert.ok(rootSpan);
-        assert.strictEqual(rootSpan.name, traceOptions.name);
-        assert.strictEqual(rootSpan.kind, traceOptions.kind);
-        assert.notEqual(rootSpan.traceId, spanContextPropagated.traceId);
-        assert.notEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
-      });
-    });
+    it('should create the new RootSpan with no propagation (options bit is not set)',
+       () => {
+         const tracer = new CoreTracer();
+         tracer.start(defaultConfig);
+         traceOptions.spanContext.options = 0x0;
+         tracer.startRootSpan(traceOptions, (rootSpan) => {
+           assert.ok(rootSpan);
+           assert.strictEqual(rootSpan.name, traceOptions.name);
+           assert.strictEqual(rootSpan.kind, traceOptions.kind);
+           assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
+           assert.strictEqual(
+               rootSpan.parentSpanId, spanContextPropagated.spanId);
+         });
+       });
 
     it('should create a tracer with default TraceParams when no parameters are specified upon initialisation',
        () => {

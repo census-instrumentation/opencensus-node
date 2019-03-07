@@ -199,7 +199,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * Clear the interval timer to stop uploading metrics. It should be called
    * whenever the exporter is not needed anymore.
    */
-  close() {
+  stop() {
     clearInterval(this.timer);
   }
 

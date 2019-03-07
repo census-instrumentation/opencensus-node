@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-
+import {SpanKind} from '../src';
 import {TraceParams} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {CoreTracer} from '../src/trace/model/tracer';
@@ -31,19 +31,24 @@ const traceParameters: TraceParams = {
 };
 
 describe('Sampler', () => {
+  const name = 'MySpanName';
+  const kind = SpanKind.SERVER;
+  const traceId = 'd4cda95b652f4a1592b449d5929fda1b';
+  const parentSpanId = '';
+
   /**
    * Should return true
    */
   describe('shouldSample() always', () => {
     it('should return a always sampler for 1', () => {
-      const root = new RootSpan(tracer);
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const sampler = SamplerBuilder.getSampler(1);
       const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'always');
       assert.ok(samplerShouldSample);
     });
     it('should return a always sampler for >1', () => {
-      const root = new RootSpan(tracer);
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const sampler = SamplerBuilder.getSampler(100);
       const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'always');
@@ -55,14 +60,14 @@ describe('Sampler', () => {
    */
   describe('shouldSample() never', () => {
     it('should return a never sampler for 0', () => {
-      const root = new RootSpan(tracer);
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const sampler = SamplerBuilder.getSampler(0);
       const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'never');
       assert.ok(!samplerShouldSample);
     });
     it('should return a never sampler for negative value', () => {
-      const root = new RootSpan(tracer);
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const sampler = SamplerBuilder.getSampler(-1);
       const samplerShouldSample = sampler.shouldSample(root.traceId);
       assert.strictEqual(sampler.description, 'never');
