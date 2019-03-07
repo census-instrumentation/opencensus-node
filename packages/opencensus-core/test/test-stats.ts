@@ -35,6 +35,8 @@ class TestExporter implements StatsEventListener {
     // TODO(mayurkale): dependency with PR#253.
   }
 
+  stop(): void {}
+
   clean() {
     this.registeredViews = [];
     this.recordedMeasurements = [];
@@ -140,6 +142,21 @@ describe('Stats', () => {
       assert.ok(view.registered);
       assert.strictEqual(testExporter.registeredViews.length, 1);
       assert.deepEqual(testExporter.registeredViews[0], view);
+    });
+  });
+
+  describe('unregisterExporter()', () => {
+    const testExporter = new TestExporter();
+
+    it('should unregister the exporter', () => {
+      globalStats.registerExporter(testExporter);
+      const measure = globalStats.createMeasureInt64(measureName, measureUnit);
+      const view = new BaseView(
+          viewName, measure, AggregationType.LAST_VALUE, tagKeys, description);
+      globalStats.unregisterExporter(testExporter);
+      globalStats.registerView(view);
+
+      assert.strictEqual(testExporter.registeredViews.length, 0);
     });
   });
 

@@ -45,6 +45,7 @@ class TestExporter implements StatsEventListener {
   }
 
   start(): void {}
+  stop(): void {}
 
   clean() {
     this.registeredViews = [];

@@ -108,6 +108,19 @@ export class BaseStats implements Stats {
   }
 
   /**
+   * Unregisters an exporter. It should be called whenever the exporter is not
+   * needed anymore.
+   * @param exporter An stats exporter
+   */
+  unregisterExporter(exporter: StatsEventListener): void {
+    if (exporter) {
+      this.statsEventListeners = this.statsEventListeners.filter(
+          currentExporter => currentExporter !== exporter);
+      exporter.stop();
+    }
+  }
+
+  /**
    * Creates a measure of type Double.
    * @param name The measure name
    * @param unit The measure unit
