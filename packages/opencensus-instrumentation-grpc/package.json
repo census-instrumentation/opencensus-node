@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.0.9",
-    "grpc": "~1.12.2",
+    "grpc": "~1.19.0",
     "lodash": "^4.17.11",
     "object-sizeof": "^1.3.0",
     "semver": "^5.5.0",
