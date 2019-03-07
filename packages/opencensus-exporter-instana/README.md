@@ -1,7 +1,10 @@
-# OpenCensus Instana Exporter for Node.js
+# OpenCensus Instana Trace Exporter
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Instana Exporter allows the user to send collected traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to [Instana](https://www.instana.com/).
+OpenCensus Instana Trace Exporter allows the user to send collected traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) to [Instana](https://www.instana.com/).
+
+[Instana](http://www.instana.com/) is a distributed
+tracing system. Instana provides AI Powered Application and Infrastructure Monitoring, allowing you to deliver Faster With Confidence, and automatic Analysis and Optimization.
 
 This project is still at an early stage of development. It's subject to change.
 
@@ -27,6 +30,7 @@ tracing.start({
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
+- For Instana project at https://www.instana.com/
 - To checkout the OpenCensus for Node.js, visit: <https://github.com/census-instrumentation/opencensus-node>
 - For help or feedback on this project, join us on [gitter](https://gitter.im/census-instrumentation/Lobby)
 
