@@ -87,32 +87,27 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   }
 
   /**
-   * Starts a new child span in the noop root span.
-   * @param name Span name.
-   * @param kind Span kind.
-   * @param parentSpanId Span parent ID.
+   * Starts a new no record child span in the no record root span.
+   * @param nameOrOptions Span name string or SpanOptions object.
+   * @param kind Span kind if not using SpanOptions object.
    */
   startChildSpan(
-      nameOrOptions?: string|types.SpanOptions, kind?: types.SpanKind,
-      parentSpanId?: string): types.Span {
-    const newSpan = new NoRecordSpan(this);
-    let spanName;
-    let spanKind;
-    if (typeof nameOrOptions === 'object') {
-      spanName = nameOrOptions.name;
-      spanKind = nameOrOptions.kind;
-    } else {
-      spanName = nameOrOptions;
-      spanKind = kind;
-    }
+      nameOrOptions?: string|types.SpanOptions,
+      kind?: types.SpanKind): types.Span {
+    const noRecordChild = new NoRecordSpan(this);
 
+    const spanName =
+        typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
+    const spanKind =
+        typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
     if (spanName) {
-      newSpan.name = spanName;
+      noRecordChild.name = spanName;
     }
     if (spanKind) {
-      newSpan.kind = spanKind;
+      noRecordChild.kind = spanKind;
     }
-    newSpan.start();
-    return newSpan;
+
+    noRecordChild.start();
+    return noRecordChild;
   }
 }

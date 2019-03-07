@@ -39,9 +39,6 @@ export class CoreTracer implements types.Tracer {
   private config: configTypes.TracerConfig;
   /** A list of end span event listeners */
   private eventListenersLocal: types.SpanEventListener[] = [];
-  /** A list of ended root spans */
-  // @ts-ignore
-  private endedTraces: types.RootSpan[] = [];
   /** Bit to represent whether trace is sampled or not. */
   private readonly IS_SAMPLED = 0x1;
   /** A sampler used to make sample decisions */
@@ -162,34 +159,30 @@ export class CoreTracer implements types.Tracer {
     });
   }
 
+  /** Notifies listeners of the span start. */
   onStartSpan(root: types.RootSpan): void {
-    if (this.active) {
-      if (!root) {
-        return this.logger.debug('cannot start trace - no active trace found');
-      }
-      if (this.currentRootSpan !== root) {
-        this.logger.debug(
-            'currentRootSpan != root on notifyStart. Need more investigation.');
-      }
-      this.notifyStartSpan(root);
+    if (!this.active) return;
+    if (!root) {
+      return this.logger.debug('cannot start trace - no active trace found');
     }
+    if (this.currentRootSpan !== root) {
+      this.logger.debug(
+          'currentRootSpan != root on notifyStart. Need more investigation.');
+    }
+    this.notifyStartSpan(root);
   }
 
-  /**
-   * Is called when a span is ended.
-   * @param root The ended span.
-   */
+  /** Notifies listeners of the span end. */
   onEndSpan(root: types.RootSpan): void {
-    if (this.active) {
-      if (!root) {
-        return this.logger.debug('cannot end trace - no active trace found');
-      }
-      if (this.currentRootSpan !== root) {
-        this.logger.debug(
-            'currentRootSpan != root on notifyEnd. Need more investigation.');
-      }
-      this.notifyEndSpan(root);
+    if (!this.active) return;
+    if (!root) {
+      return this.logger.debug('cannot end trace - no active trace found');
     }
+    if (this.currentRootSpan !== root) {
+      this.logger.debug(
+          'currentRootSpan != root on notifyEnd. Need more investigation.');
+    }
+    this.notifyEndSpan(root);
   }
 
   /**
@@ -221,15 +214,11 @@ export class CoreTracer implements types.Tracer {
   }
 
   private notifyEndSpan(root: types.RootSpan) {
-    if (this.active) {
-      this.logger.debug('starting to notify listeners the end of rootspans');
-      if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
-        for (const listener of this.eventListenersLocal) {
-          listener.onEndSpan(root);
-        }
+    this.logger.debug('starting to notify listeners the end of rootspans');
+    if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
+      for (const listener of this.eventListenersLocal) {
+        listener.onEndSpan(root);
       }
-    } else {
-      this.logger.debug('this tracer is inactivate cant notify endspan');
     }
   }
 
@@ -240,9 +229,8 @@ export class CoreTracer implements types.Tracer {
 
   /**
    * Starts a span.
-   * @param name The span name.
-   * @param kind optional The span kind.
-   * @param parentSpanId The parent span ID.
+   * @param nameOrOptions Span name string or SpanOptions object.
+   * @param kind Span kind if not using SpanOptions object.
    */
   startChildSpan(
       nameOrOptions?: string|types.SpanOptions,
@@ -277,7 +265,7 @@ export class CoreTracer implements types.Tracer {
    * This is necessary in order to create child spans correctly in event
    * handlers.
    * @param emitter An event emitter whose handlers should have
-   * the trace context binded to them.
+   *     the trace context binded to them.
    */
   wrapEmitter(emitter: NodeJS.EventEmitter): void {
     if (!this.active) {

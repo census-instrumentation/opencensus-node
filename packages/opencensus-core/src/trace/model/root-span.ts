@@ -112,13 +112,12 @@ export class RootSpan extends SpanBase implements types.RootSpan {
 
   /**
    * Starts a new child span in the root span.
-   * @param name Span name.
-   * @param kind Span kind.
-   * @param parentSpanId Span parent ID.
+   * @param nameOrOptions Span name string or SpanOptions object.
+   * @param kind Span kind if not using SpanOptions object.
    */
   startChildSpan(
-      nameOrOptions?: string|types.SpanOptions, kind?: types.SpanKind,
-      parentSpanId?: string): types.Span {
+      nameOrOptions?: string|types.SpanOptions,
+      kind?: types.SpanKind): types.Span {
     if (this.ended) {
       this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,
@@ -132,25 +131,22 @@ export class RootSpan extends SpanBase implements types.RootSpan {
       return null;
     }
     this.numberOfChildrenLocal++;
-    const newSpan = new Span(this);
-    let spanName;
-    let spanKind;
-    if (typeof nameOrOptions === 'object') {
-      spanName = nameOrOptions.name;
-      spanKind = nameOrOptions.kind;
-    } else {
-      spanName = nameOrOptions;
-      spanKind = kind;
-    }
 
+    const child = new Span(this);
+
+    const spanName =
+        typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
+    const spanKind =
+        typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
     if (spanName) {
-      newSpan.name = spanName;
+      child.name = spanName;
     }
     if (spanKind) {
-      newSpan.kind = spanKind;
+      child.kind = spanKind;
     }
-    newSpan.start();
-    this.spansLocal.push(newSpan);
-    return newSpan;
+
+    child.start();
+    this.spansLocal.push(child);
+    return child;
   }
 }

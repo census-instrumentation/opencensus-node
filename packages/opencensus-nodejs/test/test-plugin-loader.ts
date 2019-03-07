@@ -16,11 +16,8 @@
 
 import {CoreTracer, logger} from '@opencensus/core';
 import * as assert from 'assert';
-import * as path from 'path';
-
 import {Constants} from '../src/trace/constants';
 import {PluginLoader} from '../src/trace/instrumentation/plugin-loader';
-
 
 const INSTALLED_PLUGINS_PATH = `${__dirname}/instrumentation/node_modules`;
 const TEST_MODULES = [
@@ -130,7 +127,6 @@ describe('Plugin Loader', () => {
         const pluginLoader = new PluginLoader(log, tracer);
         assert.strictEqual(pluginLoader.plugins.length, 0);
         pluginLoader.loadPlugins(plugins);
-        const http = require(TEST_MODULES[2]);
         intercept((txt: string) => {
           assert.ok(txt.indexOf('error') >= 0);
         })();
