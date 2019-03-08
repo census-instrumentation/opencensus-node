@@ -176,9 +176,9 @@ describe('Recorder', () => {
           }
         });
 
-    describe(`for distribution aggregation data with attachments`, () => {
+    describe('for distribution aggregation data with attachments', () => {
       const attachments = {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'};
-      it(`should record measurements and attachments correctly`, () => {
+      it('should record measurements and attachments correctly', () => {
         const distributionData: DistributionData = {
           type: AggregationType.DISTRIBUTION,
           tagValues,

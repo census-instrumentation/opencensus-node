@@ -68,7 +68,7 @@ export interface Stats {
    *     tags could either be explicitly passed to the method, or implicitly
    *     read from current execution context.
    * @param attachments optional The contextual information associated with an
-   *     example value. THe contextual information is represented as key - value
+   *     example value. The contextual information is represented as key - value
    *     string pairs.
    */
   record(

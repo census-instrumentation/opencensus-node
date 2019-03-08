@@ -25,7 +25,7 @@ import {isValidTagKey} from '../tags/validation';
 import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
-import {AggregationData, AggregationType, Measure, Measurement, View} from './types';
+import {AggregationData, AggregationType, Measure, Measurement, StatsExemplar, View} from './types';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 
@@ -116,7 +116,7 @@ export class BaseView implements View {
    * @param measurement The measurement to record
    * @param tags The tags to which the value is applied
    * @param attachments optional The contextual information associated with an
-   *     example value. THe contextual information is represented as key - value
+   *     example value. The contextual information is represented as key - value
    *     string pairs.
    */
   recordMeasurement(
@@ -235,27 +235,8 @@ export class BaseView implements View {
       const buckets = [];
       for (let bucket = 0; bucket < data.bucketCounts.length; bucket++) {
         const bucketCount = data.bucketCounts[bucket];
-        let statsExemplar;
-        if (exemplars) {
-          statsExemplar = exemplars[bucket];
-        }
-
-        let metricBucket;
-        if (statsExemplar) {
-          // Bucket with an Exemplar.
-          metricBucket = {
-            count: bucketCount,
-            exemplar: {
-              value: statsExemplar.value,
-              timestamp: timestampFromMillis(statsExemplar.timestamp),
-              attachments: statsExemplar.attachments
-            }
-          } as metricBucket;
-        } else {
-          // Bucket with no Exemplar.
-          metricBucket = {count: bucketCount};
-        }
-        buckets.push(metricBucket);
+        const statsExemplar = exemplars ? exemplars[bucket] : undefined;
+        buckets.push(this.getMetricBucket(statsExemplar, bucketCount));
       }
 
       value = {
@@ -278,6 +259,24 @@ export class BaseView implements View {
    */
   getSnapshot(tagValues: TagValue[]): AggregationData {
     return this.tagValueAggregationMap[this.encodeTagValues(tagValues)];
+  }
+
+  /** Returns a Bucket with count and examplar (if present) */
+  private getMetricBucket(statsExemplar: StatsExemplar, bucketCount: number):
+      metricBucket {
+    if (statsExemplar) {
+      // Bucket with an Exemplar.
+      return {
+        count: bucketCount,
+        exemplar: {
+          value: statsExemplar.value,
+          timestamp: timestampFromMillis(statsExemplar.timestamp),
+          attachments: statsExemplar.attachments
+        }
+      };
+    }
+    // Bucket with no Exemplar.
+    return {count: bucketCount};
   }
 
   /** Determines whether the given TagKeys are valid. */
