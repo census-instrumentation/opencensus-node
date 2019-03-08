@@ -16,9 +16,9 @@
 
 import {Span} from '@opencensus/core';
 
-export const UDPSender = require('jaeger-client/reporters/udp_sender').default;
-export const Utils = require('jaeger-client/util').default;
-export const ThriftUtils = require('jaeger-client/thrift').default;
+export const UDPSender = require('jaeger-client/dist/src/reporters/udp_sender').default;
+export const Utils = require('jaeger-client/dist/src/util').default;
+export const ThriftUtils = require('jaeger-client/dist/src/thrift').default;
 
 export type TagValue = string|number|boolean;
 
