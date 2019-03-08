@@ -176,7 +176,8 @@ export class CoreTracer implements types.Tracer {
   onEndSpan(root: types.RootSpan): void {
     if (!this.active) return;
     if (!root) {
-      return this.logger.debug('cannot end trace - no active trace found');
+      this.logger.debug('cannot end trace - no active trace found');
+      return;
     }
     if (this.currentRootSpan !== root) {
       this.logger.debug(

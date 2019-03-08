@@ -33,7 +33,7 @@ export class Tracing implements core.Tracing {
   /** A configuration object to start the tracing */
   private configLocal: core.Config = {};
   /** An object to log information to. Logs to the JS console by default. */
-  private logger: core.Logger = console;
+  private logger: core.Logger = logger.logger();
   /** Singleton instance */
   private static singletonInstance: core.Tracing;
   /** Indicates if the tracing is active */
@@ -94,7 +94,7 @@ export class Tracing implements core.Tracing {
     this.tracer.stop();
     this.pluginLoader.unloadPlugins();
     this.configLocal = {};
-    this.logger = console;
+    this.logger = logger.logger();
   }
 
 
