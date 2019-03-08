@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-import {Func, HeaderGetter, HeaderSetter, MessageEventType, Span, SpanKind, TraceOptions, Tracer} from '@opencensus/core';
+import {Func, HeaderGetter, HeaderSetter, MessageEventType, Span, SpanKind, TraceOptions} from '@opencensus/core';
 import {HttpPlugin} from '@opencensus/instrumentation-http';
-import * as http from 'http';
 import * as http2 from 'http2';
-import * as net from 'net';
 import * as shimmer from 'shimmer';
-import * as tls from 'tls';
 import * as url from 'url';
 import * as uuid from 'uuid';
 
@@ -138,19 +135,20 @@ export class Http2Plugin extends HttpPlugin {
       }
 
       request.on('response', (responseHeaders: http2.IncomingHttpHeaders) => {
+        const statusCode = responseHeaders[':status'] || 200;
         span.addAttribute(
-            Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE,
-            `${responseHeaders[':status']}`);
-        span.setStatus(
-            Http2Plugin.parseResponseStatus(+responseHeaders[':status']));
+            Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE, `${statusCode}`);
+        span.setStatus(Http2Plugin.parseResponseStatus(+statusCode));
       });
 
       request.on('end', () => {
         const userAgent =
             headers['user-agent'] || headers['User-Agent'] || null;
 
-        span.addAttribute(
-            Http2Plugin.ATTRIBUTE_HTTP_HOST, url.parse(authority).host);
+        const host = url.parse(authority).host;
+        if (host) {
+          span.addAttribute(Http2Plugin.ATTRIBUTE_HTTP_HOST, host);
+        }
         span.addAttribute(
             Http2Plugin.ATTRIBUTE_HTTP_METHOD, `${headers[':method']}`);
         span.addAttribute(
@@ -209,21 +207,26 @@ export class Http2Plugin extends HttpPlugin {
         }
 
         const propagation = plugin.tracer.propagation;
-        const getter = {
+        const getter: HeaderGetter = {
           getHeader(name: string) {
             return headers[name];
           }
-        } as HeaderGetter;
+        };
 
-        const traceOptions = {
-          name: headers[':path'],
+        const traceOptions: TraceOptions = {
+          name: headers[':path'] || '',
           kind: SpanKind.SERVER,
-          spanContext: propagation ? propagation.extract(getter) : null
-        } as TraceOptions;
+        };
+        if (propagation) {
+          const spanContext = propagation.extract(getter);
+          if (spanContext) {
+            traceOptions.spanContext = spanContext;
+          }
+        }
 
         // Respond is called in a stream event. We wrap it to get the sent
         // status code.
-        let statusCode: number = null;
+        let statusCode: number;
         const originalRespond = stream.respond;
         stream.respond = function(this: http2.Http2Stream) {
           // Unwrap it since respond is not allowed to be called more than once

@@ -15,13 +15,10 @@
  */
 
 
-import {CoreTracer, RootSpan, Span, SpanEventListener, TracerConfig} from '@opencensus/core';
-import {logger} from '@opencensus/core';
+import {CoreTracer, logger, RootSpan, Span, SpanEventListener} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http2 from 'http2';
-import * as mocha from 'mocha';
 import * as semver from 'semver';
-import * as shimmer from 'shimmer';
 
 import {plugin} from '../src/';
 import {Http2Plugin} from '../src/';
@@ -39,7 +36,7 @@ class RootSpanVerifier implements SpanEventListener {
 
 function assertSpanAttributes(
     span: Span, httpStatusCode: number, httpMethod: string, hostName: string,
-    path: string, userAgent: string) {
+    path: string, userAgent?: string) {
   assert.strictEqual(
       span.status.code, Http2Plugin.parseResponseStatus(httpStatusCode));
   assert.strictEqual(
@@ -48,8 +45,10 @@ function assertSpanAttributes(
       span.attributes[Http2Plugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
   assert.strictEqual(span.attributes[Http2Plugin.ATTRIBUTE_HTTP_PATH], path);
   assert.strictEqual(span.attributes[Http2Plugin.ATTRIBUTE_HTTP_ROUTE], path);
-  assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT], userAgent);
+  if (userAgent) {
+    assert.strictEqual(
+        span.attributes[Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT], userAgent);
+  }
   assert.strictEqual(
       span.attributes[Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE],
       `${httpStatusCode}`);
@@ -100,12 +99,14 @@ describe('Http2Plugin', () => {
   before(() => {
     tracer.registerSpanEventListener(rootSpanVerifier);
 
-    plugin.enable(http2, tracer, VERSION, {}, null);
+    plugin.enable(http2, tracer, VERSION, {}, '');
     server = http2.createServer();
     server.on('stream', (stream, requestHeaders) => {
-      const statusCode = requestHeaders[':path'].length > 1 ?
-          +requestHeaders[':path'].slice(1) :
-          200;
+      const path = requestHeaders[':path'];
+      let statusCode = 200;
+      if (path) {
+        statusCode = path.length > 1 ? +path.slice(1) : 200;
+      }
       stream.respond({':status': statusCode, 'content-type': 'text/plain'});
       stream.end(`${statusCode}`);
     });
@@ -139,7 +140,7 @@ describe('Http2Plugin', () => {
             rootSpanVerifier.endedRootSpans[1].name.indexOf(testPath) >= 0);
 
         const span = rootSpanVerifier.endedRootSpans[1];
-        assertSpanAttributes(span, 200, 'GET', host, testPath, undefined);
+        assertSpanAttributes(span, 200, 'GET', host, testPath);
       });
     });
 
@@ -160,8 +161,7 @@ describe('Http2Plugin', () => {
                  0);
 
              const span = rootSpanVerifier.endedRootSpans[1];
-             assertSpanAttributes(
-                 span, errorCode, 'GET', host, testPath, undefined);
+             assertSpanAttributes(span, errorCode, 'GET', host, testPath);
            });
          });
     });
@@ -179,8 +179,7 @@ describe('Http2Plugin', () => {
           assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
           assert.strictEqual(root.traceId, root.spans[0].traceId);
           const span = root.spans[0];
-          assertSpanAttributes(
-              span, statusCode, 'GET', host, testPath, undefined);
+          assertSpanAttributes(span, statusCode, 'GET', host, testPath);
         });
       });
     });
@@ -201,8 +200,7 @@ describe('Http2Plugin', () => {
                assert.strictEqual(root.traceId, root.spans[0].traceId);
 
                const span = root.spans[0];
-               assertSpanAttributes(
-                   span, errorCode, 'GET', host, testPath, undefined);
+               assertSpanAttributes(span, errorCode, 'GET', host, testPath);
              });
            });
          });
