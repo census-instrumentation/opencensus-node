@@ -343,34 +343,31 @@ describe('Tracer', () => {
     });
 
     it('should start a span with SpanObject', () => {
-      let spanWithObject: types.Span;
       tracer.startRootSpan(options, (rootSpan) => {
-        spanWithObject = tracer.startChildSpan(
+        const spanWithObject = tracer.startChildSpan(
             {name: 'my-span', kind: types.SpanKind.SERVER});
+        assert.ok(spanWithObject.started);
+        assert.strictEqual(spanWithObject.name, 'my-span');
+        assert.strictEqual(spanWithObject.kind, types.SpanKind.SERVER);
       });
-      assert.ok(spanWithObject.started);
-      assert.strictEqual(spanWithObject.name, 'my-span');
-      assert.strictEqual(spanWithObject.kind, types.SpanKind.SERVER);
     });
 
     it('should start a span with SpanObject-name', () => {
-      let spanWithObject: types.Span;
       tracer.startRootSpan(options, (rootSpan) => {
-        spanWithObject = tracer.startChildSpan({name: 'my-span1'});
+        const spanWithObject = tracer.startChildSpan({name: 'my-span1'});
+        assert.ok(spanWithObject.started);
+        assert.strictEqual(spanWithObject.name, 'my-span1');
+        assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
       });
-      assert.ok(spanWithObject.started);
-      assert.strictEqual(spanWithObject.name, 'my-span1');
-      assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
     });
 
     it('should start a span without params', () => {
-      let spanWithObject: types.Span;
       tracer.startRootSpan(options, (rootSpan) => {
-        spanWithObject = tracer.startChildSpan();
+        const spanWithObject = tracer.startChildSpan();
+        assert.ok(spanWithObject.started);
+        assert.strictEqual(spanWithObject.name, null);
+        assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
       });
-      assert.ok(spanWithObject.started);
-      assert.strictEqual(spanWithObject.name, null);
-      assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
     });
   });
 

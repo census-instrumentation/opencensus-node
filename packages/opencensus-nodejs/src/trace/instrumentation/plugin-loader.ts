@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import {Logger, NamedPluginConfig, Plugin, PluginConfig, PluginNames, Tracer} from '@opencensus/core';
+import {Logger, Plugin, PluginConfig, PluginNames, Tracer} from '@opencensus/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
-
 import {Constants} from '../constants';
 
 enum HookState {

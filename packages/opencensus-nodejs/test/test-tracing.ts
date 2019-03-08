@@ -79,16 +79,19 @@ describe('Tracing', () => {
             tracing.config.maximumLabelValueSize);
         assert.strictEqual(
             defaultConfig.samplingRate, tracing.config.samplingRate);
-        assert.ok(tracing.config.plugins['http']);
-        assert.strictEqual(
-            tracing.config.plugins['http'],
-            `${Constants.OPENCENSUS_SCOPE}/${
-                Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-http`);
-        assert.ok(tracing.config.plugins['https']);
-        assert.strictEqual(
-            tracing.config.plugins['https'],
-            `${Constants.OPENCENSUS_SCOPE}/${
-                Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
+        assert.ok(tracing.config.plugins);
+        if (tracing.config.plugins) {
+          assert.ok(tracing.config.plugins['http']);
+          assert.strictEqual(
+              tracing.config.plugins['http'],
+              `${Constants.OPENCENSUS_SCOPE}/${
+                  Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-http`);
+          assert.ok(tracing.config.plugins['https']);
+          assert.strictEqual(
+              tracing.config.plugins['https'],
+              `${Constants.OPENCENSUS_SCOPE}/${
+                  Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
+        }
         assert.strictEqual(
             defaultConfig.traceParams.numberOfAnnontationEventsPerSpan, 32);
         assert.strictEqual(
@@ -151,18 +154,21 @@ describe('Tracing', () => {
           'simple-module': 'enduser-simple-module-pluging'
         };
         tracing.start({plugins: endUserPlugins});
-        // should overwrite default http plugin
-        assert.strictEqual(
-            tracing.config.plugins['http'], endUserPlugins['http']);
-        // should add a new plugin
-        assert.strictEqual(
-            tracing.config.plugins['simple-module'],
-            endUserPlugins['simple-module']);
-        // should keep plugins default value
-        assert.strictEqual(
-            tracing.config.plugins['https'],
-            `${Constants.OPENCENSUS_SCOPE}/${
-                Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
+        assert.ok(tracing.config.plugins);
+        if (tracing.config.plugins) {
+          // should overwrite default http plugin
+          assert.strictEqual(
+              tracing.config.plugins['http'], endUserPlugins['http']);
+          // should add a new plugin
+          assert.strictEqual(
+              tracing.config.plugins['simple-module'],
+              endUserPlugins['simple-module']);
+          // should keep plugins default value
+          assert.strictEqual(
+              tracing.config.plugins['https'],
+              `${Constants.OPENCENSUS_SCOPE}/${
+                  Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-https`);
+        }
       });
 
       it('should start with a non-default traceparams', () => {
@@ -174,24 +180,32 @@ describe('Tracing', () => {
             numberOfMessageEventsPerSpan: 100
           }
         });
-        assert.strictEqual(
-            tracing.config.traceParams.numberOfAttributesPerSpan, 10);
-        assert.strictEqual(
-            tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 5);
-        assert.strictEqual(tracing.config.traceParams.numberOfLinksPerSpan, 8);
-        assert.strictEqual(
-            tracing.config.traceParams.numberOfMessageEventsPerSpan, 100);
+        assert.ok(tracing.config.traceParams);
+        if (tracing.config.traceParams) {
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfAttributesPerSpan, 10);
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 5);
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfLinksPerSpan, 8);
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfMessageEventsPerSpan, 100);
+        }
       });
 
       it('should start with a non-default and default traceparams', () => {
         tracing.start({traceParams: {numberOfAttributesPerSpan: 10}});
-        assert.strictEqual(
-            tracing.config.traceParams.numberOfAttributesPerSpan, 10);
-        assert.strictEqual(
-            tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 32);
-        assert.strictEqual(tracing.config.traceParams.numberOfLinksPerSpan, 32);
-        assert.strictEqual(
-            tracing.config.traceParams.numberOfMessageEventsPerSpan, 128);
+
+        if (tracing.config.traceParams) {
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfAttributesPerSpan, 10);
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 32);
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfLinksPerSpan, 32);
+          assert.strictEqual(
+              tracing.config.traceParams.numberOfMessageEventsPerSpan, 128);
+        }
       });
     });
   });
@@ -205,7 +219,7 @@ describe('Tracing', () => {
       assert.ok(tracing.tracer.active);
       tracing.stop();
       assert.ok(!tracing.tracer.active);
-      assert.strictEqual(tracing.exporter, null);
+      assert.ok(tracing.exporter instanceof core.NoopExporter);
       assert.deepEqual(tracing.config, {});
     });
   });
@@ -273,7 +287,7 @@ describe('Tracing', () => {
       assert.strictEqual(tracing.config.exporter, exporter);
       assert.strictEqual(tracing.tracer.eventListeners.length, 1);
       tracing.registerExporter(null);
-      assert.strictEqual(tracing.config.exporter, null);
+      assert.ok(tracing.config.exporter instanceof core.NoopExporter);
       assert.strictEqual(tracing.tracer.eventListeners.length, 0);
     });
   });
@@ -288,7 +302,7 @@ describe('Tracing', () => {
       assert.strictEqual(tracing.config.exporter, exporter);
       assert.strictEqual(tracing.tracer.eventListeners.length, 1);
       tracing.unregisterExporter(exporter);
-      assert.strictEqual(tracing.config.exporter, null);
+      assert.ok(tracing.config.exporter instanceof core.NoopExporter);
       assert.strictEqual(tracing.tracer.eventListeners.length, 0);
     });
   });

@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 import * as core from '@opencensus/core';
-import {Logger, logger} from '@opencensus/core';
-
+import {logger} from '@opencensus/core';
 import * as extend from 'extend';
-
 import {defaultConfig} from './config/default-config';
 import {Constants} from './constants';
 import {PluginLoader} from './instrumentation/plugin-loader';
 
+const NOOP_EXPORTER = new core.NoopExporter();
 
 /** Implements a Tracing. */
 export class Tracing implements core.Tracing {
@@ -33,12 +32,12 @@ export class Tracing implements core.Tracing {
   private defaultPlugins: core.PluginNames;
   /** A configuration object to start the tracing */
   private configLocal: core.Config = {};
-  /** An object to log information to */
-  private logger: core.Logger = null;
+  /** An object to log information to. Logs to the JS console by default. */
+  private logger: core.Logger = logger.logger();
   /** Singleton instance */
   private static singletonInstance: core.Tracing;
   /** Indicates if the tracing is active */
-  private activeLocal: boolean;
+  private activeLocal = false;
 
   /** Constructs a new TracingImpl instance. */
   constructor() {
@@ -95,7 +94,7 @@ export class Tracing implements core.Tracing {
     this.tracer.stop();
     this.pluginLoader.unloadPlugins();
     this.configLocal = {};
-    this.logger = null;
+    this.logger = logger.logger();
   }
 
 
@@ -103,7 +102,7 @@ export class Tracing implements core.Tracing {
   get exporter(): core.Exporter {
     return this.configLocal.exporter ?
         this.configLocal.exporter as core.Exporter :
-        null;
+        NOOP_EXPORTER;
   }
 
   /**
@@ -128,7 +127,7 @@ export class Tracing implements core.Tracing {
    */
   unregisterExporter(exporter: core.Exporter): core.Tracing {
     this.tracer.unregisterSpanEventListener(exporter);
-    this.configLocal.exporter = null;
+    this.configLocal.exporter = NOOP_EXPORTER;
     return this;
   }
 }

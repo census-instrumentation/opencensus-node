@@ -464,7 +464,7 @@ export interface RootSpan extends Span {
   readonly numberOfChildren: number;
 
   /** Starts a new Span instance in the RootSpan instance */
-  startChildSpan(name?: string, kind?: SpanKind, parentSpanId?: string): Span;
+  startChildSpan(name?: string, kind?: SpanKind): Span;
   startChildSpan(options?: SpanOptions): Span;
   startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind): Span;
 }
@@ -529,12 +529,11 @@ export interface Tracer extends SpanEventListener {
   /**
    * Start a new Span instance to the currentRootSpan
    * @param name Span name
-   * @param type Span type
-   * @param parentSpanId Parent SpanId
+   * @param kind Span kind
    * @param options Span Options
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, type?: SpanKind, parentSpanId?: string): Span;
+  startChildSpan(name?: string, kind?: SpanKind): Span;
   startChildSpan(options?: SpanOptions): Span;
 
   /**
