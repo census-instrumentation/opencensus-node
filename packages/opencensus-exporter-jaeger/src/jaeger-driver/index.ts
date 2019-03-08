@@ -17,7 +17,8 @@
 import {Span} from '@opencensus/core';
 
 // tslint:disable-next-line:variable-name
-export const UDPSender = require('jaeger-client/dist/src/reporters/udp_sender').default;
+export const UDPSender =
+    require('jaeger-client/dist/src/reporters/udp_sender').default;
 // tslint:disable-next-line:variable-name
 export const Utils = require('jaeger-client/dist/src/util').default;
 // tslint:disable-next-line:variable-name
