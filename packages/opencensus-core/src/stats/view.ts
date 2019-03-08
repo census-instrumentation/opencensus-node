@@ -17,10 +17,11 @@
 import * as defaultLogger from '../common/console-logger';
 import {getTimestampWithProcessHRTime, timestampFromMillis} from '../common/time-util';
 import * as loggerTypes from '../common/types';
-import {DistributionValue, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
+import {Bucket as metricBucket, DistributionValue, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
 import {TagMap} from '../tags/tag-map';
 import {TagKey, TagValue} from '../tags/types';
 import {isValidTagKey} from '../tags/validation';
+
 import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
@@ -114,8 +115,13 @@ export class BaseView implements View {
    * Measurements with measurement type INT64 will have its value truncated.
    * @param measurement The measurement to record
    * @param tags The tags to which the value is applied
+   * @param attachments optional The contextual information associated with an
+   *     example value. THe contextual information is represented as key - value
+   *     string pairs.
    */
-  recordMeasurement(measurement: Measurement, tags: TagMap) {
+  recordMeasurement(
+      measurement: Measurement, tags: TagMap,
+      attachments?: {[key: string]: string}) {
     const tagValues = Recorder.getTagValues(tags.tags, this.columns);
     const encodedTags = this.encodeTagValues(tagValues);
     if (!this.tagValueAggregationMap[encodedTags]) {
@@ -124,7 +130,7 @@ export class BaseView implements View {
     }
 
     Recorder.addMeasurement(
-        this.tagValueAggregationMap[encodedTags], measurement);
+        this.tagValueAggregationMap[encodedTags], measurement, attachments);
   }
 
   /**
@@ -143,12 +149,14 @@ export class BaseView implements View {
    */
   private createAggregationData(tagValues: TagValue[]): AggregationData {
     const aggregationMetadata = {tagValues, timestamp: Date.now()};
-    const {buckets, bucketCounts} = this.bucketBoundaries;
-    const bucketsCopy = Object.assign([], buckets);
-    const bucketCountsCopy = Object.assign([], bucketCounts);
 
     switch (this.aggregation) {
       case AggregationType.DISTRIBUTION:
+        const {buckets, bucketCounts} = this.bucketBoundaries;
+        const bucketsCopy = Object.assign([], buckets);
+        const bucketCountsCopy = Object.assign([], bucketCounts);
+        const exemplars = new Array(bucketCounts.length);
+
         return {
           ...aggregationMetadata,
           type: AggregationType.DISTRIBUTION,
@@ -159,7 +167,8 @@ export class BaseView implements View {
           stdDeviation: null as number,
           sumOfSquaredDeviation: null as number,
           buckets: bucketsCopy,
-          bucketCounts: bucketCountsCopy
+          bucketCounts: bucketCountsCopy,
+          exemplars
         };
       case AggregationType.SUM:
         return {...aggregationMetadata, type: AggregationType.SUM, value: 0};
@@ -221,18 +230,40 @@ export class BaseView implements View {
    */
   private toPoint(timestamp: Timestamp, data: AggregationData): Point {
     let value;
-
     if (data.type === AggregationType.DISTRIBUTION) {
-      // TODO: Add examplar transition
-      const {count, sum, sumOfSquaredDeviation} = data;
+      const {count, sum, sumOfSquaredDeviation, exemplars} = data;
+      const buckets = [];
+      for (let bucket = 0; bucket < data.bucketCounts.length; bucket++) {
+        const bucketCount = data.bucketCounts[bucket];
+        let statsExemplar;
+        if (exemplars) {
+          statsExemplar = exemplars[bucket];
+        }
+
+        let metricBucket;
+        if (statsExemplar) {
+          // Bucket with an Exemplar.
+          metricBucket = {
+            count: bucketCount,
+            exemplar: {
+              value: statsExemplar.value,
+              timestamp: timestampFromMillis(statsExemplar.timestamp),
+              attachments: statsExemplar.attachments
+            }
+          } as metricBucket;
+        } else {
+          // Bucket with no Exemplar.
+          metricBucket = {count: bucketCount};
+        }
+        buckets.push(metricBucket);
+      }
+
       value = {
         count,
         sum,
         sumOfSquaredDeviation,
+        buckets,
         bucketOptions: {explicit: {bounds: data.buckets}},
-        // Bucket without an Exemplar.
-        buckets:
-            data.bucketCounts.map(bucketCount => ({count: bucketCount}))
       } as DistributionValue;
     } else {
       value = data.value as number;

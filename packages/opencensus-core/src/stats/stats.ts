@@ -172,10 +172,15 @@ export class BaseStats implements Stats {
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
    * @param tags optional The tags to which the value is applied.
-   *  tags could either be explicitly passed to the method, or implicitly
-   *  read from current execution context.
+   *     tags could either be explicitly passed to the method, or implicitly
+   *     read from current execution context.
+   * @param attachments optional The contextual information associated with an
+   *     example value. THe contextual information is represented as key - value
+   *     string pairs.
    */
-  record(measurements: Measurement[], tags?: TagMap): void {
+  record(
+      measurements: Measurement[], tags?: TagMap,
+      attachments?: {[key: string]: string}): void {
     if (this.hasNegativeValue(measurements)) {
       this.logger.warn(`Dropping measurments ${measurements}, value to record
           must be non-negative.`);
@@ -194,7 +199,7 @@ export class BaseStats implements Stats {
       }
       // Updates all views
       for (const view of views) {
-        view.recordMeasurement(measurement, tags);
+        view.recordMeasurement(measurement, tags, attachments);
       }
 
       // Notifies all exporters
