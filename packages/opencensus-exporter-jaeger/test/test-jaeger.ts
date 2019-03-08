@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, TracerConfig} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import {CoreTracer, logger} from '@opencensus/core';
 import * as assert from 'assert';
-import * as fs from 'fs';
-import * as mocha from 'mocha';
-import * as nock from 'nock';
-import * as shimmer from 'shimmer';
-
 import {JaegerTraceExporter, JaegerTraceExporterOptions} from '../src/';
 import {spanToThrift, ThriftUtils, UDPSender} from '../src/jaeger-driver';
 
@@ -36,9 +30,7 @@ import {SenderCallback} from '../src/jaeger-driver';
  * true to use a real zipkin service
  * false to use a nock server
  */
-const OPENCENSUS_NETWORK_TESTS =
-    ['true', 'TRUE', '1'].indexOf(process.env.OPENCENSUS_NETWORK_TESTS) > -1;
-
+const OPENCENSUS_NETWORK_TESTS = process.env.OPENCENSUS_NETWORK_TESTS;
 
 describe('Jaeger Exporter', () => {
   const testLogger = logger.logger('debug');
@@ -228,7 +220,8 @@ class MockedUDPSender extends UDPSender {
 
   // Holds the initialized process information. Name matches the associated
   // UDPSender property.
-  _process: ThriftProcess;
+  _process:
+      ThriftProcess = {serviceName: 'opencensus-exporter-jaeger', tags: []};
 
   setProcess(process: ThriftProcess): void {
     this._process = process;

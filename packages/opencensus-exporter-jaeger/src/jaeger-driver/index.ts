@@ -127,7 +127,6 @@ export function spanToThrift(span: Span): ThriftSpan {
     });
   }
 
-  const unsigned = true;
   const parentSpan: string|Buffer = span.parentSpanId ?
       Utils.encodeInt64(span.parentSpanId) :
       ThriftUtils.emptyBuffer;

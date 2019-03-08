@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-exporter-instana] package.
 - Add an API `globalStats.unregisterExporter()`.
 - Add support for overriding sampling for a span.
+- Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-exporter-jaeger] packages.
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.
