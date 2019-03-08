@@ -104,8 +104,8 @@ describe('Http2Plugin', () => {
     server.on('stream', (stream, requestHeaders) => {
       const path = requestHeaders[':path'];
       let statusCode = 200;
-      if (path) {
-        statusCode = path.length > 1 ? +path.slice(1) : 200;
+      if (path && path.length > 1) {
+        statusCode = isNaN(Number(path.slice(1))) ? 200 : Number(path.slice(1));
       }
       stream.respond({':status': statusCode, 'content-type': 'text/plain'});
       stream.end(`${statusCode}`);
