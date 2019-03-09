@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, Span, SpanEventListener, SpanKind} from '@opencensus/core';
-import {logger} from '@opencensus/core';
+import {CoreTracer, RootSpan, SpanEventListener, SpanKind} from '@opencensus/core';
 import * as assert from 'assert';
-import {accessSync} from 'fs';
-import * as http from 'http';
-import * as mocha from 'mocha';
 import * as mongodb from 'mongodb';
-import * as semver from 'semver';
-
 import {plugin} from '../src/';
-import {MongoDBPlugin} from '../src/';
 
 export type MongoDBAccess = {
   client: mongodb.MongoClient,
@@ -110,7 +103,7 @@ describe('MongoDBPlugin', () => {
   before((done) => {
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(rootSpanVerifier);
-    plugin.enable(mongodb, tracer, VERSION, {}, null);
+    plugin.enable(mongodb, tracer, VERSION, {}, '');
     accessCollection(URL, DB_NAME, COLLECTION_NAME)
         .then(result => {
           client = result.client;
@@ -218,7 +211,7 @@ describe('MongoDBPlugin', () => {
   describe('Instrumenting command operations', () => {
     it('should create a child span for create index', (done) => {
       tracer.startRootSpan({name: 'indexRootSpan'}, (rootSpan: RootSpan) => {
-        collection.createIndex({a: 1}, null, (err, result) => {
+        collection.createIndex({a: 1}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
           assert.ifError(err);
@@ -282,7 +275,7 @@ describe('MongoDBPlugin', () => {
 
     it('should not create a child span for command', (done) => {
       tracer.startRootSpan({name: 'indexRootSpan'}, (rootSpan: RootSpan) => {
-        collection.createIndex({a: 1}, null, (err, result) => {
+        collection.createIndex({a: 1}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
           assert.ifError(err);
