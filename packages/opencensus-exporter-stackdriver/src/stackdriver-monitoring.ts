@@ -18,7 +18,7 @@ import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescrip
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 import {getDefaultResource} from './common-utils';
-import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-stats-utils';
+import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-monitoring-utils';
 import {MonitoredResource, StackdriverExporterOptions, TimeSeries} from './types';
 
 const OC_USER_AGENT = {
@@ -39,8 +39,8 @@ export class StackdriverStatsExporter implements StatsEventListener {
   private projectId: string;
   private metricPrefix: string;
   private displayNamePrefix: string;
-  private onMetricUploadError: (err: Error) => void;
-  private timer: NodeJS.Timer;
+  private onMetricUploadError?: (err: Error) => void;
+  private timer!: NodeJS.Timer;
   static readonly DEFAULT_DISPLAY_NAME_PREFIX: string = 'OpenCensus';
   static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
       'custom.googleapis.com/opencensus';
@@ -60,7 +60,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
     this.displayNamePrefix =
         options.prefix || StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX;
     this.logger = options.logger || logger.logger();
-    this.onMetricUploadError = options.onMetricUploadError;
+    if (options.onMetricUploadError) {
+      this.onMetricUploadError = options.onMetricUploadError;
+    }
     this.DEFAULT_RESOURCE = getDefaultResource(this.projectId);
   }
 
@@ -162,7 +164,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       return new Promise((resolve, reject) => {
         monitoring.projects.timeSeries.create(
             request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
-            (err?: Error) => {
+            (err: Error|null) => {
               this.logger.debug(
                   'sent time series', request.resource.timeSeries);
               err ? reject(err) : resolve();
@@ -187,7 +189,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       return new Promise((resolve, reject) => {
         monitoring.projects.metricDescriptors.create(
             request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
-            (err?: Error) => {
+            (err: Error|null) => {
               this.logger.debug('sent metric descriptor', request.resource);
               err ? reject(err) : resolve();
             });

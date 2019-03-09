@@ -16,12 +16,10 @@
 
 import {CoreResource, DistributionValue, LabelKey, LabelValue, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
 import * as assert from 'assert';
-
 import {getDefaultResource} from '../src/common-utils';
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
-import {createMetricDescriptorData, createTimeSeriesList, OPENCENSUS_TASK_VALUE_DEFAULT, TEST_ONLY} from '../src/stackdriver-stats-utils';
+import {createMetricDescriptorData, createTimeSeriesList, OPENCENSUS_TASK_VALUE_DEFAULT, TEST_ONLY} from '../src/stackdriver-monitoring-utils';
 import {Distribution, MetricDescriptor, MetricKind, ValueType} from '../src/types';
-
 import * as nocks from './nocks';
 
 const METRIC_NAME = 'metric-name';
@@ -260,7 +258,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
     };
 
     it('should return a Stackdriver Point', () => {
-      const pt = TEST_ONLY.createPoint(doublePoint, null, ValueType.DOUBLE);
+      const pt = TEST_ONLY.createPoint(doublePoint, ValueType.DOUBLE);
 
       assert.deepStrictEqual(pt, {
         value: {doubleValue: 12345678.2},
@@ -270,7 +268,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
 
     it('should return a Stackdriver Cumulative Point', () => {
       const pt =
-          TEST_ONLY.createPoint(intPoint, startTimestamp, ValueType.INT64);
+          TEST_ONLY.createPoint(intPoint, ValueType.INT64, startTimestamp);
 
       assert.deepStrictEqual(pt, {
         value: {int64Value: 12345678},
@@ -283,7 +281,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
 
     it('should return a Stackdriver Distribution Point', () => {
       const pt = TEST_ONLY.createPoint(
-          distributionPoint, startTimestamp, ValueType.DISTRIBUTION);
+          distributionPoint, ValueType.DISTRIBUTION, startTimestamp);
 
       assert.deepStrictEqual(pt, {
         value: {

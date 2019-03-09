@@ -45,7 +45,9 @@ export function createAttributes(
     droppedAttributesCount: number): types.Attributes {
   const attributesBuilder =
       createAttributesBuilder(attributes, droppedAttributesCount);
-  attributesBuilder.attributeMap[AGENT_LABEL_KEY] = AGENT_LABEL_VALUE;
+  if (attributesBuilder.attributeMap) {
+    attributesBuilder.attributeMap[AGENT_LABEL_KEY] = AGENT_LABEL_VALUE;
+  }
   attributesBuilder.attributeMap =
       Object.assign({}, attributesBuilder.attributeMap, resourceLabels);
   return attributesBuilder;

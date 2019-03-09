@@ -108,12 +108,12 @@ export class StackdriverTraceExporter implements Exporter {
       status: {code: span.status.code},
       sameProcessAsParentSpan: !span.remoteParent,
       childSpanCount: numberOfChildren,
-      stackTrace: null,  // Unsupported by nodejs
+      stackTrace: undefined,  // Unsupported by nodejs
     };
     if (span.parentSpanId) {
       spanBuilder.parentSpanId = span.parentSpanId;
     }
-    if (span.status.message) {
+    if (span.status.message && spanBuilder.status) {
       spanBuilder.status.message = span.status.message;
     }
 
@@ -131,7 +131,7 @@ export class StackdriverTraceExporter implements Exporter {
       // data to backend :
       // https://cloud.google.com/trace/docs/reference/v2/rpc/google.devtools.
       // cloudtrace.v2#google.devtools.cloudtrace.v2.TraceService
-      cloudTrace.projects.traces.batchWrite(spans, (err: Error) => {
+      cloudTrace.projects.traces.batchWrite(spans, (err: Error|null) => {
         if (err) {
           err.message = `batchWriteSpans error: ${err.message}`;
           this.logger.error(err.message);
