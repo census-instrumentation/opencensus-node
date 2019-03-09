@@ -6,7 +6,8 @@
     "pretty": true,
     "module": "commonjs",
     "target": "es6",
-    "strictNullChecks": false
+    "strictNullChecks": true,
+    "noUnusedLocals": true
   },
   "include": [
     "src/**/*.ts",
@@ -16,4 +17,3 @@
     "node_modules"
   ]
 }
-

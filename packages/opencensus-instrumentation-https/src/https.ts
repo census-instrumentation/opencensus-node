@@ -20,7 +20,6 @@ import * as http from 'http';
 import * as https from 'https';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
-import * as url from 'url';
 
 /** Https instrumentation plugin for Opencensus */
 export class HttpsPlugin extends HttpPlugin {
