@@ -75,8 +75,7 @@ export class MongoDBPlugin extends BasePlugin {
       return function(
                  // tslint:disable-next-line:no-any
                  this: mongodb.Server, ns: string, command: any,
-                 options: {}|Function,
-                 callback: Function|undefined): mongodb.Server {
+                 options: {}|Function, callback: Function): mongodb.Server {
         const resultHandler =
             typeof options === 'function' ? options : callback;
         if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
