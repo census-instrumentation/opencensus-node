@@ -21,8 +21,8 @@ const UNKNOWN_TAG_VALUE: TagValue = null;
 
 export class Recorder {
   static addMeasurement(
-      aggregationData: AggregationData,
-      measurement: Measurement): AggregationData {
+      aggregationData: AggregationData, measurement: Measurement,
+      attachments?: {[key: string]: string}): AggregationData {
     aggregationData.timestamp = Date.now();
     const value = measurement.measure.type === MeasureType.DOUBLE ?
         measurement.value :
@@ -30,7 +30,7 @@ export class Recorder {
 
     switch (aggregationData.type) {
       case AggregationType.DISTRIBUTION:
-        return this.addToDistribution(aggregationData, value);
+        return this.addToDistribution(aggregationData, value, attachments);
 
       case AggregationType.SUM:
         return this.addToSum(aggregationData, value);
@@ -53,7 +53,8 @@ export class Recorder {
   }
 
   private static addToDistribution(
-      distributionData: DistributionData, value: number): DistributionData {
+      distributionData: DistributionData, value: number,
+      attachments?: {[key: string]: string}): DistributionData {
     distributionData.count += 1;
 
     let bucketIndex =
@@ -79,6 +80,15 @@ export class Recorder {
     distributionData.stdDeviation = Math.sqrt(
         distributionData.sumOfSquaredDeviation / distributionData.count);
 
+    // No implicit recording for exemplars - if there are no attachments
+    // (contextual information), don't record exemplars.
+    if (attachments) {
+      distributionData.exemplars[bucketIndex] = {
+        value,
+        timestamp: distributionData.timestamp,
+        attachments
+      };
+    }
     return distributionData;
   }
 

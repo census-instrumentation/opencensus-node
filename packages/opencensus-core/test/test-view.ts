@@ -348,6 +348,123 @@ describe('BaseView', () => {
       });
     });
 
+    describe('DISTRIBUTION aggregation type with exemplars', () => {
+      const realNowFn = Date.now;
+      before(() => {
+        Date.now = () => 1450000000000;
+      });
+      after(() => {
+        Date.now = realNowFn;
+      });
+
+      it('should have point with attachments', () => {
+        const view: View = new BaseView(
+            'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
+            'description test', buckets);
+        let total = 0;
+        const attachments = {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'};
+        for (const value of measurementValues) {
+          total += value;
+          const measurement = {measure, value};
+          view.recordMeasurement(measurement, tags, attachments);
+        }
+
+        const {timeseries} = view.getMetric(mockStartTime);
+        const [{points, startTimestamp}] = timeseries;
+        assert.ok(points);
+        const [point] = points;
+        const {timestamp, value} = point;
+        assert.ok(timestamp);
+        assert.deepStrictEqual((value as DistributionValue), {
+          bucketOptions: {explicit: {bounds: buckets}},
+          buckets: [
+            {
+              count: 1,
+              exemplar: {
+                value: 1.1,
+                timestamp: {seconds: 1450000000, nanos: 0},
+                attachments
+              }
+            },
+            {
+              count: 2,
+              exemplar: {
+                value: 3.2,
+                timestamp: {seconds: 1450000000, nanos: 0},
+                attachments
+              }
+            },
+            {
+              count: 2,
+              exemplar: {
+                value: 5.2,
+                timestamp: {seconds: 1450000000, nanos: 0},
+                attachments
+              }
+            },
+            {count: 0}
+          ],
+          count: 5,
+          sum: total,
+          sumOfSquaredDeviation: 10.427999999999997
+        });
+        assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
+      });
+
+      it('should have point with empty attachments', () => {
+        const view: View = new BaseView(
+            'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
+            'description test', buckets);
+        let total = 0;
+        for (const value of measurementValues) {
+          total += value;
+          const measurement = {measure, value};
+          view.recordMeasurement(measurement, tags, {});
+        }
+
+        const {timeseries} = view.getMetric(mockStartTime);
+        const [{points, startTimestamp}] = timeseries;
+        assert.ok(points);
+        const [point] = points;
+        const {timestamp, value} = point;
+        assert.ok(timestamp);
+        assert.deepStrictEqual((value as DistributionValue), {
+          bucketOptions: {explicit: {bounds: buckets}},
+          buckets: [
+            {
+              count: 1,
+              exemplar: {
+                value: 1.1,
+                timestamp: {seconds: 1450000000, nanos: 0},
+                attachments: {}
+              }
+            },
+            {
+              count: 2,
+              exemplar: {
+                value: 3.2,
+                timestamp: {seconds: 1450000000, nanos: 0},
+                attachments: {}
+              }
+            },
+            {
+              count: 2,
+              exemplar: {
+                value: 5.2,
+                timestamp: {seconds: 1450000000, nanos: 0},
+                attachments: {}
+              }
+            },
+            {count: 0}
+          ],
+          count: 5,
+          sum: total,
+          sumOfSquaredDeviation: 10.427999999999997
+        });
+        assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
+      });
+    });
+
     describe(
         'DISTRIBUTION aggregation type: record with measurements in succession from a single view and single measure',
         () => {

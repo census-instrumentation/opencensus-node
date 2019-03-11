@@ -176,6 +176,41 @@ describe('Recorder', () => {
           }
         });
 
+    describe('for distribution aggregation data with attachments', () => {
+      const attachments = {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'};
+      it('should record measurements and attachments correctly', () => {
+        const distributionData: DistributionData = {
+          type: AggregationType.DISTRIBUTION,
+          tagValues,
+          timestamp: Date.now(),
+          startTime: Date.now(),
+          count: 0,
+          sum: 0,
+          mean: 0,
+          stdDeviation: 0,
+          sumOfSquaredDeviation: 0,
+          buckets: [2, 4, 6],
+          bucketCounts: [0, 0, 0, 0],
+          exemplars: [undefined, undefined, undefined, undefined]
+        };
+        const value = 5;
+        const measurement: Measurement = {measure, value};
+        const aggregationData =
+            Recorder.addMeasurement(
+                distributionData, measurement, attachments) as DistributionData;
+
+        assert.equal(aggregationData.sum, 5);
+        assert.equal(aggregationData.mean, 5);
+        assert.deepStrictEqual(aggregationData.buckets, [2, 4, 6]);
+        assert.deepStrictEqual(aggregationData.bucketCounts, [0, 0, 1, 0]);
+        assert.deepStrictEqual(aggregationData.exemplars, [
+          undefined, undefined,
+          {value: 5, timestamp: aggregationData.timestamp, attachments},
+          undefined
+        ]);
+      });
+    });
+
     describe('getTagValues()', () => {
       const CALLER = {name: 'caller'};
       const METHOD = {name: 'method'};
