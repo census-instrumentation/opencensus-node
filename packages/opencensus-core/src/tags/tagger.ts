@@ -22,7 +22,7 @@ export const EMPTY_TAG_MAP = new TagMap();
 const CURRENT_TAG_MAP_KEY = 'current_tag_map';
 
 /** Gets the current tag context. */
-export function getCurrentTagMap(): TagMap {
+export function getCurrentTagContext(): TagMap {
   const tagsFromContext = contextManager.get(CURRENT_TAG_MAP_KEY);
   if (tagsFromContext) {
     return tagsFromContext as TagMap;
@@ -34,10 +34,30 @@ export function getCurrentTagMap(): TagMap {
  * Sets the current tag context.
  * @param tags The TagMap.
  */
-export function setCurrentTagMap(tags: TagMap) {
-  if (tags) {
-    contextManager.set(CURRENT_TAG_MAP_KEY, tags);
-  }
+export function setCurrentTagContext(tags: TagMap) {
+  contextManager.set(CURRENT_TAG_MAP_KEY, tags);
+}
+
+/**
+ * Enters the scope of code where the given `TagMap` is in the current context
+ * (replacing the previous `TagMap`).
+ * @param tags The TagMap to be set to the current context.
+ * @param fn Callback function.
+ * @returns The callback return.
+ */
+export function withTagContext<T>(tags: TagMap, fn: cls.Func<T>): T {
+  const oldContext = getCurrentTagContext();
+  return contextManager.runAndReturn(() => {
+    const newContext = new TagMap();
+    for (const [tagKey, tagValue] of oldContext.tags) {
+      newContext.set(tagKey, tagValue);
+    }
+    for (const [tagKey, tagValue] of tags.tags) {
+      newContext.set(tagKey, tagValue);
+    }
+    setCurrentTagContext(newContext);
+    return fn();
+  });
 }
 
 /** Clear the current tag context. */

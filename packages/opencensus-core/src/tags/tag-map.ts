@@ -31,6 +31,14 @@ export class TagMap {
     if (!isValidTagValue(tagValue)) {
       throw new Error(`Invalid TagValue: ${tagValue.value}`);
     }
+    let existingKey;
+    for (const key of this.registeredTags.keys()) {
+      if (key.name === tagKey.name) {
+        existingKey = key;
+        break;
+      }
+    }
+    if (existingKey) this.registeredTags.delete(existingKey);
     this.registeredTags.set(tagKey, tagValue);
   }
 

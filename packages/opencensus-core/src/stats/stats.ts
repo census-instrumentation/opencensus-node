@@ -20,7 +20,7 @@ import {StatsEventListener} from '../exporters/types';
 import {Metric} from '../metrics/export/types';
 import {Metrics} from '../metrics/metrics';
 import {TagMap} from '../tags/tag-map';
-import {getCurrentTagMap} from '../tags/tagger';
+import {getCurrentTagContext} from '../tags/tagger';
 import {TagKey} from '../tags/types';
 import {MetricProducerForStats} from './metric-producer';
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from './types';
@@ -189,7 +189,7 @@ export class BaseStats implements Stats {
 
     if (!tags) {
       // Record against implicit (current) context
-      tags = getCurrentTagMap();
+      tags = getCurrentTagContext();
     }
 
     for (const measurement of measurements) {

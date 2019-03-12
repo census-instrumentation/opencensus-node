@@ -19,26 +19,82 @@ import {TagMap} from '../src';
 import * as tagger from '../src/tags/tagger';
 
 describe('tagger()', () => {
-  const tags = new TagMap();
-  tags.set({name: 'key1'}, {value: 'value1'});
-  tags.set({name: 'key2'}, {value: 'value2'});
+  const tags1 = new TagMap();
+  tags1.set({name: 'key1'}, {value: 'value1'});
+  tags1.set({name: 'key2'}, {value: 'value2'});
+
+  const tags2 = new TagMap();
+  tags2.set({name: 'key3'}, {value: 'value3'});
+  tags2.set({name: 'key4'}, {value: 'value4'});
+
+  const tags3 = new TagMap();
+  tags3.set({name: 'key2'}, {value: 'value3'});
+  tags3.set({name: 'key4'}, {value: 'value4'});
+
+  const tags4 = new TagMap();
+  tags4.set({name: 'key1'}, {value: 'value4'});
+  tags4.set({name: 'key4'}, {value: 'value5'});
+  tags4.set({name: 'key6'}, {value: 'value6'});
+
+  const expectedMergedTags = new TagMap();
+  expectedMergedTags.set({name: 'key1'}, {value: 'value1'});
+  expectedMergedTags.set({name: 'key2'}, {value: 'value2'});
+  expectedMergedTags.set({name: 'key3'}, {value: 'value3'});
+  expectedMergedTags.set({name: 'key4'}, {value: 'value4'});
+
+  const expectedTagsFrom1n3 = new TagMap();
+  expectedTagsFrom1n3.set({name: 'key1'}, {value: 'value1'});
+  expectedTagsFrom1n3.set({name: 'key2'}, {value: 'value3'});
+  expectedTagsFrom1n3.set({name: 'key4'}, {value: 'value4'});
+
+  const expectedTagsFrom1n3n4 = new TagMap();
+  expectedTagsFrom1n3n4.set({name: 'key1'}, {value: 'value4'});
+  expectedTagsFrom1n3n4.set({name: 'key2'}, {value: 'value3'});
+  expectedTagsFrom1n3n4.set({name: 'key4'}, {value: 'value5'});
+  expectedTagsFrom1n3n4.set({name: 'key6'}, {value: 'value6'});
 
   it('should return empty current tag context', () => {
-    const tags = tagger.getCurrentTagMap();
-    assert.equal(tags, tagger.EMPTY_TAG_MAP);
+    tagger.withTagContext(tagger.EMPTY_TAG_MAP, () => {
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+    });
   });
 
-  it('should return assigned current tag context', () => {
-    tagger.setCurrentTagMap(tags);
-    const currentTagMap = tagger.getCurrentTagMap();
-    assert.deepStrictEqual(currentTagMap, tags);
+  it('should set current tag context', () => {
+    tagger.withTagContext(tags1, () => {
+      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+    });
+    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
   });
 
-  it('should clear assigned current tag context', () => {
-    tagger.setCurrentTagMap(tags);
-    tagger.clear();
+  it('should set nested current tag context', () => {
+    tagger.withTagContext(tags1, () => {
+      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
 
-    const currentTagMap = tagger.getCurrentTagMap();
-    assert.equal(currentTagMap, tagger.EMPTY_TAG_MAP);
+      tagger.withTagContext(tags2, () => {
+        assert.deepStrictEqual(
+            tagger.getCurrentTagContext(), expectedMergedTags);
+      });
+      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+    });
+    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+  });
+
+  it('should resolve tag conflicts', () => {
+    tagger.withTagContext(tags1, () => {
+      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+
+      tagger.withTagContext(tags3, () => {
+        assert.deepStrictEqual(
+            tagger.getCurrentTagContext(), expectedTagsFrom1n3);
+
+        tagger.withTagContext(tags4, () => {
+          assert.deepStrictEqual(
+              tagger.getCurrentTagContext(), expectedTagsFrom1n3n4);
+        });
+      });
+      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+    });
+    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
   });
 });

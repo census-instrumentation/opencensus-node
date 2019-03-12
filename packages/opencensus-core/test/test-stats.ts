@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {BaseView, globalStats, StatsEventListener, TagKey, TagMap, TagValue} from '../src';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';
-import {clear, setCurrentTagMap} from '../src/tags/tagger';
+import * as tagger from '../src/tags/tagger';
 
 class TestExporter implements StatsEventListener {
   registeredViews: View[] = [];
@@ -179,7 +179,6 @@ describe('Stats', () => {
 
     afterEach(() => {
       globalStats.clear();
-      clear();  // clear current tag context
     });
 
     it('should record a single measurement', () => {
@@ -229,14 +228,14 @@ describe('Stats', () => {
        });
 
     it('should record against implicit context when set', () => {
-      const implicitTagMap = new TagMap();
-      implicitTagMap.set(tagKeys[0], {value: 'value1'});
-      implicitTagMap.set(tagKeys[1], {value: 'value2'});
-
-      setCurrentTagMap(implicitTagMap);
+      const tags = new TagMap();
+      tags.set(tagKeys[0], {value: 'value1'});
+      tags.set(tagKeys[1], {value: 'value2'});
       const measurement = {measure, value: 1};
-      assert.strictEqual(testExporter.recordedMeasurements.length, 0);
-      globalStats.record([measurement]);
+      tagger.withTagContext(tags, () => {
+        globalStats.record([measurement]);
+      });
+
       assert.strictEqual(testExporter.recordedMeasurements.length, 1);
       assert.deepEqual(testExporter.recordedMeasurements[0], measurement);
       aggregationData =
@@ -251,8 +250,10 @@ describe('Stats', () => {
       const UNKNOWN_TAG_VALUE: TagValue = null;
       globalStats.registerExporter(testExporter);
       const measurement = {measure, value: 2211};
-      assert.strictEqual(testExporter.recordedMeasurements.length, 0);
-      globalStats.record([measurement]);
+      tagger.withTagContext(tagger.EMPTY_TAG_MAP, () => {
+        globalStats.record([measurement]);
+      });
+
       aggregationData =
           testExporter.registeredViews[0].getSnapshot(
               [UNKNOWN_TAG_VALUE, UNKNOWN_TAG_VALUE]) as LastValueData;
