@@ -257,7 +257,7 @@ export class BaseView implements View {
    * @param tags The desired data's tags
    * @returns {AggregationData}
    */
-  getSnapshot(tagValues: TagValue[]): AggregationData {
+  getSnapshot(tagValues: Array<TagValue|null>): AggregationData {
     return this.tagValueAggregationMap[this.encodeTagValues(tagValues)];
   }
 

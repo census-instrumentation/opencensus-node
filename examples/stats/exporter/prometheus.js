@@ -117,13 +117,11 @@ lineReader.on('line', function (line) {
 
     globalStats.record([{
       measure: mLineLengths,
-      tags,
       value: processedLine.length
     }], tags);
 
     globalStats.record([{
       measure: mLatencyMs,
-      tags,
       value: sinceInMilliseconds(endNanoseconds, startNanoseconds)
     }], tags);
   } catch (err) {

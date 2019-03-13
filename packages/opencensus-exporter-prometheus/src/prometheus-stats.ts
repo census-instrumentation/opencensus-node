@@ -47,7 +47,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   private prefix: string;
   private port: number;
   private app = express();
-  private server: http.Server;
+  private server?: http.Server;
   // Registry instance from Prometheus to keep the metrics
   private registry = new Registry();
 
@@ -105,7 +105,10 @@ export class PrometheusStatsExporter implements StatsEventListener {
     const labels: labelValues = {};
     columns.forEach((tagKey) => {
       if (tags.has(tagKey)) {
-        labels[tagKey.name] = tags.get(tagKey).value;
+        const tagValue = tags.get(tagKey);
+        if (tagValue) {
+          labels[tagKey.name] = tagValue.value;
+        }
       }
     });
     return labels;
@@ -149,8 +152,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
         metric = new Histogram(distribution);
         break;
       default:
-        this.logger.error('Aggregation %s is not supported', view.aggregation);
-        return null;
+        this.logger.error(`Aggregation ${view.aggregation} is not supported`);
     }
 
     this.registry.registerMetric(metric);

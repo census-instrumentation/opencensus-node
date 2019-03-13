@@ -1,7 +1,9 @@
-# OpenCensus Prometheus Exporter for Node.js
+# OpenCensus Prometheus Stats Exporter
 [![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] ![dependencies Status][dependencies-status] ![devDependencies Status][devdependencies-status] ![Apache License][license-image]
 
-The OpenCensus Prometheus Exporter allows the user to send collected stats with [OpenCensus Core](https://github.com/census-instrumentation/opencensus-core) to Prometheus.
+The OpenCensus Prometheus Stats Exporter allows the user to send collected stats with [OpenCensus Core](https://github.com/census-instrumentation/opencensus-core) to Prometheus.
+
+[Prometheus](https://prometheus.io/) is a monitoring system that collects metrics, by scraping exposed endpoints at regular intervals, evaluating rule expressions. It can also trigger alerts if certain conditions are met. For assistance setting up Prometheus, [Click here](https://opencensus.io/codelabs/prometheus/#0) for a guided codelab.
 
 This package is still at an early stage of development, and is subject to change.
 
