@@ -76,7 +76,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const stackdriverLinks = createLinks(links, 2);
 
       assert.equal(stackdriverLinks.droppedLinksCount, 2);
-      assert.equal(stackdriverLinks.link.length, 3);
+      assert.equal(stackdriverLinks.link!.length, 3);
       assert.deepEqual(stackdriverLinks.link, expectedLink);
     });
   });
@@ -173,7 +173,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
 
       assert.equal(stackdriverTimeEvents.droppedAnnotationsCount, 2);
       assert.equal(stackdriverTimeEvents.droppedMessageEventsCount, 3);
-      assert.equal(stackdriverTimeEvents.timeEvent.length, 6);
+      assert.equal(stackdriverTimeEvents.timeEvent!.length, 6);
       assert.deepEqual(stackdriverTimeEvents.timeEvent, expectedTimeEvent);
     });
 
@@ -183,7 +183,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
 
          assert.equal(stackdriverTimeEvents.droppedAnnotationsCount, 0);
          assert.equal(stackdriverTimeEvents.droppedMessageEventsCount, 0);
-         assert.equal(stackdriverTimeEvents.timeEvent.length, 0);
+         assert.equal(stackdriverTimeEvents.timeEvent!.length, 0);
        });
   });
 
@@ -199,7 +199,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
     it('should return stackdriver Attributes', () => {
       const stackdriverAttribute = createAttributes(attributes, {}, 0);
       assert.equal(stackdriverAttribute.droppedAttributesCount, 0);
-      assert.equal(Object.keys(stackdriverAttribute.attributeMap).length, 3);
+      assert.equal(Object.keys(stackdriverAttribute.attributeMap!).length, 3);
       assert.deepEqual(stackdriverAttribute.attributeMap, expectedAttributeMap);
     });
 
@@ -215,7 +215,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
         'g.co/r/project_id': {'stringValue': {'value': 'project1'}}
       });
       assert.equal(stackdriverAttribute.droppedAttributesCount, 2);
-      assert.equal(Object.keys(stackdriverAttribute.attributeMap).length, 5);
+      assert.equal(Object.keys(stackdriverAttribute.attributeMap!).length, 5);
       assert.deepEqual(stackdriverAttribute.attributeMap, expectedAttributeMap);
     });
   });

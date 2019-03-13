@@ -188,7 +188,7 @@ describe('Stackdriver Trace Exporter', function() {
               assert.strictEqual(spans[0].spanId, rootSpan.id);
               assert.strictEqual(spans[1].spanId, span.id);
               return true;
-            }, null, false);
+            });
             span.end();
             rootSpan.end();
 

@@ -16,16 +16,14 @@
 
 import {globalStats, LabelKey, Logger, MeasureUnit, Metrics} from '@opencensus/core';
 import * as assert from 'assert';
-import * as nock from 'nock';
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
 import {MetricKind, StackdriverExporterOptions, ValueType} from '../src/types';
-
 import * as nocks from './nocks';
 
 const PROJECT_ID = 'fake-project-id';
 
 class MockLogger implements Logger {
-  level: string;
+  level?: string;
   // tslint:disable-next-line:no-any
   debugBuffer: any[] = [];
 
@@ -93,8 +91,8 @@ describe('Stackdriver Stats Exporter', () => {
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
       gauge.getDefaultTimeSeries().add(100);
 
-      nocks.metricDescriptors(PROJECT_ID, null, null, false);
-      nocks.timeSeries(PROJECT_ID, null, null, false);
+      nocks.metricDescriptors(PROJECT_ID);
+      nocks.timeSeries(PROJECT_ID);
 
       await exporter.export();
       assert.equal(mockLogger.debugBuffer.length, 1);
@@ -125,7 +123,7 @@ describe('Stackdriver Stats Exporter', () => {
             timeSeries.metric.type,
             `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
                 METRIC_NAME}`);
-        assert.strictEqual(timeSeries.resource.type, 'global');
+        assert.ok(timeSeries.resource.type);
         assert.ok(timeSeries.resource.labels.project_id);
         assert.strictEqual(timeSeries.resource.labels.project_id, PROJECT_ID);
         assert.strictEqual(timeSeries.metricKind, MetricKind.GAUGE);

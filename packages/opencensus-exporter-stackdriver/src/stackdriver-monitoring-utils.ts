@@ -60,7 +60,7 @@ export function createTimeSeriesList(
       metricKind,
       valueType,
       points: timeSeries.points.map(point => {
-        return createPoint(point, timeSeries.startTimestamp, valueType);
+        return createPoint(point, valueType, timeSeries.startTimestamp);
       })
     });
   }
@@ -153,8 +153,8 @@ function createMetric(
  * Converts timeseries's point, so that metric can be uploaded to StackDriver.
  */
 function createPoint(
-    point: TimeSeriesPoint, startTimeStamp: Timestamp,
-    valueType: ValueType): Point {
+    point: TimeSeriesPoint, valueType: ValueType,
+    startTimeStamp?: Timestamp): Point {
   const value = createValue(valueType, point);
   const endTime = toISOString(point.timestamp);
   if (startTimeStamp) {
@@ -224,8 +224,8 @@ function generateDefaultTaskValue(): string {
 }
 
 function toISOString(timestamp: Timestamp) {
-  const str = new Date(timestamp.seconds * 1000).toISOString();
-  const nsStr = `${leftZeroPad(timestamp.nanos)}`.replace(/0+$/, '');
+  const str = new Date(timestamp.seconds! * 1000).toISOString();
+  const nsStr = `${leftZeroPad(timestamp.nanos!)}`.replace(/0+$/, '');
   return str.replace('000Z', `${nsStr}Z`);
 }
 
