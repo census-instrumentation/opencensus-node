@@ -377,9 +377,8 @@ export class HttpPlugin extends BasePlugin {
           const tags = new TagMap();
           tags.set(stats.HTTP_CLIENT_METHOD, {value: method});
 
-          if (options.hostname) {
-            span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, options.hostname);
-          }
+          const host = options.hostname || options.host || 'localhost';
+          span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, host);
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_METHOD, method);
           if (options.path) {
             span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_PATH, options.path);
