@@ -43,24 +43,36 @@ describe('B3Propagation', () => {
       assert.deepEqual(b3Format.extract(getter), spanContext);
     });
 
-    it('should return valid context when options and spanId are undefined',
-       () => {
-         const traceId = uuid.v4().split('-').join('');
-         // tslint:disable-next-line
-         const headers = {} as any;
-         headers[X_B3_TRACE_ID] = traceId;
-         headers[X_B3_SPAN_ID] = undefined;
+    it('should return null when options and spanId are undefined', () => {
+      const traceId = uuid.v4().split('-').join('');
+      // tslint:disable-next-line
+      const headers = {} as any;
+      headers[X_B3_TRACE_ID] = traceId;
+      headers[X_B3_SPAN_ID] = undefined;
 
-         const getter: HeaderGetter = {
-           getHeader(name: string) {
-             return headers[name];
-           }
-         };
+      const getter: HeaderGetter = {
+        getHeader(name: string) {
+          return headers[name];
+        }
+      };
 
-         assert.deepEqual(
-             b3Format.extract(getter),
-             {traceId, spanId: '', options: NOT_SAMPLED_VALUE});
-       });
+      assert.deepEqual(b3Format.extract(getter), null);
+    });
+
+    it('should return null when traceId is undefined', () => {
+      // tslint:disable-next-line
+      const headers = {} as any;
+      headers[X_B3_TRACE_ID] = undefined;
+      headers[X_B3_SPAN_ID] = undefined;
+
+      const getter: HeaderGetter = {
+        getHeader(name: string) {
+          return headers[name];
+        }
+      };
+
+      assert.deepEqual(b3Format.extract(getter), null);
+    });
 
     it('should extract data from an array', () => {
       const spanContext = b3Format.generate();
@@ -100,6 +112,30 @@ describe('B3Propagation', () => {
 
       b3Format.inject(setter, spanContext);
       assert.deepEqual(b3Format.extract(getter), spanContext);
+    });
+
+    it('should not inject empty spancontext', () => {
+      const emptySpanContext = {
+        traceId: '',
+        spanId: '',
+        options: NOT_SAMPLED_VALUE,
+      };
+      // disable-next-line to disable no-any check
+      // tslint:disable-next-line
+      const headers = {} as any;
+      const setter: HeaderSetter = {
+        setHeader(name: string, value: string) {
+          headers[name] = value;
+        }
+      };
+      const getter: HeaderGetter = {
+        getHeader(name: string) {
+          return headers[name];
+        }
+      };
+
+      b3Format.inject(setter, emptySpanContext);
+      assert.deepEqual(b3Format.extract(getter), null);
     });
   });
 

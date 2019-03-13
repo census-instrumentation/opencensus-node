@@ -17,6 +17,7 @@
 import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
+import {isValidSpanId, isValidTraceId} from './validators';
 
 export const X_B3_TRACE_ID = 'x-b3-traceid';
 export const X_B3_SPAN_ID = 'x-b3-spanid';
@@ -32,13 +33,19 @@ export class B3Format implements Propagation {
    * in the headers, null is returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext {
+  extract(getter: HeaderGetter): SpanContext|null {
+    const traceId = this.parseHeader(getter.getHeader(X_B3_TRACE_ID));
+    const spanId = this.parseHeader(getter.getHeader(X_B3_SPAN_ID));
     const opt = this.parseHeader(getter.getHeader(X_B3_SAMPLED));
-    return {
-      traceId: this.parseHeader(getter.getHeader(X_B3_TRACE_ID)),
-      spanId: this.parseHeader(getter.getHeader(X_B3_SPAN_ID)),
-      options: isNaN(Number(opt)) ? NOT_SAMPLED_VALUE : Number(opt)
-    };
+
+    if (traceId && spanId) {
+      return {
+        traceId,
+        spanId,
+        options: isNaN(Number(opt)) ? NOT_SAMPLED_VALUE : Number(opt)
+      };
+    }
+    return null;
   }
 
   /**
@@ -47,10 +54,14 @@ export class B3Format implements Propagation {
    * @param spanContext
    */
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
-    setter.setHeader(X_B3_TRACE_ID, spanContext.traceId || '');
-    setter.setHeader(X_B3_SPAN_ID, spanContext.spanId || '');
-    if (spanContext &&
-        ((spanContext.options || NOT_SAMPLED_VALUE) & SAMPLED_VALUE) !== 0) {
+    if (!spanContext || !isValidTraceId(spanContext.traceId) ||
+        !isValidSpanId(spanContext.spanId)) {
+      return;
+    }
+
+    setter.setHeader(X_B3_TRACE_ID, spanContext.traceId);
+    setter.setHeader(X_B3_SPAN_ID, spanContext.spanId);
+    if (((spanContext.options || NOT_SAMPLED_VALUE) & SAMPLED_VALUE) !== 0) {
       setter.setHeader(X_B3_SAMPLED, `${SAMPLED_VALUE}`);
     } else {
       setter.setHeader(X_B3_SAMPLED, `${NOT_SAMPLED_VALUE}`);
@@ -69,10 +80,10 @@ export class B3Format implements Propagation {
   }
 
   /** Converts a headers type to a string. */
-  private parseHeader(str: string|string[]|undefined): string {
+  private parseHeader(str: string|string[]|undefined): string|undefined {
     if (Array.isArray(str)) {
       return str[0];
     }
-    return str || '';
+    return str;
   }
 }
