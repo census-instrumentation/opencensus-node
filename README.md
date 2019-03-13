@@ -1,5 +1,10 @@
 # OpenCensus - A stats collection and distributed tracing framework
-[![Gitter chat][gitter-image]][gitter-url] ![Node Version][node-img] [![NPM Published Version][npm-img]][npm-url] [![codecov][codecov-image]][codecov-url] ![Apache License][license-image]
+[![Gitter chat][gitter-image]][gitter-url]
+![Node Version][node-img]
+[![NPM Published Version][npm-img]][npm-url]
+[![codecov][codecov-image]][codecov-url]
+[![Known Vulnerabilities][snyk-image]][snyk-url]
+![Apache License][license-image]
 
 OpenCensus Node.js is an implementation of OpenCensus, a toolkit for collecting application performance and behavior monitoring data. It currently includes 3 apis: stats, tracing and tags. Please visit the [OpenCensus Node.js package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs) for tracing usage and [OpenCensus Core package](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-core) for stats usage.
 
@@ -82,6 +87,8 @@ months before removing it, if possible.
 [npm-img]: https://badge.fury.io/js/%40opencensus%2Fexporter-prometheus.svg
 [node-img]: https://img.shields.io/node/v/@opencensus/exporter-prometheus.svg
 [license-image]: https://img.shields.io/badge/license-Apache_2.0-green.svg?style=flat
+[snyk-image]: https://snyk.io/test/github/census-instrumentation/opencensus-node/badge.svg?style=flat
+[snyk-url]: https://snyk.io/test/github/census-instrumentation/opencensus-node
 
 ## LICENSE
 
