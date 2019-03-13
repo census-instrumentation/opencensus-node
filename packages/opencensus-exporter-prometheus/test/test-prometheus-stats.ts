@@ -17,7 +17,6 @@
 import {AggregationType, globalStats, Measure, MeasureUnit, TagMap} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
-
 import {PrometheusStatsExporter} from '../src/';
 
 describe('Prometheus Stats Exporter', () => {
@@ -48,7 +47,7 @@ describe('Prometheus Stats Exporter', () => {
   it('should create a count aggregation', (done) => {
     const view = globalStats.createView(
         'ocnodemetrics/countview', measure, AggregationType.COUNT, tagKeys,
-        'A count aggregation example', null);
+        'A count aggregation example');
     const measurement = {measure, value: 2};
     const measurement2 = {measure, value: 3};
     globalStats.registerView(view);
@@ -75,7 +74,7 @@ describe('Prometheus Stats Exporter', () => {
         globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     const view = globalStats.createView(
         'ocnodemetrics/sumview', measure, AggregationType.SUM, tagKeys,
-        'A sum aggregation example', null);
+        'A sum aggregation example');
     const measurement = {measure, value: 2};
     const measurement2 = {measure, value: 3};
     globalStats.registerView(view);
@@ -102,7 +101,7 @@ describe('Prometheus Stats Exporter', () => {
         globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     const view = globalStats.createView(
         'ocnodemetrics/sumview1', measure, AggregationType.SUM, tagKeys,
-        'A sum aggregation example', null);
+        'A sum aggregation example');
     const measurement = {measure, value: 2};
     const measurement2 = {measure, value: 3};
     globalStats.registerView(view);
@@ -128,7 +127,7 @@ describe('Prometheus Stats Exporter', () => {
         globalStats.createMeasureDouble('testMeasureDouble', MeasureUnit.UNIT);
     const view = globalStats.createView(
         'ocnodemetrics/lastvalueview', measure, AggregationType.LAST_VALUE,
-        tagKeys, 'A last value aggregation example', null);
+        tagKeys, 'A last value aggregation example');
     const measurement = {measure, value: 2};
     const measurement2 = {measure, value: 3};
     globalStats.registerView(view);
@@ -247,7 +246,7 @@ describe('Prometheus Stats Exporter with prefix option', () => {
   it('should create a count aggregation with le labels', (done) => {
     const view = globalStats.createView(
         'test/key-1', measure, AggregationType.COUNT, tagKeys,
-        'A count aggregation example', null);
+        'A count aggregation example');
     const measurement = {measure, value: 2};
     const measurement2 = {measure, value: 3};
     globalStats.registerView(view);

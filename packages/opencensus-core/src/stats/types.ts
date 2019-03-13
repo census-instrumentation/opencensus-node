@@ -197,7 +197,7 @@ export interface View {
    * Returns a snapshot of an AggregationData for that tags/labels values.
    * @param tagValues The desired data's tag values.
    */
-  getSnapshot(tagValues: TagValue[]): AggregationData;
+  getSnapshot(tagValues: Array<TagValue|null>): AggregationData;
   /** Gets the view's tag keys */
   getColumns(): TagKey[];
   /** Gets view`s metric */
