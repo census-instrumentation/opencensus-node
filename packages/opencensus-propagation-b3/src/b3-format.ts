@@ -32,17 +32,13 @@ export class B3Format implements Propagation {
    * in the headers, null is returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext|null {
-    if (!getter) return null;
-    let opt = getter.getHeader(X_B3_SAMPLED);
-    if (opt instanceof Array) {
-      opt = opt[0];
-    }
+  extract(getter: HeaderGetter): SpanContext {
+    const opt = this.parseHeader(getter.getHeader(X_B3_SAMPLED));
     return {
-      traceId: getter.getHeader(X_B3_TRACE_ID),
-      spanId: getter.getHeader(X_B3_SPAN_ID),
+      traceId: this.parseHeader(getter.getHeader(X_B3_TRACE_ID)),
+      spanId: this.parseHeader(getter.getHeader(X_B3_SPAN_ID)),
       options: isNaN(Number(opt)) ? NOT_SAMPLED_VALUE : Number(opt)
-    } as SpanContext;
+    };
   }
 
   /**
@@ -54,7 +50,7 @@ export class B3Format implements Propagation {
     setter.setHeader(X_B3_TRACE_ID, spanContext.traceId || '');
     setter.setHeader(X_B3_SPAN_ID, spanContext.spanId || '');
     if (spanContext &&
-        (spanContext.options || NOT_SAMPLED_VALUE & SAMPLED_VALUE) !== 0) {
+        ((spanContext.options || NOT_SAMPLED_VALUE) & SAMPLED_VALUE) !== 0) {
       setter.setHeader(X_B3_SAMPLED, `${SAMPLED_VALUE}`);
     } else {
       setter.setHeader(X_B3_SAMPLED, `${NOT_SAMPLED_VALUE}`);
@@ -70,5 +66,13 @@ export class B3Format implements Propagation {
       spanId: crypto.randomBytes(8).toString('hex'),
       options: SAMPLED_VALUE
     };
+  }
+
+  /** Converts a headers type to a string. */
+  private parseHeader(str: string|string[]|undefined): string {
+    if (Array.isArray(str)) {
+      return str[0];
+    }
+    return str || '';
   }
 }

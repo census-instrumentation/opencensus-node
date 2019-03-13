@@ -16,8 +16,9 @@
 
 import {HeaderGetter, HeaderSetter} from '@opencensus/core';
 import * as assert from 'assert';
+import * as uuid from 'uuid';
 
-import {B3Format, X_B3_SAMPLED, X_B3_SPAN_ID, X_B3_TRACE_ID} from '../src/';
+import {B3Format, NOT_SAMPLED_VALUE, SAMPLED_VALUE, X_B3_SAMPLED, X_B3_SPAN_ID, X_B3_TRACE_ID} from '../src/';
 
 const b3Format = new B3Format();
 
@@ -32,6 +33,43 @@ describe('B3Propagation', () => {
       headers[X_B3_TRACE_ID] = spanContext.traceId;
       headers[X_B3_SPAN_ID] = spanContext.spanId;
       headers[X_B3_SAMPLED] = spanContext.options;
+
+      const getter: HeaderGetter = {
+        getHeader(name: string) {
+          return headers[name];
+        }
+      };
+
+      assert.deepEqual(b3Format.extract(getter), spanContext);
+    });
+
+    it('should return valid context when options and spanId are undefined',
+       () => {
+         const traceId = uuid.v4().split('-').join('');
+         // tslint:disable-next-line
+         const headers = {} as any;
+         headers[X_B3_TRACE_ID] = traceId;
+         headers[X_B3_SPAN_ID] = undefined;
+
+         const getter: HeaderGetter = {
+           getHeader(name: string) {
+             return headers[name];
+           }
+         };
+
+         assert.deepEqual(
+             b3Format.extract(getter),
+             {traceId, spanId: '', options: NOT_SAMPLED_VALUE});
+       });
+
+    it('should extract data from an array', () => {
+      const spanContext = b3Format.generate();
+      // tslint:disable-next-line
+      const headers = {} as any;
+      headers[X_B3_TRACE_ID] =
+          [spanContext.traceId, uuid.v4().split('-').join('')];
+      headers[X_B3_SPAN_ID] = [spanContext.spanId];
+      headers[X_B3_SAMPLED] = [SAMPLED_VALUE];
 
       const getter: HeaderGetter = {
         getHeader(name: string) {
