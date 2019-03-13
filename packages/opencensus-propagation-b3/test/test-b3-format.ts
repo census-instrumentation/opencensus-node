@@ -17,15 +17,7 @@
 import {HeaderGetter, HeaderSetter} from '@opencensus/core';
 import * as assert from 'assert';
 
-import {B3Format} from '../src/';
-
-const X_B3_TRACE_ID = 'x-b3-traceid';
-const X_B3_SPAN_ID = 'x-b3-spanid';
-const X_B3_PARENT_SPAN_ID = 'x-x3-parentspanid';
-const X_B3_SAMPLED = 'x-b3-sampled';
-
-const SAMPLED_VALUE = 0x1;
-const NOT_SAMPLED_VALUE = 0x0;
+import {B3Format, X_B3_SAMPLED, X_B3_SPAN_ID, X_B3_TRACE_ID} from '../src/';
 
 const b3Format = new B3Format();
 
