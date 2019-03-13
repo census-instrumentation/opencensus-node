@@ -37,3 +37,6 @@ build/
 
 #istanbul files
 coverage/
+
+#npm
+package-lock.json
