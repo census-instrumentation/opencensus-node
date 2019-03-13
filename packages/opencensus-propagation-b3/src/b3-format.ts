@@ -20,7 +20,7 @@ import * as uuid from 'uuid';
 
 export const X_B3_TRACE_ID = 'x-b3-traceid';
 export const X_B3_SPAN_ID = 'x-b3-spanid';
-export const X_B3_PARENT_SPAN_ID = 'x-x3-parentspanid';
+export const X_B3_PARENT_SPAN_ID = 'x-b3-parentspanid';
 export const X_B3_SAMPLED = 'x-b3-sampled';
 export const SAMPLED_VALUE = 0x1;
 export const NOT_SAMPLED_VALUE = 0x0;
