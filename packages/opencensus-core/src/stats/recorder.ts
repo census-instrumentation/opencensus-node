@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {TagKey, TagValue} from '../tags/types';
+import {TagKey, TagValue, TagValueWithMetadata} from '../tags/types';
 import {AggregationData, AggregationType, CountData, DistributionData, LastValueData, Measurement, MeasureType, SumData} from './types';
 
 const UNKNOWN_TAG_VALUE: TagValue = null;
@@ -44,12 +44,16 @@ export class Recorder {
   }
 
   /** Gets the tag values from tags and columns */
-  static getTagValues(tags: Map<TagKey, TagValue>, columns: TagKey[]):
-      TagValue[] {
-    return columns.map(
-        (tagKey) =>
-            (tags.get(tagKey) ||
-             /** replace not found key values by null. */ UNKNOWN_TAG_VALUE));
+  static getTagValues(
+      tags: Map<TagKey, TagValueWithMetadata>, columns: TagKey[]): TagValue[] {
+    return columns.map((tagKey) => {
+      const valueWithMetadata = tags.get(tagKey);
+      if (valueWithMetadata && valueWithMetadata.tagValue) {
+        return valueWithMetadata.tagValue;
+      }
+      /** replace not found key values by null. */
+      return UNKNOWN_TAG_VALUE;
+    });
   }
 
   private static addToDistribution(

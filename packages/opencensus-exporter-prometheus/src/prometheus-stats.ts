@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, DistributionData, ExporterConfig, logger, Logger, Measurement, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
+import {AggregationType, DistributionData, ExporterConfig, logger, Logger, Measurement, StatsEventListener, TagKey, TagValueWithMetadata, View} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
 import {Counter, Gauge, Histogram, labelValues, Metric, Registry} from 'prom-client';
@@ -80,7 +80,8 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param tags The tags to which the value is applied
    */
   onRecord(
-      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {
+      views: View[], measurement: Measurement,
+      tags: Map<TagKey, TagValueWithMetadata>) {
     for (const view of views) {
       this.updateMetric(view, measurement, tags);
     }
@@ -100,14 +101,14 @@ export class PrometheusStatsExporter implements StatsEventListener {
     this.stopServer();
   }
 
-  private getLabelValues(columns: TagKey[], tags: Map<TagKey, TagValue>):
-      labelValues {
+  private getLabelValues(
+      columns: TagKey[], tags: Map<TagKey, TagValueWithMetadata>): labelValues {
     const labels: labelValues = {};
     columns.forEach((tagKey) => {
       if (tags.has(tagKey)) {
-        const tagValue = tags.get(tagKey);
-        if (tagValue) {
-          labels[tagKey.name] = tagValue.value;
+        const valueWithMetadata = tags.get(tagKey);
+        if (valueWithMetadata && valueWithMetadata.tagValue) {
+          labels[tagKey.name] = valueWithMetadata.tagValue.value;
         }
       }
     });
@@ -119,7 +120,8 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param view View will be used to register the metric
    * @param labels Object with label keys and values
    */
-  private registerMetric(view: View, tags: Map<TagKey, TagValue>): Metric {
+  private registerMetric(view: View, tags: Map<TagKey, TagValueWithMetadata>):
+      Metric {
     const metricName = this.getPrometheusMetricName(view);
     /** Get metric if already registered */
     let metric = this.registry.getSingleMetric(metricName);
@@ -165,7 +167,8 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param measurement Measurement with the new value to update the metric
    */
   private updateMetric(
-      view: View, measurement: Measurement, tags: Map<TagKey, TagValue>) {
+      view: View, measurement: Measurement,
+      tags: Map<TagKey, TagValueWithMetadata>) {
     const metric = this.registerMetric(view, tags);
     // Updating the metric based on metric instance type and aggregation type
     const labelValues = this.getLabelValues(view.getColumns(), tags);
@@ -226,9 +229,15 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param view View used to get the DistributionData
    * @param tags Tags used to get the DistributionData
    */
-  private getBoundaries(view: View, tags: Map<TagKey, TagValue>): number[] {
-    const tagValues =
-        view.getColumns().map((tagKey) => (tags.get(tagKey) || null));
+  private getBoundaries(view: View, tags: Map<TagKey, TagValueWithMetadata>):
+      number[] {
+    const tagValues = view.getColumns().map((tagKey) => {
+      const valueWithMetadata = tags.get(tagKey);
+      if (valueWithMetadata && valueWithMetadata.tagValue) {
+        return valueWithMetadata.tagValue;
+      }
+      return null;
+    });
     const data = view.getSnapshot(tagValues) as DistributionData;
     return data.buckets;
   }

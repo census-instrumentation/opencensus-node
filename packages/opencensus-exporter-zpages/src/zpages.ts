@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, RootSpan, Span, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
+import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, RootSpan, Span, StatsEventListener, TagKey, TagValueWithMetadata, View} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
+
 import {createRoutes} from './zpages-frontend/routes';
 
 /** Interface to Zpages options */
@@ -115,8 +116,8 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    */
   onRecord(
       views: View[], measurement: Measurement,
-      tags: Map<TagKey, TagValue>): void {
-    const tagValues = [...tags.values()];
+      tags: Map<TagKey, TagValueWithMetadata>): void {
+    const tagValues = [...tags.values()].map((tag) => (tag.tagValue));
     views.map(view => {
       const snapshot = view.getSnapshot(tagValues);
       // Check if there is no data for the current view

@@ -14,20 +14,29 @@
  * limitations under the License.
  */
 
-import {TagKey, TagValue} from './types';
+import {TagKey, TagMetadata, TagTtl, TagValue, TagValueWithMetadata} from './types';
 import {isValidTagKey, isValidTagValue} from './validation';
 
-/** TagMap is maps of TagKey -> TagValue */
-export class TagMap {
-  // A map mapping TagKey to to its respective TagValue.
-  private readonly registeredTags: Map<TagKey, TagValue> = new Map();
+const UNLIMITED_PROPAGATION_MD = {
+  tagTtl: TagTtl.UNLIMITED_PROPAGATION
+};
 
-  /** Adds the key/value pair regardless of whether the key is present. */
-  set(tagKey: TagKey, tagValue: TagValue): void {
+/** TagMap is maps of TagKey -> TagValueWithMetadata */
+export class TagMap {
+  // A map mapping TagKey to to its respective TagValueWithMetadata.
+  private readonly registeredTags: Map<TagKey, TagValueWithMetadata> =
+      new Map();
+
+  /**
+   * Adds the key/value pair regardless of whether the key is present.
+   * @param tagKey The TagKey which will be set.
+   * @param tagValue The TagValue to set for the given key.
+   * @param tagMetadata The TagMetadata associated with this Tag.
+   */
+  set(tagKey: TagKey, tagValue: TagValue, tagMetadata?: TagMetadata): void {
     if (!isValidTagKey(tagKey)) {
       throw new Error(`Invalid TagKey name: ${tagKey.name}`);
     }
-
     if (!isValidTagValue(tagValue)) {
       throw new Error(`Invalid TagValue: ${tagValue.value}`);
     }
@@ -39,10 +48,14 @@ export class TagMap {
       }
     }
     if (existingKey) this.registeredTags.delete(existingKey);
-    this.registeredTags.set(tagKey, tagValue);
+    const valueWithMetadata = this.getValueWithMetadata(tagValue, tagMetadata);
+    this.registeredTags.set(tagKey, valueWithMetadata);
   }
 
-  /** Deletes a tag from the map if the key is in the map. */
+  /**
+   * Deletes a tag from the map if the key is in the map.
+   * @param tagKey The TagKey which will be removed.
+   */
   delete(tagKey: TagKey): void {
     this.registeredTags.delete(tagKey);
   }
@@ -50,5 +63,18 @@ export class TagMap {
   /** Gets the tags map. */
   get tags() {
     return this.registeredTags;
+  }
+
+  /**
+   * Constructs a new TagValueWithMetadata using tagValue and tagMetadata.
+   * For backwards-compatibility this method still produces propagating Tags
+   * (UNLIMITED_PROPAGATION) if tagMetadata is not provided or missing.
+   */
+  private getValueWithMetadata(tagValue: TagValue, tagMetadata?: TagMetadata):
+      TagValueWithMetadata {
+    if (tagMetadata) {
+      return {tagValue, tagMetadata};
+    }
+    return {tagValue, tagMetadata: UNLIMITED_PROPAGATION_MD};
   }
 }
