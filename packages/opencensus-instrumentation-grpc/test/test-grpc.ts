@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import {CoreTracer, globalStats, Measurement, RootSpan, Span, SpanEventListener, SpanKind, StatsEventListener, TagKey, TagValueWithMetadata, View} from '@opencensus/core';
+import {CoreTracer, globalStats, Measurement, RootSpan, Span, SpanEventListener, SpanKind, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import * as grpcModule from 'grpc';
 import * as path from 'path';
-
 import {GRPC_TRACE_KEY, GrpcModule, GrpcPlugin, plugin, SendUnaryDataCallback} from '../src/';
 import * as clientStats from '../src/grpc-stats/client-stats';
 import * as serverStats from '../src/grpc-stats/server-stats';
@@ -39,8 +38,7 @@ class TestExporter implements StatsEventListener {
   }
 
   onRecord(
-      views: View[], measurement: Measurement,
-      tagMap: Map<TagKey, TagValueWithMetadata>) {
+      views: View[], measurement: Measurement, tagMap: Map<TagKey, TagValue>) {
     this.recordedMeasurements.push(measurement);
   }
 

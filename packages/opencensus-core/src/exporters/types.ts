@@ -15,7 +15,7 @@
  */
 
 import {Measurement, View} from '../stats/types';
-import {TagKey, TagValueWithMetadata} from '../tags/types';
+import {TagKey, TagValue} from '../tags/types';
 import * as configTypes from '../trace/config/types';
 import * as modelTypes from '../trace/model/types';
 
@@ -48,7 +48,7 @@ export interface StatsEventListener {
    */
   onRecord(
       views: View[], measurement: Measurement,
-      tags: Map<TagKey, TagValueWithMetadata>): void;
+      tags: Map<TagKey, TagValue>): void;
 
   /**
    * Starts the exporter that polls Metric from Metrics library and send

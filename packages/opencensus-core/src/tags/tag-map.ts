@@ -60,8 +60,17 @@ export class TagMap {
     this.registeredTags.delete(tagKey);
   }
 
-  /** Gets the tags map. */
+  /** Gets the tags map without metadata. */
   get tags() {
+    const tagsWithoutMetadata: Map<TagKey, TagValue> = new Map();
+    for (const [tagKey, valueWithMetadata] of this.registeredTags) {
+      tagsWithoutMetadata.set(tagKey, valueWithMetadata.tagValue);
+    }
+    return tagsWithoutMetadata;
+  }
+
+  /** Gets the tags map with metadata. */
+  get tagsWithMetadata() {
     return this.registeredTags;
   }
 

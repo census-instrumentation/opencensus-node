@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {BaseView, globalStats, StatsEventListener, TagKey, TagMap, TagValueWithMetadata} from '../src';
+import {BaseView, globalStats, StatsEventListener, TagKey, TagMap, TagValue} from '../src';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';
 import * as tagger from '../src/tags/tagger';
 
@@ -28,8 +28,7 @@ class TestExporter implements StatsEventListener {
   }
 
   onRecord(
-      views: View[], measurement: Measurement,
-      tagMap: Map<TagKey, TagValueWithMetadata>) {
+      views: View[], measurement: Measurement, tagMap: Map<TagKey, TagValue>) {
     this.recordedMeasurements.push(measurement);
   }
 

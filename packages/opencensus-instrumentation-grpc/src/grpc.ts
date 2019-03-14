@@ -20,10 +20,8 @@ import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
-
 import * as clientStats from './grpc-stats/client-stats';
 import * as serverStats from './grpc-stats/server-stats';
-
 const sizeof = require('object-sizeof');
 
 /** The metadata key under which span context is stored as a binary value. */

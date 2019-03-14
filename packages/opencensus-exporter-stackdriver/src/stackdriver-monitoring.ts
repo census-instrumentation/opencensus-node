@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValueWithMetadata, version, View} from '@opencensus/core';
+import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, version, View} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
-
 import {getDefaultResource} from './common-utils';
 import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-monitoring-utils';
 import {MonitoredResource, StackdriverExporterOptions, TimeSeries} from './types';
@@ -242,6 +241,5 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param tags The tags to which the value is applied
    */
   onRecord(
-      views: View[], measurement: Measurement,
-      tags: Map<TagKey, TagValueWithMetadata>) {}
+      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {}
 }

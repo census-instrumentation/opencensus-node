@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, Propagation, RootSpan, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValueWithMetadata, View} from '@opencensus/core';
+import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, Propagation, RootSpan, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as nock from 'nock';
 import * as shimmer from 'shimmer';
-
 import {HttpPlugin, plugin} from '../src/';
 import * as stats from '../src/http-stats';
 
@@ -33,15 +32,14 @@ function doNock(
 class TestExporter implements StatsEventListener {
   registeredViews: View[] = [];
   recordedMeasurements: Measurement[] = [];
-  recorededTags: Array<Map<TagKey, TagValueWithMetadata>> = [];
+  recorededTags: Array<Map<TagKey, TagValue>> = [];
 
   onRegisterView(view: View) {
     this.registeredViews.push(view);
   }
 
   onRecord(
-      views: View[], measurement: Measurement,
-      tagMap: Map<TagKey, TagValueWithMetadata>) {
+      views: View[], measurement: Measurement, tagMap: Map<TagKey, TagValue>) {
     this.recordedMeasurements.push(measurement);
     this.recorededTags.push(tagMap);
   }
