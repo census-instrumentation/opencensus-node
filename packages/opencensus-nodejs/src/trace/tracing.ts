@@ -27,7 +27,7 @@ export class Tracing implements core.Tracing {
   /** A tracer object */
   readonly tracer: core.Tracer;
   /** A plugin loader object */
-  private pluginLoader: PluginLoader;
+  private pluginLoader?: PluginLoader;
   /** Plugin names */
   private defaultPlugins: core.PluginNames;
   /** A configuration object to start the tracing */
@@ -92,11 +92,12 @@ export class Tracing implements core.Tracing {
   stop() {
     this.activeLocal = false;
     this.tracer.stop();
-    this.pluginLoader.unloadPlugins();
+    if (this.pluginLoader) {
+      this.pluginLoader.unloadPlugins();
+    }
     this.configLocal = {};
     this.logger = logger.logger();
   }
-
 
   /** Gets the exporter. */
   get exporter(): core.Exporter {
@@ -119,7 +120,6 @@ export class Tracing implements core.Tracing {
     }
     return this;
   }
-
 
   /**
    * Unregisters an exporter.
