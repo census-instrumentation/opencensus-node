@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 import * as core from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
-
 import {defaultConfig} from '../src/trace/config/default-config';
 import {Constants} from '../src/trace/constants';
 import {Tracing} from '../src/trace/tracing';
-
-
 
 const NOOP_EXPORTER = new core.NoopExporter();
 describe('Tracing', () => {
@@ -277,18 +272,6 @@ describe('Tracing', () => {
       tracing.registerExporter(newExporter);
       assert.strictEqual(tracing.config.exporter, newExporter);
       assert.strictEqual(tracing.tracer.eventListeners.length, 1);
-    });
-
-    it('should register a null to unRegister', () => {
-      const tracing = new Tracing();
-      tracing.start();
-      const exporter = NOOP_EXPORTER;
-      tracing.registerExporter(exporter);
-      assert.strictEqual(tracing.config.exporter, exporter);
-      assert.strictEqual(tracing.tracer.eventListeners.length, 1);
-      tracing.registerExporter(null);
-      assert.ok(tracing.config.exporter instanceof core.NoopExporter);
-      assert.strictEqual(tracing.tracer.eventListeners.length, 0);
     });
   });
 
