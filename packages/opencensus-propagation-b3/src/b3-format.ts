@@ -15,19 +15,16 @@
  */
 
 import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
-
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
+import {isValidSpanId, isValidTraceId} from './validators';
 
-
-const X_B3_TRACE_ID = 'x-b3-traceid';
-const X_B3_SPAN_ID = 'x-b3-spanid';
-const X_B3_PARENT_SPAN_ID = 'x-x3-parentspanid';
-const X_B3_SAMPLED = 'x-b3-sampled';
-
-const SAMPLED_VALUE = 0x1;
-const NOT_SAMPLED_VALUE = 0x0;
-
+export const X_B3_TRACE_ID = 'x-b3-traceid';
+export const X_B3_SPAN_ID = 'x-b3-spanid';
+export const X_B3_PARENT_SPAN_ID = 'x-b3-parentspanid';
+export const X_B3_SAMPLED = 'x-b3-sampled';
+export const SAMPLED_VALUE = 0x1;
+export const NOT_SAMPLED_VALUE = 0x0;
 
 /** Propagates span context through B3 Format propagation. */
 export class B3Format implements Propagation {
@@ -36,19 +33,17 @@ export class B3Format implements Propagation {
    * in the headers, null is returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext {
-    if (getter) {
-      let opt = getter.getHeader(X_B3_SAMPLED);
-      if (opt instanceof Array) {
-        opt = opt[0];
-      }
-      const spanContext = {
-        traceId: getter.getHeader(X_B3_TRACE_ID),
-        spanId: getter.getHeader(X_B3_SPAN_ID),
-        options: isNaN(Number(opt)) ? undefined : Number(opt)
-      } as SpanContext;
+  extract(getter: HeaderGetter): SpanContext|null {
+    const traceId = this.parseHeader(getter.getHeader(X_B3_TRACE_ID));
+    const spanId = this.parseHeader(getter.getHeader(X_B3_SPAN_ID));
+    const opt = this.parseHeader(getter.getHeader(X_B3_SAMPLED));
 
-      return spanContext;
+    if (traceId && spanId) {
+      return {
+        traceId,
+        spanId,
+        options: isNaN(Number(opt)) ? NOT_SAMPLED_VALUE : Number(opt)
+      };
     }
     return null;
   }
@@ -59,14 +54,17 @@ export class B3Format implements Propagation {
    * @param spanContext
    */
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
-    if (setter) {
-      setter.setHeader(X_B3_TRACE_ID, spanContext.traceId || 'undefined');
-      setter.setHeader(X_B3_SPAN_ID, spanContext.spanId || 'undefined');
-      if (spanContext && (spanContext.options & SAMPLED_VALUE) !== 0) {
-        setter.setHeader(X_B3_SAMPLED, `${SAMPLED_VALUE}`);
-      } else {
-        setter.setHeader(X_B3_SAMPLED, `${NOT_SAMPLED_VALUE}`);
-      }
+    if (!spanContext || !isValidTraceId(spanContext.traceId) ||
+        !isValidSpanId(spanContext.spanId)) {
+      return;
+    }
+
+    setter.setHeader(X_B3_TRACE_ID, spanContext.traceId);
+    setter.setHeader(X_B3_SPAN_ID, spanContext.spanId);
+    if (((spanContext.options || NOT_SAMPLED_VALUE) & SAMPLED_VALUE) !== 0) {
+      setter.setHeader(X_B3_SAMPLED, `${SAMPLED_VALUE}`);
+    } else {
+      setter.setHeader(X_B3_SAMPLED, `${NOT_SAMPLED_VALUE}`);
     }
   }
 
@@ -78,6 +76,14 @@ export class B3Format implements Propagation {
       traceId: uuid.v4().split('-').join(''),
       spanId: crypto.randomBytes(8).toString('hex'),
       options: SAMPLED_VALUE
-    } as SpanContext;
+    };
+  }
+
+  /** Converts a headers type to a string. */
+  private parseHeader(str: string|string[]|undefined): string|undefined {
+    if (Array.isArray(str)) {
+      return str[0];
+    }
+    return str;
   }
 }
