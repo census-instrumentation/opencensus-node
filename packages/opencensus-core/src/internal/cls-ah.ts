@@ -22,12 +22,15 @@ import {Context, Func, Namespace as CLSNamespace} from 'continuation-local-stora
 import {EventEmitter} from 'events';
 import * as shimmer from 'shimmer';
 
-const wrappedSymbol = Symbol('context_wrapped');
+const WRAPPED = Symbol('context_wrapped');
+/** A map of AsyncResource IDs to Context objects. */
 let contexts: {[asyncId: number]: Context;} = {};
 let current: Context = {};
 
+// Create the hook.
 asyncHook.createHook({init, before, destroy}).enable();
 
+// A list of well-known EventEmitter methods that add event listeners.
 const EVENT_EMITTER_METHODS: Array<keyof EventEmitter> =
     ['addListener', 'on', 'once', 'prependListener', 'prependOnceListener'];
 
@@ -70,7 +73,7 @@ class AsyncHooksNamespace implements CLSNamespace {
     // TODO(kjin): Monitor https://github.com/Microsoft/TypeScript/pull/15473.
     // When it's landed and released, we can remove these `any` casts.
     // tslint:disable-next-line:no-any
-    if ((cb as any)[wrappedSymbol] as boolean || !current) {
+    if ((cb as any)[WRAPPED] as boolean || !current) {
       return cb;
     }
     const boundContext = current;
@@ -82,7 +85,7 @@ class AsyncHooksNamespace implements CLSNamespace {
       return res;
     };
     // tslint:disable-next-line:no-any
-    (contextWrapper as any)[wrappedSymbol] = true;
+    (contextWrapper as any)[WRAPPED] = true;
     Object.defineProperty(contextWrapper, 'length', {
       enumerable: false,
       configurable: true,
@@ -115,17 +118,23 @@ const namespace = new AsyncHooksNamespace();
 
 // AsyncWrap Hooks
 
+/** init is called during object construction. */
 function init(
     uid: number, provider: string, parentUid: number, parentHandle: {}) {
   contexts[uid] = current;
 }
 
+/** before is called just before the resource's callback is called. */
 function before(uid: number) {
   if (contexts[uid]) {
     current = contexts[uid];
   }
 }
 
+/**
+ * destroy is called when the object is no longer used, so also delete
+ * its entry in the map.
+ */
 function destroy(uid: number) {
   delete contexts[uid];
 }

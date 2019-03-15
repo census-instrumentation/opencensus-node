@@ -20,8 +20,8 @@ import {StatsEventListener} from '../exporters/types';
 import {Metric} from '../metrics/export/types';
 import {Metrics} from '../metrics/metrics';
 import {TagMap} from '../tags/tag-map';
+import {getCurrentTagContext} from '../tags/tagger';
 import {TagKey} from '../tags/types';
-
 import {MetricProducerForStats} from './metric-producer';
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from './types';
 import {BaseView} from './view';
@@ -80,8 +80,8 @@ export class BaseStats implements Stats {
    * @param aggregation The view aggregation type
    * @param tagKeys The view columns (tag keys)
    * @param description The view description
-   * @param bucketBoundaries The view bucket boundaries for a distribution
-   * aggregation type
+   * @param bucketBoundaries optional The view bucket boundaries for a
+   *     distribution aggregation type
    */
   createView(
       name: string, measure: Measure, aggregation: AggregationType,
@@ -188,8 +188,8 @@ export class BaseStats implements Stats {
     }
 
     if (!tags) {
-      // TODO(mayurkale): read tags current execution context
-      tags = new TagMap();
+      // Record against implicit (current) context
+      tags = getCurrentTagContext();
     }
 
     for (const measurement of measurements) {

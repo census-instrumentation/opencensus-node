@@ -17,6 +17,7 @@
 import * as assert from 'assert';
 import {BaseView, globalStats, StatsEventListener, TagKey, TagMap, TagValue} from '../src';
 import {AggregationType, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, View} from '../src/stats/types';
+import * as tagger from '../src/tags/tagger';
 
 class TestExporter implements StatsEventListener {
   registeredViews: View[] = [];
@@ -225,5 +226,40 @@ describe('Stats', () => {
          globalStats.record(measurments, tagMap);
          assert.equal(testExporter.recordedMeasurements.length, 0);
        });
+
+    it('should record against implicit context when set', () => {
+      const tags = new TagMap();
+      tags.set(tagKeys[0], {value: 'value1'});
+      tags.set(tagKeys[1], {value: 'value2'});
+      const measurement = {measure, value: 1};
+      tagger.withTagContext(tags, () => {
+        globalStats.record([measurement]);
+      });
+
+      assert.strictEqual(testExporter.recordedMeasurements.length, 1);
+      assert.deepEqual(testExporter.recordedMeasurements[0], measurement);
+      aggregationData =
+          testExporter.registeredViews[0].getSnapshot(
+              [{value: 'value1'}, {value: 'value2'}]) as LastValueData;
+      assert.strictEqual(aggregationData.value, measurement.value);
+      assert.deepStrictEqual(
+          aggregationData.tagValues, [{value: 'value1'}, {value: 'value2'}]);
+    });
+
+    it('should record against implicit context when not set or empty', () => {
+      const UNKNOWN_TAG_VALUE: TagValue = null;
+      globalStats.registerExporter(testExporter);
+      const measurement = {measure, value: 2211};
+      tagger.withTagContext(tagger.EMPTY_TAG_MAP, () => {
+        globalStats.record([measurement]);
+      });
+
+      aggregationData =
+          testExporter.registeredViews[0].getSnapshot(
+              [UNKNOWN_TAG_VALUE, UNKNOWN_TAG_VALUE]) as LastValueData;
+      assert.strictEqual(aggregationData.value, measurement.value);
+      assert.deepStrictEqual(
+          aggregationData.tagValues, [UNKNOWN_TAG_VALUE, UNKNOWN_TAG_VALUE]);
+    });
   });
 });
