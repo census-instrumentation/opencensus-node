@@ -48,22 +48,6 @@ export interface RpczData {
   measuresReceived: {[key: string]: ZMeasure};
 }
 
-enum DefaultMeasures {
-  CLIENT_SENT_MESSAGES_PER_RPC = 'grpc.io/client/sent_messages_per_rpc',
-  CLIENT_SENT_BYTES_PER_RPC = 'grpc.io/client/sent_bytes_per_rpc',
-  CLIENT_RECEIVED_MESSAGES_PER_RPC = 'grpc.io/client/received_messages_per_rpc',
-  CLIENT_RECEIVED_BYTES_PER_RPC = 'grpc.io/client/received_bytes_per_rpc',
-  CLIENT_ROUDTRIP_LATENCY = 'grpc.io/client/roundtrip_latency',
-  CLIENT_SERVER_LATENCY = 'grpc.io/client/server_latency',
-  CLIENT_STARTED_RPCS = 'grpc.io/client/started_rpcs',
-  SERVER_RECEIVED_MESSAGES_PER_RPC = 'grpc.io/server/received_messages_per_rpc',
-  SERVER_RECEIVED_BYTES_PER_RPC = 'grpc.io/server/received_bytes_per_rpc',
-  SERVER_SENT_MESSAGES_PER_RPC = 'grpc.io/server/sent_messages_per_rpc',
-  SERVER_SENT_BYTES_PER_RPC = 'grpc.io/server/sent_bytes_per_rpc',
-  SERVER_SERVER_LATENCY = 'grpc.io/server/server_latency',
-  SERVER_STARTED_RPCS = 'grpc.io/server/started_rpcs'
-}
-
 enum DefaultViews {
   CLIENT_SENT_BYTES_PER_RPC = 'grpc.io/client/sent_bytes_per_rpc',
   CLIENT_RECEIVED_BYTES_PER_RPC = 'grpc.io/client/received_bytes_per_rpc',
@@ -129,7 +113,7 @@ export class RpczPageHandler {
           method = snapshot.tagValues[serverMethodIndex].value;
           zMeasures = rpczData.measuresReceived;
         }
-        if (method) {
+        if (zMeasures && method) {
           if (!zMeasures[method]) {
             zMeasures[method] = this.newEmptyZMeasure();
           }

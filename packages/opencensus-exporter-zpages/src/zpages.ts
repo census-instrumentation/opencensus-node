@@ -42,7 +42,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
   static readonly defaultOptions = {port: 8080, startServer: true};
 
   private app: express.Application;
-  private server: http.Server;
+  private server?: http.Server;
   private port: number;
   private traces: Map<string, Span[]> = new Map();
   private logger: Logger;
@@ -208,6 +208,8 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    * @param callback A function that will be called when the server is stopped.
    */
   stopServer(callback?: () => void) {
-    this.server.close(callback);
+    if (this.server) {
+      this.server.close(callback);
+    }
   }
 }
