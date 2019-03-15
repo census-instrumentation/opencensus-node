@@ -97,4 +97,14 @@ describe('tagger()', () => {
     });
     assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
   });
+
+  it('should clear current tag context', () => {
+    tagger.withTagContext(tags1, () => {
+      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+      tagger.clear();
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+    });
+    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+  });
 });
