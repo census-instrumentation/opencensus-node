@@ -25,6 +25,8 @@ const HEADERS = {
   ['metadata-flavor']: 'Google'
 };
 
+const HOST_ADDRESS = 'http://metadata.google.internal.';
+
 export function oauth2<T extends {} = {}>(validator?: (body: T) => boolean):
     nock.Scope {
   validator = validator || accept;
@@ -43,7 +45,7 @@ export function projectId(status: number|(() => string), reply?: () => string) {
     reply = status;
     status = 200;
   }
-  return nock('http://metadata.google.internal')
+  return nock(HOST_ADDRESS)
       .get('/computeMetadata/v1/project/project-id')
       .once()
       .reply(status, reply, {'Metadata-Flavor': 'Google'});
@@ -51,7 +53,7 @@ export function projectId(status: number|(() => string), reply?: () => string) {
 
 export function noDetectResource() {
   const scopes = [
-    nock('http://metadata.google.internal')
+    nock(HOST_ADDRESS)
         .get('/computeMetadata/v1/instance')
         .once()
         .replyWithError({code: 'ENOTFOUND'}),
@@ -63,7 +65,7 @@ export function noDetectResource() {
 }
 
 export function detectGceResource() {
-  return nock('http://metadata.google.internal')
+  return nock(HOST_ADDRESS)
       .get('/computeMetadata/v1/instance')
       .reply(200, {}, HEADERS)
       .get('/computeMetadata/v1/project/project-id')
@@ -80,7 +82,7 @@ export function instanceId(
     reply = status;
     status = 200;
   }
-  return nock('http://metadata.google.internal')
+  return nock(HOST_ADDRESS)
       .get('/computeMetadata/v1/instance/id')
       .once()
       .reply(status, reply, {'Metadata-Flavor': 'Google'});
@@ -91,7 +93,7 @@ export function hostname(status: number|(() => string), reply?: () => string) {
     reply = status;
     status = 200;
   }
-  return nock('http://metadata.google.internal')
+  return nock(HOST_ADDRESS)
       .get('/computeMetadata/v1/instance/hostname')
       .once()
       .reply(status, reply, {'Metadata-Flavor': 'Google'});
