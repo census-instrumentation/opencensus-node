@@ -22,7 +22,7 @@ export interface Meter {
    *
    * @returns {Metric} The Metric.
    */
-  getMetric(): Metric;
+  getMetric(): Metric|null;
 }
 
 export interface Point {

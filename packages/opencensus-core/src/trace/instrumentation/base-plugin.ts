@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import * as path from 'path';
 import * as semver from 'semver';
-
 import {Logger} from '../../common/types';
 import {Stats} from '../../stats/types';
 import * as modelTypes from '../model/types';
-
 import * as types from './types';
 
 /**
@@ -39,21 +38,21 @@ export abstract class BasePlugin implements types.Plugin {
   /** The module name */
   protected moduleName: string;
   /** A tracer object. */
-  protected tracer: modelTypes.Tracer;
+  protected tracer!: modelTypes.Tracer;
   /** The module version. */
-  protected version: string;
+  protected version!: string;
   /** a logger */
-  protected logger: Logger;
+  protected logger!: Logger;
   /** list of internal files that need patch and are not exported by default */
-  protected readonly internalFileList: types.PluginInternalFiles;
+  protected readonly internalFileList!: types.PluginInternalFiles;
   /**  internal files loaded */
-  protected internalFilesExports: ModuleExportsMapping;
+  protected internalFilesExports!: ModuleExportsMapping;
   /** module directory - used to load internal files */
-  protected basedir: string;
+  protected basedir!: string;
   /** plugin options */
-  protected options: types.PluginConfig;
+  protected options!: types.PluginConfig;
   /** A stats object. */
-  protected stats: Stats;
+  protected stats?: Stats;
 
   /**
    * Constructs a new BasePlugin instance.
@@ -79,7 +78,7 @@ export abstract class BasePlugin implements types.Plugin {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
-    this.basedir = basedir;
+    if (basedir) this.basedir = basedir;
     this.logger = tracer.logger;
     this.options = options;
     this.stats = stats;
@@ -130,7 +129,7 @@ export abstract class BasePlugin implements types.Plugin {
    * Load internal files according to version range
    */
   private loadInternalFiles(): ModuleExportsMapping {
-    let result: ModuleExportsMapping = null;
+    let result: ModuleExportsMapping = {};
     if (this.internalFileList) {
       this.logger.debug('loadInternalFiles %o', this.internalFileList);
       Object.keys(this.internalFileList).forEach(versionRange => {
@@ -145,7 +144,7 @@ export abstract class BasePlugin implements types.Plugin {
               this.internalFileList[versionRange], this.basedir);
         }
       });
-      if (!result) {
+      if (Object.keys(result).length === 0) {
         this.logger.debug(
             'No internal file could be loaded for %s@%s', this.moduleName,
             this.version);

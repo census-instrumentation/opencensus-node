@@ -64,8 +64,9 @@ describe('mergeResources()', () => {
     assert.deepEqual(resource.labels, expectedLabels);
   });
 
-  it('merge resources with default, resource1, resource2 = null', () => {
-    const resources: Resource[] = [DEFAULT_RESOURCE, RESOURCE_1, null];
+  it('merge resources with default, resource1, resource2 = empty', () => {
+    const resources: Resource[] =
+        [DEFAULT_RESOURCE, RESOURCE_1, {type: null, labels: {}}];
     const resource = CoreResource.mergeResources(resources);
     const expectedLabels: Labels = {'a': '1', 'b': '2'};
 
@@ -74,8 +75,9 @@ describe('mergeResources()', () => {
     assert.deepEqual(resource.labels, expectedLabels);
   });
 
-  it('merge resources with default, resource1 = null, resource2', () => {
-    const resources: Resource[] = [DEFAULT_RESOURCE, null, RESOURCE_2];
+  it('merge resources with default, resource1 = empty, resource2', () => {
+    const resources: Resource[] =
+        [DEFAULT_RESOURCE, {type: null, labels: {}}, RESOURCE_2];
     const resource = CoreResource.mergeResources(resources);
     const expectedLabels: Labels = {'a': '1', 'b': '3', 'c': '4'};
 
@@ -93,15 +95,4 @@ describe('mergeResources()', () => {
     assert.equal(Object.keys(resource.labels).length, 3);
     assert.deepEqual(resource.labels, expectedLabels);
   });
-
-  it('merge resources with default, resource1 = undefined, resource2 = undefined',
-     () => {
-       const resources: Resource[] = [DEFAULT_RESOURCE_1, undefined, undefined];
-       const resource = CoreResource.mergeResources(resources);
-       const expectedLabels: Labels = {'a': '100'};
-
-       assert.equal(resource.type, 'default');
-       assert.equal(Object.keys(resource.labels).length, 1);
-       assert.deepEqual(resource.labels, expectedLabels);
-     });
 });

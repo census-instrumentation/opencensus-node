@@ -29,12 +29,6 @@ describe('MetricProducerManager()', () => {
   });
 
   describe('add()', () => {
-    it('should throw an error when the metricproducer is null', () => {
-      assert.throws(() => {
-        metricProducerManagerInstance.add(null);
-      }, /^Error: Missing mandatory metricProducer parameter$/);
-    });
-
     it('add metricproducer', () => {
       metricProducerManagerInstance.add(metricProducer);
       const metricProducerList =
@@ -70,12 +64,6 @@ describe('MetricProducerManager()', () => {
   });
 
   describe('remove()', () => {
-    it('should throw an error when the metricproducer is null', () => {
-      assert.throws(() => {
-        metricProducerManagerInstance.add(null);
-      }, /^Error: Missing mandatory metricProducer parameter$/);
-    });
-
     it('remove metricproducer', () => {
       metricProducerManagerInstance.add(metricProducer);
 

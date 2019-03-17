@@ -15,6 +15,7 @@
  */
 
 import * as assert from 'assert';
+import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
@@ -44,7 +45,7 @@ describe('RootSpan', () => {
    */
   describe('get spans()', () => {
     it('should get span list from rootspan instance', () => {
-      const root = new RootSpan(tracer, name, kind, traceId, null);
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       // TODO: Suggetion: make sure that root.spans.length is 1,
       // and that it's the same as the earlier (shadowed) span object
       root.start();
@@ -54,7 +55,7 @@ describe('RootSpan', () => {
       assert.strictEqual(root.spans.length, 1);
       assert.strictEqual(span, root.spans[0]);
       assert.strictEqual(span.kind, types.SpanKind.CLIENT);
-      assert.strictEqual(root.parentSpanId, null);
+      assert.strictEqual(root.parentSpanId, parentSpanId);
 
       for (const span of root.spans) {
         assert.ok(span instanceof Span);
@@ -123,10 +124,10 @@ describe('RootSpan', () => {
    * Should not start a span from a not started rootspan
    */
   describe('startSpan() before start rootspan', () => {
-    it('should not create span', () => {
+    it('should create NoRecordSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
-      assert.strictEqual(span, null);
+      assert.ok(span instanceof NoRecordSpan);
     });
   });
 
@@ -134,12 +135,12 @@ describe('RootSpan', () => {
    * Should not create a span from a ended rootspan
    */
   describe('startSpan() after rootspan ended', () => {
-    it('should not create span', () => {
+    it('should create NoRecordSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
       root.end();
       const span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
-      assert.strictEqual(span, null);
+      assert.ok(span instanceof NoRecordSpan);
     });
   });
 

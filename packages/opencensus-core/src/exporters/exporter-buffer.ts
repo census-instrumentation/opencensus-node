@@ -20,6 +20,8 @@ import * as configTypes from '../trace/config/types';
 import * as modelTypes from '../trace/model/types';
 import * as types from './types';
 
+const DEFAULT_BUFFER_SIZE = 100;
+const DEFAULT_BUFFER_TIMEOUT = 20000;
 
 /** Controls the sending of traces to exporters. */
 export class ExporterBuffer {
@@ -46,8 +48,8 @@ export class ExporterBuffer {
   constructor(exporter: types.Exporter, config: configTypes.BufferConfig) {
     this.exporter = exporter;
     this.logger = config.logger || logger.logger();
-    this.bufferSize = config.bufferSize;
-    this.bufferTimeout = config.bufferTimeout;
+    this.bufferSize = config.bufferSize || DEFAULT_BUFFER_SIZE;
+    this.bufferTimeout = config.bufferTimeout || DEFAULT_BUFFER_TIMEOUT;
     return this;
   }
 

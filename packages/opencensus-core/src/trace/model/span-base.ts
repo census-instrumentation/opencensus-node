@@ -27,7 +27,7 @@ const STATUS_OK = {
 export abstract class SpanBase implements types.Span {
   protected className: string;
   /** The clock used to mesure the beginning and ending of a span */
-  private clock: Clock = null;
+  private clock!: Clock;
   /** Indicates if this span was started */
   private startedLocal = false;
   /** Indicates if this span was ended */
@@ -38,7 +38,7 @@ export abstract class SpanBase implements types.Span {
   /** The Span ID of this span */
   readonly id: string;
   /** An object to log information to */
-  logger: Logger;
+  logger!: Logger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
   attributes: types.Attributes = {};
   /** A text annotation with a set of attributes. */
@@ -48,11 +48,11 @@ export abstract class SpanBase implements types.Span {
   /** Pointers from the current span to another span */
   links: types.Link[] = [];
   /** If the parent span is in another process. */
-  remoteParent: boolean;
+  remoteParent = false;
   /** The span ID of this span's parent. If it's a root span, must be empty */
-  parentSpanId: string = null;
+  parentSpanId!: string;
   /** The resource name of the span */
-  name: string = null;
+  name!: string;
   /** Kind of span. */
   kind: types.SpanKind = types.SpanKind.UNSPECIFIED;
   /** A final status for this span */
@@ -60,7 +60,7 @@ export abstract class SpanBase implements types.Span {
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
   /** Trace Parameters */
-  activeTraceParams: configTypes.TraceParams;
+  activeTraceParams!: configTypes.TraceParams;
 
   /** The number of dropped attributes. */
   droppedAttributesCount = 0;
@@ -100,7 +100,7 @@ export abstract class SpanBase implements types.Span {
   get startTime(): Date {
     if (!this.clock) {
       this.logger.debug('calling startTime() on null clock');
-      return null;
+      return new Date();
     }
 
     return this.clock.startTime;
@@ -113,7 +113,7 @@ export abstract class SpanBase implements types.Span {
   get endTime(): Date {
     if (!this.clock) {
       this.logger.debug('calling endTime() on null clock');
-      return null;
+      return new Date();
     }
 
     return this.clock.endTime;
@@ -126,7 +126,7 @@ export abstract class SpanBase implements types.Span {
   get duration(): number {
     if (!this.clock) {
       this.logger.debug('calling duration() on null clock');
-      return null;
+      return 0;
     }
 
     return this.clock.duration;
@@ -153,10 +153,12 @@ export abstract class SpanBase implements types.Span {
     }
 
     if (Object.keys(this.attributes).length >=
-        this.activeTraceParams.numberOfAttributesPerSpan) {
+        this.activeTraceParams.numberOfAttributesPerSpan!) {
       this.droppedAttributesCount++;
       const attributeKeyToDelete = Object.keys(this.attributes).shift();
-      delete this.attributes[attributeKeyToDelete];
+      if (attributeKeyToDelete) {
+        delete this.attributes[attributeKeyToDelete];
+      }
     }
     this.attributes[key] = value;
   }
@@ -170,7 +172,7 @@ export abstract class SpanBase implements types.Span {
   addAnnotation(
       description: string, attributes?: types.Attributes, timestamp = 0) {
     if (this.annotations.length >=
-        this.activeTraceParams.numberOfAnnontationEventsPerSpan) {
+        this.activeTraceParams.numberOfAnnontationEventsPerSpan!) {
       this.annotations.shift();
       this.droppedAnnotationsCount++;
     }
@@ -191,7 +193,7 @@ export abstract class SpanBase implements types.Span {
   addLink(
       traceId: string, spanId: string, type: types.LinkType,
       attributes?: types.Attributes) {
-    if (this.links.length >= this.activeTraceParams.numberOfLinksPerSpan) {
+    if (this.links.length >= this.activeTraceParams.numberOfLinksPerSpan!) {
       this.links.shift();
       this.droppedLinksCount++;
     }
@@ -217,7 +219,7 @@ export abstract class SpanBase implements types.Span {
       type: types.MessageEventType, id: string, timestamp = 0,
       uncompressedSize?: number, compressedSize?: number) {
     if (this.messageEvents.length >=
-        this.activeTraceParams.numberOfMessageEventsPerSpan) {
+        this.activeTraceParams.numberOfMessageEventsPerSpan!) {
       this.messageEvents.shift();
       this.droppedMessageEventsCount++;
     }

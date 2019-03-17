@@ -28,14 +28,6 @@ describe('isValidTagKey()', () => {
     assert.equal(isValidTagKey(tagKey), false);
   });
 
-  it('should return false when tag key is null', () => {
-    assert.equal(isValidTagKey(null), false);
-  });
-
-  it('should return false when tag key is undefined', () => {
-    assert.equal(isValidTagKey(undefined), false);
-  });
-
   it('should return false when the tag key length is longer than 255 characters ',
      () => {
        const tagKey = {name: 'a'.repeat(256)};
@@ -52,14 +44,6 @@ describe('isValidTagValue()', () => {
   it('should not throw an error when tag value is 0 character long', () => {
     const tagValue = {value: ''};
     assert.ok(isValidTagValue(tagValue));
-  });
-
-  it('should return false when tag value is null', () => {
-    assert.equal(isValidTagValue(null), false);
-  });
-
-  it('should return false when tag value is undefined', () => {
-    assert.equal(isValidTagValue(undefined), false);
   });
 
   it('should return false when the tag value length is longer than 255 characters ',

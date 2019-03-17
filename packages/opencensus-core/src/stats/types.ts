@@ -189,7 +189,7 @@ export interface View {
   /**
    * The end time for this view - represents the last time a value was recorded
    */
-  endTime: number;
+  endTime?: number;
   /** true if the view was registered */
   registered: boolean;
   /**
@@ -233,7 +233,7 @@ export interface AggregationMetadata {
   /** The aggregation type of the aggregation data */
   readonly type: AggregationType;
   /** The tagValues that this AggregationData collects and aggregates */
-  readonly tagValues: TagValue[];
+  readonly tagValues: Array<TagValue|null>;
   /** The latest timestamp a new data point was recorded */
   timestamp: number;
 }

@@ -19,7 +19,7 @@ export interface Resource {
   /**
    * An optional string which describes a well-known type of resource.
    */
-  readonly type: string;
+  readonly type: string|null;
 
   /**
    * A dictionary of labels with string keys and values that provide information

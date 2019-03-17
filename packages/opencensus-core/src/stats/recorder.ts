@@ -17,7 +17,7 @@
 import {TagKey, TagValue} from '../tags/types';
 import {AggregationData, AggregationType, CountData, DistributionData, LastValueData, Measurement, MeasureType, SumData} from './types';
 
-const UNKNOWN_TAG_VALUE: TagValue = null;
+const UNKNOWN_TAG_VALUE: TagValue|null = null;
 
 export class Recorder {
   static addMeasurement(
@@ -45,7 +45,7 @@ export class Recorder {
 
   /** Gets the tag values from tags and columns */
   static getTagValues(tags: Map<TagKey, TagValue>, columns: TagKey[]):
-      TagValue[] {
+      Array<TagValue|null> {
     return columns.map(
         (tagKey) =>
             (tags.get(tagKey) ||
@@ -63,7 +63,11 @@ export class Recorder {
     if (bucketIndex < 0) {
       bucketIndex = distributionData.buckets.length;
     }
-    distributionData.bucketCounts[bucketIndex] += 1;
+
+    if (distributionData.bucketCounts &&
+        distributionData.bucketCounts.length > bucketIndex) {
+      distributionData.bucketCounts[bucketIndex] += 1;
+    }
 
     if (distributionData.count === 1) {
       distributionData.mean = value;
@@ -82,7 +86,8 @@ export class Recorder {
 
     // No implicit recording for exemplars - if there are no attachments
     // (contextual information), don't record exemplars.
-    if (attachments) {
+    if (attachments && distributionData.exemplars &&
+        distributionData.exemplars.length > bucketIndex) {
       distributionData.exemplars[bucketIndex] = {
         value,
         timestamp: distributionData.timestamp,

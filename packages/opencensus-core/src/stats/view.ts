@@ -58,7 +58,7 @@ export class BaseView implements View {
   /** The start time for this view */
   readonly startTime: number;
   /** The bucket boundaries in a Distribution Aggregation */
-  private bucketBoundaries: BucketBoundaries;
+  private bucketBoundaries?: BucketBoundaries;
   /**
    * Cache a MetricDescriptor to avoid converting View to MetricDescriptor
    * in the future.
@@ -67,7 +67,7 @@ export class BaseView implements View {
   /**
    * The end time for this view - represents the last time a value was recorded
    */
-  endTime: number;
+  endTime?: number;
   /** true if the view was registered */
   registered = false;
   /** An object to log information to */
@@ -99,7 +99,9 @@ export class BaseView implements View {
     this.columns = this.validateTagKeys(tagsKeys);
     this.aggregation = aggregation;
     this.startTime = Date.now();
-    this.bucketBoundaries = new BucketBoundaries(bucketBoundaries);
+    if (bucketBoundaries) {
+      this.bucketBoundaries = new BucketBoundaries(bucketBoundaries);
+    }
     this.metricDescriptor = MetricUtils.viewToMetricDescriptor(this);
   }
 
@@ -137,7 +139,7 @@ export class BaseView implements View {
    * Encodes a TagValue object into a value sorted string.
    * @param tagValues The tagValues to encode
    */
-  private encodeTagValues(tagValues: TagValue[]): string {
+  private encodeTagValues(tagValues: Array<TagValue|null>): string {
     return tagValues.map((tagValue) => tagValue ? tagValue.value : null)
         .sort()
         .join(RECORD_SEPARATOR);
@@ -147,12 +149,13 @@ export class BaseView implements View {
    * Creates an empty aggregation data for a given tags.
    * @param tagValues The tags for that aggregation data
    */
-  private createAggregationData(tagValues: TagValue[]): AggregationData {
+  private createAggregationData(tagValues: Array<TagValue|null>):
+      AggregationData {
     const aggregationMetadata = {tagValues, timestamp: Date.now()};
 
     switch (this.aggregation) {
       case AggregationType.DISTRIBUTION:
-        const {buckets, bucketCounts} = this.bucketBoundaries;
+        const {buckets, bucketCounts} = this.bucketBoundaries!;
         const bucketsCopy = Object.assign([], buckets);
         const bucketCountsCopy = Object.assign([], bucketCounts);
         const exemplars = new Array(bucketCounts.length);
@@ -163,9 +166,9 @@ export class BaseView implements View {
           startTime: this.startTime,
           count: 0,
           sum: 0,
-          mean: null as number,
-          stdDeviation: null as number,
-          sumOfSquaredDeviation: null as number,
+          mean: 0,
+          stdDeviation: 0,
+          sumOfSquaredDeviation: 0,
           buckets: bucketsCopy,
           bucketCounts: bucketCountsCopy,
           exemplars
@@ -178,7 +181,7 @@ export class BaseView implements View {
         return {
           ...aggregationMetadata,
           type: AggregationType.LAST_VALUE,
-          value: undefined
+          value: 0
         };
     }
   }
@@ -194,18 +197,12 @@ export class BaseView implements View {
 
     // The moment when this point was recorded.
     const now: Timestamp = getTimestampWithProcessHRTime();
-
-    switch (type) {
-      case MetricDescriptorType.GAUGE_INT64:
-      case MetricDescriptorType.GAUGE_DOUBLE:
-        startTimestamp = null;
-        break;
-      default:
-        startTimestamp = timestampFromMillis(start);
+    if (type !== MetricDescriptorType.GAUGE_INT64 &&
+        type !== MetricDescriptorType.GAUGE_DOUBLE) {
+      startTimestamp = timestampFromMillis(start);
     }
 
     const timeseries: TimeSeries[] = [];
-
     Object.keys(this.tagValueAggregationMap).forEach(key => {
       const {tagValues} = this.tagValueAggregationMap[key];
       const labelValues: LabelValue[] =
@@ -233,12 +230,13 @@ export class BaseView implements View {
     if (data.type === AggregationType.DISTRIBUTION) {
       const {count, sum, sumOfSquaredDeviation, exemplars} = data;
       const buckets = [];
-      for (let bucket = 0; bucket < data.bucketCounts.length; bucket++) {
-        const bucketCount = data.bucketCounts[bucket];
-        const statsExemplar = exemplars ? exemplars[bucket] : undefined;
-        buckets.push(this.getMetricBucket(statsExemplar, bucketCount));
+      if (data.bucketCounts) {
+        for (let bucket = 0; bucket < data.bucketCounts.length; bucket++) {
+          const bucketCount = data.bucketCounts[bucket];
+          const statsExemplar = exemplars ? exemplars[bucket] : undefined;
+          buckets.push(this.getMetricBucket(bucketCount, statsExemplar));
+        }
       }
-
       value = {
         count,
         sum,
@@ -262,7 +260,7 @@ export class BaseView implements View {
   }
 
   /** Returns a Bucket with count and examplar (if present) */
-  private getMetricBucket(statsExemplar: StatsExemplar, bucketCount: number):
+  private getMetricBucket(bucketCount: number, statsExemplar?: StatsExemplar):
       metricBucket {
     if (statsExemplar) {
       // Bucket with an Exemplar.
@@ -287,7 +285,8 @@ export class BaseView implements View {
         throw new Error(`Invalid TagKey name: ${tagKey}`);
       }
     });
-    const tagKeysSet = new Set(tagKeysCopy.map(tagKey => tagKey.name));
+    const tagKeysSet =
+        new Set(tagKeysCopy.map((tagKey: TagKey) => tagKey.name));
     if (tagKeysSet.size !== tagKeysCopy.length) {
       throw new Error('Columns have duplicate');
     }

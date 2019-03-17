@@ -24,7 +24,7 @@ import * as types from './types';
 
 /** Do not send span data */
 export class NoopExporter implements types.Exporter {
-  logger: loggerTypes.Logger;
+  logger?: loggerTypes.Logger;
   onStartSpan(root: modelTypes.RootSpan) {}
   onEndSpan(root: modelTypes.RootSpan) {}
   publish(rootSpans: modelTypes.RootSpan[]) {
@@ -36,7 +36,7 @@ export class NoopExporter implements types.Exporter {
 export class ConsoleExporter implements types.Exporter {
   /** Buffer object to store the spans. */
   // @ts-ignore
-  private logger: loggerTypes.Logger;
+  private logger?: loggerTypes.Logger;
   private buffer: ExporterBuffer;
 
   /**

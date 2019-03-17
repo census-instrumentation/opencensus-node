@@ -24,8 +24,6 @@ const METRIC_NAME = 'metric-name';
 const METRIC_DESCRIPTION = 'metric-description';
 const UNIT = MeasureUnit.UNIT;
 const LABEL_KEYS: LabelKey[] = [{key: 'code', description: 'desc'}];
-const LABEL_KEYS_WITH_NULL: LabelKey[] =
-    [{key: 'code', description: 'desc'}, null];
 const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
 const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
 describe('addInt64Gauge', () => {
@@ -48,54 +46,6 @@ describe('addInt64Gauge', () => {
     Date.now = realNowFn;
     // Reset the hrtime reference so that it uses a real clock again.
     TEST_ONLY.resetHrtimeFunctionCache();
-  });
-
-  it('should throw an error when the name is null', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the name is undefined', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the description is null', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the description is undefined', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the unit is null', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the unit is undefined', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the labelKeys is null', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKeys is undefined', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKey elements are NULL', () => {
-    assert.throws(() => {
-      registry.addInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
-    }, /^Error: labelKey elements should not be a NULL$/);
   });
 
   it('should return a metric', () => {
@@ -146,54 +96,6 @@ describe('addDoubleGauge', () => {
     TEST_ONLY.resetHrtimeFunctionCache();
   });
 
-  it('should throw an error when the name is null', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the name is undefined', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the description is null', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the description is undefined', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the unit is null', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the unit is undefined', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the labelKeys is null', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKeys is undefined', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKey elements are NULL', () => {
-    assert.throws(() => {
-      registry.addDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
-    }, /^Error: labelKey elements should not be a NULL$/);
-  });
   it('should return a metric', () => {
     const doubleGauge = registry.addDoubleGauge(
         METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
@@ -253,57 +155,6 @@ describe('addDerivedInt64Gauge', () => {
     TEST_ONLY.resetHrtimeFunctionCache();
   });
 
-  it('should throw an error when the name is null', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the name is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(
-          undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the description is null', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the description is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the unit is null', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the unit is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the labelKeys is null', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKeys is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKey elements are NULL', () => {
-    assert.throws(() => {
-      registry.addDerivedInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
-    }, /^Error: labelKey elements should not be a NULL$/);
-  });
   it('should return a metric', () => {
     const map = new Map();
     map.set('key', 'value');
@@ -363,58 +214,6 @@ describe('addDerivedDoubleGauge', () => {
     TEST_ONLY.resetHrtimeFunctionCache();
   });
 
-  it('should throw an error when the name is null', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          null, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the name is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          undefined, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory name parameter$/);
-  });
-  it('should throw an error when the description is null', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(METRIC_NAME, null, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the description is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(METRIC_NAME, undefined, UNIT, LABEL_KEYS);
-    }, /^Error: Missing mandatory description parameter$/);
-  });
-  it('should throw an error when the unit is null', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, null, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the unit is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, undefined, LABEL_KEYS);
-    }, /^Error: Missing mandatory unit parameter$/);
-  });
-  it('should throw an error when the labelKeys is null', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, null);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKeys is undefined', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, undefined);
-    }, /^Error: Missing mandatory labelKeys parameter$/);
-  });
-  it('should throw an error when the labelKey elements are NULL', () => {
-    assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS_WITH_NULL);
-    }, /^Error: labelKey elements should not be a NULL$/);
-  });
   it('should return a metric', () => {
     class QueueManager {
       getValue(): number {

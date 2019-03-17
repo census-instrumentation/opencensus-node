@@ -100,6 +100,11 @@ export class SamplerBuilder {
   }
 }
 
+/**
+ * The default sampler is a Probability sampler with the probability set to
+ * 1/10000.
+ */
+export const DEFAULT_SAMPLING_RATE = 0.0001;
 
 /** Default Limit for Annotations per span */
 export const DEFAULT_SPAN_MAX_NUM_ANNOTATIONS = 32;
@@ -114,29 +119,37 @@ export const DEFAULT_SPAN_MAX_NUM_LINKS = 32;
 export class TraceParamsBuilder {
   static getNumberOfAnnotationEventsPerSpan(traceParameters: TraceParams):
       number {
-    return traceParameters.numberOfAnnontationEventsPerSpan >
-            DEFAULT_SPAN_MAX_NUM_ANNOTATIONS ?
-        DEFAULT_SPAN_MAX_NUM_ANNOTATIONS :
-        traceParameters.numberOfAnnontationEventsPerSpan;
+    if (!traceParameters.numberOfAnnontationEventsPerSpan ||
+        traceParameters.numberOfAnnontationEventsPerSpan >
+            DEFAULT_SPAN_MAX_NUM_ANNOTATIONS) {
+      return DEFAULT_SPAN_MAX_NUM_ANNOTATIONS;
+    }
+    return traceParameters.numberOfAnnontationEventsPerSpan;
   }
 
   static getNumberOfAttributesPerSpan(traceParameters: TraceParams): number {
-    return traceParameters.numberOfAttributesPerSpan >
-            DEFAULT_SPAN_MAX_NUM_ATTRIBUTES ?
-        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES :
-        traceParameters.numberOfAttributesPerSpan;
+    if (!traceParameters.numberOfAttributesPerSpan ||
+        traceParameters.numberOfAttributesPerSpan >
+            DEFAULT_SPAN_MAX_NUM_ATTRIBUTES) {
+      return DEFAULT_SPAN_MAX_NUM_ATTRIBUTES;
+    }
+    return traceParameters.numberOfAttributesPerSpan;
   }
 
   static getNumberOfMessageEventsPerSpan(traceParameters: TraceParams): number {
-    return traceParameters.numberOfMessageEventsPerSpan >
-            DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS ?
-        DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS :
-        traceParameters.numberOfMessageEventsPerSpan;
+    if (!traceParameters.numberOfMessageEventsPerSpan ||
+        traceParameters.numberOfMessageEventsPerSpan >
+            DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS) {
+      return DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS;
+    }
+    return traceParameters.numberOfMessageEventsPerSpan;
   }
 
   static getNumberOfLinksPerSpan(traceParameters: TraceParams): number {
-    return traceParameters.numberOfLinksPerSpan > DEFAULT_SPAN_MAX_NUM_LINKS ?
-        DEFAULT_SPAN_MAX_NUM_LINKS :
-        traceParameters.numberOfLinksPerSpan;
+    if (!traceParameters.numberOfLinksPerSpan ||
+        traceParameters.numberOfLinksPerSpan > DEFAULT_SPAN_MAX_NUM_LINKS) {
+      return DEFAULT_SPAN_MAX_NUM_LINKS;
+    }
+    return traceParameters.numberOfLinksPerSpan;
   }
 }

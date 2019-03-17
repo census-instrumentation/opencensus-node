@@ -99,8 +99,7 @@ describe('Stats', () => {
 
     for (const aggregationType of aggregationTypes) {
       it(`should create a view with ${aggregationType} aggregation`, () => {
-        const bucketBoundaries =
-            AggregationType.DISTRIBUTION ? [1, 2, 3] : null;
+        const bucketBoundaries = AggregationType.DISTRIBUTION ? [1, 2, 3] : [];
         const view = globalStats.createView(
             viewName, measure, aggregationType, tagKeys, description,
             bucketBoundaries);
@@ -247,7 +246,7 @@ describe('Stats', () => {
     });
 
     it('should record against implicit context when not set or empty', () => {
-      const UNKNOWN_TAG_VALUE: TagValue = null;
+      const UNKNOWN_TAG_VALUE: TagValue|null = null;
       globalStats.registerExporter(testExporter);
       const measurement = {measure, value: 2211};
       globalStats.withTagContext(tagger.EMPTY_TAG_MAP, () => {

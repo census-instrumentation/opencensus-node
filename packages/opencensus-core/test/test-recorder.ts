@@ -102,7 +102,7 @@ describe('Recorder', () => {
                    type: AggregationType.LAST_VALUE,
                    tagValues,
                    timestamp: Date.now(),
-                   value: undefined
+                   value: 0
                  };
                  for (const value of testCase.values) {
                    const measurement: Measurement = {measure, value};
@@ -191,7 +191,7 @@ describe('Recorder', () => {
           sumOfSquaredDeviation: 0,
           buckets: [2, 4, 6],
           bucketCounts: [0, 0, 0, 0],
-          exemplars: [undefined, undefined, undefined, undefined]
+          exemplars: new Array(4)
         };
         const value = 5;
         const measurement: Measurement = {measure, value};
@@ -203,11 +203,12 @@ describe('Recorder', () => {
         assert.equal(aggregationData.mean, 5);
         assert.deepStrictEqual(aggregationData.buckets, [2, 4, 6]);
         assert.deepStrictEqual(aggregationData.bucketCounts, [0, 0, 1, 0]);
-        assert.deepStrictEqual(aggregationData.exemplars, [
-          undefined, undefined,
-          {value: 5, timestamp: aggregationData.timestamp, attachments},
-          undefined
-        ]);
+        assert.deepStrictEqual(aggregationData.exemplars![0], undefined);
+        assert.deepStrictEqual(aggregationData.exemplars![1], undefined);
+        assert.deepStrictEqual(
+            aggregationData!.exemplars![2],
+            {value: 5, timestamp: aggregationData.timestamp, attachments});
+        assert.deepStrictEqual(aggregationData.exemplars![3], undefined);
       });
     });
 

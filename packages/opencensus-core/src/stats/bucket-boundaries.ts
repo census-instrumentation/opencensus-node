@@ -52,16 +52,18 @@ export class BucketBoundaries {
   private dropNegativeBucketBounds(bucketBoundaries: number[]): Bucket[] {
     let negative = 0;
     if (!bucketBoundaries) return [];
-    const result = bucketBoundaries.reduce((accumulator, boundary, index) => {
-      if (boundary > 0) {
-        const nextBoundary = bucketBoundaries[index + 1];
-        this.validateBoundary(boundary, nextBoundary);
-        accumulator.push(boundary);
-      } else {
-        negative++;
-      }
-      return accumulator;
-    }, []);
+    const result = bucketBoundaries.reduce(
+        (accumulator: number[], boundary: number, index: number) => {
+          if (boundary > 0) {
+            const nextBoundary = bucketBoundaries[index + 1];
+            this.validateBoundary(boundary, nextBoundary);
+            accumulator.push(boundary);
+          } else {
+            negative++;
+          }
+          return accumulator;
+        },
+        []);
     if (negative) {
       this.logger.warn(`Dropping ${
           negative} negative bucket boundaries, the values must be strictly > 0.`);

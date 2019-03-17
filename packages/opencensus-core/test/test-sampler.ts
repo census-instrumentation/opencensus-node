@@ -80,11 +80,6 @@ describe('Sampler', () => {
       const sampler = SamplerBuilder.getSampler(0.7);
       assert.ok(sampler.description.indexOf('probability') >= 0);
     });
-    it('should sample an empty traceId', () => {
-      const sampler = SamplerBuilder.getSampler(0.5);
-      const samplerShouldSample = sampler.shouldSample(null);
-      assert.ok(samplerShouldSample);
-    });
     it('should accept and reject traces based on last 26 bytes of traceId',
        () => {
          const sampler = SamplerBuilder.getSampler(0.5);

@@ -133,26 +133,6 @@ describe('BaseView', () => {
         assert.deepStrictEqual(view.getColumns(), tagKeys);
       }, /^Error: Columns have duplicate$/);
     });
-
-    it('should throw error when keys are undefined', () => {
-      const tagKeys = [{name: 'testKey1'}, undefined, {name: 'testKey2'}];
-      assert.throws(() => {
-        const view = new BaseView(
-            'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-            'description test');
-        assert.deepStrictEqual(view.getColumns(), tagKeys);
-      }, /^Error: Invalid TagKey name: undefined$/);
-    });
-
-    it('should throw error when keys contains null', () => {
-      const tagKeys = [{name: 'testKey1'}, null, {name: 'testKey2'}];
-      assert.throws(() => {
-        const view = new BaseView(
-            'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-            'description test');
-        assert.deepStrictEqual(view.getColumns(), tagKeys);
-      }, /^Error: Invalid TagKey name: null$/);
-    });
   });
 
   describe('recordMeasurement()', () => {
@@ -299,8 +279,8 @@ describe('BaseView', () => {
             } else {
               it('should have timeseries startTimestamp', () => {
                 assert.ok(startTimestamp);
-                assert.equal(typeof startTimestamp.nanos, 'number');
-                assert.equal(typeof startTimestamp.seconds, 'number');
+                assert.equal(typeof startTimestamp!.nanos, 'number');
+                assert.equal(typeof startTimestamp!.seconds, 'number');
                 assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
               });
             }

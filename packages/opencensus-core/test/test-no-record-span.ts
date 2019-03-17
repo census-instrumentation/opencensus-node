@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-import {CanonicalCode, CoreTracer, LinkType, MessageEventType, SpanKind} from '../src';
-import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
+import {CanonicalCode, LinkType, MessageEventType} from '../src';
 import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
-
-const tracer = new CoreTracer();
 
 describe('NoRecordSpan()', () => {
   it('do not crash', () => {
-    const noRecordRootSpan =
-        new NoRecordRootSpan(tracer, 'name', SpanKind.SERVER, 'traceid', '');
-    const noRecordSpan = new NoRecordSpan(noRecordRootSpan);
+    const noRecordSpan = new NoRecordSpan();
     noRecordSpan.addAnnotation('MyAnnotation');
     noRecordSpan.addAnnotation('MyAnnotation', {myString: 'bar'});
     noRecordSpan.addAnnotation(

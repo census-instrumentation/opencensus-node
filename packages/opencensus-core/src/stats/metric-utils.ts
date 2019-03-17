@@ -78,7 +78,7 @@ export class MetricUtils {
    * @param tagValues
    * @returns {LabelValue[]} List of label values
    */
-  static tagValuesToLabelValues(tagValues: TagValue[]): LabelValue[] {
+  static tagValuesToLabelValues(tagValues: Array<TagValue|null>): LabelValue[] {
     return tagValues.map(
         (tagValue) => ({value: tagValue ? tagValue.value : null}));
   }

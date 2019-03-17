@@ -32,7 +32,7 @@ type FolderType = {
 // AggregationData in zPages format
 export type ZPagesStatsData = {
   tagKeys: TagKey[],
-  tagValues?: TagValue[],
+  tagValues?: Array<TagValue|null>,
   snapshot?: AggregationData
 };
 

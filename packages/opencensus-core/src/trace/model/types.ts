@@ -246,7 +246,7 @@ export interface SpanOptions {
   parentSpanId?: string;
 }
 
-export type TraceState = string;
+export type TraceState = string|undefined;
 
 /** Defines the span context */
 export interface SpanContext {
