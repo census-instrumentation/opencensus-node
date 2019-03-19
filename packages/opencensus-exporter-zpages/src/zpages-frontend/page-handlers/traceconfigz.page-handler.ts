@@ -19,8 +19,6 @@ import * as tracing from '@opencensus/nodejs';
 import * as ejs from 'ejs';
 import * as pkgDir from 'pkg-dir';
 
-import {ZpagesExporter} from '../../zpages';
-
 // The directory to search for templates.
 const templatesDir = `${pkgDir.sync(__dirname)}/templates`;
 
@@ -36,7 +34,7 @@ export interface TraceConfigzData {
 
 export class TraceConfigzPageHandler {
   /** Configuration defaults. Currently just the default sampling rate. */
-  private defaultConfig: {samplingRate: number;};
+  private defaultConfig?: {samplingRate: number;};
 
   /**
    * Generate Zpages Trace Config HTML Page
@@ -83,7 +81,6 @@ export class TraceConfigzPageHandler {
   private saveChanges(query: Partial<TraceConfigzParams>): void {
     /** restore the config to default */
     if (query.change === 'restore_default') {
-      const exporter = tracing.exporter as ZpagesExporter;
       tracing.tracer.sampler =
           SamplerBuilder.getSampler(this.defaultConfig!.samplingRate);
       return;
@@ -107,6 +104,7 @@ export class TraceConfigzPageHandler {
     } else if (samplingProbability === 'never') {
       return 0;
     }
-    return Number(samplingProbability.match(/\((.*)\)/)[1]);
+    const probability = samplingProbability.match(/\((.*)\)/);
+    return probability ? Number(probability[1]) : 1 / 10000;
   }
 }
