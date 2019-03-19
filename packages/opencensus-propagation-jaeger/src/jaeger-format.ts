@@ -15,15 +15,21 @@
  */
 
 import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
-
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
+import {isValidSpanId, isValidTraceId} from './validators';
 
-const TRACE_ID_HEADER = 'uber-trace-id';
-const DEBUG_ID_HEADER = 'jaeger-debug-id';
+// TRACER_STATE_HEADER_NAME is the header key used for a span's serialized
+// context.
+export const TRACER_STATE_HEADER_NAME = 'uber-trace-id';
+
+// JAEGER_DEBUG_HEADER is the name of an HTTP header or a TextMap carrier key
+// which, if found in the carrier, forces the trace to be sampled as "debug"
+// trace.
+const JAEGER_DEBUG_HEADER = 'jaeger-debug-id';
 
 const DEBUG_VALUE = 2;
-const SAMPLED_VALUE = 1;
+export const SAMPLED_VALUE = 1;
 
 /**
  * Propagates span context through Jaeger trace-id propagation.
@@ -37,39 +43,22 @@ export class JaegerFormat implements Propagation {
    * @param getter
    */
   extract(getter: HeaderGetter): SpanContext|null {
-    if (getter) {
-      let debug = 0;
-      if (getter.getHeader(DEBUG_ID_HEADER)) {
-        debug = SAMPLED_VALUE;
-      }
+    const debugId = this.parseHeader(getter.getHeader(JAEGER_DEBUG_HEADER));
+    const tracerStateHeader =
+        this.parseHeader(getter.getHeader(TRACER_STATE_HEADER_NAME));
 
-      const spanContext = {traceId: '', spanId: '', options: debug};
+    if (!tracerStateHeader) return null;
+    const tracerStateHeaderParts = tracerStateHeader.split(':');
+    if (tracerStateHeaderParts.length !== 4) return null;
 
-      let header = getter.getHeader(TRACE_ID_HEADER);
-      if (!header) {
-        return spanContext;
-      }
-      if (header instanceof Array) {
-        header = header[0];
-      }
-      const parts = header.split(':');
-      if (parts.length !== 4) {
-        return spanContext;
-      }
+    const traceId = tracerStateHeaderParts[0];
+    const spanId = tracerStateHeaderParts[1];
+    const jflags = Number('0x' + tracerStateHeaderParts[3]);
+    const sampled = jflags & SAMPLED_VALUE;
+    const debug = (jflags & DEBUG_VALUE) || (debugId ? SAMPLED_VALUE : 0);
+    const options = (sampled || debug) ? SAMPLED_VALUE : 0;
 
-      spanContext.traceId = parts[0];
-      spanContext.spanId = parts[1];
-
-      const jflags = Number('0x' + parts[3]);
-      const sampled = jflags & SAMPLED_VALUE;
-
-      debug = (jflags & DEBUG_VALUE) || debug;
-
-      spanContext.options = (sampled || debug) ? SAMPLED_VALUE : 0;
-
-      return spanContext;
-    }
-    return null;
+    return {traceId, spanId, options};
   }
 
   /**
@@ -78,17 +67,23 @@ export class JaegerFormat implements Propagation {
    * @param spanContext
    */
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
-    if (setter) {
-      let flags = '0';
-      if (spanContext.options) {
-        flags = (spanContext.options & SAMPLED_VALUE ? SAMPLED_VALUE : 0)
-                    .toString(16);
-      }
-
-      const header =
-          [spanContext.traceId, spanContext.spanId, '', flags].join(':');
-      setter.setHeader(TRACE_ID_HEADER, header);
+    if (!spanContext || !isValidTraceId(spanContext.traceId) ||
+        !isValidSpanId(spanContext.spanId)) {
+      return;
     }
+
+    let flags = '0';
+    if (spanContext.options) {
+      flags = ((spanContext.options & SAMPLED_VALUE) ? SAMPLED_VALUE : 0)
+                  .toString(16);
+    }
+
+    // {parent-span-id} Deprecated, most Jaeger clients ignore on the receiving
+    // side, but still include it on the sending side.
+    const header = [
+      spanContext.traceId, spanContext.spanId, /** parent-span-id */ '', flags
+    ].join(':');
+    setter.setHeader(TRACER_STATE_HEADER_NAME, header);
   }
 
   /**
@@ -99,6 +94,14 @@ export class JaegerFormat implements Propagation {
       traceId: uuid.v4().split('-').join(''),
       spanId: crypto.randomBytes(8).toString('hex'),
       options: SAMPLED_VALUE
-    } as SpanContext;
+    };
+  }
+
+  /** Converts a headers type to a string. */
+  private parseHeader(str: string|string[]|undefined): string|undefined {
+    if (Array.isArray(str)) {
+      return str[0];
+    }
+    return str;
   }
 }
