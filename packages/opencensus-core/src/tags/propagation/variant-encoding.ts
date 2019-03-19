@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+// The MSB (most significant bit) indicates whether we've reached the end of
+// the number. Set means there is more than one byte in the varint.
 const MSB = 0x80;
+
+// The REST indicates the lower 7 bits of each byte.
 const REST = 0x7F;
 
 /**
@@ -40,15 +44,15 @@ export function EncodeVarint(value: number) {
 export function DecodeVarint(buffer: Buffer, offset: number) {
   let ret = 0;
   let shift = 0;
-  let b;
+  let currentByte;
   let counter = offset;
   do {
     if (shift >= 32) {
       throw new Error('varint too long');
     }
-    b = buffer.readInt8(counter++);
-    ret |= (b & REST) << shift;
+    currentByte = buffer.readInt8(counter++);
+    ret |= (currentByte & REST) << shift;
     shift += 7;
-  } while ((b & MSB) !== 0);
+  } while ((currentByte & MSB) !== 0);
   return ret;
 }

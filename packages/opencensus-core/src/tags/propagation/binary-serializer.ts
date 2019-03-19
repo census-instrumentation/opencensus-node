@@ -54,7 +54,7 @@ export const TAG_MAP_SERIALIZED_SIZE_LIMIT = 8192;
 const ENCODING = 'utf8';
 const VERSION_ID = 0;
 const TAG_FIELD_ID = 0;
-const VERSION_ID_OFFSET = 0;
+const VERSION_ID_INDEX = 0;
 
 /**
  * Serializes a given TagMap to the on-the-wire format.
@@ -86,8 +86,8 @@ export function deserializeBinary(buffer: Buffer): TagMap {
   if (buffer.length === 0) {
     throw new Error('Input buffer can not be empty.');
   }
-  const versionId = buffer.readInt8(VERSION_ID_OFFSET);
-  if (versionId !== VERSION_ID) {
+  const versionId = buffer.readInt8(VERSION_ID_INDEX);
+  if (versionId > VERSION_ID) {
     throw new Error(`Wrong Version ID: ${
         versionId}. Currently supports version up to: ${VERSION_ID}`);
   }
@@ -114,28 +114,27 @@ function parseTags(buffer: Buffer): TagMap {
 
   while (currentIndex < limit) {
     const fieldId = buffer.readInt8(currentIndex);
-    if (fieldId === TAG_FIELD_ID) {
-      currentIndex += 1;
-      const key = decodeString(buffer, currentIndex);
-      currentIndex += key.length;
-      totalChars += key.length;
-
-      currentIndex += 1;
-      const val = decodeString(buffer, currentIndex);
-      currentIndex += val.length;
-      totalChars += val.length;
-
-      currentIndex += 1;
-      if (totalChars > TAG_MAP_SERIALIZED_SIZE_LIMIT) {
-        throw new Error(`Size of TagMap exceeds the maximum serialized size ${
-            TAG_MAP_SERIALIZED_SIZE_LIMIT}`);
-      } else {
-        tags.set({name: key}, {value: val});
-      }
-    } else {
+    if (fieldId > TAG_FIELD_ID) {
       // Stop parsing at the first unknown field ID, since there is no way to
       // know its length.
       break;
+    }
+    currentIndex += 1;
+    const key = decodeString(buffer, currentIndex);
+    currentIndex += key.length;
+    totalChars += key.length;
+
+    currentIndex += 1;
+    const val = decodeString(buffer, currentIndex);
+    currentIndex += val.length;
+    totalChars += val.length;
+
+    currentIndex += 1;
+    if (totalChars > TAG_MAP_SERIALIZED_SIZE_LIMIT) {
+      throw new Error(`Size of TagMap exceeds the maximum serialized size ${
+          TAG_MAP_SERIALIZED_SIZE_LIMIT}`);
+    } else {
+      tags.set({name: key}, {value: val});
     }
   }
   return tags;
