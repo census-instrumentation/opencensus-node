@@ -25,3 +25,38 @@ export interface TagValue {
   /** The value of a tag. */
   readonly value: string;
 }
+
+/** TagValueWithMetadata holds a TagValue and a TagMetadata. */
+export interface TagValueWithMetadata {
+  /** The tag value */
+  readonly tagValue: TagValue;
+  /** The metadata for the tag */
+  readonly tagMetadata: TagMetadata;
+}
+
+/**
+ * TagMetadata contains properties associated with a Tag.
+ * Anytime a sender serializes a tag, sends it over the wire and receiver
+ * deserializes the tag then the tag is considered to have travelled one hop.
+ * There could be one or more proxy(ies) between sender and receiver. Proxies
+ * are treated as transparent entities and they do not create additional hops.
+ */
+export interface TagMetadata {
+  /**
+   * For now, only special values of TagTtl are supported. In future,
+   * additional properties may be added to address specific situations.
+   */
+  readonly tagTtl: number;
+}
+
+/** TagTtl is an integer that represents number of hops a tag can propagate */
+export enum TagTtl {
+  /**
+   * NO_PROPAGATION is considered to have local scope and is used within the
+   * process it created.
+   */
+  NO_PROPAGATION = 0,
+
+  /** UNLIMITED_PROPAGATION can propagate unlimited hops. */
+  UNLIMITED_PROPAGATION = -1
+}

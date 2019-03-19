@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, PluginInternalFiles, RootSpan, Span, SpanContext, SpanKind, TagMap, TraceOptions} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, PluginInternalFiles, RootSpan, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
 import {deserializeSpanContext, serializeSpanContext} from '@opencensus/propagation-binaryformat';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
@@ -72,17 +72,18 @@ let Metadata: any;
 // tslint:disable-next-line:no-any
 let GrpcClientModule: any;
 
+const UNLIMITED_PROPAGATION_MD = {
+  tagTtl: TagTtl.UNLIMITED_PROPAGATION
+};
+
 /** gRPC instrumentation plugin for Opencensus */
 export class GrpcPlugin extends BasePlugin {
-  /**
-   * Span grpc attributes
-   */
+  /** Span grpc attributes */
   static readonly ATTRIBUTE_GRPC_KIND = 'grpc.kind';  // SERVER or CLIENT
   static readonly ATTRIBUTE_GRPC_METHOD = 'grpc.method';
   static readonly ATTRIBUTE_GRPC_STATUS_CODE = 'grpc.status_code';
   static readonly ATTRIBUTE_GRPC_ERROR_NAME = 'grpc.error_name';
   static readonly ATTRIBUTE_GRPC_ERROR_MESSAGE = 'grpc.error_message';
-
 
   protected readonly internalFileList: PluginInternalFiles = {
     '0.13 - 1.6': {
@@ -92,15 +93,12 @@ export class GrpcPlugin extends BasePlugin {
     '^1.7': {'client': 'src/client.js', 'metadata': 'src/metadata.js'}
   };
 
-
   /** Constructs a new GrpcPlugin instance. */
   constructor() {
     super('grpc');
   }
 
-  /**
-   * Patches gRPC incoming and outcoming request functions.
-   */
+  /** Patches gRPC incoming and outcoming request functions. */
   protected applyPatch() {
     this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
@@ -138,7 +136,7 @@ export class GrpcPlugin extends BasePlugin {
   private getPatchServer() {
     return (originalRegister: RegisterMethod) => {
       const plugin = this;
-      plugin.logger.debug('pathcServer');
+      plugin.logger.debug('patched server');
       return function register<RequestType, ResponseType>(
           // tslint:disable-next-line:no-any
           this: grpcTypes.Server&{handlers: any}, name: string,
@@ -232,7 +230,9 @@ export class GrpcPlugin extends BasePlugin {
 
       // record stats
       const tags = new TagMap();
-      tags.set(serverStats.GRPC_SERVER_METHOD, {value: rootSpan.name});
+      tags.set(
+          serverStats.GRPC_SERVER_METHOD, {value: rootSpan.name},
+          UNLIMITED_PROPAGATION_MD);
       const req = call.hasOwnProperty('request') ? call.request : {};
       GrpcPlugin.recordStats(
           rootSpan.kind, tags, value, req, Date.now() - startTime);
@@ -377,7 +377,9 @@ export class GrpcPlugin extends BasePlugin {
 
         // record stats
         const tags = new TagMap();
-        tags.set(clientStats.GRPC_CLIENT_METHOD, {value: span.name});
+        tags.set(
+            clientStats.GRPC_CLIENT_METHOD, {value: span.name},
+            UNLIMITED_PROPAGATION_MD);
         GrpcPlugin.recordStats(
             span.kind, tags, originalArgs, res, Date.now() - startTime);
 

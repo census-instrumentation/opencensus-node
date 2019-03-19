@@ -76,7 +76,7 @@ export * from './resource/resource';
 
 // interfaces
 export * from './stats/types';
-export * from './tags/types';
+export {TagKey, TagValue, TagMetadata, TagTtl} from './tags/types';
 export * from './resource/types';
 
 // logger

@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {Recorder, TagMap} from '../src';
+import {Recorder, TagMap, TagTtl} from '../src';
 import {AggregationType, CountData, DistributionData, LastValueData, Measure, Measurement, MeasureType, MeasureUnit, SumData} from '../src/stats/types';
 
 /** The order of how close values must be to be considerated almost equal */
@@ -218,6 +218,8 @@ describe('Recorder', () => {
       const CALLER_V = {value: 'some caller'};
       const METHOD_V = {value: 'some method'};
       const ORIGINATOR_V = {value: 'some originator'};
+      const NO_PROPAGATION_MD = {tagTtl: TagTtl.NO_PROPAGATION};
+      const UNLIMITED_PROPAGATION_MD = {tagTtl: TagTtl.UNLIMITED_PROPAGATION};
       let tagMap: TagMap;
 
       beforeEach(() => {
@@ -232,6 +234,16 @@ describe('Recorder', () => {
         assert.equal(tagValues.length, 2);
         assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
       });
+
+      it('should return tag values from tags and columns when using metadata',
+         () => {
+           const columns = [CALLER, METHOD];
+           tagMap.set(CALLER, CALLER_V, NO_PROPAGATION_MD);
+           tagMap.set(METHOD, METHOD_V, UNLIMITED_PROPAGATION_MD);
+           const tagValues = Recorder.getTagValues(tagMap.tags, columns);
+           assert.equal(tagValues.length, 2);
+           assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
+         });
 
       it('should return tag values from tags and columns with extra keys',
          () => {

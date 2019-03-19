@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, Span, SpanKind, TagMap, TraceOptions} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, Func, HeaderGetter, HeaderSetter, MessageEventType, Span, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
 import {ClientRequest, ClientResponse, IncomingMessage, request, RequestOptions, ServerResponse} from 'http';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as uuid from 'uuid';
+
 import * as stats from './http-stats';
 import {IgnoreMatcher} from './types';
 
@@ -30,6 +31,10 @@ function isOpenCensusRequest(options: RequestOptions) {
   return options && options.headers &&
       !!options.headers['x-opencensus-outgoing-request'];
 }
+
+const UNLIMITED_PROPAGATION_MD = {
+  tagTtl: TagTtl.UNLIMITED_PROPAGATION
+};
 
 /** Http instrumentation plugin for Opencensus */
 export class HttpPlugin extends BasePlugin {
@@ -224,7 +229,9 @@ export class HttpPlugin extends BasePlugin {
                   HttpPlugin.ATTRIBUTE_HTTP_PATH, requestUrl.pathname || '');
               rootSpan.addAttribute(
                   HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path || '');
-              tags.set(stats.HTTP_SERVER_ROUTE, {value: requestUrl.path || ''});
+              tags.set(
+                  stats.HTTP_SERVER_ROUTE, {value: requestUrl.path || ''},
+                  UNLIMITED_PROPAGATION_MD);
             }
             if (userAgent) {
               rootSpan.addAttribute(
@@ -241,10 +248,13 @@ export class HttpPlugin extends BasePlugin {
             rootSpan.addMessageEvent(
                 MessageEventType.RECEIVED, uuid.v4().split('-').join(''));
 
-            tags.set(stats.HTTP_SERVER_METHOD, {value: method});
+            tags.set(
+                stats.HTTP_SERVER_METHOD, {value: method},
+                UNLIMITED_PROPAGATION_MD);
             tags.set(
                 stats.HTTP_SERVER_STATUS,
-                {value: response.statusCode.toString()});
+                {value: response.statusCode.toString()},
+                UNLIMITED_PROPAGATION_MD);
             HttpPlugin.recordStats(rootSpan.kind, tags, Date.now() - startTime);
 
             rootSpan.end();

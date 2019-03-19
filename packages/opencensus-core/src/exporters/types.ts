@@ -44,6 +44,7 @@ export interface StatsEventListener {
    * @deprecated since version 0.0.9 - use {@link start} instead
    * @param views The views related to the measurement
    * @param measurement The recorded measurement
+   * @param tags The tags to which the value is applied
    */
   onRecord(
       views: View[], measurement: Measurement,

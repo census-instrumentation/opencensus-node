@@ -93,6 +93,7 @@ export class ConsoleStatsExporter implements types.StatsEventListener {
    * Event called when a measurement is recorded
    * @param view recorded view from measurement
    * @param measurement recorded measurement
+   * @param tags The tags to which the value is applied
    */
   onRecord(
       views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {
