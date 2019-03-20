@@ -84,7 +84,7 @@ const getCanonicalCode = (status: number) => {
     case 16:
       return 'UNAUTHENTICATED';
     default:
-      return null;
+      return 'UNKNOWN';
   }
 };
 

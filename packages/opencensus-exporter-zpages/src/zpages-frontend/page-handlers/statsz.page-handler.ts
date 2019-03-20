@@ -68,11 +68,11 @@ export class StatszPageHandler {
     /** keeps the folders that belong to the current folder  */
     const folders: FolderType = {};
     /** selected view to show */
-    let selectedView: View;
+    let selectedView: View|undefined;
     /** keeps HTML table content */
     let tableContent: string;
     /** keeps the stats and view data to load UI */
-    let statsViewData: StatsViewData;
+    let statsViewData: StatsViewData|undefined;
 
     // gets the path from user
     if (params.path) {
@@ -129,7 +129,7 @@ export class StatszPageHandler {
     if (selectedView) {
       const statsData = this.getStatsData(selectedView);
       const viewFile = this.loaderFile('statsz-view.ejs');
-      let viewContentFile: string;
+      let viewContentFile: string|undefined;
       let statsContent: string;
 
       switch (selectedView.aggregation) {

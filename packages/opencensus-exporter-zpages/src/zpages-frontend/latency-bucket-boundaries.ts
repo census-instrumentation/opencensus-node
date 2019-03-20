@@ -96,7 +96,7 @@ export class LatencyBucketBoundaries {
       case LatencyBucketBoundaries.SECONDx100_MAX:
         return '>100s';
       default:
-        return null;
+        throw new Error('unknown bucket boundary');
     }
   }
 
@@ -122,7 +122,7 @@ export class LatencyBucketBoundaries {
       case LatencyBucketBoundaries.SECONDx100_MAX:
         return 'SECONDx100_MAX';
       default:
-        return null;
+        throw new Error('unknown bucket boundary');
     }
   }
 
@@ -137,7 +137,7 @@ export class LatencyBucketBoundaries {
         return latency;
       }
     }
-    return null;
+    throw new Error('unknown bucket boundary');
   }
 
   /**

@@ -19,7 +19,6 @@ import * as assert from 'assert';
 import axios from 'axios';
 import * as http from 'http';
 import * as qs from 'querystring';
-
 import {ZpagesExporter, ZpagesExporterOptions} from '../src/zpages';
 import {RpczData} from '../src/zpages-frontend/page-handlers/rpcz.page-handler';
 import {StatsViewData, StatszParams} from '../src/zpages-frontend/page-handlers/statsz.page-handler';
@@ -268,7 +267,7 @@ describe('Zpages Exporter', () => {
       it('should get view information', async () => {
         const view = globalStats.createView(
             'test/CountView', measure, AggregationType.COUNT, tagKeys,
-            'A count test', null);
+            'A count test');
         globalStats.registerView(view);
         globalStats.record([measurement, measurement2], tagMap);
 
@@ -283,7 +282,7 @@ describe('Zpages Exporter', () => {
       it('should get stats for view', async () => {
         const view = globalStats.createView(
             'test/CountView', measure, AggregationType.COUNT, tagKeys,
-            'A count test', null);
+            'A count test');
         globalStats.registerView(view);
         globalStats.record([measurement, measurement2], tagMap);
 
@@ -301,8 +300,8 @@ describe('Zpages Exporter', () => {
       it('should get view information', async () => {
         globalStats.registerExporter(zpages);
         const view = globalStats.createView(
-            'test/SumView', measure, AggregationType.SUM, tagKeys, 'A sum test',
-            null);
+            'test/SumView', measure, AggregationType.SUM, tagKeys,
+            'A sum test');
         globalStats.registerView(view);
         globalStats.record([measurement, measurement2], tagMap);
 
@@ -317,8 +316,8 @@ describe('Zpages Exporter', () => {
       it('should get stats for view', async () => {
         globalStats.registerExporter(zpages);
         const view = globalStats.createView(
-            'test/SumView', measure, AggregationType.SUM, tagKeys, 'A sum test',
-            null);
+            'test/SumView', measure, AggregationType.SUM, tagKeys,
+            'A sum test');
         globalStats.registerView(view);
         globalStats.record([measurement, measurement2], tagMap);
 
@@ -337,7 +336,7 @@ describe('Zpages Exporter', () => {
         globalStats.registerExporter(zpages);
         const view = globalStats.createView(
             'test/LastValueView', measure, AggregationType.LAST_VALUE, tagKeys,
-            'A last value test', null);
+            'A last value test');
         globalStats.registerView(view);
         globalStats.record([measurement, measurement2], tagMap);
 
@@ -353,7 +352,7 @@ describe('Zpages Exporter', () => {
         globalStats.registerExporter(zpages);
         const view = globalStats.createView(
             'test/LastValueView', measure, AggregationType.LAST_VALUE, tagKeys,
-            'A last value test', null);
+            'A last value test');
         globalStats.registerView(view);
         globalStats.record([measurement, measurement2], tagMap);
 
@@ -474,13 +473,13 @@ describe('Zpages Exporter', () => {
       const view4 = globalStats.createView(
           'grpc.io/client/completed_rpcs', measure3, AggregationType.COUNT,
           [GRPC_CLIENT_METHOD, GRPC_CLIENT_STATUS],
-          'Number of completed client RPCs', null);
+          'Number of completed client RPCs');
       globalStats.registerView(view4);
 
       const view5 = globalStats.createView(
           'grpc.io/client/started_rpcs', measure4, AggregationType.COUNT,
           [GRPC_CLIENT_METHOD, GRPC_CLIENT_STATUS],
-          'Number of started client RPCs', null);
+          'Number of started client RPCs');
       globalStats.registerView(view5);
 
       const measurement = {measure, value: 22000};
@@ -552,13 +551,13 @@ describe('Zpages Exporter', () => {
       const view4 = globalStats.createView(
           'grpc.io/server/completed_rpcs', measure7, AggregationType.COUNT,
           [GRPC_SERVER_METHOD, GRPC_SERVER_STATUS],
-          'Number of completed client RPCs', null);
+          'Number of completed client RPCs');
       globalStats.registerView(view4);
 
       const view5 = globalStats.createView(
           'grpc.io/server/started_rpcs', measure8, AggregationType.COUNT,
           [GRPC_SERVER_METHOD, GRPC_SERVER_STATUS],
-          'Number of started client RPCs', null);
+          'Number of started client RPCs');
       globalStats.registerView(view5);
 
       const measurement6 = {measure: measure5, value: 2200};
