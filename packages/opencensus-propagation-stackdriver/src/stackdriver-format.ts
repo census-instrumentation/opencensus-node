@@ -84,7 +84,7 @@ export class StackdriverFormat implements Propagation {
   /** Generate SpanContexts */
   generate(): SpanContext {
     return {
-      traceId: uuid.v4().split('-').join(''),
+      traceId: uuid.v4().replace(/-/g, ''),
       spanId: spanRandomBuffer().toString('hex'),
       options: TRACE_TRUE
     };

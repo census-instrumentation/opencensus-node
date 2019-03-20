@@ -20,17 +20,21 @@ import {StackdriverFormat, TRACE_CONTEXT_HEADER_NAME} from '../src';
 
 const stackdriverFormat = new StackdriverFormat();
 
+function helperGetter(value: string|string[]|undefined) {
+  const headers: {[key: string]: string|string[]|undefined} = {};
+  headers[TRACE_CONTEXT_HEADER_NAME] = value;
+  const getter: HeaderGetter = {
+    getHeader(name: string) {
+      return headers[name];
+    }
+  };
+  return getter;
+}
+
 describe('StackdriverPropagation', () => {
   describe('extract()', () => {
     it('should extract context of a sampled span from headers', () => {
-      const headers: {[key: string]: string|string[]|undefined} = {};
-      headers[TRACE_CONTEXT_HEADER_NAME] = '123456/667;o=1';
-      const getter: HeaderGetter = {
-        getHeader(name: string) {
-          return headers[name];
-        }
-      };
-
+      const getter = helperGetter('123456/667;o=1');
       assert.deepEqual(
           stackdriverFormat.extract(getter),
           {traceId: '123456', spanId: '000000000000029b', options: 1});
@@ -38,15 +42,8 @@ describe('StackdriverPropagation', () => {
 
     it('should extract context of a span from headers when TRACE_TRUE set to 0',
        () => {
-         const headers: {[key: string]: string|string[]|undefined} = {};
-         headers[TRACE_CONTEXT_HEADER_NAME] =
-             '123456/123456123456123456123456123456123456;o=0';
-         const getter: HeaderGetter = {
-           getHeader(name: string) {
-             return headers[name];
-           }
-         };
-
+         const getter =
+             helperGetter('123456/123456123456123456123456123456123456;o=0');
          assert.deepEqual(
              stackdriverFormat.extract(getter),
              {traceId: '123456', spanId: 'a89bb45f10f2f240', options: 0});
@@ -54,14 +51,7 @@ describe('StackdriverPropagation', () => {
 
     it('should extract context of a span from headers when option is undefined',
        () => {
-         const headers: {[key: string]: string|string[]|undefined} = {};
-         headers[TRACE_CONTEXT_HEADER_NAME] = 'cafef00d/123';
-         const getter: HeaderGetter = {
-           getHeader(name: string) {
-             return headers[name];
-           }
-         };
-
+         const getter = helperGetter('cafef00d/123');
          assert.deepEqual(
              stackdriverFormat.extract(getter),
              {traceId: 'cafef00d', spanId: '000000000000007b', options: 1});
@@ -73,13 +63,7 @@ describe('StackdriverPropagation', () => {
     ];
     inputs.forEach(s => {
       it(`should reject ${s}`, () => {
-        const headers: {[key: string]: string|string[]|undefined} = {};
-        headers[TRACE_CONTEXT_HEADER_NAME] = s;
-        const getter: HeaderGetter = {
-          getHeader(name: string) {
-            return headers[name];
-          }
-        };
+        const getter = helperGetter(s);
         const result = stackdriverFormat.extract(getter);
         assert.ok(!result);
       });
