@@ -15,13 +15,11 @@
  */
 
 import {AggregationType} from '@opencensus/core';
+import * as ejs from 'ejs';
+import * as path from 'path';
 import {StatsParams} from '../../zpages';
 
-const ejs = require('ejs');
-
-import pkgDir from 'pkg-dir';
-const templatesDir = `${pkgDir.sync(__dirname)}/templates`;
-
+const templatesDir = path.join(__dirname, '../../../../templates');
 const FIXED_SIZE = 3;
 
 export interface ZMeasureOrders {
@@ -71,8 +69,7 @@ export class RpczPageHandler {
    */
   emitHtml(json: boolean): string {
     /** template HTML */
-    const rpczFile =
-        ejs.fileLoader(`${templatesDir}/rpcz.ejs`, 'utf8').toString();
+    const rpczFile = ejs.fileLoader(`${templatesDir}/rpcz.ejs`).toString();
     /** CSS styles file */
     const stylesFile =
         ejs.fileLoader(`${templatesDir}/styles.min.css`).toString();

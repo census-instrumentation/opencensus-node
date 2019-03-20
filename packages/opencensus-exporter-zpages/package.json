@@ -58,7 +58,6 @@
   "dependencies": {
     "@opencensus/core": "^0.0.9",
     "ejs": "^2.5.8",
-    "express": "^4.16.3",
-    "pkg-dir": "^4.0.0"
+    "express": "^4.16.3"
   }
 }
