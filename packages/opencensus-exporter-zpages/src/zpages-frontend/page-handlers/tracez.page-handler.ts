@@ -16,7 +16,7 @@
 
 import {RootSpan, Span} from '@opencensus/core';
 import * as ejs from 'ejs';
-import * as pkgDir from 'pkg-dir';
+import pkgDir from 'pkg-dir';
 
 import {LatencyBucketBoundaries} from '../latency-bucket-boundaries';
 

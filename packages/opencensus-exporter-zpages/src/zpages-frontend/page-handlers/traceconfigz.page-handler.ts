@@ -17,7 +17,7 @@
 import {SamplerBuilder} from '@opencensus/core';
 import * as tracing from '@opencensus/nodejs';
 import * as ejs from 'ejs';
-import * as pkgDir from 'pkg-dir';
+import pkgDir from 'pkg-dir';
 
 // The directory to search for templates.
 const templatesDir = `${pkgDir.sync(__dirname)}/templates`;

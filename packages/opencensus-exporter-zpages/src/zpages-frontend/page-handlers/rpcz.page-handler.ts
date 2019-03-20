@@ -19,7 +19,7 @@ import {StatsParams} from '../../zpages';
 
 const ejs = require('ejs');
 
-import * as pkgDir from 'pkg-dir';
+import pkgDir from 'pkg-dir';
 const templatesDir = `${pkgDir.sync(__dirname)}/templates`;
 
 const FIXED_SIZE = 3;
