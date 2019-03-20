@@ -23,7 +23,6 @@
 import * as crypto from 'crypto';
 import {decToHex, hexToDec} from 'hex2dec';
 import * as uuid from 'uuid';
-
 import {HeaderGetter, HeaderSetter, SpanContext} from './index';
 
 const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';
