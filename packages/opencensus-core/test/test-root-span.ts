@@ -77,6 +77,28 @@ describe('RootSpan', () => {
     });
   });
 
+  describe('nested spans', () => {
+    it('should get nested spans from rootspan instance', () => {
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
+      root.start();
+      assert.equal(root.numberOfChildren, 0);
+      const child =
+          root.startChildSpan('childName', types.SpanKind.UNSPECIFIED);
+      assert.equal(root.numberOfChildren, 1);
+      const grandchild = root.startChildSpan({
+        name: 'grandchildName',
+        kind: types.SpanKind.UNSPECIFIED,
+        parentSpanId: child.id
+      });
+      assert.equal(root.numberOfChildren, 2);
+      assert.equal(grandchild.parentSpanId, child.id);
+
+      assert.equal(root.spans.length, 2);
+      assert.equal(child, root.spans[0]);
+      assert.equal(grandchild, root.spans[1]);
+    });
+  });
+
   /**
    * Should get trace id from rootspan instance
    */
