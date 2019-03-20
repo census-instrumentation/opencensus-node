@@ -122,7 +122,11 @@ describe('Zipkin Exporter', function() {
         child.addMessageEvent(MessageEventType.UNSPECIFIED, '3', 1550213104708);
         child.addAnnotation('done', {}, 1550213104708);
 
-        const grandchild = rootSpan.startChildSpan({name: 'grandchildTest', kind: SpanKind.CLIENT, parentSpanId: child.id});
+        const grandchild = rootSpan.startChildSpan({
+          name: 'grandchildTest',
+          kind: SpanKind.CLIENT,
+          parentSpanId: child.id
+        });
         grandchild.addAttribute('grandchild-attribute', 200);
 
         grandchild.end();
@@ -183,14 +187,10 @@ describe('Zipkin Exporter', function() {
           'name': 'grandchildTest',
           'parentId': child.id,
           'shared': true,
-          'tags': {
-            'census.status_code': '0',
-            'grandchild-attribute': '200'
-          },
+          'tags': {'census.status_code': '0', 'grandchild-attribute': '200'},
           'timestamp': grandchild.startTime.getTime() * MICROS_PER_MILLI,
           'traceId': rootSpan.traceId
         });
-
       });
     });
   });
