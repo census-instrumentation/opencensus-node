@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, RootSpan, SpanKind, TracerConfig} from '@opencensus/core';
+import {CoreTracer, Span, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as nock from 'nock';
 import {InstanaTraceExporter} from '../src/instana';
@@ -50,7 +50,7 @@ describe('Instana Exporter', function() {
       return tracer
           .startRootSpan(
               {name: 'root-test'},
-              async (rootSpan: RootSpan) => {
+              async (rootSpan: Span) => {
                 const span = rootSpan.startChildSpan(
                     {name: 'spanTest', kind: SpanKind.CLIENT});
                 span.end();

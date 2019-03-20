@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger, RootSpan, version} from '@opencensus/core';
+import {CoreTracer, logger, Span as OCSpan, version} from '@opencensus/core';
 import * as assert from 'assert';
 import * as nock from 'nock';
 
@@ -53,7 +53,7 @@ describe('Stackdriver Trace Exporter', function() {
   describe('onEndSpan()', () => {
     it('should add a root span to an exporter buffer', () => {
       const rootSpanOptions = {name: 'sdBufferTestRootSpan'};
-      return tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
+      return tracer.startRootSpan(rootSpanOptions, (rootSpan: OCSpan) => {
         assert.strictEqual(exporter.exporterBuffer.getQueue().length, 0);
 
         const spanName = 'sdBufferTestChildSpan';
@@ -76,7 +76,7 @@ describe('Stackdriver Trace Exporter', function() {
   describe('translateSpan()', () => {
     it('should translate to stackdriver spans', () => {
       return tracer.startRootSpan(
-          {name: 'root-test'}, async (rootSpan: RootSpan) => {
+          {name: 'root-test'}, async (rootSpan: OCSpan) => {
             const span = tracer.startChildSpan('spanTest');
             span.end();
             rootSpan.end();
@@ -160,7 +160,7 @@ describe('Stackdriver Trace Exporter', function() {
       failTracer.start({samplingRate: 1});
       failTracer.registerSpanEventListener(failExporter);
       return failTracer.startRootSpan(
-          {name: 'sdNoExportTestRootSpan'}, async (rootSpan: RootSpan) => {
+          {name: 'sdNoExportTestRootSpan'}, async (rootSpan: OCSpan) => {
             const span = failTracer.startChildSpan('sdNoExportTestChildSpan');
             span.end();
             rootSpan.end();
@@ -178,7 +178,7 @@ describe('Stackdriver Trace Exporter', function() {
 
     it('should export traces to stackdriver', () => {
       return tracer.startRootSpan(
-          {name: 'sdExportTestRootSpan'}, async (rootSpan: RootSpan) => {
+          {name: 'sdExportTestRootSpan'}, async (rootSpan: OCSpan) => {
             const span = tracer.startChildSpan('sdExportTestChildSpan');
 
             nocks.oauth2(body => true);
@@ -209,7 +209,7 @@ describe('Stackdriver Trace Exporter', function() {
       nocks.oauth2(body => true);
 
       return tracer.startRootSpan(
-          {name: 'sdErrorExportTestRootSpan'}, (rootSpan: RootSpan) => {
+          {name: 'sdErrorExportTestRootSpan'}, (rootSpan: OCSpan) => {
             const span = tracer.startChildSpan('sdErrorExportTestChildSpan');
             span.end();
             rootSpan.end();

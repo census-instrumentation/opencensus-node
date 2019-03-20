@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationType, CountData, DistributionData, globalStats, Measure, Measurement, MeasureUnit, RootSpan, SpanKind, SumData, TagMap, TracerConfig} from '@opencensus/core';
+import {AggregationType, CountData, DistributionData, globalStats, Measure, Measurement, MeasureUnit, Span, SpanKind, SumData, TagMap, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import axios from 'axios';
 import * as http from 'http';
@@ -131,13 +131,12 @@ describe('Zpages Exporter', () => {
       tracing.start(defaultConfig);
       tracing.registerExporter(zpages);
 
-      tracing.tracer.startRootSpan(
-          {name: 'rootSpanTest'}, (rootSpan: RootSpan) => {
-            const span = tracing.tracer.startChildSpan(
-                {name: 'spanNameTest', kind: SpanKind.CLIENT});
-            span.end();
-            rootSpan.end();
-          });
+      tracing.tracer.startRootSpan({name: 'rootSpanTest'}, (rootSpan: Span) => {
+        const span = tracing.tracer.startChildSpan(
+            {name: 'spanNameTest', kind: SpanKind.CLIENT});
+        span.end();
+        rootSpan.end();
+      });
       zpages.startServer(done);
     });
 

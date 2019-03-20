@@ -38,7 +38,7 @@ export class ExporterBuffer {
   /** An object to log information to */
   private logger: loggerTypes.Logger;
   /** Trace queue of a buffer */
-  private queue: modelTypes.RootSpan[] = [];
+  private queue: modelTypes.Span[] = [];
 
   /**
    * Constructs a new Buffer instance.
@@ -70,7 +70,7 @@ export class ExporterBuffer {
     return this.bufferSize;
   }
 
-  getQueue(): modelTypes.RootSpan[] {
+  getQueue(): modelTypes.Span[] {
     return this.queue;
   }
 
@@ -78,7 +78,7 @@ export class ExporterBuffer {
    * Add a rootSpan in the buffer.
    * @param root RootSpan to be added in the buffer.
    */
-  addToBuffer(root: modelTypes.RootSpan) {
+  addToBuffer(root: modelTypes.Span) {
     this.queue.push(root);
     this.logger.debug('ExporterBuffer: added new rootspan');
 

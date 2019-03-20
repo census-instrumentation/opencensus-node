@@ -24,9 +24,9 @@ import {Exporter, ExporterConfig, StatsEventListener} from './types';
 /** Do not send span data */
 export class NoopExporter implements Exporter {
   logger?: loggerTypes.Logger;
-  onStartSpan(root: modelTypes.RootSpan) {}
-  onEndSpan(root: modelTypes.RootSpan) {}
-  publish(rootSpans: modelTypes.RootSpan[]) {
+  onStartSpan(root: modelTypes.Span) {}
+  onEndSpan(root: modelTypes.Span) {}
+  publish(rootSpans: modelTypes.Span[]) {
     return Promise.resolve();
   }
 }
@@ -48,13 +48,13 @@ export class ConsoleExporter implements Exporter {
     this.logger = config.logger;
   }
 
-  onStartSpan(root: modelTypes.RootSpan) {}
+  onStartSpan(root: modelTypes.Span) {}
 
   /**
    * Event called when a span is ended.
    * @param root Ended span.
    */
-  onEndSpan(root: modelTypes.RootSpan) {
+  onEndSpan(root: modelTypes.Span) {
     this.buffer.addToBuffer(root);
   }
 
@@ -62,7 +62,7 @@ export class ConsoleExporter implements Exporter {
    * Sends the spans information to the console.
    * @param rootSpans A list of root spans to publish.
    */
-  publish(rootSpans: modelTypes.RootSpan[]) {
+  publish(rootSpans: modelTypes.Span[]) {
     rootSpans.map((root) => {
       const ROOT_STR = `RootSpan: {traceId: ${root.traceId}, spanId: ${
           root.id}, name: ${root.name} }`;

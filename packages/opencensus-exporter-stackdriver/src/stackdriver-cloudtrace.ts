@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, RootSpan, Span as OCSpan, SpanContext} from '@opencensus/core';
+import {Exporter, ExporterBuffer, Span as OCSpan, SpanContext} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
@@ -45,18 +45,18 @@ export class StackdriverTraceExporter implements Exporter {
    * Is called whenever a span is ended.
    * @param root the ended span
    */
-  onEndSpan(root: RootSpan) {
+  onEndSpan(root: OCSpan) {
     this.exporterBuffer.addToBuffer(root);
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: RootSpan) {}
+  onStartSpan(root: OCSpan) {}
 
   /**
    * Publishes a list of root spans to Stackdriver.
    * @param rootSpans
    */
-  async publish(rootSpans: RootSpan[]) {
+  async publish(rootSpans: OCSpan[]) {
     const spanList = await this.translateSpan(rootSpans);
 
     return this.authorize(spanList)
@@ -71,7 +71,7 @@ export class StackdriverTraceExporter implements Exporter {
         });
   }
 
-  async translateSpan(rootSpans: RootSpan[]) {
+  async translateSpan(rootSpans: OCSpan[]) {
     const resourceLabel = await this.RESOURCE_LABELS;
     const spanList: Span[] = [];
     rootSpans.forEach(rootSpan => {

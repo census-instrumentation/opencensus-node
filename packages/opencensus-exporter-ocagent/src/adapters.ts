@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, Link, LinkType, MessageEvent, MessageEventType, RootSpan, Span, SpanKind} from '@opencensus/core';
+import {Annotation, Attributes, Link, LinkType, MessageEvent, MessageEventType, Span, SpanKind} from '@opencensus/core';
 import {google, opencensus} from './types';
 
 /**
@@ -293,7 +293,7 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
  * @returns opencensus.proto.trace.v1.Span[]
  */
 export const adaptRootSpan =
-    (rootSpan: RootSpan): opencensus.proto.trace.v1.Span[] => {
+    (rootSpan: Span): opencensus.proto.trace.v1.Span[] => {
       return [adaptSpan(rootSpan), ...rootSpan.spans.map(adaptSpan)];
     };
 

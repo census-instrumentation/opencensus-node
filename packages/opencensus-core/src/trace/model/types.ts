@@ -239,8 +239,6 @@ export interface SpanOptions {
   name: string;
   /** Span kind */
   kind?: SpanKind;
-  /** Span parent ID */
-  parentSpanId?: string;
 }
 
 export type TraceState = string;
@@ -260,8 +258,8 @@ export interface SpanContext {
 /** Defines an end span event listener */
 export interface SpanEventListener {
   /** Happens when a span is ended */
-  onStartSpan(span: RootSpan): void;
-  onEndSpan(span: RootSpan): void;
+  onStartSpan(span: Span): void;
+  onEndSpan(span: Span): void;
 }
 
 /** An event describing a message sent/received between Spans. */
@@ -344,8 +342,14 @@ export interface Span {
   /** Pointers from the current span to another span */
   links: Link[];
 
-  /** true if span is a RootSpan */
-  isRootSpan: boolean;
+  /** Recursively gets the descendant spans. */
+  allDescendants(): Span[];
+
+  /** The list of immediate child spans. */
+  spans: Span[];
+
+  /** The number of direct children */
+  numberOfChildren: number;
 
   /** Trace id asscoiated with span. */
   readonly traceId: string;
@@ -445,32 +449,22 @@ export interface Span {
   /** Starts a span. */
   start(): void;
 
-  /** Ends a span. */
+  /** Ends a span and all of its children, recursively. */
   end(): void;
 
   /** Forces to end a span. */
   truncate(): void;
-}
 
-/** Interface for RootSpan */
-export interface RootSpan extends Span {
-  /** Get the span list from RootSpan instance */
-  readonly spans: Span[];
-
-  /** Gets the number of child span created for this span. */
-  readonly numberOfChildren: number;
-
-  /** Starts a new Span instance in the RootSpan instance */
+  /** Starts a new Span instance as a child of this instance */
   startChildSpan(name?: string, kind?: SpanKind): Span;
   startChildSpan(options?: SpanOptions): Span;
   startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind): Span;
 }
 
-
 /** Interface for Tracer */
 export interface Tracer extends SpanEventListener {
   /** Get and set the currentRootSpan to tracer instance */
-  currentRootSpan: RootSpan;
+  currentRootSpan: Span;
 
   /** A sampler that will decide if the span will be sampled or not */
   sampler: samplerTypes.Sampler;
@@ -506,7 +500,7 @@ export interface Tracer extends SpanEventListener {
    * @param fn Callback function
    * @returns The callback return
    */
-  startRootSpan<T>(options: TraceOptions, fn: (root: RootSpan) => T): T;
+  startRootSpan<T>(options: TraceOptions, fn: (root: Span) => T): T;
 
   /**
    * Register a OnEndSpanEventListener on the tracer instance

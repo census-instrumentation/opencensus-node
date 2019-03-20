@@ -59,12 +59,12 @@ export class CoreTracer implements types.Tracer {
   }
 
   /** Gets the current root span. */
-  get currentRootSpan(): types.RootSpan {
+  get currentRootSpan(): types.Span {
     return this.contextManager.get('rootspan');
   }
 
   /** Sets the current root span. */
-  set currentRootSpan(root: types.RootSpan) {
+  set currentRootSpan(root: types.Span) {
     if (this.contextManager.active) {
       this.contextManager.set('rootspan', root);
     }
@@ -124,8 +124,8 @@ export class CoreTracer implements types.Tracer {
    * @param options A TraceOptions object to start a root span.
    * @param fn A callback function to run after starting a root span.
    */
-  startRootSpan<T>(
-      options: types.TraceOptions, fn: (root: types.RootSpan) => T): T {
+  startRootSpan<T>(options: types.TraceOptions, fn: (root: types.Span) => T):
+      T {
     return this.contextManager.runAndReturn((root) => {
       let traceId;
       if (options && options.spanContext && options.spanContext.traceId) {
@@ -166,7 +166,7 @@ export class CoreTracer implements types.Tracer {
   }
 
   /** Notifies listeners of the span start. */
-  onStartSpan(root: types.RootSpan): void {
+  onStartSpan(root: types.Span): void {
     if (!this.active) return;
     if (!root) {
       return this.logger.debug('cannot start trace - no active trace found');
@@ -179,7 +179,7 @@ export class CoreTracer implements types.Tracer {
   }
 
   /** Notifies listeners of the span end. */
-  onEndSpan(root: types.RootSpan): void {
+  onEndSpan(root: types.Span): void {
     if (!this.active) return;
     if (!root) {
       this.logger.debug('cannot end trace - no active trace found');
@@ -211,7 +211,7 @@ export class CoreTracer implements types.Tracer {
     }
   }
 
-  private notifyStartSpan(root: types.RootSpan) {
+  private notifyStartSpan(root: types.Span) {
     this.logger.debug('starting to notify listeners the start of rootspans');
     if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
       for (const listener of this.eventListenersLocal) {
@@ -220,7 +220,7 @@ export class CoreTracer implements types.Tracer {
     }
   }
 
-  private notifyEndSpan(root: types.RootSpan) {
+  private notifyEndSpan(root: types.Span) {
     this.logger.debug('starting to notify listeners the end of rootspans');
     if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
       for (const listener of this.eventListenersLocal) {

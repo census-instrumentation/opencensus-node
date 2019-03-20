@@ -45,9 +45,7 @@ describe('RootSpan', () => {
    */
   describe('get spans()', () => {
     it('should get span list from rootspan instance', () => {
-      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
-      // TODO: Suggetion: make sure that root.spans.length is 1,
-      // and that it's the same as the earlier (shadowed) span object
+      const root = new RootSpan(tracer, name, kind, traceId, '');
       root.start();
       const span =
           root.startChildSpan({name: 'spanName', kind: types.SpanKind.CLIENT});
@@ -78,13 +76,51 @@ describe('RootSpan', () => {
     });
   });
 
+  describe('nested spans', () => {
+    it('should get nested spans from rootspan instance', () => {
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
+      root.start();
+      assert.equal(root.numberOfChildren, 0);
+      const child1 = root.startChildSpan('child1', types.SpanKind.UNSPECIFIED);
+      assert.equal(root.numberOfChildren, 1);
+      assert.equal(child1.numberOfChildren, 0);
+      const child2 = root.startChildSpan('child2', types.SpanKind.UNSPECIFIED);
+      assert.equal(root.numberOfChildren, 2);
+      const grandchild1 = child1.startChildSpan({
+        name: 'grandchild1',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
+      assert.equal(root.numberOfChildren, 2);
+      assert.equal(child1.numberOfChildren, 1);
+      assert.equal(child2.numberOfChildren, 0);
+      assert.equal(grandchild1.numberOfChildren, 0);
+
+      assert.equal(root.spans.length, 2);
+      assert.equal(child1, root.spans[0]);
+      assert.equal(child2, root.spans[1]);
+      assert.equal(grandchild1.parentSpanId, child1.id);
+
+      assert.equal(child1.spans.length, 1);
+      assert.equal(grandchild1, child1.spans[0]);
+
+      assert.equal(child2.spans.length, 0);
+      assert.equal(grandchild1.spans.length, 0);
+
+      assert.equal(root.allDescendants().length, 3);
+    });
+  });
+
   /**
    * Should get trace id from rootspan instance
    */
   describe('new traceId()', () => {
     it('should get trace id from rootspan instance', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
+      root.start();
       assert.equal(root.traceId, root.spanContext.traceId);
+
+      const child = root.startChildSpan('child', types.SpanKind.UNSPECIFIED);
+      assert.equal(root.traceId, child.traceId);
     });
   });
 
@@ -103,7 +139,7 @@ describe('RootSpan', () => {
    * Should create and start a new span instance
    */
   describe('startSpan()', () => {
-    let root: types.RootSpan, span: types.Span;
+    let root: RootSpan, span: types.Span;
 
     before(() => {
       root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
@@ -174,10 +210,11 @@ describe('RootSpan', () => {
     it('should end all spans inside rootspan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
-      root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
+      const child = root.startChildSpan('child', types.SpanKind.UNSPECIFIED);
+      child.startChildSpan('grandchild', types.SpanKind.UNSPECIFIED);
       root.end();
 
-      for (const span of root.spans) {
+      for (const span of root.allDescendants()) {
         assert.ok(span.ended);
       }
     });

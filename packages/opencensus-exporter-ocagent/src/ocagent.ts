@@ -15,7 +15,7 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {Exporter, ExporterBuffer, ExporterConfig, logger, Logger, RootSpan, version as coreVersion} from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, logger, Logger, Span, version as coreVersion} from '@opencensus/core';
 import * as grpc from 'grpc';
 import * as os from 'os';
 import {adaptRootSpan, createNode} from './adapters';
@@ -204,13 +204,13 @@ export class OCAgentExporter implements Exporter {
     }
   }
 
-  onStartSpan(root: RootSpan) {}
+  onStartSpan(root: Span) {}
 
-  onEndSpan(root: RootSpan) {
+  onEndSpan(root: Span) {
     this.buffer.addToBuffer(root);
   }
 
-  publish(rootSpans: RootSpan[]): Promise<number|string|void> {
+  publish(rootSpans: Span[]): Promise<number|string|void> {
     return new Promise((resolve, reject) => {
       this.logger.info(`OCAgent: publish rootSpans=${rootSpans.length}`);
 
