@@ -138,11 +138,17 @@ export class RootSpan extends SpanBase implements types.RootSpan {
         typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
     const spanKind =
         typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
+    const spanParentId = typeof nameOrOptions === 'object' ?
+        nameOrOptions.parentSpanId :
+        undefined;
     if (spanName) {
       child.name = spanName;
     }
     if (spanKind) {
       child.kind = spanKind;
+    }
+    if (spanParentId) {
+      child.parentSpanId = spanParentId;
     }
 
     child.start();
