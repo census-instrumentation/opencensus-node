@@ -46,7 +46,6 @@
     "@types/extend": "^3.0.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.12",
-    "@types/pkg-dir": "^2.0.0",
     "axios": "^0.18.0",
     "codecov": "^3.1.0",
     "gts": "^0.9.0",
@@ -59,7 +58,6 @@
   "dependencies": {
     "@opencensus/core": "^0.0.9",
     "ejs": "^2.5.8",
-    "express": "^4.16.3",
-    "pkg-dir": "^3.0.0"
+    "express": "^4.16.3"
   }
 }
