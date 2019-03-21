@@ -166,7 +166,7 @@ export class ZipkinTraceExporter implements Exporter {
       timestamp: span.startTime.getTime() * MICROS_PER_MILLI,
       duration: Math.round(span.duration * MICROS_PER_MILLI),
       debug: true,
-      shared: true,
+      shared: span.isRootSpan, // Only the root span could be shared.
       localEndpoint: {serviceName: this.serviceName},
       tags: this.createTags(span.attributes, span.status),
       annotations: this.createAnnotations(span.annotations, span.messageEvents)
@@ -178,7 +178,7 @@ export class ZipkinTraceExporter implements Exporter {
     return spanTraslated;
   }
 
-  /** Converts OpenCensus Attributes ans Status to Zipkin Tags format. */
+  /** Converts OpenCensus Attributes and Status to Zipkin Tags format. */
   private createTags(
       attributes: coreTypes.Attributes, status: coreTypes.Status) {
     const tags: {[key: string]: string} = {};
