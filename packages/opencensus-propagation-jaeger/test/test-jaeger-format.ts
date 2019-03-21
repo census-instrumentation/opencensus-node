@@ -16,13 +16,18 @@
 
 import {HeaderGetter, HeaderSetter} from '@opencensus/core';
 import * as assert from 'assert';
+import {JaegerFormat, SAMPLED_VALUE, TRACER_STATE_HEADER_NAME} from '../src/';
 
-import {JaegerFormat} from '../src/';
-
-const TRACE_ID_HEADER = 'uber-trace-id';
-
-const SAMPLED_VALUE = 0x1;
-const NOT_SAMPLED_VALUE = 0x0;
+function helperGetter(value: string|string[]|undefined) {
+  const headers: {[key: string]: string|string[]|undefined} = {};
+  headers[TRACER_STATE_HEADER_NAME] = value;
+  const getter: HeaderGetter = {
+    getHeader(name: string) {
+      return headers[name];
+    }
+  };
+  return getter;
+}
 
 const jaegerFormat = new JaegerFormat();
 
@@ -30,11 +35,15 @@ describe('JaegerPropagation', () => {
   describe('extract()', () => {
     it('should extract context of a sampled span from headers', () => {
       const spanContext = jaegerFormat.generate();
-      // disable-next-line to disable no-any check
-      // tslint:disable-next-line
-      const headers = {} as any;
-      headers[TRACE_ID_HEADER] = `${spanContext.traceId}:${
-          spanContext.spanId}::${spanContext.options}`;
+      const getter = helperGetter(`${spanContext.traceId}:${
+          spanContext.spanId}::${spanContext.options}`);
+
+      assert.deepEqual(jaegerFormat.extract(getter), spanContext);
+    });
+
+    it('should return null when header is undefined', () => {
+      const headers: {[key: string]: string|string[]|undefined} = {};
+      headers[TRACER_STATE_HEADER_NAME] = undefined;
 
       const getter: HeaderGetter = {
         getHeader(name: string) {
@@ -42,6 +51,13 @@ describe('JaegerPropagation', () => {
         }
       };
 
+      assert.deepEqual(jaegerFormat.extract(getter), null);
+    });
+
+    it('should extract data from an array', () => {
+      const spanContext = jaegerFormat.generate();
+      const getter = helperGetter(`${spanContext.traceId}:${
+          spanContext.spanId}::${spanContext.options}`);
       assert.deepEqual(jaegerFormat.extract(getter), spanContext);
     });
   });
@@ -49,9 +65,7 @@ describe('JaegerPropagation', () => {
   describe('inject', () => {
     it('should inject a context of a sampled span', () => {
       const spanContext = jaegerFormat.generate();
-      // disable-next-line to disable no-any check
-      // tslint:disable-next-line
-      const headers = {} as any;
+      const headers: {[key: string]: string|string[]|undefined} = {};
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
@@ -65,6 +79,28 @@ describe('JaegerPropagation', () => {
 
       jaegerFormat.inject(setter, spanContext);
       assert.deepEqual(jaegerFormat.extract(getter), spanContext);
+    });
+
+    it('should not inject empty spancontext', () => {
+      const emptySpanContext = {
+        traceId: '',
+        spanId: '',
+        options: SAMPLED_VALUE,
+      };
+      const headers: {[key: string]: string|string[]|undefined} = {};
+      const setter: HeaderSetter = {
+        setHeader(name: string, value: string) {
+          headers[name] = value;
+        }
+      };
+      const getter: HeaderGetter = {
+        getHeader(name: string) {
+          return headers[name];
+        }
+      };
+
+      jaegerFormat.inject(setter, emptySpanContext);
+      assert.deepEqual(jaegerFormat.extract(getter), null);
     });
   });
 
