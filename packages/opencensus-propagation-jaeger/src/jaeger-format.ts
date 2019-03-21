@@ -53,7 +53,11 @@ export class JaegerFormat implements Propagation {
 
     const traceId = tracerStateHeaderParts[0];
     const spanId = tracerStateHeaderParts[1];
-    const jflags = Number('0x' + tracerStateHeaderParts[3]);
+    const jflags = Number(
+        '0x' +
+        (isNaN(Number(tracerStateHeaderParts[3])) ?
+             SAMPLED_VALUE :
+             Number(tracerStateHeaderParts[3])));
     const sampled = jflags & SAMPLED_VALUE;
     const debug = (jflags & DEBUG_VALUE) || (debugId ? SAMPLED_VALUE : 0);
     const options = (sampled || debug) ? SAMPLED_VALUE : 0;
