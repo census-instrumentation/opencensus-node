@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export * from './stackdriver-format';
+
 import * as v1API from './v1';
 
 export interface SpanContext {
@@ -46,6 +48,11 @@ export interface Propagation {
   generate(): SpanContext;
 }
 
+/**
+ * @deprecated since version 0.0.10 - use {@link StackdriverFormat} instead
+ * All other propagation exports a class constructor, while Stackdriver v1
+ * propagation exports an implementation of Propagation.
+ */
 export const v1: Propagation = {
   extract: v1API.extract,
   inject: v1API.inject,
