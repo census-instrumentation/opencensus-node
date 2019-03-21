@@ -47,7 +47,6 @@
     "codecov": "^3.1.0",
     "gts": "^0.9.0",
     "mocha": "^6.0.0",
-    "ncp": "^2.0.0",
     "nock": "^10.0.0",
     "nyc": "^13.0.0",
     "ts-node": "^8.0.0",
@@ -57,7 +56,6 @@
     "@opencensus/core": "^0.0.9",
     "@opencensus/resource-util": "^0.0.9",
     "google-auth-library": "^3.0.0",
-    "googleapis": "38.0.0",
-    "hex2dec": "^1.1.0"
+    "googleapis": "38.0.0"
   }
 }
