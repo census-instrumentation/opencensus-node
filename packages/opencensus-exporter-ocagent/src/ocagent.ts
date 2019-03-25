@@ -51,6 +51,18 @@ enum StreamEvent {
   Metadata = 'metadata'
 }
 
+// Load the package details. Note that the `require` is performed at runtime,
+// which means package.json will be relative to the location of this file.
+// If this file has been compiled, it will be in the `/build` directory, so the
+// package path is relative to that location.  Otherwise, it will be relative
+// to the original .ts file.
+let pjsonVersion: string;
+try {
+  pjsonVersion = require('../../package.json');
+} catch {
+  pjsonVersion = require('../package.json');
+}
+
 /**
  * Format and send span information to the OpenCensus Agent. Also receives and
  * applies configuration changes from the Agent.
@@ -88,7 +100,7 @@ export class OCAgentExporter implements Exporter {
     /**
      * Get node properties
      */
-    this.exporterVersion = require('../../package.json').version;
+    this.exporterVersion = pjsonVersion;
     this.coreVersion = coreVersion;
     this.hostName = os.hostname();
     this.processStartTimeMillis = Date.now() - (process.uptime() * 1000);
