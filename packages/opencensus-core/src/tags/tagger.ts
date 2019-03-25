@@ -17,25 +17,25 @@
 import * as cls from '../internal/cls';
 import {TagMap} from './tag-map';
 
-const contextManager = cls.createNamespace();
 export const EMPTY_TAG_MAP = new TagMap();
 const CURRENT_TAG_MAP_KEY = 'current_tag_map';
 
 /** Gets the current tag context. */
-export function getCurrentTagContext(): TagMap {
+export function getCurrentTagContext(contextManager: cls.Namespace): TagMap {
   const tagsFromContext = contextManager.get(CURRENT_TAG_MAP_KEY);
   if (tagsFromContext) {
-    return tagsFromContext as TagMap;
+    return makeDeepCopy(tagsFromContext as TagMap);
   }
-  return EMPTY_TAG_MAP;
+  return new TagMap();
 }
 
 /**
  * Sets the current tag context.
  * @param tags The TagMap.
  */
-export function setCurrentTagContext(tags: TagMap) {
-  contextManager.set(CURRENT_TAG_MAP_KEY, tags);
+export function setCurrentTagContext(
+    contextManager: cls.Namespace, tags: TagMap) {
+  contextManager.set(CURRENT_TAG_MAP_KEY, makeDeepCopy(tags));
 }
 
 /**
@@ -45,8 +45,9 @@ export function setCurrentTagContext(tags: TagMap) {
  * @param fn Callback function.
  * @returns The callback return.
  */
-export function withTagContext<T>(tags: TagMap, fn: cls.Func<T>): T {
-  const oldContext = getCurrentTagContext();
+export function withTagContext<T>(
+    contextManager: cls.Namespace, tags: TagMap, fn: cls.Func<T>): T {
+  const oldContext = getCurrentTagContext(contextManager);
   return contextManager.runAndReturn(() => {
     const newContext = new TagMap();
     for (const [tagKey, tagValue] of oldContext.tags) {
@@ -55,12 +56,21 @@ export function withTagContext<T>(tags: TagMap, fn: cls.Func<T>): T {
     for (const [tagKey, tagValue] of tags.tags) {
       newContext.set(tagKey, tagValue);
     }
-    setCurrentTagContext(newContext);
+    setCurrentTagContext(contextManager, newContext);
     return fn();
   });
 }
 
 /** Clear the current tag context. */
-export function clear() {
-  contextManager.set(CURRENT_TAG_MAP_KEY, EMPTY_TAG_MAP);
+export function clear(contextManager: cls.Namespace) {
+  contextManager.set(CURRENT_TAG_MAP_KEY, new TagMap());
+}
+
+function makeDeepCopy(tags: TagMap) {
+  const tagsCopy = new TagMap();
+  for (const [tagKey, valueWithMetadata] of tags.tagsWithMetadata) {
+    tagsCopy.set(
+        tagKey, valueWithMetadata.tagValue, valueWithMetadata.tagMetadata);
+  }
+  return tagsCopy;
 }

@@ -64,6 +64,9 @@ class AsyncHooksNamespace implements CLSNamespace {
   runAndReturn<T>(fn: Func<T>): T {
     const oldContext = current;
     current = {};
+    if (oldContext['current_tag_map']) {
+      current['current_tag_map'] = oldContext['current_tag_map'];
+    }
     const res = fn();
     current = oldContext;
     return res;
