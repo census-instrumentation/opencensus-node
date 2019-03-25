@@ -33,6 +33,16 @@
     "LICENSE",
     "README.md"
   ],
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "all": true  
+  },
   "publishConfig": {
     "access": "public"
   },
