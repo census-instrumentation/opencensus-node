@@ -72,6 +72,7 @@ export * from './stats/bucket-boundaries';
 export * from './stats/metric-utils';
 export * from './tags/tag-map';
 export * from './tags/tagger';
+export * from './tags/propagation/text-format';
 export * from './resource/resource';
 
 // interfaces
