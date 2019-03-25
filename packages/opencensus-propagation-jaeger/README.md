@@ -1,7 +1,7 @@
-# OpenCensus Jaeger Format Propagation for Node.js
+# OpenCensus Jaeger Format Propagation
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus Jaeger Format Propagation sends a span context on the wire in an HTTP request, allowing other services to create spans with the right context.
+OpenCensus [Jaeger Format Propagation](https://www.jaegertracing.io/docs/1.10/client-libraries/#propagation-format) sends a span context on the wire in an HTTP request, allowing other services to create spans with the right context.
 
 This project is still at an early stage of development. It's subject to change.
 

@@ -16,12 +16,12 @@
 
 import {RootSpan, Span} from '@opencensus/core';
 import * as ejs from 'ejs';
-import * as pkgDir from 'pkg-dir';
+import * as path from 'path';
 
 import {LatencyBucketBoundaries} from '../latency-bucket-boundaries';
 
 // The directory to search for templates.
-const templatesDir = `${pkgDir.sync(__dirname)}/templates`;
+const templatesDir = path.join(__dirname, '../../../../templates');
 
 export type TracezParams = {
   tracename: string; type: string;
