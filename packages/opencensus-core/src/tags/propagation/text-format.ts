@@ -20,8 +20,7 @@
  * It allows tags to propagate across requests.
  *
  * OpenCensus uses W3C Correlation Context as the HTTP text format.
- * https://github.com/w3c/correlation-context/blob/master/correlation_context/
- * HTTP_HEADER_FORMAT.md
+ * https://github.com/w3c/correlation-context/blob/master/correlation_context/HTTP_HEADER_FORMAT.md
  */
 
 import {TagMap} from '../tag-map';
