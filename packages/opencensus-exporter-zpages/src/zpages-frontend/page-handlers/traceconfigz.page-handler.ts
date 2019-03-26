@@ -17,10 +17,8 @@
 import {SamplerBuilder} from '@opencensus/core';
 import * as tracing from '@opencensus/nodejs';
 import * as ejs from 'ejs';
-import * as path from 'path';
 
-// The directory to search for templates.
-const templatesDir = path.join(__dirname, '../../../../templates');
+import {templatesDir} from './templates-dir';
 
 export interface TraceConfigzParams {
   change: string;
