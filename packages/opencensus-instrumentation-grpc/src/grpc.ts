@@ -560,8 +560,8 @@ export class GrpcPlugin extends BasePlugin {
       if (!tags) return null;
       return tags;
     } catch (ignore) {
+      return null;
     }
-    return null;
   }
 
   /**
