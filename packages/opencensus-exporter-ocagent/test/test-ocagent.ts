@@ -269,13 +269,12 @@ describe('OpenCensus Agent Exporter', () => {
 
       // Message Event
       const timeStamp = 123456789;
-      rootSpan.addMessageEvent(MessageEventType.SENT, 'aaaa', timeStamp);
-      rootSpan.addMessageEvent(
-          MessageEventType.SENT, 'ffff', timeStamp, 100, 12);
-      rootSpan.addMessageEvent(MessageEventType.RECEIVED, 'ffff', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.SENT, '1', timeStamp);
+      rootSpan.addMessageEvent(MessageEventType.SENT, '2', timeStamp, 100, 12);
+      rootSpan.addMessageEvent(MessageEventType.RECEIVED, '1', timeStamp);
       // Use of `null` is to force a `TYPE_UNSPECIFIED` value
       // tslint:disable-next-line:no-any
-      rootSpan.addMessageEvent(null as any, 'ffff', timeStamp);
+      rootSpan.addMessageEvent(null as any, '2', timeStamp);
 
       // Links
       rootSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
@@ -493,8 +492,8 @@ describe('OpenCensus Agent Exporter', () => {
 
          // Message Event
          const timeStamp = 123456789;
-         rootSpan.addMessageEvent(MessageEventType.SENT, 'ffff', timeStamp);
-         rootSpan.addMessageEvent(MessageEventType.RECEIVED, 'ffff', timeStamp);
+         rootSpan.addMessageEvent(MessageEventType.SENT, '1', timeStamp);
+         rootSpan.addMessageEvent(MessageEventType.RECEIVED, '1', timeStamp);
 
          // Links
          rootSpan.addLink('ffff', 'ffff', LinkType.CHILD_LINKED_SPAN, {

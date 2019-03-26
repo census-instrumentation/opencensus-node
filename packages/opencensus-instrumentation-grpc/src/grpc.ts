@@ -87,6 +87,8 @@ export class GrpcPlugin extends BasePlugin {
   static readonly ATTRIBUTE_GRPC_STATUS_CODE = 'grpc.status_code';
   static readonly ATTRIBUTE_GRPC_ERROR_NAME = 'grpc.error_name';
   static readonly ATTRIBUTE_GRPC_ERROR_MESSAGE = 'grpc.error_message';
+  private sentSeqId = 1;
+  private receviedSeqId = 1;
 
   protected readonly internalFileList: PluginInternalFiles = {
     '0.13 - 1.6': {
@@ -228,6 +230,8 @@ export class GrpcPlugin extends BasePlugin {
             GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
             grpcTypes.status.OK.toString());
       }
+      rootSpan.addMessageEvent(
+          MessageEventType.RECEIVED, `${plugin.receviedSeqId++}`);
 
       // record stats
       const parentTagCtx =
@@ -378,6 +382,7 @@ export class GrpcPlugin extends BasePlugin {
               GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
               grpcTypes.status.OK.toString());
         }
+        span.addMessageEvent(MessageEventType.SENT, `${plugin.sentSeqId++}`);
 
         // record stats: new RPCs on client-side inherit the tag context from
         // the current Context.
