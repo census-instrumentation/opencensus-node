@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, PluginInternalFiles, RootSpan, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, deserializeBinary, PluginInternalFiles, RootSpan, serializeBinary, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
 import {deserializeSpanContext, serializeSpanContext} from '@opencensus/propagation-binaryformat';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
+
 import * as clientStats from './grpc-stats/client-stats';
 import * as serverStats from './grpc-stats/server-stats';
+
 const sizeof = require('object-sizeof');
 
 /** The metadata key under which span context is stored as a binary value. */
 export const GRPC_TRACE_KEY = 'grpc-trace-bin';
+/** The metadata key under which TagMap is stored as a binary value. */
+export const GRPC_TAGS_KEY = 'grpc-tags-bin';
 const findIndex = lodash.findIndex;
 
 //
@@ -229,13 +233,14 @@ export class GrpcPlugin extends BasePlugin {
       }
 
       // record stats
-      const tags = new TagMap();
-      tags.set(
+      const parentTagCtx =
+          GrpcPlugin.getTagContext(call.metadata) || new TagMap();
+      parentTagCtx.set(
           serverStats.GRPC_SERVER_METHOD, {value: rootSpan.name},
           UNLIMITED_PROPAGATION_MD);
       const req = call.hasOwnProperty('request') ? call.request : {};
       GrpcPlugin.recordStats(
-          rootSpan.kind, tags, value, req, Date.now() - startTime);
+          rootSpan.kind, parentTagCtx, value, req, Date.now() - startTime);
 
       rootSpan.end();
       return callback(err, value, trailer, flags);
@@ -354,7 +359,9 @@ export class GrpcPlugin extends BasePlugin {
      * Patches a callback so that the current span for this trace is also ended
      * when the callback is invoked.
      */
-    function patchedCallback(span: Span, callback: SendUnaryDataCallback) {
+    function patchedCallback(
+        span: Span, callback: SendUnaryDataCallback,
+        metadata: grpcTypes.Metadata) {
       // tslint:disable-next-line:no-any
       const wrappedFn = (err: grpcTypes.ServiceError, res: any) => {
         if (err) {
@@ -375,13 +382,18 @@ export class GrpcPlugin extends BasePlugin {
               grpcTypes.status.OK.toString());
         }
 
-        // record stats
-        const tags = new TagMap();
-        tags.set(
+        // record stats: new RPCs on client-side inherit the tag context from
+        // the current Context.
+        const parentTagCtx =
+            plugin.stats ? plugin.stats.getCurrentTagContext() : new TagMap();
+        if (parentTagCtx.tags.size > 0) {
+          GrpcPlugin.setTagContext(metadata, parentTagCtx);
+        }
+        parentTagCtx.set(
             clientStats.GRPC_CLIENT_METHOD, {value: span.name},
             UNLIMITED_PROPAGATION_MD);
         GrpcPlugin.recordStats(
-            span.kind, tags, originalArgs, res, Date.now() - startTime);
+            span.kind, parentTagCtx, originalArgs, res, Date.now() - startTime);
 
         span.end();
         callback(err, res);
@@ -394,6 +406,7 @@ export class GrpcPlugin extends BasePlugin {
         return original.apply(self, args);
       }
 
+      const metadata = this.getMetadata(original, args);
       // if unary or clientStream
       if (!original.responseStream) {
         const callbackFuncIndex = findIndex(args, (arg) => {
@@ -401,11 +414,10 @@ export class GrpcPlugin extends BasePlugin {
         });
         if (callbackFuncIndex !== -1) {
           args[callbackFuncIndex] =
-              patchedCallback(span, args[callbackFuncIndex]);
+              patchedCallback(span, args[callbackFuncIndex], metadata);
         }
       }
 
-      const metadata = this.getMetadata(original, args);
       GrpcPlugin.setSpanContext(metadata, span.spanContext);
 
       span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, original.path);
@@ -520,7 +532,7 @@ export class GrpcPlugin extends BasePlugin {
   }
 
   /**
-   * Set span context on a Metadata object if it exists.
+   * Sets a span context on a Metadata object if it exists.
    * @param metadata The Metadata object to which a span context should be
    *     added.
    * @param spanContext The span context.
@@ -530,6 +542,37 @@ export class GrpcPlugin extends BasePlugin {
     const serializedSpanContext = serializeSpanContext(spanContext);
     if (serializedSpanContext) {
       metadata.set(GRPC_TRACE_KEY, serializedSpanContext);
+    }
+  }
+
+  /**
+   * Returns a TagMap on a Metadata object if it exists and is well-formed, or
+   * null otherwise.
+   * @param metadata The Metadata object from which TagMap should be retrieved.
+   */
+  static getTagContext(metadata: grpcTypes.Metadata): TagMap|null {
+    const metadataValue = metadata.getMap()[GRPC_TAGS_KEY] as Buffer;
+    // Entry doesn't exist.
+    if (!metadataValue) return null;
+    try {
+      const tags = deserializeBinary(metadataValue);
+      // Value is malformed.
+      if (!tags) return null;
+      return tags;
+    } catch (ignore) {
+      return null;
+    }
+  }
+
+  /**
+   * Sets a TagMap context on a Metadata object if it exists.
+   * @param metadata The Metadata object to which a TagMap should be added.
+   * @param TagMap The TagMap.
+   */
+  static setTagContext(metadata: grpcTypes.Metadata, tagMap: TagMap): void {
+    const serializedTagMap = serializeBinary(tagMap);
+    if (serializedTagMap) {
+      metadata.set(GRPC_TAGS_KEY, serializedTagMap);
     }
   }
 

@@ -51,7 +51,7 @@ export class CoreTracer implements types.Tracer {
   /** Constructs a new TraceImpl instance. */
   constructor() {
     this.activeLocal = false;
-    this.contextManager = cls.createNamespace();
+    this.contextManager = cls.getNamespace();
     this.clearCurrentTrace();
     this.activeTraceParams = {};
   }

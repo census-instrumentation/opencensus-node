@@ -15,6 +15,7 @@
  */
 
 import {StatsEventListener} from '../exporters/types';
+import * as cls from '../internal/cls';
 import {Metric} from '../metrics/export/types';
 import {TagMap} from '../tags/tag-map';
 import {TagKey, TagValue} from '../tags/types';
@@ -98,6 +99,18 @@ export interface Stats {
    * @param exporter An stats exporter
    */
   unregisterExporter(exporter: StatsEventListener): void;
+
+  /**
+   * Enters the scope of code where the given `TagMap` is in the current context
+   * (replacing the previous `TagMap`).
+   * @param tags The TagMap to be set to the current context.
+   * @param fn Callback function.
+   * @returns The callback return.
+   */
+  withTagContext<T>(tags: TagMap, fn: cls.Func<T>): T;
+
+  /** Gets the current tag context. */
+  getCurrentTagContext(): TagMap;
 }
 
 /**

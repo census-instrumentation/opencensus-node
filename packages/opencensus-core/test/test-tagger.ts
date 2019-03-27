@@ -16,7 +16,10 @@
 
 import * as assert from 'assert';
 import {TagMap} from '../src';
+import * as cls from '../src/internal/cls';
 import * as tagger from '../src/tags/tagger';
+
+const contextManager = cls.getNamespace();
 
 describe('tagger()', () => {
   const tags1 = new TagMap();
@@ -54,57 +57,68 @@ describe('tagger()', () => {
   expectedTagsFrom1n3n4.set({name: 'key6'}, {value: 'value6'});
 
   it('should return empty current tag context', () => {
-    tagger.withTagContext(tagger.EMPTY_TAG_MAP, () => {
+    tagger.withTagContext(contextManager, tagger.EMPTY_TAG_MAP, () => {
       assert.deepStrictEqual(
-          tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+          tagger.getCurrentTagContext(contextManager), tagger.EMPTY_TAG_MAP);
     });
   });
 
   it('should set current tag context', () => {
-    tagger.withTagContext(tags1, () => {
-      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+    tagger.withTagContext(contextManager, tags1, () => {
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(contextManager), tags1);
     });
-    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+    assert.deepStrictEqual(
+        tagger.getCurrentTagContext(contextManager), tagger.EMPTY_TAG_MAP);
   });
 
   it('should set nested current tag context', () => {
-    tagger.withTagContext(tags1, () => {
-      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+    tagger.withTagContext(contextManager, tags1, () => {
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(contextManager), tags1);
 
-      tagger.withTagContext(tags2, () => {
+      tagger.withTagContext(contextManager, tags2, () => {
         assert.deepStrictEqual(
-            tagger.getCurrentTagContext(), expectedMergedTags);
+            tagger.getCurrentTagContext(contextManager), expectedMergedTags);
       });
-      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(contextManager), tags1);
     });
-    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+    assert.deepStrictEqual(
+        tagger.getCurrentTagContext(contextManager), tagger.EMPTY_TAG_MAP);
   });
 
   it('should resolve tag conflicts', () => {
-    tagger.withTagContext(tags1, () => {
-      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+    tagger.withTagContext(contextManager, tags1, () => {
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(contextManager), tags1);
 
-      tagger.withTagContext(tags3, () => {
+      tagger.withTagContext(contextManager, tags3, () => {
         assert.deepStrictEqual(
-            tagger.getCurrentTagContext(), expectedTagsFrom1n3);
+            tagger.getCurrentTagContext(contextManager), expectedTagsFrom1n3);
 
-        tagger.withTagContext(tags4, () => {
+        tagger.withTagContext(contextManager, tags4, () => {
           assert.deepStrictEqual(
-              tagger.getCurrentTagContext(), expectedTagsFrom1n3n4);
+              tagger.getCurrentTagContext(contextManager),
+              expectedTagsFrom1n3n4);
         });
       });
-      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(contextManager), tags1);
     });
-    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+    assert.deepStrictEqual(
+        tagger.getCurrentTagContext(contextManager), tagger.EMPTY_TAG_MAP);
   });
 
   it('should clear current tag context', () => {
-    tagger.withTagContext(tags1, () => {
-      assert.deepStrictEqual(tagger.getCurrentTagContext(), tags1);
-      tagger.clear();
+    tagger.withTagContext(contextManager, tags1, () => {
       assert.deepStrictEqual(
-          tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+          tagger.getCurrentTagContext(contextManager), tags1);
+      tagger.clear(contextManager);
+      assert.deepStrictEqual(
+          tagger.getCurrentTagContext(contextManager), tagger.EMPTY_TAG_MAP);
     });
-    assert.deepStrictEqual(tagger.getCurrentTagContext(), tagger.EMPTY_TAG_MAP);
+    assert.deepStrictEqual(
+        tagger.getCurrentTagContext(contextManager), tagger.EMPTY_TAG_MAP);
   });
 });

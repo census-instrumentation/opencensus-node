@@ -14,39 +14,40 @@
  * limitations under the License.
  */
 
-const core = require('@opencensus/core');
+const {globalStats, MeasureUnit, TagMap} = require('@opencensus/core');
 
 const K1 = { name: 'k1' };
 const K2 = { name: 'k2' };
 const V1 = { value: 'v1' };
 const V2 = { value: 'v2' };
 
-const mLatencyMs = core.globalStats.createMeasureDouble(
-  'm1', core.MeasureUnit.MS, '1st test metric'
+const mLatencyMs = globalStats.createMeasureDouble(
+  'm1', MeasureUnit.MS, '1st test metric'
 );
 
 /** Main method. */
 function main () {
-  const tags1 = new core.TagMap();
+  const tags1 = new TagMap();
   tags1.set(K1, V1);
 
-  core.withTagContext(tags1, () => {
+  globalStats.withTagContext(tags1, () => {
     console.log('Enter Scope 1');
     printMap('Add Tags', tags1.tags);
-    printMap('Current Tags == Default + tags1:', core.getCurrentTagContext().tags);
+    printMap('Current Tags == Default + tags1:',
+    globalStats.getCurrentTagContext().tags);
 
-    const tags2 = new core.TagMap();
+    const tags2 = new TagMap();
     tags2.set(K2, V2);
-    core.withTagContext(tags2, () => {
+    globalStats.withTagContext(tags2, () => {
       console.log('Enter Scope 2');
       printMap('Add Tags', tags2.tags);
-      printMap('Current Tags == Default + tags1 + tags2:', core.getCurrentTagContext().tags);
+      printMap('Current Tags == Default + tags1 + tags2:', globalStats.getCurrentTagContext().tags);
 
       const measurement = { measure: mLatencyMs, value: 10 };
-      core.globalStats.record([measurement]);
+      globalStats.record([measurement]);
       console.log('Close Scope 2');
     });
-    printMap('Current Tags == Default + tags1:', core.getCurrentTagContext().tags);
+    printMap('Current Tags == Default + tags1:', globalStats.getCurrentTagContext().tags);
     console.log('Close Scope 1');
   });
 }
