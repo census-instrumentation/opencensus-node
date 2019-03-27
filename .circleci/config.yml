@@ -18,6 +18,9 @@ unit_tests: &unit_tests
         name: Check code style and linting
         command: npm run check
     - run:
+        name: Ensure code compiles to JS.
+        command: npm run compile
+    - run:
         name: Run unit tests.
         command: npm run test
     - run:

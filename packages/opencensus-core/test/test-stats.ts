@@ -232,7 +232,7 @@ describe('Stats', () => {
       tags.set(tagKeys[0], {value: 'value1'});
       tags.set(tagKeys[1], {value: 'value2'});
       const measurement = {measure, value: 1};
-      tagger.withTagContext(tags, () => {
+      globalStats.withTagContext(tags, () => {
         globalStats.record([measurement]);
       });
 
@@ -250,7 +250,7 @@ describe('Stats', () => {
       const UNKNOWN_TAG_VALUE: TagValue = null;
       globalStats.registerExporter(testExporter);
       const measurement = {measure, value: 2211};
-      tagger.withTagContext(tagger.EMPTY_TAG_MAP, () => {
+      globalStats.withTagContext(tagger.EMPTY_TAG_MAP, () => {
         globalStats.record([measurement]);
       });
 

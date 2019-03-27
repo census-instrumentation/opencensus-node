@@ -52,3 +52,5 @@ export function destroyNamespace(): void {
 export function getNamespace(): CLS.Namespace {
   return cls.getNamespace(TRACE_NAMESPACE);
 }
+
+export const contextManager = createNamespace();

@@ -17,11 +17,13 @@
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
 import {StatsEventListener} from '../exporters/types';
+import * as cls from '../internal/cls';
 import {Metric} from '../metrics/export/types';
 import {Metrics} from '../metrics/metrics';
 import {TagMap} from '../tags/tag-map';
-import {getCurrentTagContext} from '../tags/tagger';
+import * as tagger from '../tags/tagger';
 import {TagKey} from '../tags/types';
+
 import {MetricProducerForStats} from './metric-producer';
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from './types';
 import {BaseView} from './view';
@@ -35,6 +37,8 @@ export class BaseStats implements Stats {
   private logger: loggerTypes.Logger;
   /** Singleton instance */
   private static singletonInstance: BaseStats;
+  /** Manage context automatic propagation */
+  private contextManager: cls.Namespace;
 
   /**
    * Creates stats
@@ -42,6 +46,7 @@ export class BaseStats implements Stats {
    */
   constructor(logger = defaultLogger) {
     this.logger = logger.logger();
+    this.contextManager = cls.getNamespace();
 
     // Create a new MetricProducerForStats and register it to
     // MetricProducerManager when Stats is initialized.
@@ -189,7 +194,7 @@ export class BaseStats implements Stats {
 
     if (!tags) {
       // Record against implicit (current) context
-      tags = getCurrentTagContext();
+      tags = this.getCurrentTagContext();
     }
 
     for (const measurement of measurements) {
@@ -215,5 +220,21 @@ export class BaseStats implements Stats {
   clear(): void {
     this.registeredViews = {};
     this.statsEventListeners = [];
+  }
+
+  /**
+   * Enters the scope of code where the given `TagMap` is in the current context
+   * (replacing the previous `TagMap`).
+   * @param tags The TagMap to be set to the current context.
+   * @param fn Callback function.
+   * @returns The callback return.
+   */
+  withTagContext<T>(tags: TagMap, fn: cls.Func<T>): T {
+    return tagger.withTagContext<T>(this.contextManager, tags, fn);
+  }
+
+  /** Gets the current tag context. */
+  getCurrentTagContext(): TagMap {
+    return tagger.getCurrentTagContext(this.contextManager);
   }
 }

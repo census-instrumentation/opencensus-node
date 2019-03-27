@@ -16,6 +16,7 @@
 
 import {AggregationData, AggregationType, TagKey, TagValue, View} from '@opencensus/core';
 import {StatsParams} from '../../zpages';
+import {templatesDir} from './templates-dir';
 const ejs = require('ejs');
 
 import * as path from 'path';
@@ -201,7 +202,7 @@ export class StatszPageHandler {
    * file
    */
   private loaderFile(fileName: string): string {
-    const fileDir = path.join(__dirname, '../../../../templates', fileName);
+    const fileDir = path.join(templatesDir, fileName);
     return ejs.fileLoader(fileDir, 'utf8');
   }
 }

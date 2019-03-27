@@ -33,6 +33,17 @@ export interface JaegerTraceExporterOptions extends ExporterConfig {
   maxPacketSize?: number;
 }
 
+// Load the package details. Note that the `require` is performed at runtime,
+// which means package.json will be relative to the location of this file.
+// If this file has been compiled, it will be in the `/build` directory, so the
+// package path is relative to that location.  Otherwise, it will be relative
+// to the original .ts file.
+let pjsonVersion: string;
+try {
+  pjsonVersion = require('../../package.json');
+} catch {
+  pjsonVersion = require('../package.json');
+}
 
 /** Format and sends span information to Jaeger */
 export class JaegerTraceExporter implements Exporter {
@@ -60,7 +71,6 @@ export class JaegerTraceExporter implements Exporter {
 
 
   constructor(options: JaegerTraceExporterOptions) {
-    const pjson = require('../../package.json');
     this.logger = options.logger || logger.logger();
     this.bufferTimeout =
         options.bufferTimeout || DEFAULT_BUFFER_FLUSH_INTERVAL_MILLIS;
@@ -71,7 +81,7 @@ export class JaegerTraceExporter implements Exporter {
     const defaultTags: Record<string, TagValue> = {};
     defaultTags[JaegerTraceExporter
                     .JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY] =
-        `opencensus-exporter-jaeger-${pjson.version}`;
+        `opencensus-exporter-jaeger-${pjsonVersion}`;
     defaultTags[JaegerTraceExporter.TRACER_HOSTNAME_TAG_KEY] = os.hostname();
     defaultTags[JaegerTraceExporter.PROCESS_IP] = Utils.ipToInt(Utils.myIp());
 
