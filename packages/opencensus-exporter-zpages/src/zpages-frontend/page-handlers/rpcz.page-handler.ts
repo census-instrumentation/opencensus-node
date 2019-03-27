@@ -16,10 +16,9 @@
 
 import {AggregationType} from '@opencensus/core';
 import * as ejs from 'ejs';
-import * as path from 'path';
 import {StatsParams} from '../../zpages';
+import {templatesDir} from './templates-dir';
 
-const templatesDir = path.join(__dirname, '../../../../templates');
 const FIXED_SIZE = 3;
 
 export interface ZMeasureOrders {
