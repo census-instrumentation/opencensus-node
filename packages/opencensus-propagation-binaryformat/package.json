@@ -40,9 +40,10 @@
       ".tsx"
     ],
     "exclude": [
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "build/**/**/*.js"
     ],
-    "all": true  
+    "all": true
   },
   "publishConfig": {
     "access": "public"
