@@ -66,7 +66,7 @@
   "dependencies": {
     "@opencensus/core": "^0.0.9",
     "@opencensus/instrumentation-http": "^0.0.9",
-    "semver": "^5.5.0",
+    "semver": "^6.0.0",
     "shimmer": "^1.2.0"
   }
 }
