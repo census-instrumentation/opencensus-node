@@ -231,6 +231,7 @@ export class CoreTracer implements types.Tracer {
 
   /** Clears the current root span. */
   clearCurrentTrace() {
+    // TODO: Remove null reference and ts-ignore check.
     //@ts-ignore
     this.currentRootSpan = null;
   }
