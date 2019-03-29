@@ -48,8 +48,12 @@ export class ExporterBuffer {
   constructor(exporter: types.Exporter, config: configTypes.BufferConfig) {
     this.exporter = exporter;
     this.logger = config.logger || logger.logger();
-    this.bufferSize = config.bufferSize || DEFAULT_BUFFER_SIZE;
-    this.bufferTimeout = config.bufferTimeout || DEFAULT_BUFFER_TIMEOUT;
+    this.bufferSize = isNaN(Number(config.bufferSize)) ?
+        DEFAULT_BUFFER_SIZE :
+        Number(config.bufferSize);
+    this.bufferTimeout = isNaN(Number(config.bufferTimeout)) ?
+        DEFAULT_BUFFER_TIMEOUT :
+        Number(config.bufferTimeout);
     return this;
   }
 
