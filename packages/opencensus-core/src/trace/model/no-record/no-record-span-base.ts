@@ -46,9 +46,9 @@ export abstract class NoRecordSpanBase implements types.Span {
   /** If the parent span is in another process. */
   remoteParent = false;
   /** The span ID of this span's parent. If it's a root span, must be empty */
-  parentSpanId!: string;
+  parentSpanId = '';
   /** The resource name of the span */
-  name!: string;
+  name = 'no-record';
   /** Kind of span. */
   kind: types.SpanKind = types.SpanKind.UNSPECIFIED;
   /** A final status for this span */
@@ -56,7 +56,7 @@ export abstract class NoRecordSpanBase implements types.Span {
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
   /** Trace Parameters */
-  activeTraceParams!: configTypes.TraceParams;
+  activeTraceParams: configTypes.TraceParams = {};
 
   /** The number of dropped attributes. */
   droppedAttributesCount = 0;
@@ -100,7 +100,12 @@ export abstract class NoRecordSpanBase implements types.Span {
 
   /** Gives the TraceContext of the span. */
   get spanContext(): types.SpanContext {
-    return {traceId: this.traceId, spanId: this.id, options: 0};
+    return {
+      traceId: this.traceId,
+      spanId: this.id,
+      options: 0,
+      traceState: this.traceState
+    };
   }
 
   /** No-op implementation of this method. */

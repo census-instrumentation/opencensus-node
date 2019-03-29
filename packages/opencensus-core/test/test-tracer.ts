@@ -347,7 +347,7 @@ describe('Tracer', () => {
       tracer.startRootSpan(options, (rootSpan) => {
         const spanWithObject = tracer.startChildSpan();
         assert.ok(spanWithObject.started);
-        assert.strictEqual(spanWithObject.name, undefined);
+        assert.strictEqual(spanWithObject.name, 'span');
         assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
       });
     });

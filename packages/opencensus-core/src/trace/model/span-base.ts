@@ -50,9 +50,9 @@ export abstract class SpanBase implements types.Span {
   /** If the parent span is in another process. */
   remoteParent = false;
   /** The span ID of this span's parent. If it's a root span, must be empty */
-  parentSpanId!: string;
+  parentSpanId = '';
   /** The resource name of the span */
-  name!: string;
+  name = 'span';
   /** Kind of span. */
   kind: types.SpanKind = types.SpanKind.UNSPECIFIED;
   /** A final status for this span */
@@ -60,7 +60,7 @@ export abstract class SpanBase implements types.Span {
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
   /** Trace Parameters */
-  activeTraceParams!: configTypes.TraceParams;
+  activeTraceParams: configTypes.TraceParams = {};
 
   /** The number of dropped attributes. */
   droppedAttributesCount = 0;
