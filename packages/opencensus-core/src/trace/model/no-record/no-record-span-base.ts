@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {noopLogger} from '../../../common/noop-logger';
 import {Logger} from '../../../common/types';
 import {randomSpanId} from '../../../internal/util';
 import * as configTypes from '../../config/types';
@@ -34,7 +36,7 @@ export abstract class NoRecordSpanBase implements types.Span {
   /** The Span ID of this span */
   readonly id: string;
   /** An object to log information to */
-  logger!: Logger;
+  logger: Logger = noopLogger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
   attributes: types.Attributes = {};
   /** A text annotation with a set of attributes. */

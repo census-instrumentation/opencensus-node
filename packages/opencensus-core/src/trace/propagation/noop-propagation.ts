@@ -19,7 +19,7 @@ import * as uuid from 'uuid';
 import {SpanContext} from '../model/types';
 import {HeaderGetter, HeaderSetter, Propagation} from './types';
 
-/** No-op implementatio of Propagation */
+/** No-op implementation of Propagation */
 class NoopPropagation implements Propagation {
   extract(getter: HeaderGetter): SpanContext|null {
     return null;

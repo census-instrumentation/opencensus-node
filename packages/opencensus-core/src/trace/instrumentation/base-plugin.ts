@@ -16,6 +16,7 @@
 
 import * as path from 'path';
 import * as semver from 'semver';
+import {noopLogger} from '../../common/noop-logger';
 import {Logger} from '../../common/types';
 import {Stats} from '../../stats/types';
 import * as modelTypes from '../model/types';
@@ -42,7 +43,7 @@ export abstract class BasePlugin implements types.Plugin {
   /** The module version. */
   protected version!: string;
   /** a logger */
-  protected logger!: Logger;
+  protected logger: Logger = noopLogger;
   /** list of internal files that need patch and are not exported by default */
   protected readonly internalFileList!: types.PluginInternalFiles;
   /**  internal files loaded */
