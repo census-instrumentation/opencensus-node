@@ -203,16 +203,16 @@ const adaptTimeEvents =
  * @param traceState string
  * @returns opencensus.proto.trace.v1.Span.Tracestate
  */
-const adaptTraceState = (traceState: string|undefined):
-                            opencensus.proto.trace.v1.Span.Tracestate => {
-  const entries: opencensus.proto.trace.v1.Span.Tracestate.Entry[]|null =
-      !traceState ? null : traceState.split(',').map(state => {
-        const [key, value] = state.split('=');
-        return {key, value};
-      });
+const adaptTraceState =
+    (traceState?: string): opencensus.proto.trace.v1.Span.Tracestate => {
+      const entries: opencensus.proto.trace.v1.Span.Tracestate.Entry[]|null =
+          !traceState ? null : traceState.split(',').map(state => {
+            const [key, value] = state.split('=');
+            return {key, value};
+          });
 
-  return {entries};
-};
+      return {entries};
+    };
 
 /**
  * Adapts a link to a `opencensus.proto.trace.v1.Span.Link` type.

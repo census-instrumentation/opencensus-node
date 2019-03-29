@@ -246,7 +246,7 @@ export interface SpanOptions {
   parentSpanId?: string;
 }
 
-export type TraceState = string|undefined;
+export type TraceState = string;
 
 /** Defines the span context */
 export interface SpanContext {
@@ -354,7 +354,7 @@ export interface Span {
   readonly traceId: string;
 
   /** Trace state associated with span */
-  readonly traceState: TraceState;
+  readonly traceState?: TraceState;
 
   /** Indicates if span was started. */
   readonly started: boolean;

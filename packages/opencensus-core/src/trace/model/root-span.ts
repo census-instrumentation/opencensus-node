@@ -74,7 +74,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
   }
 
   /** Gets trace state from rootspan instance */
-  get traceState(): types.TraceState {
+  get traceState(): types.TraceState|undefined {
     return this.traceStateLocal;
   }
 

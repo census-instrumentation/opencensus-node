@@ -43,7 +43,7 @@ export class Span extends SpanBase implements types.Span {
     return this.root.traceId;
   }
 
-  get traceState(): types.TraceState {
+  get traceState(): types.TraceState|undefined {
     return this.root.traceState;
   }
 

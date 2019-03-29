@@ -67,7 +67,7 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   }
 
   /** No-op implementation of this method. */
-  get traceState(): types.TraceState {
+  get traceState(): types.TraceState|undefined {
     return this.traceStateLocal;
   }
 

@@ -83,7 +83,7 @@ export abstract class SpanBase implements types.Span {
   abstract get traceId(): string;
 
   /** Gets the trace state */
-  abstract get traceState(): types.TraceState;
+  abstract get traceState(): types.TraceState|undefined;
 
   /** Indicates if span was started. */
   get started(): boolean {
