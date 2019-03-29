@@ -98,10 +98,9 @@ export abstract class BasePlugin implements types.Plugin {
    * @param version version of the current instaled module to patch
    * @param options plugin options
    * @param basedir module absolute path
-   * @param stats a stats instance
+   * @param stats an optional stats instance
    */
   enable<T>(
-      // tslint:disable-next-line:no-any
       moduleExports: T, tracer: modelTypes.Tracer, version: string,
       options: types.PluginConfig, basedir: string, stats?: Stats) {
     this.setPluginContext(
