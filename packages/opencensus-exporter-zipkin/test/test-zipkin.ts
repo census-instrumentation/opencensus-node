@@ -109,19 +109,28 @@ describe('Zipkin Exporter', function() {
       tracer.start(defaultConfig);
 
       return tracer.startRootSpan({name: 'root-test'}, (rootSpan: RootSpan) => {
-        const span =
+        const child =
             rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
-        span.addAttribute('my-int-attribute', 100);
-        span.addAttribute('my-str-attribute', 'value');
-        span.addAttribute('my-bool-attribute', true);
-        span.setStatus(CanonicalCode.RESOURCE_EXHAUSTED, 'RESOURCE_EXHAUSTED');
+        child.addAttribute('my-int-attribute', 100);
+        child.addAttribute('my-str-attribute', 'value');
+        child.addAttribute('my-bool-attribute', true);
+        child.setStatus(CanonicalCode.RESOURCE_EXHAUSTED, 'RESOURCE_EXHAUSTED');
 
-        span.addAnnotation('processing', {}, 1550213104708);
-        span.addMessageEvent(MessageEventType.SENT, '1', 1550213104708);
-        span.addMessageEvent(MessageEventType.RECEIVED, '2', 1550213104708);
-        span.addMessageEvent(MessageEventType.UNSPECIFIED, '3', 1550213104708);
-        span.addAnnotation('done', {}, 1550213104708);
-        span.end();
+        child.addAnnotation('processing', {}, 1550213104708);
+        child.addMessageEvent(MessageEventType.SENT, '1', 1550213104708);
+        child.addMessageEvent(MessageEventType.RECEIVED, '2', 1550213104708);
+        child.addMessageEvent(MessageEventType.UNSPECIFIED, '3', 1550213104708);
+        child.addAnnotation('done', {}, 1550213104708);
+
+        const grandchild = rootSpan.startChildSpan({
+          name: 'grandchildTest',
+          kind: SpanKind.CLIENT,
+          parentSpanId: child.id
+        });
+        grandchild.addAttribute('grandchild-attribute', 200);
+
+        grandchild.end();
+        child.end();
         rootSpan.end();
 
         const rootSpanTranslated = exporter.translateSpan(rootSpan);
@@ -139,8 +148,8 @@ describe('Zipkin Exporter', function() {
           'traceId': rootSpan.traceId
         });
 
-        const chilsSpanTranslated = exporter.translateSpan(span);
-        assert.deepEqual(chilsSpanTranslated, {
+        const childSpanTranslated = exporter.translateSpan(child);
+        assert.deepEqual(childSpanTranslated, {
           'annotations': [
             {'timestamp': 1550213104708000, 'value': 'processing'},
             {'timestamp': 1550213104708000, 'value': 'done'},
@@ -149,8 +158,8 @@ describe('Zipkin Exporter', function() {
             {'timestamp': 1550213104708000, 'value': 'UNSPECIFIED'}
           ],
           'debug': true,
-          'duration': Math.round(span.duration * MICROS_PER_MILLI),
-          'id': span.id,
+          'duration': Math.round(child.duration * MICROS_PER_MILLI),
+          'id': child.id,
           'kind': 'CLIENT',
           'localEndpoint': {'serviceName': 'opencensus-tests'},
           'name': 'spanTest',
@@ -163,8 +172,24 @@ describe('Zipkin Exporter', function() {
             'my-str-attribute': 'value',
             'my-bool-attribute': 'true'
           },
-          'timestamp': span.startTime.getTime() * MICROS_PER_MILLI,
-          'traceId': span.traceId
+          'timestamp': child.startTime.getTime() * MICROS_PER_MILLI,
+          'traceId': rootSpan.traceId
+        });
+
+        const grandchildSpanTranslated = exporter.translateSpan(grandchild);
+        assert.deepEqual(grandchildSpanTranslated, {
+          'annotations': [],
+          'debug': true,
+          'duration': Math.round(grandchild.duration * MICROS_PER_MILLI),
+          'id': grandchild.id,
+          'kind': 'CLIENT',
+          'localEndpoint': {'serviceName': 'opencensus-tests'},
+          'name': 'grandchildTest',
+          'parentId': child.id,
+          'shared': true,
+          'tags': {'census.status_code': '0', 'grandchild-attribute': '200'},
+          'timestamp': grandchild.startTime.getTime() * MICROS_PER_MILLI,
+          'traceId': rootSpan.traceId
         });
       });
     });
