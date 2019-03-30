@@ -22,7 +22,10 @@ option java_outer_classname = "TraceConfigProto";
 
 option go_package = "github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1";
 
-// Global configuration of the trace service.
+option ruby_package = "OpenCensus.Proto.Trace.V1";
+
+// Global configuration of the trace service. All fields must be specified, or
+// the default (zero) values will be used for each type.
 message TraceConfig {
 
   // The global default sampler used to make decisions on span sampling.
@@ -34,7 +37,17 @@ message TraceConfig {
     RateLimitingSampler rate_limiting_sampler = 3;
   }
 
-  // TODO(songya): add more fields.
+  // The global default max number of attributes per span.
+  int64 max_number_of_attributes = 4;
+
+  // The global default max number of annotation events per span.
+  int64 max_number_of_annotations = 5;
+
+  // The global default max number of message events per span.
+  int64 max_number_of_message_events = 6;
+
+  // The global default max number of link entries per span.
+  int64 max_number_of_links = 7;
 }
 
 // Sampler that tries to uniformly sample traces with a given probability.
@@ -45,12 +58,19 @@ message ProbabilitySampler {
   double samplingProbability = 1;
 }
 
-// Sampler that makes a constant decision (either always "yes" or always "no")
-// on span sampling.
+// Sampler that always makes a constant decision on span sampling.
 message ConstantSampler {
 
-  // Whether spans should be always sampled, or never sampled.
-  bool decision = 1;
+  // How spans should be sampled:
+  // - Always off
+  // - Always on
+  // - Always follow the parent Span's decision (off if no parent).
+  enum ConstantDecision {
+    ALWAYS_OFF = 0;
+    ALWAYS_ON = 1;
+    ALWAYS_PARENT = 2;
+  }
+  ConstantDecision decision = 1;
 }
 
 // Sampler that tries to sample with a rate per time window.
