@@ -61,18 +61,6 @@ describe('DerivedGauge', () => {
   });
 
   describe('createTimeSeries()', () => {
-    it('should throw an error when the labelvalues are null', () => {
-      assert.throws(() => {
-        instance.createTimeSeries(null, new Map());
-      }, /^Error: Missing mandatory labelValues parameter$/);
-    });
-    it('should throw an error when the labelValues elements contains NULL',
-       () => {
-         const LABEL_VALUES_WITH_NULL: LabelValue[] = [null];
-         assert.throws(() => {
-           instance.createTimeSeries(LABEL_VALUES_WITH_NULL, new Map());
-         }, /^Error: labelValue elements should not be a NULL$/);
-       });
     it('should throw an error when the keys and values dont have same size',
        () => {
          assert.throws(() => {
@@ -87,10 +75,10 @@ describe('DerivedGauge', () => {
 
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
-      assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
-      assert.equal(metric.timeseries.length, 1);
+      assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
+      assert.equal(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
-          metric.timeseries, [{
+          metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
             points: [{
               value: 2,
@@ -109,9 +97,9 @@ describe('DerivedGauge', () => {
       });
 
       metric = instance.getMetric();
-      assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
-      assert.equal(metric.timeseries.length, 2);
-      assert.deepStrictEqual(metric.timeseries, [
+      assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
+      assert.equal(metric!.timeseries.length, 2);
+      assert.deepStrictEqual(metric!.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
           points: [{
@@ -140,10 +128,10 @@ describe('DerivedGauge', () => {
       instance.createTimeSeries(LABEL_VALUES_200, obj);
       const metric = instance.getMetric();
       assert.notEqual(metric, null);
-      assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
-      assert.equal(metric.timeseries.length, 1);
+      assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
+      assert.equal(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
-          metric.timeseries, [{
+          metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
             points: [{
               value: 45,
@@ -164,16 +152,16 @@ describe('DerivedGauge', () => {
       doubleInstance.createTimeSeries(LABEL_VALUES_200, obj);
       const metric = doubleInstance.getMetric();
       assert.notEqual(metric, null);
-      assert.deepStrictEqual(metric.descriptor, {
+      assert.deepStrictEqual(metric!.descriptor, {
         name: METRIC_NAME,
         description: METRIC_DESCRIPTION,
         unit: UNIT,
         type: GAUGE_DOUBLE,
         labelKeys: LABEL_KEYS
       });
-      assert.equal(metric.timeseries.length, 1);
+      assert.equal(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
-          metric.timeseries, [{
+          metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
             points: [{
               value: 0.7,
@@ -182,21 +170,17 @@ describe('DerivedGauge', () => {
             }]
           }]);
     });
-    it('should throw an error when obj is null', () => {
-      assert.throws(() => {
-        instance.createTimeSeries(LABEL_VALUES_200, null);
-      }, /^Error: Missing mandatory obj parameter$/);
-    });
+
     it('should not create same timeseries again', () => {
       const map = new Map();
       instance.createTimeSeries(LABEL_VALUES_200, map);
       map.set('key', 'value');
       const metric = instance.getMetric();
       assert.notEqual(metric, null);
-      assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
-      assert.equal(metric.timeseries.length, 1);
+      assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
+      assert.equal(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
-          metric.timeseries, [{
+          metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
             points: [{
               value: 1,
@@ -212,18 +196,13 @@ describe('DerivedGauge', () => {
     });
   });
   describe('removeTimeSeries()', () => {
-    it('should throw an error when the labelvalues are null', () => {
-      assert.throws(() => {
-        instance.removeTimeSeries(null);
-      }, /^Error: Missing mandatory labelValues parameter$/);
-    });
     it('should remove TimeSeries', () => {
       const arr: string[] = [];
       instance.createTimeSeries(LABEL_VALUES_200, arr);
       arr.push('test');
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
-      assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
+      assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       instance.removeTimeSeries(LABEL_VALUES_200);
       metric = instance.getMetric();
       assert.deepStrictEqual(metric, null);
@@ -244,8 +223,8 @@ describe('DerivedGauge', () => {
       arr.push('test');
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
-      assert.deepStrictEqual(metric.descriptor, expectedMetricDescriptor);
-      assert.equal(metric.timeseries.length, 2);
+      assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
+      assert.equal(metric!.timeseries.length, 2);
       instance.clear();
       metric = instance.getMetric();
       assert.deepStrictEqual(metric, null);

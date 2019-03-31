@@ -27,7 +27,7 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   /** Its trace ID. */
   private traceIdLocal: string;
   /** Its trace state. */
-  private traceStateLocal: types.TraceState;
+  private traceStateLocal?: types.TraceState;
   /** set isRootSpan = true */
   readonly isRootSpan = true;
 
@@ -67,7 +67,7 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   }
 
   /** No-op implementation of this method. */
-  get traceState(): types.TraceState {
+  get traceState(): types.TraceState|undefined {
     return this.traceStateLocal;
   }
 
@@ -94,7 +94,7 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   startChildSpan(
       nameOrOptions?: string|types.SpanOptions,
       kind?: types.SpanKind): types.Span {
-    const noRecordChild = new NoRecordSpan(this);
+    const noRecordChild = new NoRecordSpan();
 
     const spanName =
         typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;

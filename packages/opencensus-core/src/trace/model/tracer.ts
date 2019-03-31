@@ -20,10 +20,12 @@ import * as loggerTypes from '../../common/types';
 import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
 import {TraceParams} from '../config/types';
+import {noopPropagation} from '../propagation/noop-propagation';
 import {Propagation} from '../propagation/types';
-import {SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
+import {DEFAULT_SAMPLING_RATE, SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
 import {NoRecordRootSpan} from './no-record/no-record-root-span';
+import {NoRecordSpan} from './no-record/no-record-span';
 import {RootSpan} from './root-span';
 import * as types from './types';
 
@@ -36,13 +38,13 @@ export class CoreTracer implements types.Tracer {
   /** Manage context automatic propagation */
   private contextManager: cls.Namespace;
   /** A configuration for starting the tracer */
-  private config: configTypes.TracerConfig;
+  private config!: configTypes.TracerConfig;
   /** A list of end span event listeners */
   private eventListenersLocal: types.SpanEventListener[] = [];
   /** Bit to represent whether trace is sampled or not. */
   private readonly IS_SAMPLED = 0x1;
   /** A sampler used to make sample decisions */
-  sampler: samplerTypes.Sampler;
+  sampler!: samplerTypes.Sampler;
   /** A configuration for starting the tracer */
   logger: loggerTypes.Logger = logger.logger();
   /** A configuration object for trace parameters */
@@ -70,7 +72,10 @@ export class CoreTracer implements types.Tracer {
 
   /** A propagation instance */
   get propagation(): Propagation {
-    return this.config ? this.config.propagation : null;
+    if (this.config && this.config.propagation) {
+      return this.config.propagation;
+    }
+    return noopPropagation;
   }
 
   /**
@@ -81,7 +86,8 @@ export class CoreTracer implements types.Tracer {
     this.activeLocal = true;
     this.config = config;
     this.logger = this.config.logger || logger.logger();
-    this.sampler = SamplerBuilder.getSampler(config.samplingRate);
+    this.sampler =
+        SamplerBuilder.getSampler(config.samplingRate || DEFAULT_SAMPLING_RATE);
     if (config.traceParams) {
       this.activeTraceParams.numberOfAnnontationEventsPerSpan =
           TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
@@ -225,6 +231,8 @@ export class CoreTracer implements types.Tracer {
 
   /** Clears the current root span. */
   clearCurrentTrace() {
+    // TODO: Remove null reference and ts-ignore check.
+    //@ts-ignore
     this.currentRootSpan = null;
   }
 
@@ -236,14 +244,12 @@ export class CoreTracer implements types.Tracer {
   startChildSpan(
       nameOrOptions?: string|types.SpanOptions,
       kind?: types.SpanKind): types.Span {
-    let newSpan: types.Span = null;
     if (!this.currentRootSpan) {
       this.logger.debug(
           'no current trace found - must start a new root span first');
-    } else {
-      newSpan = this.currentRootSpan.startChildSpan(nameOrOptions, kind);
+      return new NoRecordSpan();
     }
-    return newSpan;
+    return this.currentRootSpan.startChildSpan(nameOrOptions, kind);
   }
 
   /**
@@ -292,7 +298,7 @@ export class CoreTracer implements types.Tracer {
           ((options.spanContext.options & this.IS_SAMPLED) !== 0);
     }
 
-    let sampleDecision: boolean = propagatedSample;
+    let sampleDecision = !!propagatedSample;
     if (!sampleDecision) {
       // Use the default global sampler
       sampleDecision = this.sampler.shouldSample(traceId);

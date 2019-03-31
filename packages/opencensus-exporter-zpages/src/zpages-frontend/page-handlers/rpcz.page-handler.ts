@@ -102,11 +102,15 @@ export class RpczPageHandler {
         let method = '';
         let zMeasures;
         if (clientMethodIndex !== -1) {
-          method = snapshot.tagValues[clientMethodIndex].value;
+          method = snapshot.tagValues[clientMethodIndex] ?
+              snapshot.tagValues[clientMethodIndex]!.value :
+              '';
           zMeasures = rpczData.measuresSent;
         } else if (serverMethodIndex !== -1) {
           // Switches to received data if it's a server
-          method = snapshot.tagValues[serverMethodIndex].value;
+          method = snapshot.tagValues[serverMethodIndex] ?
+              snapshot.tagValues[serverMethodIndex]!.value :
+              '';
           zMeasures = rpczData.measuresReceived;
         }
         if (zMeasures && method) {
@@ -158,10 +162,10 @@ export class RpczPageHandler {
             const error =
                 (clientStatusIndex !== -1 &&
                  snapshot.tagValues[clientStatusIndex] &&
-                 snapshot.tagValues[clientStatusIndex].value !== 'OK') ||
+                 snapshot.tagValues[clientStatusIndex]!.value !== 'OK') ||
                 (serverStatusIndex !== -1 &&
                  snapshot.tagValues[serverStatusIndex] &&
-                 snapshot.tagValues[serverStatusIndex].value !== 'OK');
+                 snapshot.tagValues[serverStatusIndex]!.value !== 'OK');
 
             if (error) {
               zMeasures[method].errors.tot += snapshot.value;

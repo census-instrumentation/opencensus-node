@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {noopLogger} from '../../../common/noop-logger';
 import {Logger} from '../../../common/types';
 import {randomSpanId} from '../../../internal/util';
 import * as configTypes from '../../config/types';
@@ -34,7 +36,7 @@ export abstract class NoRecordSpanBase implements types.Span {
   /** The Span ID of this span */
   readonly id: string;
   /** An object to log information to */
-  logger: Logger;
+  logger: Logger = noopLogger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
   attributes: types.Attributes = {};
   /** A text annotation with a set of attributes. */
@@ -44,11 +46,11 @@ export abstract class NoRecordSpanBase implements types.Span {
   /** Pointers from the current span to another span */
   links: types.Link[] = [];
   /** If the parent span is in another process. */
-  remoteParent: boolean;
+  remoteParent = false;
   /** The span ID of this span's parent. If it's a root span, must be empty */
-  parentSpanId: string = null;
+  parentSpanId = '';
   /** The resource name of the span */
-  name: string = null;
+  name = 'no-record';
   /** Kind of span. */
   kind: types.SpanKind = types.SpanKind.UNSPECIFIED;
   /** A final status for this span */
@@ -56,7 +58,7 @@ export abstract class NoRecordSpanBase implements types.Span {
   /** set isRootSpan  */
   abstract get isRootSpan(): boolean;
   /** Trace Parameters */
-  activeTraceParams: configTypes.TraceParams;
+  activeTraceParams: configTypes.TraceParams = {};
 
   /** The number of dropped attributes. */
   droppedAttributesCount = 0;
@@ -76,7 +78,7 @@ export abstract class NoRecordSpanBase implements types.Span {
   abstract get traceId(): string;
 
   /** Gets the trace state */
-  abstract get traceState(): types.TraceState;
+  abstract get traceState(): types.TraceState|undefined;
 
   /** Indicates if span was started. */
   get started(): boolean {

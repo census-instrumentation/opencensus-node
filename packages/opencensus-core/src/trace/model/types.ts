@@ -354,7 +354,7 @@ export interface Span {
   readonly traceId: string;
 
   /** Trace state associated with span */
-  readonly traceState: TraceState;
+  readonly traceState?: TraceState;
 
   /** Indicates if span was started. */
   readonly started: boolean;

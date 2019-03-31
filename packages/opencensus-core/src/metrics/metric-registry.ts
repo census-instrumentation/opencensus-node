@@ -198,7 +198,8 @@ class MetricProducerForRegistry extends BaseMetricProducer {
    * @returns {Metric[]} The list of metrics.
    */
   getMetrics(): Metric[] {
-    return Array.from(
-        this.registeredMetrics, ([_, meter]) => meter.getMetric());
+    return Array.from(this.registeredMetrics.values())
+               .map(meter => meter.getMetric())
+               .filter(meter => !!meter) as Metric[];
   }
 }

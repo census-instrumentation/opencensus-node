@@ -110,7 +110,7 @@ export class Gauge implements types.Meter {
     const hash = hashLabelValues(labelValues);
     // return if the specified labelValues is already associated with the point.
     if (this.registeredPoints.has(hash)) {
-      return this.registeredPoints.get(hash);
+      return this.registeredPoints.get(hash)!;
     }
     if (this.labelKeysLength !== labelValues.length) {
       throw new Error(Gauge.ERROR_MESSAGE_INVALID_SIZE);
@@ -126,7 +126,7 @@ export class Gauge implements types.Meter {
    *
    * @returns {Metric} The Metric.
    */
-  getMetric(): Metric {
+  getMetric(): Metric|null {
     if (this.registeredPoints.size === 0) {
       return null;
     }

@@ -15,10 +15,10 @@
  */
 
 import * as logger from '../../common/console-logger';
+import {NoRecordSpan} from './no-record/no-record-span';
 import {Span} from './span';
 import {SpanBase} from './span-base';
 import * as types from './types';
-
 
 /** Defines a root span */
 export class RootSpan extends SpanBase implements types.RootSpan {
@@ -29,7 +29,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
   /** Its trace ID. */
   private traceIdLocal: string;
   /** Its trace state. */
-  private traceStateLocal: types.TraceState;
+  private traceStateLocal?: types.TraceState;
   /** set isRootSpan = true */
   readonly isRootSpan = true;
   /** A number of children. */
@@ -74,7 +74,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
   }
 
   /** Gets trace state from rootspan instance */
-  get traceState(): types.TraceState {
+  get traceState(): types.TraceState|undefined {
     return this.traceStateLocal;
   }
 
@@ -122,29 +122,23 @@ export class RootSpan extends SpanBase implements types.RootSpan {
       this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,
           this.className, {id: this.id, name: this.name, kind: this.kind});
-      return null;
+      return new NoRecordSpan();
     }
     if (!this.started) {
       this.logger.debug(
           'calling %s.startSpan() on un-started %s %o', this.className,
           this.className, {id: this.id, name: this.name, kind: this.kind});
-      return null;
+      return new NoRecordSpan();
     }
     this.numberOfChildrenLocal++;
-
     const child = new Span(this);
-
     const spanName =
         typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
     const spanKind =
         typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
-    if (spanName) {
-      child.name = spanName;
-    }
-    if (spanKind) {
-      child.kind = spanKind;
-    }
 
+    if (spanName) child.name = spanName;
+    if (spanKind) child.kind = spanKind;
     child.start();
     this.spansLocal.push(child);
     return child;

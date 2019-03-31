@@ -25,7 +25,7 @@ const logDriver = require('log-driver');
 export class ConsoleLogger implements types.Logger {
   private logger: typeof logDriver;
   static LEVELS = ['silent', 'error', 'warn', 'info', 'debug'];
-  level: string;
+  level?: string;
 
   /**
    * Constructs a new ConsoleLogger instance
@@ -45,7 +45,7 @@ export class ConsoleLogger implements types.Logger {
     } else {
       opt = options || {};
     }
-    this.level = opt.level;
+    if (opt.level) this.level = opt.level;
     this.logger =
         logDriver({levels: ConsoleLogger.LEVELS, level: opt.level || 'silent'});
   }

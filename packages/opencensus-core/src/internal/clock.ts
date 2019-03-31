@@ -26,7 +26,7 @@ export class Clock {
   /** The time in high resolution in a [seconds, nanoseconds]. */
   private hrtimeLocal: [number, number];
   /** The duration between start and end of the clock. */
-  private diff: [number, number] = null;
+  private diff: [number, number] = [0, 0];
 
   /** Constructs a new SamplerImpl instance. */
   constructor() {
@@ -46,7 +46,7 @@ export class Clock {
   /** Gets the duration of the clock. */
   get duration(): number {
     if (!this.endedLocal) {
-      return null;
+      return 0;
     }
     const ns = this.diff[0] * 1e9 + this.diff[1];
     return ns / 1e6;
@@ -63,11 +63,10 @@ export class Clock {
    * @returns A Date object with the current duration.
    */
   get endTime(): Date {
-    let result: Date = null;
     if (this.ended) {
-      result = new Date(this.startTime.getTime() + this.duration);
+      return new Date(this.startTime.getTime() + this.duration);
     }
-    return result;
+    return new Date();
   }
 
   /** Indicates if the clock was ended. */

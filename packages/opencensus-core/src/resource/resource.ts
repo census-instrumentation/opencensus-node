@@ -65,9 +65,10 @@ export class CoreResource {
    * @returns {Resource} The resource.
    */
   static mergeResources(resources: Resource[]): Resource {
-    let currentResource: Resource;
-    for (const resource of resources) {
-      currentResource = this.merge(currentResource, resource);
+    if (resources.length === 0) return {type: 'global', labels: {}};
+    let currentResource = resources[0];
+    for (let i = 1; i < resources.length; i++) {
+      currentResource = this.merge(currentResource, resources[i]);
     }
     return currentResource;
   }
@@ -81,14 +82,12 @@ export class CoreResource {
    * @param  {string} rawEnvType The resource type.
    * @returns {string} The sanitized resource type.
    */
-  private static parseResourceType(rawEnvType: string): string {
-    if (rawEnvType) {
-      if (!CoreResource.isValidAndNotEmpty(rawEnvType)) {
-        throw new Error(`Type ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
-      }
-      return rawEnvType.trim();
+  private static parseResourceType(rawEnvType?: string): string|null {
+    if (!rawEnvType) return null;
+    if (!CoreResource.isValidAndNotEmpty(rawEnvType)) {
+      throw new Error(`Type ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
     }
-    return null;
+    return rawEnvType.trim();
   }
 
   /**
@@ -103,30 +102,30 @@ export class CoreResource {
    * of key/value pairs.
    * @returns {Labels} The sanitized resource labels.
    */
-  private static parseResourceLabels(rawEnvLabels: string): Labels {
+  private static parseResourceLabels(rawEnvLabels?: string): Labels {
+    if (!rawEnvLabels) return {};
+
     const labels: Labels = {};
-    if (rawEnvLabels) {
-      const rawLabels: string[] = rawEnvLabels.split(this.COMMA_SEPARATOR, -1);
-      for (const rawLabel of rawLabels) {
-        const keyValuePair: string[] =
-            rawLabel.split(this.LABEL_KEY_VALUE_SPLITTER, -1);
-        if (keyValuePair.length !== 2) {
-          continue;
-        }
-        let [key, value] = keyValuePair;
-        // Leading and trailing whitespaces are trimmed.
-        key = key.trim();
-        value = value.trim().split('^"|"$').join('');
-        if (!CoreResource.isValidAndNotEmpty(key)) {
-          throw new Error(
-              `Label key ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
-        }
-        if (!CoreResource.isValid(value)) {
-          throw new Error(
-              `Label value ${CoreResource.ERROR_MESSAGE_INVALID_VALUE}`);
-        }
-        labels[key] = value;
+    const rawLabels: string[] = rawEnvLabels.split(this.COMMA_SEPARATOR, -1);
+    for (const rawLabel of rawLabels) {
+      const keyValuePair: string[] =
+          rawLabel.split(this.LABEL_KEY_VALUE_SPLITTER, -1);
+      if (keyValuePair.length !== 2) {
+        continue;
       }
+      let [key, value] = keyValuePair;
+      // Leading and trailing whitespaces are trimmed.
+      key = key.trim();
+      value = value.trim().split('^"|"$').join('');
+      if (!CoreResource.isValidAndNotEmpty(key)) {
+        throw new Error(
+            `Label key ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
+      }
+      if (!CoreResource.isValid(value)) {
+        throw new Error(
+            `Label value ${CoreResource.ERROR_MESSAGE_INVALID_VALUE}`);
+      }
+      labels[key] = value;
     }
     return labels;
   }
@@ -173,7 +172,7 @@ export class CoreResource {
    * @returns {boolean} Whether the String is valid and not empty.
    */
   private static isValidAndNotEmpty(name: string): boolean {
-    return name && name.length > 0 && CoreResource.isValid(name);
+    return name.length > 0 && CoreResource.isValid(name);
   }
 
   /** TEST_ONLY */

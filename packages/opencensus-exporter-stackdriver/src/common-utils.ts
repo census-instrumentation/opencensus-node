@@ -40,7 +40,7 @@ export async function getDefaultResource(projectId: string):
   return {type, labels};
 }
 
-function getTypeAndMappings(resourceType: string): [string, Labels] {
+function getTypeAndMappings(resourceType: string|null): [string, Labels] {
   switch (resourceType) {
     case resource.GCP_GCE_INSTANCE_TYPE:
       // https://cloud.google.com/monitoring/api/resources#tag_gce_instance

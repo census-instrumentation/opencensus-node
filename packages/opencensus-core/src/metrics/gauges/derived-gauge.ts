@@ -72,7 +72,7 @@ export class DerivedGauge implements types.Meter {
   private metricDescriptor: MetricDescriptor;
   private labelKeysLength: number;
   private registeredPoints: Map<string, GaugeEntry> = new Map();
-  private extractor: ValueExtractor;
+  private extractor?: ValueExtractor;
 
   private static readonly LABEL_VALUE = 'labelValue';
   private static readonly LABEL_VALUES = 'labelValues';
@@ -201,7 +201,7 @@ export class DerivedGauge implements types.Meter {
    *
    * @returns {Metric} The Metric.
    */
-  getMetric(): Metric {
+  getMetric(): Metric|null {
     if (this.registeredPoints.size === 0) {
       return null;
     }

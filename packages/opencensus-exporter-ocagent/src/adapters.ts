@@ -204,7 +204,7 @@ const adaptTimeEvents =
  * @returns opencensus.proto.trace.v1.Span.Tracestate
  */
 const adaptTraceState =
-    (traceState: string): opencensus.proto.trace.v1.Span.Tracestate => {
+    (traceState?: string): opencensus.proto.trace.v1.Span.Tracestate => {
       const entries: opencensus.proto.trace.v1.Span.Tracestate.Entry[]|null =
           !traceState ? null : traceState.split(',').map(state => {
             const [key, value] = state.split('=');

@@ -89,14 +89,14 @@ describe('Span', () => {
       rootSpan.start();
       span = new Span(rootSpan);
     });
-    it('should get startTime() return null', () => {
-      assert.strictEqual(span.startTime, null);
+    it('should get startTime()', () => {
+      assert.ok(span.startTime);
     });
-    it('should get endTime() return null', () => {
-      assert.strictEqual(span.endTime, null);
+    it('should get endTime()', () => {
+      assert.ok(span.endTime);
     });
-    it('should get duration() return null', () => {
-      assert.strictEqual(span.duration, null);
+    it('should get duration() return 0', () => {
+      assert.strictEqual(span.duration, 0);
     });
   });
 
@@ -175,7 +175,7 @@ describe('Span', () => {
       const initialEndTime = span.endTime;
       span.end();
 
-      assert.equal(span.endTime.getTime(), initialEndTime.getTime());
+      assert.equal(span.endTime!.getTime(), initialEndTime!.getTime());
     });
   });
 

@@ -14,34 +14,28 @@
  * limitations under the License.
  */
 
-import * as logger from '../../../common/console-logger';
 import * as types from '../types';
 import {NoRecordSpanBase} from './no-record-span-base';
 
 /** Implementation for the Span class that does not record trace events. */
 export class NoRecordSpan extends NoRecordSpanBase implements types.Span {
-  private root: types.RootSpan;
   /** set isRootSpan = false */
   readonly isRootSpan = false;
 
   /**
    * Constructs a new NoRecordSpanImpl instance.
-   * @param root
    */
-  constructor(root: types.RootSpan) {
+  constructor() {
     super();
-    this.root = root;
-    this.logger = this.root.logger || logger.logger();
-    this.parentSpanId = root.id;
   }
 
   /** Gets trace id of no-record span. */
   get traceId(): string {
-    return this.root.traceId;
+    return '';
   }
 
-  get traceState(): string {
-    return this.root.traceState;
+  get traceState(): types.TraceState {
+    return '';
   }
 
   /** No-op implementation of this method. */
