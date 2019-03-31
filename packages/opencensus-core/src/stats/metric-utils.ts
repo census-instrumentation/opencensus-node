@@ -17,7 +17,6 @@
 
 import {LabelValue, MetricDescriptor, MetricDescriptorType} from '../metrics/export/types';
 import {TagValue} from '../tags/types';
-
 import {AggregationType, Measure, MeasureType, View} from './types';
 
 /** Utils to convert Stats data models to Metric data models */
@@ -75,7 +74,7 @@ export class MetricUtils {
 
   /**
    * Converts tag values to label values.
-   * @param tagValues
+   * @param tagValues the list of tag values
    * @returns {LabelValue[]} List of label values
    */
   static tagValuesToLabelValues(tagValues: Array<TagValue|null>): LabelValue[] {

@@ -20,7 +20,6 @@ import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as uuid from 'uuid';
-
 import * as stats from './http-stats';
 import {IgnoreMatcher} from './types';
 
@@ -474,9 +473,7 @@ export class HttpPlugin extends BasePlugin {
 
   /** Method to record stats for client and server. */
   static recordStats(kind: SpanKind, tags: TagMap, ms: number) {
-    if (!plugin.stats) {
-      return;
-    }
+    if (!plugin.stats) return;
 
     try {
       const measureList = [];

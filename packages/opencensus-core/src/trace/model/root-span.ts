@@ -43,7 +43,7 @@ export class RootSpan extends SpanBase implements types.RootSpan {
    * @param traceId The trace Id.
    * @param parentSpanId The id of the parent span, or empty if the new span is
    *     a root span.
-   * @param traceState Optional traceState.
+   * @param traceState An optional traceState.
    */
   constructor(
       tracer: types.Tracer, name: string, kind: types.SpanKind, traceId: string,
@@ -108,7 +108,6 @@ export class RootSpan extends SpanBase implements types.RootSpan {
 
     this.tracer.onEndSpan(this);
   }
-
 
   /**
    * Starts a new child span in the root span.

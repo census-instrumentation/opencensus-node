@@ -16,7 +16,6 @@
 
 import {BaseMetricProducer} from '../metrics/export/base-metric-producer';
 import {Metric} from '../metrics/export/types';
-
 import {Stats} from './types';
 
 /**

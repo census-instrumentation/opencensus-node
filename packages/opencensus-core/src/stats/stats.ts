@@ -23,7 +23,6 @@ import {Metrics} from '../metrics/metrics';
 import {TagMap} from '../tags/tag-map';
 import * as tagger from '../tags/tagger';
 import {TagKey} from '../tags/types';
-
 import {MetricProducerForStats} from './metric-producer';
 import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from './types';
 import {BaseView} from './view';
@@ -85,7 +84,7 @@ export class BaseStats implements Stats {
    * @param aggregation The view aggregation type
    * @param tagKeys The view columns (tag keys)
    * @param description The view description
-   * @param bucketBoundaries optional The view bucket boundaries for a
+   * @param bucketBoundaries An optional The view bucket boundaries for a
    *     distribution aggregation type
    */
   createView(
@@ -129,7 +128,7 @@ export class BaseStats implements Stats {
    * Creates a measure of type Double.
    * @param name The measure name
    * @param unit The measure unit
-   * @param description The measure description
+   * @param description An optional measure description
    */
   createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
       Measure {
@@ -141,7 +140,7 @@ export class BaseStats implements Stats {
    * Number.MAX_SAFE_INTERGER.
    * @param name The measure name
    * @param unit The measure unit
-   * @param description The measure description
+   * @param description An optional measure description
    */
   createMeasureInt64(name: string, unit: MeasureUnit, description?: string):
       Measure {

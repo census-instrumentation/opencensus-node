@@ -16,7 +16,6 @@
 
 import {Span} from '@opencensus/core';
 import * as express from 'express';
-
 import {TracezPageHandler} from './../page-handlers/tracez.page-handler';
 
 /**

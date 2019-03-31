@@ -15,7 +15,6 @@
  */
 
 import {StringUtils} from '../internal/string-utils';
-
 import {Labels, Resource} from './types';
 
 /**

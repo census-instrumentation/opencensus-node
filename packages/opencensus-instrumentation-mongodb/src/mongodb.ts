@@ -170,6 +170,5 @@ export class MongoDBPlugin extends BasePlugin {
   }
 }
 
-
 const plugin = new MongoDBPlugin('mongodb');
 export {plugin};

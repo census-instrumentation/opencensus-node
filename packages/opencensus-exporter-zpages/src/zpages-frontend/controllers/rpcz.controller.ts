@@ -15,15 +15,13 @@
  */
 
 import * as express from 'express';
-
 import {StatsParams} from '../../zpages';
-
 import {RpczPageHandler} from './../page-handlers/rpcz.page-handler';
 
 /**
  * An Express middleware that renders the RPCz view.
  * @param statsParams An object with all registered views, registered measures
- * and recorded data from stats
+ *     and recorded data from stats
  */
 export function createRpczHandler(statsParams: StatsParams): express.Handler {
   const html = new RpczPageHandler(statsParams);

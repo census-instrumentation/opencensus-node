@@ -18,12 +18,11 @@ import * as loggerTypes from '../common/types';
 import {Measurement, View} from '../stats/types';
 import {TagKey, TagValue} from '../tags/types';
 import * as modelTypes from '../trace/model/types';
-
 import {ExporterBuffer} from './exporter-buffer';
-import * as types from './types';
+import {Exporter, ExporterConfig, StatsEventListener} from './types';
 
 /** Do not send span data */
-export class NoopExporter implements types.Exporter {
+export class NoopExporter implements Exporter {
   logger?: loggerTypes.Logger;
   onStartSpan(root: modelTypes.RootSpan) {}
   onEndSpan(root: modelTypes.RootSpan) {}
@@ -33,7 +32,7 @@ export class NoopExporter implements types.Exporter {
 }
 
 /** Format and sends span data to the console. */
-export class ConsoleExporter implements types.Exporter {
+export class ConsoleExporter implements Exporter {
   /** Buffer object to store the spans. */
   // @ts-ignore
   private logger?: loggerTypes.Logger;
@@ -42,13 +41,15 @@ export class ConsoleExporter implements types.Exporter {
   /**
    * Constructs a new ConsoleLogExporter instance.
    * @param config Exporter configuration object to create a console log
-   * exporter.
+   *     exporter.
    */
-  constructor(config: types.ExporterConfig) {
+  constructor(config: ExporterConfig) {
     this.buffer = new ExporterBuffer(this, config);
     this.logger = config.logger;
   }
+
   onStartSpan(root: modelTypes.RootSpan) {}
+
   /**
    * Event called when a span is ended.
    * @param root Ended span.
@@ -56,9 +57,10 @@ export class ConsoleExporter implements types.Exporter {
   onEndSpan(root: modelTypes.RootSpan) {
     this.buffer.addToBuffer(root);
   }
+
   /**
    * Sends the spans information to the console.
-   * @param rootSpans
+   * @param rootSpans A list of root spans to publish.
    */
   publish(rootSpans: modelTypes.RootSpan[]) {
     rootSpans.map((root) => {
@@ -79,7 +81,7 @@ export class ConsoleExporter implements types.Exporter {
 }
 
 /** Exporter that receives stats data and shows in the log console. */
-export class ConsoleStatsExporter implements types.StatsEventListener {
+export class ConsoleStatsExporter implements StatsEventListener {
   /**
    * Event called when a view is registered
    * @param view registered view

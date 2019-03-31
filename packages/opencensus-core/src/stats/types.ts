@@ -30,7 +30,7 @@ export interface Stats {
    * @param tagKeys The view columns (tag keys)
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
-   * aggregation type
+   *     aggregation type
    */
   createView(
       name: string, measure: Measure, aggregation: AggregationType,

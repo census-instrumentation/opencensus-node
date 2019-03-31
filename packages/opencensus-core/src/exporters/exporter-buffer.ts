@@ -73,6 +73,7 @@ export class ExporterBuffer {
   getQueue(): modelTypes.RootSpan[] {
     return this.queue;
   }
+
   /**
    * Add a rootSpan in the buffer.
    * @param root RootSpan to be added in the buffer.

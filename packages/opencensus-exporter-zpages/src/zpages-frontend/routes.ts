@@ -16,9 +16,7 @@
 
 import {Span} from '@opencensus/core';
 import * as express from 'express';
-
 import {StatsParams} from '../zpages';
-
 import {createRpczHandler} from './controllers/rpcz.controller';
 import {createStatszHandler} from './controllers/statsz.controller';
 import {createTraceConfigzHandler} from './controllers/traceconfigz.controller';
@@ -29,7 +27,7 @@ import {createTracezHandler} from './controllers/tracez.controller';
  * data.
  * @param traceMap A span data store.
  * @param statsParams An object with all registered views, registered measures
- * and recorded data from stats
+ *     and recorded data from stats
  */
 export function createRoutes(
     traceMap: Map<string, Span[]>, statsParams: StatsParams): express.Router {

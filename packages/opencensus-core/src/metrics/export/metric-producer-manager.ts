@@ -1,7 +1,7 @@
 /**
  * Copyright 2019, OpenCensus Authors
  *
- * Licensed under the Apache License, Version 2.0 the "License";
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -35,7 +35,8 @@ class BaseMetricProducerManager implements MetricProducerManager {
   /**
    * Adds the MetricProducer to the manager if it is not already present.
    *
-   * @param {MetricProducer} The MetricProducer to be added to the manager.
+   * @param {MetricProducer} metricProducer The MetricProducer to be added to
+   *     the manager.
    */
   add(metricProducer: MetricProducer): void {
     validateNotNull(metricProducer, 'metricProducer');
@@ -47,7 +48,8 @@ class BaseMetricProducerManager implements MetricProducerManager {
   /**
    * Removes the MetricProducer to the manager if it is present.
    *
-   * @param {MetricProducer} The MetricProducer to be removed from the manager.
+   * @param {MetricProducer} metricProducer The MetricProducer to be removed
+   *     from the manager.
    */
   remove(metricProducer: MetricProducer): void {
     validateNotNull(metricProducer, 'metricProducer');

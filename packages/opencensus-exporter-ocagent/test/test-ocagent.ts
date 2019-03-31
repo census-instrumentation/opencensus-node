@@ -20,9 +20,7 @@ import * as nodeTracing from '@opencensus/nodejs';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
 import * as grpc from 'grpc';
-import * as mocha from 'mocha';
 import * as uuid from 'uuid';
-
 import {OCAgentExporter} from '../src';
 import {opencensus} from '../src/types';
 

@@ -16,7 +16,6 @@
 
 import {RootSpan, Span} from '@opencensus/core';
 import * as ejs from 'ejs';
-
 import {LatencyBucketBoundaries} from '../latency-bucket-boundaries';
 import {templatesDir} from './templates-dir';
 

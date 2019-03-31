@@ -15,7 +15,6 @@
  */
 
 import {TraceParams} from '../config/types';
-
 import {Sampler} from './types';
 
 // We use 52-bits as our max number because it remains a javascript "safe

@@ -18,7 +18,6 @@ import {AggregationData, AggregationType, TagKey, TagValue, View} from '@opencen
 import {StatsParams} from '../../zpages';
 import {templatesDir} from './templates-dir';
 const ejs = require('ejs');
-
 import * as path from 'path';
 
 export interface StatszParams {
@@ -198,8 +197,7 @@ export class StatszPageHandler {
 
   /**
    * Loader an file from templates folder
-   * @param fileName name of the file will be to load with extension
-   * file
+   * @param fileName name of the file will be to load with extension file
    */
   private loaderFile(fileName: string): string {
     const fileDir = path.join(templatesDir, fileName);
