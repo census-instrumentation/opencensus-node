@@ -50,6 +50,7 @@ export interface Point {
   getTimeSeries(timestamp: Timestamp): TimeSeries;
 }
 
+/** Options for every metric added to the MetricRegistry. */
 export interface MetricOptions {
   /** The description of the metric. */
   readonly description?: string;

@@ -31,6 +31,9 @@ export class MetricRegistry {
 
   private static readonly NAME = 'name';
   private static readonly LABEL_KEY = 'labelKey';
+  private static readonly DEFAULT_DESCRIPTION = '';
+  private static readonly DEFAULT_UNIT = MeasureUnit.UNIT;
+  private static readonly DEFAULT_LABEL_KEYS = [];
 
   constructor() {
     this.metricProducer = new MetricProducerForRegistry(this.registeredMetrics);
@@ -46,9 +49,12 @@ export class MetricRegistry {
    * @returns {Gauge} A Int64 Gauge metric.
    */
   addInt64Gauge(name: string, options?: MetricOptions): Gauge {
-    const description = (options && options.description) || '';
-    const unit = (options && options.unit) || MeasureUnit.UNIT;
-    const labelKeys = (options && options.labelKeys) || [];
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    // TODO (mayurkale): Add support for constantLabels
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
     const labelKeysCopy = Object.assign([], labelKeys);
@@ -69,9 +75,12 @@ export class MetricRegistry {
    * @returns {Gauge} A Double Gauge metric.
    */
   addDoubleGauge(name: string, options?: MetricOptions): Gauge {
-    const description = (options && options.description) || '';
-    const unit = (options && options.unit) || MeasureUnit.UNIT;
-    const labelKeys = (options && options.labelKeys) || [];
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    // TODO (mayurkale): Add support for constantLabels
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
     const labelKeysCopy = Object.assign([], labelKeys);
@@ -92,9 +101,12 @@ export class MetricRegistry {
    * @returns {DerivedGauge} A Int64 DerivedGauge metric.
    */
   addDerivedInt64Gauge(name: string, options?: MetricOptions): DerivedGauge {
-    const description = (options && options.description) || '';
-    const unit = (options && options.unit) || MeasureUnit.UNIT;
-    const labelKeys = (options && options.labelKeys) || [];
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    // TODO (mayurkale): Add support for constantLabels
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
     const labelKeysCopy = Object.assign([], labelKeys);
@@ -115,9 +127,12 @@ export class MetricRegistry {
    * @returns {DerivedGauge} A Double DerivedGauge metric.
    */
   addDerivedDoubleGauge(name: string, options?: MetricOptions): DerivedGauge {
-    const description = (options && options.description) || '';
-    const unit = (options && options.unit) || MeasureUnit.UNIT;
-    const labelKeys = (options && options.labelKeys) || [];
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    // TODO (mayurkale): Add support for constantLabels
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
     const labelKeysCopy = Object.assign([], labelKeys);

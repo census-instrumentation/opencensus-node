@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {globalStats, LabelKey, Logger, MeasureUnit, Metrics} from '@opencensus/core';
+import {globalStats, Logger, MeasureUnit, Metrics} from '@opencensus/core';
 import * as assert from 'assert';
 import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
 import {MetricKind, StackdriverExporterOptions, ValueType} from '../src/types';
@@ -83,12 +83,15 @@ describe('Stackdriver Stats Exporter', () => {
       const METRIC_NAME = 'metric-name';
       const METRIC_DESCRIPTION = 'metric-description';
       const UNIT = MeasureUnit.UNIT;
-      const LABEL_KEYS: LabelKey[] = [{key: 'code', description: 'desc'}];
+      const METRIC_OPTIONS = {
+        description: METRIC_DESCRIPTION,
+        unit: UNIT,
+        labelKeys: [{key: 'code', description: 'desc'}]
+      };
 
       const metricRegistry = Metrics.getMetricRegistry();
 
-      const gauge = metricRegistry.addInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+      const gauge = metricRegistry.addInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
       gauge.getDefaultTimeSeries().add(100);
 
       nocks.metricDescriptors(PROJECT_ID);
