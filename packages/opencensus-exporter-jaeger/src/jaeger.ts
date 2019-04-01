@@ -69,7 +69,6 @@ export class JaegerTraceExporter implements Exporter {
   /** Indicates when the buffer timeout is running */
   private timeoutSet = false;
 
-
   constructor(options: JaegerTraceExporterOptions) {
     this.logger = options.logger || logger.logger();
     this.bufferTimeout =

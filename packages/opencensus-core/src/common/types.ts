@@ -17,7 +17,7 @@
 // tslint:disable:no-any
 export type LogFunction = (message: any, ...args: any[]) => void;
 
-/** Defines an logger interface. */
+/** Defines a logger interface. */
 export interface Logger {
   /** Logger verbosity level. If omitted, `debug` level is assumed. */
   level?: string;
@@ -28,7 +28,7 @@ export interface Logger {
   debug: LogFunction;
 }
 
-/** Defines an logger options interface. */
+/** Defines a logger options interface. */
 export interface LoggerOptions {
   level?: string;
 }

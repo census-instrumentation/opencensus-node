@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 // types
 export * from './trace/types';
 export * from './trace/model/types';
@@ -25,28 +24,7 @@ export * from './trace/propagation/types';
 export * from './exporters/types';
 export * from './common/types';
 export * from './metrics/gauges/types';
-import {Metric, MetricDescriptor, TimeSeries, MetricDescriptorType, LabelKey, LabelValue, Point as TimeSeriesPoint, DistributionValue, BucketOptions, Bucket as DistributionBucket, SummaryValue, Explicit, Exemplar, Timestamp, Snapshot, ValueAtPercentile, MetricProducerManager, MetricProducer} from './metrics/export/types';
-
-export {
-  Metric,
-  MetricDescriptor,
-  TimeSeries,
-  MetricDescriptorType,
-  LabelKey,
-  LabelValue,
-  TimeSeriesPoint,
-  DistributionValue,
-  BucketOptions,
-  DistributionBucket,
-  SummaryValue,
-  Explicit,
-  Exemplar,
-  Timestamp,
-  Snapshot,
-  ValueAtPercentile,
-  MetricProducerManager,
-  MetricProducer
-};
+export {Metric, MetricDescriptor, TimeSeries, MetricDescriptorType, LabelKey, LabelValue, Point as TimeSeriesPoint, DistributionValue, BucketOptions, Bucket as DistributionBucket, SummaryValue, Explicit, Exemplar, Timestamp, Snapshot, ValueAtPercentile, MetricProducerManager, MetricProducer} from './metrics/export/types';
 
 // classes
 
@@ -96,7 +74,6 @@ export * from './metrics/metric-registry';
 // GAUGES CLASSES
 export * from './metrics/gauges/derived-gauge';
 export * from './metrics/gauges/gauge';
-
 
 // Stats singleton instance
 import {BaseStats} from './stats/stats';

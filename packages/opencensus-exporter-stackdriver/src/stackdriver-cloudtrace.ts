@@ -18,7 +18,6 @@ import {Exporter, ExporterBuffer, RootSpan, Span as OCSpan, SpanContext} from '@
 import {logger, Logger} from '@opencensus/core';
 import {auth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
-
 import {getDefaultResource} from './common-utils';
 import {createAttributes, createLinks, createTimeEvents, getResourceLabels, stringToTruncatableString} from './stackdriver-cloudtrace-utils';
 import {AttributeValue, Span, SpansWithCredentials, StackdriverExporterOptions} from './types';
@@ -148,7 +147,7 @@ export class StackdriverTraceExporter implements Exporter {
   /**
    * Gets the Google Application Credentials from the environment variables,
    * authenticates the client and calls a method to send the spans data.
-   * @param stackdriverTraces
+   * @param stackdriverSpans The spans to export
    */
   private authorize(stackdriverSpans: Span[]) {
     return auth.getApplicationDefault()

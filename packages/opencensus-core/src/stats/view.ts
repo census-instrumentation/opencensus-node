@@ -21,7 +21,6 @@ import {Bucket as metricBucket, DistributionValue, LabelValue, Metric, MetricDes
 import {TagMap} from '../tags/tag-map';
 import {TagKey, TagValue} from '../tags/types';
 import {isValidTagKey} from '../tags/validation';
-
 import {BucketBoundaries} from './bucket-boundaries';
 import {MetricUtils} from './metric-utils';
 import {Recorder} from './recorder';
@@ -29,6 +28,10 @@ import {AggregationData, AggregationType, Measure, Measurement, StatsExemplar, V
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 
+/**
+ * A View specifies an aggregation and a set of tag keys. The aggregation will
+ * be broken down by the unique set of matching tag values for each measure.
+ */
 export class BaseView implements View {
   /**
    * A string by which the View will be referred to, e.g. "rpc_latency". Names
@@ -73,6 +76,7 @@ export class BaseView implements View {
   /** An object to log information to */
   // @ts-ignore
   private logger: loggerTypes.Logger;
+
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
    * prefer using Stats.createView() instead.
@@ -82,7 +86,7 @@ export class BaseView implements View {
    * @param tagsKeys The Tags' keys that view will have
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
-   * aggregation type
+   *     aggregation type
    * @param logger
    */
   constructor(

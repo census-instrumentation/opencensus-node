@@ -52,7 +52,7 @@ export class ConsoleLogger implements types.Logger {
 
   /**
    * Logger error function.
-   * @param message menssage erro to log in console
+   * @param message message error to log in console
    * @param args arguments to log in console
    */
   // tslint:disable-next-line:no-any
@@ -62,7 +62,7 @@ export class ConsoleLogger implements types.Logger {
 
   /**
    * Logger warning function.
-   * @param message menssage warning to log in console
+   * @param message message warning to log in console
    * @param args arguments to log in console
    */
   // tslint:disable-next-line:no-any
@@ -72,7 +72,7 @@ export class ConsoleLogger implements types.Logger {
 
   /**
    * Logger info function.
-   * @param message menssage info to log in console
+   * @param message message info to log in console
    * @param args arguments to log in console
    */
   // tslint:disable-next-line:no-any
@@ -82,7 +82,7 @@ export class ConsoleLogger implements types.Logger {
 
   /**
    * Logger debug function.
-   * @param message menssage debug to log in console
+   * @param message message debug to log in console
    * @param args arguments to log in console
    */
   // tslint:disable-next-line:no-any

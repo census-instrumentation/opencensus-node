@@ -19,8 +19,6 @@ import * as configTypes from '../config/types';
 import {Propagation} from '../propagation/types';
 import * as samplerTypes from '../sampler/types';
 
-
-
 /** Default type for functions */
 // tslint:disable:no-any
 export type Func<T> = (...args: any[]) => T;
@@ -550,7 +548,7 @@ export interface Tracer extends SpanEventListener {
    * This is necessary in order to create child spans correctly in event
    * handlers.
    * @param emitter An event emitter whose handlers should have
-   * the trace context binded to them.
+   *     the trace context binded to them.
    */
   wrapEmitter(emitter: NodeJS.EventEmitter): void;
 }

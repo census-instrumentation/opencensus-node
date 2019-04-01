@@ -16,7 +16,6 @@
 
 import {validateArrayElementsNotNull, validateNotNull} from '../common/validations';
 import {MeasureUnit,} from '../stats/types';
-
 import {BaseMetricProducer} from './export/base-metric-producer';
 import {LabelKey, Metric, MetricDescriptorType, MetricProducer} from './export/types';
 import {DerivedGauge} from './gauges/derived-gauge';
@@ -179,10 +178,6 @@ export class MetricRegistry {
 /**
  * A MetricProducerForRegistry is a producer that can be registered for
  * exporting using MetricProducerManager.
- *
- * TODO (mayurkale): Add MetricProducerManager, that Keeps a set of
- *  MetricProducer that is used by exporters to determine the metrics that
- *  need to be exported.
  */
 class MetricProducerForRegistry extends BaseMetricProducer {
   private registeredMetrics: Map<string, Meter>;

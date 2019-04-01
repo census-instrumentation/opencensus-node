@@ -30,7 +30,6 @@ export type ModuleExportsMapping = {
   [key: string]: any;
 };
 
-
 /** This class represent the base to patch plugin. */
 export abstract class BasePlugin implements types.Plugin {
   /** Exports from the nodejs module to be instrumented */
@@ -97,12 +96,12 @@ export abstract class BasePlugin implements types.Plugin {
    * @param tracer a tracer instance
    * @param version version of the current instaled module to patch
    * @param options plugin options
-   * @param basedir module absolute path
+   * @param basedir an optional module absolute path
    * @param stats an optional stats instance
    */
   enable<T>(
       moduleExports: T, tracer: modelTypes.Tracer, version: string,
-      options: types.PluginConfig, basedir: string, stats?: Stats) {
+      options: types.PluginConfig, basedir?: string, stats?: Stats) {
     this.setPluginContext(
         moduleExports, tracer, version, options, basedir, stats);
     return this.applyPatch();

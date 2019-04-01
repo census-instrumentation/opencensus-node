@@ -68,16 +68,16 @@ export class InstanaTraceExporter implements Exporter {
 
   /**
    * Sends spans to Instana.
-   *
-   * @param rootSpans The spans to transmit to Instana
-   * @returns An indicator whether publishing was successful. This method
-   * purposefully does not return a rejected Promise, because the code path
-   * calling the publish function does not expect a Promise to be returned. For
-   * this reason, a rejection handler is never registered for these promises.
-   *   For this reason returning a rejected Promise would result in a
-   * UnhandledPromiseRejectionWarning.
+   * This method purposefully does not return a rejected Promise, because the
+   * code path calling the publish function does not expect a Promise to be
+   * returned. For this reason, a rejection handler is never registered for
+   * these promises. For this reason returning a rejected Promise would result
+   * in a UnhandledPromiseRejectionWarning.
    *
    * This Promise is meant as a problem indicator for tests only.
+   *
+   * @param rootSpans The spans to transmit to Instana
+   * @returns An indicator whether publishing was successful.
    */
   publish(rootSpans: RootSpan[]): Promise<void> {
     try {

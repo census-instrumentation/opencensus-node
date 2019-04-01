@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 /** This interface represent a sampler . */
 export interface Sampler {
   /**
@@ -26,7 +25,7 @@ export interface Sampler {
    * Checks if trace belong the sample.
    * @param traceId Used to check the probability.
    * @returns a boolean. True if the traceId is in probability
-   * False if the traceId is not in probability.
+   *     False if the traceId is not in probability.
    */
   shouldSample(traceId: string): boolean;
 }

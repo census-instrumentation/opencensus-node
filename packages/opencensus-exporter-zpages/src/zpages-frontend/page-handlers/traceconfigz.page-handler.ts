@@ -17,7 +17,6 @@
 import {SamplerBuilder} from '@opencensus/core';
 import * as tracing from '@opencensus/nodejs';
 import * as ejs from 'ejs';
-
 import {templatesDir} from './templates-dir';
 
 export interface TraceConfigzParams {

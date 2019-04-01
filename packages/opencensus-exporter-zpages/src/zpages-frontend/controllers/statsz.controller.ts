@@ -15,15 +15,13 @@
  */
 
 import * as express from 'express';
-
 import {StatsParams} from '../../zpages';
-
 import {StatszPageHandler} from './../page-handlers/statsz.page-handler';
 
 /**
  * An Express middleware that renders the Statsz view.
  * @param statsParams An object with all registered views, registered measures
- * and recorded data from stats
+ *     and recorded data from stats
  */
 export function createStatszHandler(statsParams: StatsParams): express.Handler {
   const html = new StatszPageHandler(statsParams);

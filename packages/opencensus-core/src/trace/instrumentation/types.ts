@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {Stats} from '../../stats/types';
 import {Tracer} from '../model/types';
 
 /** Interface Plugin to apply patch. */
@@ -25,14 +26,12 @@ export interface Plugin {
    * @param tracer a tracer instance
    * @param version version of the current instaled module to patch
    * @param options plugin options
-   * @param basedir module absolute path
+   * @param basedir an optional module absolute path
+   * @param stats an optional stats instance
    */
-  enable(
-      // tslint:disable-next-line:no-any
-      moduleExports: any, tracer: Tracer, version: string,
-      options: PluginConfig,
-      // tslint:disable-next-line:no-any
-      basedir?: string): any;
+  enable<T>(
+      moduleExports: T, tracer: Tracer, version: string, options: PluginConfig,
+      basedir?: string, stats?: Stats): T;
   /** Method to disable the instrumentation  */
   disable(): void;
 }

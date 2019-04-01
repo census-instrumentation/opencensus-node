@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 /**
  * The Clock class is used to record the duration and endTime for spans.
  */
@@ -51,7 +50,6 @@ export class Clock {
     const ns = this.diff[0] * 1e9 + this.diff[1];
     return ns / 1e6;
   }
-
 
   /** Starts the clock. */
   get startTime(): Date {

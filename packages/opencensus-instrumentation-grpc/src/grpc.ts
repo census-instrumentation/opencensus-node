@@ -20,7 +20,6 @@ import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
-
 import * as clientStats from './grpc-stats/client-stats';
 import * as serverStats from './grpc-stats/server-stats';
 
@@ -121,7 +120,6 @@ export class GrpcPlugin extends BasePlugin {
     return this.moduleExports;
   }
 
-
   /** Unpatches all gRPC patched function. */
   protected applyUnpatch(): void {
     shimmer.unwrap(this.moduleExports.Server.prototype, 'register');
@@ -130,7 +128,6 @@ export class GrpcPlugin extends BasePlugin {
       shimmer.unwrap(GrpcClientModule, 'makeClientConstructor');
     }
   }
-
 
   /**
    * Returns a function that patches the gRPC server register function in order

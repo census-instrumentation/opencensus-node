@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Google LLC
+ * Copyright 2018, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ export class StringUtils {
   /**
    * Determines whether the Character is printable.
    *
-   * @param {string} str The Character to be validated.
+   * @param {string} ch The Character to be validated.
    * @returns {boolean} Whether the Character is printable.
    */
   static isPrintableChar(ch: string): boolean {

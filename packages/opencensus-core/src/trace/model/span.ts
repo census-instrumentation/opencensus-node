@@ -15,10 +15,8 @@
  */
 
 import * as logger from '../../common/console-logger';
-
 import {SpanBase} from './span-base';
 import * as types from './types';
-
 
 /** Defines a Span. */
 export class Span extends SpanBase implements types.Span {
