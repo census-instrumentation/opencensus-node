@@ -28,7 +28,10 @@ import {AggregationData, AggregationType, Measure, Measurement, StatsExemplar, V
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 
-/** Implementation for the Base View class. */
+/**
+ * A View specifies an aggregation and a set of tag keys. The aggregation will
+ * be broken down by the unique set of matching tag values for each measure.
+ */
 export class BaseView implements View {
   /**
    * A string by which the View will be referred to, e.g. "rpc_latency". Names
@@ -73,6 +76,7 @@ export class BaseView implements View {
   /** An object to log information to */
   // @ts-ignore
   private logger: loggerTypes.Logger;
+
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
    * prefer using Stats.createView() instead.
