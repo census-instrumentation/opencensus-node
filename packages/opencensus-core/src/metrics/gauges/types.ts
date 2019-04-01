@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Metric, TimeSeries, Timestamp} from '../export/types';
+import {MeasureUnit} from '../../stats/types';
+import {LabelKey, LabelValue, Metric, TimeSeries, Timestamp} from '../export/types';
 
 export interface Meter {
   /**
@@ -47,4 +48,19 @@ export interface Point {
    * @returns {TimeSeries} The TimeSeries.
    */
   getTimeSeries(timestamp: Timestamp): TimeSeries;
+}
+
+/** Options for every metric added to the MetricRegistry. */
+export interface MetricOptions {
+  /** The description of the metric. */
+  readonly description?: string;
+  /** The unit of the metric. */
+  readonly unit?: MeasureUnit;
+  /** The list of the label keys. */
+  readonly labelKeys?: LabelKey[];
+  /** The map of constant labels for the Metric. */
+  readonly constantLabels?: Map<LabelKey, LabelValue>;
+
+  // TODO(mayurkale): Add resource information.
+  // https://github.com/census-instrumentation/opencensus-specs/pull/248
 }

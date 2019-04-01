@@ -26,6 +26,13 @@ const UNIT = MeasureUnit.UNIT;
 const LABEL_KEYS: LabelKey[] = [{key: 'code', description: 'desc'}];
 const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
 const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
+
+const METRIC_OPTIONS = {
+  description: METRIC_DESCRIPTION,
+  unit: UNIT,
+  labelKeys: LABEL_KEYS
+};
+
 describe('addInt64Gauge', () => {
   let registry: MetricRegistry;
   const realHrtimeFn = process.hrtime;
@@ -49,8 +56,7 @@ describe('addInt64Gauge', () => {
   });
 
   it('should return a metric', () => {
-    const int64Gauge = registry.addInt64Gauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const int64Gauge = registry.addInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
     const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry.add(100);
 
@@ -60,8 +66,32 @@ describe('addInt64Gauge', () => {
     assert.deepStrictEqual(descriptor, {
       name: METRIC_NAME,
       description: METRIC_DESCRIPTION,
-      'labelKeys': LABEL_KEYS,
+      labelKeys: LABEL_KEYS,
       unit: UNIT,
+      type: MetricDescriptorType.GAUGE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 100);
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+  });
+
+  it('should return a metric without options', () => {
+    const int64Gauge = registry.addInt64Gauge(METRIC_NAME);
+    const pointEntry = int64Gauge.getDefaultTimeSeries();
+    pointEntry.add(100);
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: '',
+      labelKeys: [],
+      unit: '1',
       type: MetricDescriptorType.GAUGE_INT64
     });
     assert.strictEqual(timeseries.length, 1);
@@ -97,8 +127,7 @@ describe('addDoubleGauge', () => {
   });
 
   it('should return a metric', () => {
-    const doubleGauge = registry.addDoubleGauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const doubleGauge = registry.addDoubleGauge(METRIC_NAME, METRIC_OPTIONS);
     const pointEntry = doubleGauge.getOrCreateTimeSeries(LABEL_VALUES_200);
     pointEntry.add(5.5);
 
@@ -111,7 +140,7 @@ describe('addDoubleGauge', () => {
     assert.deepStrictEqual(descriptor, {
       name: METRIC_NAME,
       description: METRIC_DESCRIPTION,
-      'labelKeys': LABEL_KEYS,
+      labelKeys: LABEL_KEYS,
       unit: UNIT,
       type: MetricDescriptorType.GAUGE_DOUBLE
     });
@@ -125,11 +154,34 @@ describe('addDoubleGauge', () => {
   });
 
   it('should throw an error when the register same metric', () => {
-    registry.addDoubleGauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    registry.addDoubleGauge(METRIC_NAME, METRIC_OPTIONS);
     assert.throws(() => {
-      registry.addDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+      registry.addDoubleGauge(METRIC_NAME, METRIC_OPTIONS);
     }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
+
+  it('should return a metric without options', () => {
+    const doubleGauge = registry.addDoubleGauge(METRIC_NAME);
+    const pointEntry = doubleGauge.getDefaultTimeSeries();
+    pointEntry.add(5.5);
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: '',
+      labelKeys: [],
+      unit: '1',
+      type: MetricDescriptorType.GAUGE_DOUBLE
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 5.5);
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
   });
 });
 
@@ -158,8 +210,8 @@ describe('addDerivedInt64Gauge', () => {
   it('should return a metric', () => {
     const map = new Map();
     map.set('key', 'value');
-    const derivedInt64Gauge = registry.addDerivedInt64Gauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const derivedInt64Gauge =
+        registry.addDerivedInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
     derivedInt64Gauge.createTimeSeries(LABEL_VALUES_200, map);
     map.set('key1', 'value1');
 
@@ -169,7 +221,7 @@ describe('addDerivedInt64Gauge', () => {
     assert.deepStrictEqual(descriptor, {
       name: METRIC_NAME,
       description: METRIC_DESCRIPTION,
-      'labelKeys': LABEL_KEYS,
+      labelKeys: LABEL_KEYS,
       unit: UNIT,
       type: MetricDescriptorType.GAUGE_INT64
     });
@@ -183,12 +235,36 @@ describe('addDerivedInt64Gauge', () => {
   });
 
   it('should throw an error when the register same metric', () => {
-    registry.addDerivedInt64Gauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    registry.addDerivedInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
     assert.throws(() => {
-      registry.addDerivedInt64Gauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+      registry.addDerivedInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
     }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
+
+  it('should return a metric without options', () => {
+    const map = new Map();
+    map.set('key', 'value');
+    const derivedInt64Gauge = registry.addDerivedInt64Gauge(METRIC_NAME);
+    derivedInt64Gauge.createTimeSeries([], map);
+    map.set('key1', 'value1');
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: '',
+      labelKeys: [],
+      unit: '1',
+      type: MetricDescriptorType.GAUGE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 2);
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
   });
 });
 
@@ -220,8 +296,8 @@ describe('addDerivedDoubleGauge', () => {
         return 0.7;
       }
     }
-    const derivedDoubleGauge = registry.addDerivedDoubleGauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const derivedDoubleGauge =
+        registry.addDerivedDoubleGauge(METRIC_NAME, METRIC_OPTIONS);
     derivedDoubleGauge.createTimeSeries(LABEL_VALUES_200, new QueueManager());
 
     const metrics = registry.getMetricProducer().getMetrics();
@@ -230,7 +306,7 @@ describe('addDerivedDoubleGauge', () => {
     assert.deepStrictEqual(descriptor, {
       name: METRIC_NAME,
       description: METRIC_DESCRIPTION,
-      'labelKeys': LABEL_KEYS,
+      labelKeys: LABEL_KEYS,
       unit: UNIT,
       type: MetricDescriptorType.GAUGE_DOUBLE
     });
@@ -244,11 +320,9 @@ describe('addDerivedDoubleGauge', () => {
   });
 
   it('should throw an error when the register same metric', () => {
-    registry.addDerivedDoubleGauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    registry.addDerivedDoubleGauge(METRIC_NAME, METRIC_OPTIONS);
     assert.throws(() => {
-      registry.addDerivedDoubleGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+      registry.addDerivedDoubleGauge(METRIC_NAME, METRIC_OPTIONS);
     }, /^Error: A metric with the name metric-name has already been registered.$/);
   });
 });
@@ -276,17 +350,15 @@ describe('Add multiple gauges', () => {
   });
 
   it('should return metrics', () => {
-    const int64Gauge = registry.addInt64Gauge(
-        'metric-name1', METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const int64Gauge = registry.addInt64Gauge('metric-name1', METRIC_OPTIONS);
     int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200).add(100);
 
-    const doubleGauge = registry.addDoubleGauge(
-        'metric-name2', METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const doubleGauge = registry.addDoubleGauge('metric-name2', METRIC_OPTIONS);
     doubleGauge.getOrCreateTimeSeries(LABEL_VALUES_200).add(5.5);
 
     const arr = new Array(5).fill('test');
-    const derivedInt64Gauge = registry.addDerivedInt64Gauge(
-        'metric-name3', METRIC_DESCRIPTION, UNIT, LABEL_KEYS);
+    const derivedInt64Gauge =
+        registry.addDerivedInt64Gauge('metric-name3', METRIC_OPTIONS);
     derivedInt64Gauge.createTimeSeries(LABEL_VALUES_400, {
       size: () => arr.length,
     });
@@ -297,21 +369,21 @@ describe('Add multiple gauges', () => {
     assert.deepStrictEqual(descriptor1, {
       name: 'metric-name1',
       description: METRIC_DESCRIPTION,
-      'labelKeys': LABEL_KEYS,
+      labelKeys: LABEL_KEYS,
       unit: UNIT,
       type: MetricDescriptorType.GAUGE_INT64
     });
     assert.deepStrictEqual(descriptor2, {
       name: 'metric-name2',
       description: METRIC_DESCRIPTION,
-      'labelKeys': LABEL_KEYS,
+      labelKeys: LABEL_KEYS,
       unit: UNIT,
       type: MetricDescriptorType.GAUGE_DOUBLE
     });
     assert.deepStrictEqual(descriptor3, {
       name: 'metric-name3',
       description: METRIC_DESCRIPTION,
-      'labelKeys': LABEL_KEYS,
+      labelKeys: LABEL_KEYS,
       unit: UNIT,
       type: MetricDescriptorType.GAUGE_INT64
     });
