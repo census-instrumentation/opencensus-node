@@ -16,6 +16,7 @@
 
 import {Logger} from '../../common/types';
 import {Exporter} from '../../exporters/types';
+import {Stats} from '../../stats/types';
 import {PluginNames} from '../instrumentation/types';
 import {Propagation} from '../propagation/types';
 
@@ -70,6 +71,8 @@ export interface TracingConfig {
   exporter?: Exporter;
   /** An instance of a logger  */
   logger?: Logger;
+  /** An instance of a stats  */
+  stats?: Stats;
 }
 
 /** Global configuration of trace service */

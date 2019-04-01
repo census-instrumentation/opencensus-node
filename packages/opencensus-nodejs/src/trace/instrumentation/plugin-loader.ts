@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Logger, Plugin, PluginConfig, PluginNames, Tracer} from '@opencensus/core';
+import {Logger, Plugin, PluginConfig, PluginNames, Stats, Tracer} from '@opencensus/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
@@ -36,6 +36,8 @@ export class PluginLoader {
   private tracer: Tracer;
   /** logger */
   private logger: Logger;
+  /** The stats */
+  private stats?: Stats;
   /** A list of loaded plugins. */
   plugins: Plugin[] = [];
   /**
@@ -48,9 +50,10 @@ export class PluginLoader {
    * Constructs a new PluginLoader instance.
    * @param tracer The tracer.
    */
-  constructor(logger: Logger, tracer: Tracer) {
+  constructor(logger: Logger, tracer: Tracer, stats?: Stats) {
     this.tracer = tracer;
     this.logger = logger;
+    this.stats = stats;
   }
 
   /**
@@ -63,7 +66,6 @@ export class PluginLoader {
     return `${Constants.OPENCENSUS_SCOPE}/${
         Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-${moduleName}`;
   }
-
 
   /**
    * Returns a PluginNames object, build from a string array of target modules
@@ -140,7 +142,7 @@ export class PluginLoader {
           const plugin: Plugin = require(moduleName as string).plugin;
           this.plugins.push(plugin);
           return plugin.enable(
-              exports, this.tracer, version, moduleConfig, basedir);
+              exports, this.tracer, version, moduleConfig, basedir, this.stats);
         } catch (e) {
           this.logger.error(
               'could not load plugin %s of module %s. Error: %s', moduleName,
@@ -151,7 +153,6 @@ export class PluginLoader {
     }
     this.hookState = HookState.ENABLED;
   }
-
 
   /** Unloads plugins. */
   unloadPlugins() {

@@ -74,7 +74,8 @@ export class Tracing implements core.Tracing {
         this.configLocal.logger || logger.logger(this.configLocal.logLevel);
     this.configLocal.logger = this.logger;
     this.logger.debug('config: %o', this.configLocal);
-    this.pluginLoader = new PluginLoader(this.logger, this.tracer);
+    this.pluginLoader =
+        new PluginLoader(this.logger, this.tracer, this.configLocal.stats);
     this.pluginLoader.loadPlugins(this.configLocal.plugins as core.PluginNames);
 
     if (!this.configLocal.exporter) {
