@@ -29,9 +29,6 @@ export type CreateServerFunction = typeof http2.createServer;
 
 /** Http2 instrumentation plugin for Opencensus */
 export class Http2Plugin extends HttpPlugin {
-  private http2SentSeqId = 1;
-  private http2ReceviedSeqId = 1;
-
   /** Constructs a new Http2Plugin instance. */
   constructor() {
     super('http2');
@@ -161,8 +158,7 @@ export class Http2Plugin extends HttpPlugin {
           span.addAttribute(
               Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT, `${userAgent}`);
         }
-        span.addMessageEvent(
-            MessageEventType.SENT, `${plugin.http2SentSeqId++}`);
+        span.addMessageEvent(MessageEventType.SENT, 1);
         span.end();
       });
 
@@ -262,8 +258,7 @@ export class Http2Plugin extends HttpPlugin {
             rootSpan.addAttribute(
                 Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE, `${statusCode}`);
             rootSpan.setStatus(Http2Plugin.parseResponseStatus(statusCode));
-            rootSpan.addMessageEvent(
-                MessageEventType.RECEIVED, `${plugin.http2ReceviedSeqId++}`);
+            rootSpan.addMessageEvent(MessageEventType.RECEIVED, 1);
 
             rootSpan.end();
             return returned;

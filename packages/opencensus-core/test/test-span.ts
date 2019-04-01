@@ -308,14 +308,14 @@ describe('Span', () => {
       span.start();
 
       span.addMessageEvent(
-          types.MessageEventType.UNSPECIFIED, /* id */ '1',
+          types.MessageEventType.UNSPECIFIED, /* id */ 1,
           /* timestamp */ 1550000000000, /* uncompressedSize */ 55,
           /** compressedSize */ 40);
 
       assert.ok(span.messageEvents.length > 0);
       assert.deepEqual(span.messageEvents, [{
                          type: types.MessageEventType.UNSPECIFIED,
-                         id: '1',
+                         id: 1,
                          timestamp: 1550000000000,
                          uncompressedSize: 55,
                          compressedSize: 40,
@@ -331,7 +331,7 @@ describe('Span', () => {
       const span = new Span(rootSpan);
       span.start();
       for (let i = 0; i < 35; i++) {
-        span.addMessageEvent(types.MessageEventType.UNSPECIFIED, '1');
+        span.addMessageEvent(types.MessageEventType.UNSPECIFIED, 1);
       }
 
       assert.equal(span.messageEvents.length, 32);

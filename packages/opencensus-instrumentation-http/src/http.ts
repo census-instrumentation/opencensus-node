@@ -49,8 +49,6 @@ export class HttpPlugin extends BasePlugin {
   // NOT ON OFFICIAL SPEC
   static ATTRIBUTE_HTTP_ERROR_NAME = 'http.error_name';
   static ATTRIBUTE_HTTP_ERROR_MESSAGE = 'http.error_message';
-  private sentSeqId = 1;
-  private receviedSeqId = 1;
 
   /** Constructs a new HttpPlugin instance. */
   constructor(moduleName: string) {
@@ -243,8 +241,7 @@ export class HttpPlugin extends BasePlugin {
 
             rootSpan.setStatus(
                 HttpPlugin.parseResponseStatus(response.statusCode));
-            rootSpan.addMessageEvent(
-                MessageEventType.RECEIVED, `${plugin.receviedSeqId++}`);
+            rootSpan.addMessageEvent(MessageEventType.RECEIVED, 1);
 
             tags.set(
                 stats.HTTP_SERVER_METHOD, {value: method},
@@ -406,7 +403,7 @@ export class HttpPlugin extends BasePlugin {
                 stats.HTTP_CLIENT_STATUS,
                 {value: response.statusCode.toString()});
           }
-          span.addMessageEvent(MessageEventType.SENT, `${plugin.sentSeqId++}`);
+          span.addMessageEvent(MessageEventType.SENT, 1);
 
           HttpPlugin.recordStats(span.kind, tags, Date.now() - startTime);
           span.end();

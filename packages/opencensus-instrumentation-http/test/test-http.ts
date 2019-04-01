@@ -271,7 +271,7 @@ describe('HttpPlugin', () => {
           assertSpanAttributes(span, 200, 'GET', hostName, testPath);
           assert.equal(span.messageEvents.length, 1);
           assert.equal(span.messageEvents[0].type, MessageEventType.SENT);
-          assert.equal(span.messageEvents[0].id, '11');
+          assert.equal(span.messageEvents[0].id, '1');
           assertClientStats(testExporter, 200, 'GET');
         });
       });
@@ -305,7 +305,6 @@ describe('HttpPlugin', () => {
     it('should create multiple child spans for GET requests', () => {
       const testPath = '/outgoing/rootSpan/childs';
       const num = 5;
-      const currentSeqNo = 21;
       doNock(urlHost, testPath, 200, 'Ok', num);
       const options = {name: 'TestRootSpan'};
       return tracer.startRootSpan(options, async (root: RootSpan) => {
@@ -315,8 +314,7 @@ describe('HttpPlugin', () => {
             assert.strictEqual(root.spans.length, i + 1);
             assert.ok(root.spans[i].name.indexOf(testPath) >= 0);
             assert.strictEqual(root.traceId, root.spans[i].traceId);
-            assert.equal(
-                root.spans[i].messageEvents[0].id, `${currentSeqNo + i}`);
+            assert.equal(root.spans[i].messageEvents[0].id, 1);
             assert.equal(
                 root.spans[i].messageEvents[0].type, MessageEventType.SENT);
           });

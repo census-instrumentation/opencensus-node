@@ -196,7 +196,7 @@ export interface MessageEvent {
    * both sent and received messages and increment by 1 for each message
    * sent/received.
    */
-  id: string;
+  id: number;
   /** The number of uncompressed bytes sent or received. */
   uncompressedSize?: number;
   /**
@@ -432,7 +432,7 @@ export interface Span {
    *     zero or undefined, assumed to be the same size as uncompressed.
    */
   addMessageEvent(
-      type: MessageEventType, id: string, timestamp?: number,
+      type: MessageEventType, id: number, timestamp?: number,
       uncompressedSize?: number, compressedSize?: number): void;
 
   /**

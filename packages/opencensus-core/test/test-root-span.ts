@@ -271,7 +271,7 @@ describe('RootSpan', () => {
 
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      rootSpan.addMessageEvent(types.MessageEventType.UNSPECIFIED, '1');
+      rootSpan.addMessageEvent(types.MessageEventType.UNSPECIFIED, 1);
 
       assert.ok(rootSpan.messageEvents.length > 0);
       assert.equal(rootSpan.droppedMessageEventsCount, 0);

@@ -117,9 +117,9 @@ describe('Zipkin Exporter', function() {
         span.setStatus(CanonicalCode.RESOURCE_EXHAUSTED, 'RESOURCE_EXHAUSTED');
 
         span.addAnnotation('processing', {}, 1550213104708);
-        span.addMessageEvent(MessageEventType.SENT, '1', 1550213104708);
-        span.addMessageEvent(MessageEventType.RECEIVED, '2', 1550213104708);
-        span.addMessageEvent(MessageEventType.UNSPECIFIED, '3', 1550213104708);
+        span.addMessageEvent(MessageEventType.SENT, 1, 1550213104708);
+        span.addMessageEvent(MessageEventType.RECEIVED, 2, 1550213104708);
+        span.addMessageEvent(MessageEventType.UNSPECIFIED, 3, 1550213104708);
         span.addAnnotation('done', {}, 1550213104708);
         span.end();
         rootSpan.end();
