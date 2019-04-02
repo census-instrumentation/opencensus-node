@@ -31,8 +31,6 @@ const { Metrics, MeasureUnit } = require('@opencensus/core');
 // globalStats.registerExporter(exporter);
 // [END setup_exporter ==============================================]
 
-const nowInSeconds = Math.round(Date.now() / 1000 - process.uptime());
-
 // a registry is a collection of metric objects.
 const metricRegistry = Metrics.getMetricRegistry();
 
@@ -42,12 +40,18 @@ const labelValues = [{ value: 'localhost' }];
 
 // a new gauge instance - builds a new Int64 gauge to be added to the registry.
 const metricOptions = {
-  description: 'Start time of the process since unix epoch in seconds',
+  description: 'The number of seconds the current Node.js process has been running',
   unit: MeasureUnit.SEC,
   labelKeys: labelKeys
 };
-const gauge = metricRegistry.addInt64Gauge('process_start_time_seconds', metricOptions);
+const gauge = metricRegistry.addDoubleGauge('process_uptime', metricOptions);
 
 // It is recommended to keep a reference of a point for manual operations.
 const point = gauge.getOrCreateTimeSeries(labelValues);
-point.set(nowInSeconds);
+point.set(process.uptime());
+
+for (let i = 0; i < 1000000000; i++) {
+  // do some work here
+}
+
+point.set(process.uptime());
