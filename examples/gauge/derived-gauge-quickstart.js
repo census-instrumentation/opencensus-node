@@ -29,9 +29,12 @@ const { Metrics, MeasureUnit } = require('@opencensus/core');
 // globalStats.registerExporter(exporter);
 // [END setup_exporter ==============================================]
 
-setTimeout(() => {
-  console.log('Timeout executed.');
-}, 1000);
+// To instrument a queue's depth.
+class QueueManager {
+  constructor () { this.depth = 0; }
+  getValue () { return this.depth; }
+  addJob () { this.depth++; }
+}
 
 // a registry is a collection of metric objects.
 const metricRegistry = Metrics.getMetricRegistry();
@@ -48,4 +51,9 @@ const metricOptions = {
 };
 const gauge = metricRegistry.addDerivedInt64Gauge('active_handles_total', metricOptions);
 
-gauge.createTimeSeries(labelValues, process._getActiveHandles());
+const queue = new QueueManager();
+queue.addJob();
+
+// The value of the gauge is observed from the obj whenever metrics are
+// collected. In this case it will be 1.
+gauge.createTimeSeries(labelValues, queue);
