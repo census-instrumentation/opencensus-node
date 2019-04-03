@@ -19,7 +19,6 @@ import {HttpPlugin} from '@opencensus/instrumentation-http';
 import * as http2 from 'http2';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
-import * as uuid from 'uuid';
 
 export type Http2Module = typeof http2;
 export type ConnectFunction = typeof http2.connect;
@@ -159,10 +158,7 @@ export class Http2Plugin extends HttpPlugin {
           span.addAttribute(
               Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT, `${userAgent}`);
         }
-
-        span.addMessageEvent(
-            MessageEventType.SENT, uuid.v4().split('-').join(''));
-
+        span.addMessageEvent(MessageEventType.SENT, 1);
         span.end();
       });
 
@@ -262,9 +258,7 @@ export class Http2Plugin extends HttpPlugin {
             rootSpan.addAttribute(
                 Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE, `${statusCode}`);
             rootSpan.setStatus(Http2Plugin.parseResponseStatus(statusCode));
-
-            rootSpan.addMessageEvent(
-                MessageEventType.RECEIVED, uuid.v4().split('-').join(''));
+            rootSpan.addMessageEvent(MessageEventType.RECEIVED, 1);
 
             rootSpan.end();
             return returned;

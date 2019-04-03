@@ -15,7 +15,7 @@
  */
 
 
-import {CoreTracer, logger, RootSpan, Span, SpanEventListener} from '@opencensus/core';
+import {CoreTracer, logger, MessageEventType, RootSpan, Span, SpanEventListener} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http2 from 'http2';
 import * as semver from 'semver';
@@ -141,6 +141,14 @@ describe('Http2Plugin', () => {
 
         const span = rootSpanVerifier.endedRootSpans[1];
         assertSpanAttributes(span, 200, 'GET', host, testPath);
+        assert.equal(span.messageEvents.length, 1);
+        assert.equal(span.messageEvents[0].type, MessageEventType.SENT);
+        assert.equal(span.messageEvents[0].id, '1');
+
+        const messageEvents =
+            rootSpanVerifier.endedRootSpans[0].messageEvents[0];
+        assert.equal(messageEvents.type, MessageEventType.RECEIVED);
+        assert.equal(messageEvents.id, '1');
       });
     });
 

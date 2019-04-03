@@ -129,7 +129,7 @@ export abstract class NoRecordSpanBase implements types.Span {
 
   /** No-op implementation of this method. */
   addMessageEvent(
-      type: types.MessageEventType, id: string, timestamp = 0,
+      type: types.MessageEventType, id: number, timestamp = 0,
       uncompressedSize?: number, compressedSize?: number) {}
 
   /** No-op implementation of this method. */

@@ -218,7 +218,7 @@ export abstract class SpanBase implements types.Span {
    *     zero or undefined, assumed to be the same size as uncompressed.
    */
   addMessageEvent(
-      type: types.MessageEventType, id: string, timestamp = 0,
+      type: types.MessageEventType, id: number, timestamp = 0,
       uncompressedSize?: number, compressedSize?: number) {
     if (this.messageEvents.length >=
         this.activeTraceParams.numberOfMessageEventsPerSpan!) {

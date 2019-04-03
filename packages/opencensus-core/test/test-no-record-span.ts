@@ -25,7 +25,7 @@ describe('NoRecordSpan()', () => {
     noRecordSpan.addAnnotation(
         'MyAnnotation', {myString: 'bar', myNumber: 123, myBoolean: true});
     noRecordSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
-    noRecordSpan.addMessageEvent(MessageEventType.RECEIVED, 'aaaa', 123456789);
+    noRecordSpan.addMessageEvent(MessageEventType.RECEIVED, 1, 123456789);
     noRecordSpan.addAttribute('my_first_attribute', 'foo');
     noRecordSpan.setStatus(CanonicalCode.OK);
   });

@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Add `TagMetadata` that defines the properties associated with a `Tag`.
 - Add HTTP text format serializer to Tag propagation component.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-core] package.
+- Please note that there is an API breaking change in methods `addMessageEvent()`. The field `id` is now number instead of string.
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.

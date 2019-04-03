@@ -28,8 +28,7 @@ describe('NoRecordRootSpan()', () => {
     noRecordRootSpan.addAnnotation(
         'MyAnnotation', {myString: 'bar', myNumber: 123, myBoolean: true});
     noRecordRootSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
-    noRecordRootSpan.addMessageEvent(
-        MessageEventType.RECEIVED, 'aaaa', 123456789);
+    noRecordRootSpan.addMessageEvent(MessageEventType.RECEIVED, 1, 123456789);
     noRecordRootSpan.addAttribute('my_first_attribute', 'foo');
     noRecordRootSpan.setStatus(CanonicalCode.OK);
     noRecordRootSpan.startChildSpan();

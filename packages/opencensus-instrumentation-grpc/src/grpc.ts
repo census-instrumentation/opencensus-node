@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, deserializeBinary, PluginInternalFiles, RootSpan, serializeBinary, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, deserializeBinary, MessageEventType, PluginInternalFiles, RootSpan, serializeBinary, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
 import {deserializeSpanContext, serializeSpanContext} from '@opencensus/propagation-binaryformat';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
+
 import * as clientStats from './grpc-stats/client-stats';
 import * as serverStats from './grpc-stats/server-stats';
 
@@ -228,6 +229,7 @@ export class GrpcPlugin extends BasePlugin {
             GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
             grpcTypes.status.OK.toString());
       }
+      rootSpan.addMessageEvent(MessageEventType.RECEIVED, 1);
 
       // record stats
       const parentTagCtx =
@@ -378,6 +380,7 @@ export class GrpcPlugin extends BasePlugin {
               GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
               grpcTypes.status.OK.toString());
         }
+        span.addMessageEvent(MessageEventType.SENT, 1);
 
         // record stats: new RPCs on client-side inherit the tag context from
         // the current Context.

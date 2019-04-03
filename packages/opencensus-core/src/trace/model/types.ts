@@ -191,13 +191,12 @@ export interface MessageEvent {
   /** Indicates whether the message was sent or received. */
   type: MessageEventType;
   /**
-   * An identifier for the MessageEvent's message. This should be a hexadecimal
-   * value that fits within 64-bits. Message event ids should start with 1 for
+   * An identifier for the MessageEvent's message that can be used to match
+   * SENT and RECEIVED MessageEvents. Message event ids should start with 1 for
    * both sent and received messages and increment by 1 for each message
-   * sent/received. See:
-   * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/gRPC.md#message-events
+   * sent/received.
    */
-  id: string;
+  id: number;
   /** The number of uncompressed bytes sent or received. */
   uncompressedSize?: number;
   /**
@@ -433,7 +432,7 @@ export interface Span {
    *     zero or undefined, assumed to be the same size as uncompressed.
    */
   addMessageEvent(
-      type: MessageEventType, id: string, timestamp?: number,
+      type: MessageEventType, id: number, timestamp?: number,
       uncompressedSize?: number, compressedSize?: number): void;
 
   /**

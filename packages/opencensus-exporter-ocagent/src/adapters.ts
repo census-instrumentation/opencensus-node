@@ -179,8 +179,7 @@ const adaptTimeEvents =
           timeEvents.push({
             time: millisToTimestamp(messageEvent.timestamp),
             messageEvent: {
-              // tslint:disable-next-line:ban Needed to parse hexadecimal.
-              id: parseInt(messageEvent.id, 16),
+              id: messageEvent.id,
               type: adaptMessageEventType(messageEvent.type),
               uncompressedSize: messageEvent.uncompressedSize || 0,
               compressedSize: messageEvent.compressedSize || 0

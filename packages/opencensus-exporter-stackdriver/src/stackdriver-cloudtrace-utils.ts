@@ -82,7 +82,7 @@ export function createTimeEvents(
         (messageEvent) => ({
           time: new Date(messageEvent.timestamp).toISOString(),
           messageEvent: {
-            id: messageEvent.id,
+            id: String(messageEvent.id),
             type: createMessageEventType(messageEvent.type),
             uncompressedSize: String(messageEvent.uncompressedSize || 0),
             compressedSize: String(messageEvent.compressedSize || 0)
