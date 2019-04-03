@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-ioredis",
-  "version": "0.0.1",
+  "version": "0.0.10",
   "description": "Opencensus IORedis automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -51,23 +51,23 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/ioredis": "^4.0.9",
     "@types/mocha": "^5.2.6",
     "@types/node": "^10.12.12",
     "@types/semver": "^6.0.0",
     "@types/shimmer": "^1.0.1",
-    "@types/ioredis": "^4.0.9",
     "codecov": "^3.1.0",
     "gts": "^0.9.0",
+    "ioredis": "^4.6.2",
     "mocha": "^6.0.0",
     "nyc": "^13.0.0",
     "rimraf": "^2.6.2",
     "ts-mocha": "^6.0.0",
     "ts-node": "^8.0.0",
-    "typescript": "~3.2.0",
-    "ioredis": "^4.6.2"
+    "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.9",
+    "@opencensus/core": "^0.0.10",
     "semver": "^6.0.0",
     "shimmer": "^1.2.0"
   }
