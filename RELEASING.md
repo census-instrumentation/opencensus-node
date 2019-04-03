@@ -14,7 +14,14 @@ Create a new branch called `x.y.z-proposal` from the current commit.
 
 ## Use Lerna to prepare each package for release
 
-Use `npm install` and `lerna bootstrap` to initialize all package directories.
+Use below commands to initialize all package directories.
+
+```
+npm install
+
+lerna bootstrap
+```
+
 Also, use `lerna publish --skip-npm --skip-git` to bump version numbers.
 Ensure that the version being bumped to is `x.y.z`. This should create some unstaged changes.
 
@@ -62,3 +69,10 @@ Check your e-mail and make sure the number of “you’ve published this module�
 ## Publish the GitHub Release
 
 Publish the GitHub release, ensuring that the tag points to the newly landed commit corresponding to release proposal `x.y.z`.
+
+## Update CHANGELOG and release versions in examples
+* After releasing is done, you need to update all examples to point to the latest
+version.
+* In addition, update the CHANGELOG.md and start new Unreleased label.
+* Create a new commit with the exact title: `Post Release: update CHANGELOG, Examples and ReadMe`.
+* Go through PR review and merge it to GitHub master branch.
