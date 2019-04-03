@@ -145,19 +145,23 @@ export class DerivedGauge implements types.Meter {
 
   /**
    * Creates a TimeSeries. The value of a single point in the TimeSeries is
-   * observed from a obj. The ValueExtractor is invoked whenever
+   * observed from a obj or a function. The ValueExtractor is invoked whenever
    * metrics are collected, meaning the reported value is up-to-date.
    *
    * @param {LabelValue[]} labelValues The list of the label values.
-   * @param obj The obj to get the size or length or value from. If multiple
-   *    options are available, the value (ToValueInterface) takes precedence
-   *    first, followed by length and size. e.g value -> length -> size.
+   * @param objOrFn obj The obj to get the size or length or value from. If
+   *     multiple options are available, the value (ToValueInterface) takes
+   *     precedence first, followed by length and size. e.g value -> length ->
+   *     size.
+   *     fn is the function that will be called to get the current value
+   *     of the gauge.
    */
-  createTimeSeries(labelValues: LabelValue[], obj: AccessorInterface): void {
+  createTimeSeries(
+      labelValues: LabelValue[], objOrFn: AccessorInterface|Function): void {
     validateArrayElementsNotNull(
         validateNotNull(labelValues, DerivedGauge.LABEL_VALUES),
         DerivedGauge.LABEL_VALUE);
-    validateNotNull(obj, DerivedGauge.OBJECT);
+    validateNotNull(objOrFn, DerivedGauge.OBJECT);
 
     const hash = hashLabelValues(labelValues);
     if (this.registeredPoints.has(hash)) {
@@ -167,16 +171,18 @@ export class DerivedGauge implements types.Meter {
       throw new Error(DerivedGauge.ERROR_MESSAGE_INVALID_SIZE);
     }
 
-    if (DerivedGauge.isToValueInterface(obj)) {
-      this.extractor = () => obj.getValue();
-    } else if (DerivedGauge.isLengthAttributeInterface(obj)) {
-      this.extractor = () => obj.length;
-    } else if (DerivedGauge.isLengthMethodInterface(obj)) {
-      this.extractor = () => obj.length();
-    } else if (DerivedGauge.isSizeAttributeInterface(obj)) {
-      this.extractor = () => obj.size;
-    } else if (DerivedGauge.isSizeMethodInterface(obj)) {
-      this.extractor = () => obj.size();
+    if (typeof objOrFn === 'function') {
+      this.extractor = () => objOrFn();
+    } else if (DerivedGauge.isToValueInterface(objOrFn)) {
+      this.extractor = () => objOrFn.getValue();
+    } else if (DerivedGauge.isLengthAttributeInterface(objOrFn)) {
+      this.extractor = () => objOrFn.length;
+    } else if (DerivedGauge.isLengthMethodInterface(objOrFn)) {
+      this.extractor = () => objOrFn.length();
+    } else if (DerivedGauge.isSizeAttributeInterface(objOrFn)) {
+      this.extractor = () => objOrFn.size;
+    } else if (DerivedGauge.isSizeMethodInterface(objOrFn)) {
+      this.extractor = () => objOrFn.size();
     } else {
       throw new Error(DerivedGauge.ERROR_MESSAGE_UNKNOWN_INTERFACE);
     }

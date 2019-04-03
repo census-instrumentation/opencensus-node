@@ -143,6 +143,50 @@ describe('DerivedGauge', () => {
             }]
           }]);
     });
+
+    it('should return a Metric value from a function', () => {
+      class QueueManager {
+        private depth = 0;
+        get pendingJobs() {
+          return this.depth;
+        }
+        addJob() {
+          this.depth++;
+        }
+      }
+      const queue = new QueueManager();
+      queue.addJob();
+      instance.createTimeSeries(LABEL_VALUES_200, () => {
+        return queue.pendingJobs;
+      });
+
+      let metric = instance.getMetric();
+      assert.notEqual(metric, null);
+      assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
+      assert.equal(metric!.timeseries.length, 1);
+      assert.deepStrictEqual(
+          metric!.timeseries, [{
+            labelValues: LABEL_VALUES_200,
+            points: [{
+              value: 1,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
+          }]);
+      // Simulate a adding multiple jobs in queue
+      queue.addJob();
+      queue.addJob();
+      queue.addJob();
+      metric = instance.getMetric();
+      assert.equal(metric!.timeseries.length, 1);
+      assert.deepStrictEqual(
+          metric!.timeseries[0].points, [{
+            value: 4,
+            timestamp:
+                {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+          }]);
+    });
+
     it('should return a Metric (Double) - custom object', () => {
       class QueueManager {
         getValue(): number {

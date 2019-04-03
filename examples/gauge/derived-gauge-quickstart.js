@@ -32,7 +32,7 @@ const { Metrics, MeasureUnit } = require('@opencensus/core');
 // To instrument a queue's depth.
 class QueueManager {
   constructor () { this.depth = 0; }
-  getValue () { return this.depth; }
+  getPendingJobs () { return this.depth; }
   addJob () { this.depth++; }
 }
 
@@ -54,6 +54,8 @@ const gauge = metricRegistry.addDerivedInt64Gauge('active_handles_total', metric
 const queue = new QueueManager();
 queue.addJob();
 
-// The value of the gauge is observed from the obj whenever metrics are
+// The value of the gauge is observed from a function whenever metrics are
 // collected. In this case it will be 1.
-gauge.createTimeSeries(labelValues, queue);
+gauge.createTimeSeries(labelValues, () => {
+  queue.getPendingJobs();
+});
