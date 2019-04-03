@@ -28,6 +28,7 @@ export class Gauge implements types.Meter {
   private labelKeysLength: number;
   private defaultLabelValues: LabelValue[];
   private registeredPoints: Map<string, types.Point> = new Map();
+  private readonly constantLabelValues: LabelValue[];
 
   private static readonly LABEL_VALUE = 'labelValue';
   private static readonly LABEL_VALUES = 'labelValues';
@@ -42,12 +43,19 @@ export class Gauge implements types.Meter {
    * @param {string} unit The unit of the metric.
    * @param {MetricDescriptorType} type The type of metric.
    * @param {LabelKey[]} labelKeys The list of the label keys.
+   * @param {Map<LabelKey, LabelValue>} constantLabels The map of constant
+   *     labels for the Metric.
    */
   constructor(
       name: string, description: string, unit: string,
-      type: MetricDescriptorType, readonly labelKeys: LabelKey[]) {
-    this.metricDescriptor = {name, description, unit, type, labelKeys};
+      type: MetricDescriptorType, readonly labelKeys: LabelKey[],
+      readonly constantLabels: Map<LabelKey, LabelValue>) {
     this.labelKeysLength = labelKeys.length;
+    const combinedLabelKeys = labelKeys.concat(...constantLabels.keys());
+    this.constantLabelValues = [...constantLabels.values()];
+
+    this.metricDescriptor =
+        {name, description, unit, type, labelKeys: combinedLabelKeys};
     this.defaultLabelValues = initializeDefaultLabels(this.labelKeysLength);
   }
 
@@ -116,7 +124,7 @@ export class Gauge implements types.Meter {
       throw new Error(Gauge.ERROR_MESSAGE_INVALID_SIZE);
     }
 
-    const point = new PointEntry(labelValues);
+    const point = new PointEntry([...labelValues, ...this.constantLabelValues]);
     this.registeredPoints.set(hash, point);
     return point;
   }

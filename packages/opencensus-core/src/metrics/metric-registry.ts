@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {validateArrayElementsNotNull, validateNotNull} from '../common/validations';
-import {MeasureUnit,} from '../stats/types';
+import {validateArrayElementsNotNull, validateDuplicateKeys, validateMapElementNotNull, validateNotNull} from '../common/validations';
+import {MeasureUnit} from '../stats/types';
+
 import {BaseMetricProducer} from './export/base-metric-producer';
 import {Metric, MetricDescriptorType, MetricProducer} from './export/types';
 import {DerivedGauge} from './gauges/derived-gauge';
@@ -31,9 +32,11 @@ export class MetricRegistry {
 
   private static readonly NAME = 'name';
   private static readonly LABEL_KEY = 'labelKey';
+  private static readonly CONSTANT_LABELS = 'constantLabels';
   private static readonly DEFAULT_DESCRIPTION = '';
   private static readonly DEFAULT_UNIT = MeasureUnit.UNIT;
   private static readonly DEFAULT_LABEL_KEYS = [];
+  private static readonly DEFAULT_CONSTANT_LABEL = new Map();
 
   constructor() {
     this.metricProducer = new MetricProducerForRegistry(this.registeredMetrics);
@@ -54,13 +57,18 @@ export class MetricRegistry {
     const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
     const labelKeys =
         (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
-    // TODO (mayurkale): Add support for constantLabels
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
+    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
+    validateDuplicateKeys(labelKeys, constantLabels);
+
     const labelKeysCopy = Object.assign([], labelKeys);
     const int64Gauge = new Gauge(
         validateNotNull(name, MetricRegistry.NAME), description, unit,
-        MetricDescriptorType.GAUGE_INT64, labelKeysCopy);
+        MetricDescriptorType.GAUGE_INT64, labelKeysCopy, constantLabels);
     this.registerMetric(name, int64Gauge);
     return int64Gauge;
   }
@@ -80,13 +88,18 @@ export class MetricRegistry {
     const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
     const labelKeys =
         (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
-    // TODO (mayurkale): Add support for constantLabels
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
+    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
+    validateDuplicateKeys(labelKeys, constantLabels);
+
     const labelKeysCopy = Object.assign([], labelKeys);
     const doubleGauge = new Gauge(
         validateNotNull(name, MetricRegistry.NAME), description, unit,
-        MetricDescriptorType.GAUGE_DOUBLE, labelKeysCopy);
+        MetricDescriptorType.GAUGE_DOUBLE, labelKeysCopy, constantLabels);
     this.registerMetric(name, doubleGauge);
     return doubleGauge;
   }
@@ -106,13 +119,18 @@ export class MetricRegistry {
     const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
     const labelKeys =
         (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
-    // TODO (mayurkale): Add support for constantLabels
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
+    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
+    validateDuplicateKeys(labelKeys, constantLabels);
+
     const labelKeysCopy = Object.assign([], labelKeys);
     const derivedInt64Gauge = new DerivedGauge(
         validateNotNull(name, MetricRegistry.NAME), description, unit,
-        MetricDescriptorType.GAUGE_INT64, labelKeysCopy);
+        MetricDescriptorType.GAUGE_INT64, labelKeysCopy, constantLabels);
     this.registerMetric(name, derivedInt64Gauge);
     return derivedInt64Gauge;
   }
@@ -132,13 +150,18 @@ export class MetricRegistry {
     const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
     const labelKeys =
         (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
-    // TODO (mayurkale): Add support for constantLabels
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
 
     validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
+    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
+    validateDuplicateKeys(labelKeys, constantLabels);
+
     const labelKeysCopy = Object.assign([], labelKeys);
     const derivedDoubleGauge = new DerivedGauge(
         validateNotNull(name, MetricRegistry.NAME), description, unit,
-        MetricDescriptorType.GAUGE_DOUBLE, labelKeysCopy);
+        MetricDescriptorType.GAUGE_DOUBLE, labelKeysCopy, constantLabels);
     this.registerMetric(name, derivedDoubleGauge);
     return derivedDoubleGauge;
   }

@@ -102,6 +102,16 @@ describe('addInt64Gauge', () => {
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
   });
+
+  it('should throw an error when the duplicate keys in labelKeys and constantLabels',
+     () => {
+       const constantLabels = new Map();
+       constantLabels.set({key: 'k1'}, {value: 'v1'});
+       const labelKeys = [{key: 'k1', description: 'desc'}];
+       assert.throws(() => {
+         registry.addInt64Gauge(METRIC_NAME, {constantLabels, labelKeys});
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels$/);
+     });
 });
 
 describe('addDoubleGauge', () => {
@@ -158,6 +168,20 @@ describe('addDoubleGauge', () => {
     assert.throws(() => {
       registry.addDoubleGauge(METRIC_NAME, METRIC_OPTIONS);
     }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
+
+  it('should throw an error when the constant labels elements are null', () => {
+    let constantLabels = new Map();
+    constantLabels.set({key: 'k1'}, null);
+    assert.throws(() => {
+      registry.addDoubleGauge(METRIC_NAME, {constantLabels});
+    }, /^Error: constantLabels elements should not be a NULL$/);
+
+    constantLabels = new Map();
+    constantLabels.set(null, null);
+    assert.throws(() => {
+      registry.addDoubleGauge(METRIC_NAME, {constantLabels});
+    }, /^Error: constantLabels elements should not be a NULL$/);
   });
 
   it('should return a metric without options', () => {
@@ -239,6 +263,25 @@ describe('addDerivedInt64Gauge', () => {
     assert.throws(() => {
       registry.addDerivedInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
     }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
+
+  it('should throw an error when the duplicate keys in labelKeys and constantLabels',
+     () => {
+       const constantLabels = new Map();
+       constantLabels.set({key: 'k1'}, {value: 'v1'});
+       const labelKeys = [{key: 'k1', description: 'desc'}];
+       assert.throws(() => {
+         registry.addDerivedInt64Gauge(
+             METRIC_NAME, {constantLabels, labelKeys});
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels$/);
+     });
+
+  it('should throw an error when the constant labels elements are null', () => {
+    const constantLabels = new Map();
+    constantLabels.set({key: 'k1'}, null);
+    assert.throws(() => {
+      registry.addDerivedInt64Gauge(METRIC_NAME, {constantLabels});
+    }, /^Error: constantLabels elements should not be a NULL$/);
   });
 
   it('should return a metric without options', () => {
