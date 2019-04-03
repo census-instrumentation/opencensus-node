@@ -3,7 +3,7 @@
 
 OpenCensus Zpages Exporter implements a collection of HTML pages that display stats and trace data sent from [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node).
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Installation
 

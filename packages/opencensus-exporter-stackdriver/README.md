@@ -3,7 +3,7 @@
 
 OpenCensus Stackdriver Exporter allows the user to send collected traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node) and stats with [OpenCensus Core](https://github.com/census-instrumentation/opencensus-core) to Stackdriver Cloud Tracing and Stackdriver Monitoring.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 # OpenCensus Stackdriver Trace Exporter
 ## Installation

@@ -3,7 +3,7 @@
 
 OpenCensus MongoDB Instrumentation allows the user to automatically collect trace data.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>

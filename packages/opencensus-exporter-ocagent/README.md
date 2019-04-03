@@ -3,7 +3,7 @@
 
 OpenCensus Agent Exporter allows the user to send collected traces with OpenCensus Node.js to the OpenCensus Agent or Collector.
 
-This project is still at an early stage of development, it's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Installation
 

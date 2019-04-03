@@ -8,7 +8,7 @@ tracing system. It helps gather timing data needed to troubleshoot
 latency problems in microservice architectures. It manages both the
 collection and lookup of this data.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Installation
 
