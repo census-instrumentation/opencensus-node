@@ -59,13 +59,11 @@ export function validateMapElementNotNull<T>(
 
 /** Throws an error if any of the array element present in the map. */
 export function validateDuplicateKeys(
-    keys: LabelKey[], map: Map<LabelKey, LabelValue>) {
-  const keyNames: Set<string> = new Set();
-  keys.forEach(key => keyNames.add(key.key));
-  Array.from(map.keys()).forEach(key => keyNames.add(key.key));
-
-  if (keyNames.size !== (keys.length + map.size)) {
+    keys: LabelKey[], constantLabels: Map<LabelKey, LabelValue>) {
+  const keysAndConstantKeys =
+      new Set([...keys, ...constantLabels.keys()].map(k => k.key));
+  if (keysAndConstantKeys.size !== (keys.length + constantLabels.size)) {
     throw new Error(
-        `The keys from LabelKeys should not be present in constantLabels`);
+        `The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys`);
   }
 }

@@ -110,7 +110,7 @@ describe('addInt64Gauge', () => {
        const labelKeys = [{key: 'k1', description: 'desc'}];
        assert.throws(() => {
          registry.addInt64Gauge(METRIC_NAME, {constantLabels, labelKeys});
-       }, /^Error: The keys from LabelKeys should not be present in constantLabels$/);
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys$/);
      });
 });
 
@@ -273,7 +273,7 @@ describe('addDerivedInt64Gauge', () => {
        assert.throws(() => {
          registry.addDerivedInt64Gauge(
              METRIC_NAME, {constantLabels, labelKeys});
-       }, /^Error: The keys from LabelKeys should not be present in constantLabels$/);
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys$/);
      });
 
   it('should throw an error when the constant labels elements are null', () => {

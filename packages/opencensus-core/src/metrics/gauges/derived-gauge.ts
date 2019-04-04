@@ -103,11 +103,11 @@ export class DerivedGauge implements types.Meter {
       type: MetricDescriptorType, labelKeys: LabelKey[],
       readonly constantLabels: Map<LabelKey, LabelValue>) {
     this.labelKeysLength = labelKeys.length;
-    const combinedLabelKeys = labelKeys.concat(...constantLabels.keys());
+    const keysAndConstantKeys = [...labelKeys, ...constantLabels.keys()];
     this.constantLabelValues = [...constantLabels.values()];
 
     this.metricDescriptor =
-        {name, description, unit, type, labelKeys: combinedLabelKeys};
+        {name, description, unit, type, labelKeys: keysAndConstantKeys};
   }
 
   // Checks if the specified collection is a LengthAttributeInterface.

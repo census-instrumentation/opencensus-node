@@ -16,7 +16,6 @@
 
 import {validateArrayElementsNotNull, validateDuplicateKeys, validateMapElementNotNull, validateNotNull} from '../common/validations';
 import {MeasureUnit} from '../stats/types';
-
 import {BaseMetricProducer} from './export/base-metric-producer';
 import {Metric, MetricDescriptorType, MetricProducer} from './export/types';
 import {DerivedGauge} from './gauges/derived-gauge';
