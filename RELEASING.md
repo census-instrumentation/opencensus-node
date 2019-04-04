@@ -14,12 +14,10 @@ Create a new branch called `x.y.z-proposal` from the current commit.
 
 ## Use Lerna to prepare each package for release
 
-Use below commands to initialize all package directories.
+Use below command to initialize all package directories.
 
 ```
 npm install
-
-lerna bootstrap
 ```
 
 Also, use `lerna publish --skip-npm --skip-git` to bump version numbers.
