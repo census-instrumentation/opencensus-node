@@ -11,7 +11,7 @@ OpenCensus Jaeger Trace Exporter allows the user to send collected traces with [
 - Service dependency analysis
 - Performance / latency optimization
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Quickstart
 

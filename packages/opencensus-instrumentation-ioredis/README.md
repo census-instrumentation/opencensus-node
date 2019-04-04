@@ -4,7 +4,7 @@
 OpenCensus IORedis Instrumentation allows the user to automatically collect trace data.
 This plugin only support the `ioredis` module starting from the version 2 to latest.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Useful links
 

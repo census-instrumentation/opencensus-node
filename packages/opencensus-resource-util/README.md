@@ -3,7 +3,7 @@
 
 The OpenCensus Monitored Resource Util for Node.js is a collection of utilities for auto detecting monitored resource when exporting stats, based on the environment where the application is running.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Installation
 

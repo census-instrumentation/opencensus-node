@@ -6,7 +6,7 @@ OpenCensus Instana Trace Exporter allows the user to send collected traces with 
 [Instana](http://www.instana.com/) is a distributed
 tracing system. Instana provides AI Powered Application and Infrastructure Monitoring, allowing you to deliver Faster With Confidence, and automatic Analysis and Optimization.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Installation
 

@@ -3,7 +3,7 @@
 
 OpenCensus [Jaeger Format Propagation](https://www.jaegertracing.io/docs/1.10/client-libraries/#propagation-format) sends a span context on the wire in an HTTP request, allowing other services to create spans with the right context.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Installation
 

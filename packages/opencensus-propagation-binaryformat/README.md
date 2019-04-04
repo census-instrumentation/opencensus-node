@@ -3,7 +3,7 @@
 
 OpenCensus Binary Format Propagation sends a span context on the wire using binary encoding, allowing other services to create spans with the right context.
 
-This project is still at an early stage of development. It's subject to change.
+The library is in alpha stage and the API is subject to change.
 
 ## Installation
 

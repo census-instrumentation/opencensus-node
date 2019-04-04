@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+
+
+## 0.0.10 - 2019-04-03
 - Add optional `compressedSize` and `uncompressedSize` params to `Span.addMessageEvent`
 - Add support for ```tags```, ```status``` and ```annotation``` in Zipkin exporter.
 - Add support for Binary propagation format.
@@ -22,9 +25,17 @@ All notable changes to this project will be documented in this file.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-exporter-jaeger] packages.
 - Add support for recording Exemplars.
 - Add `TagMetadata` that defines the properties associated with a `Tag`.
-- Add HTTP text format serializer to Tag propagation component.
+- Add HTTP/W3C text format serializer to Tag propagation component.
 - Enforce `--strictNullChecks` and `--noUnusedLocals` Compiler Options on [opencensus-core] package.
 - Please note that there is an API breaking change in methods `addMessageEvent()`. The field `id` is now number instead of string.
+- Add support for recording exemplars.
+- Add a NoRecord RootSpan and Span.
+- Add support for child span count.
+- Add [opencensus-instrumentation-ioredis] instrumentation plugin.
+- Make Stackdriver propagation module consistent with other propagations interface.
+- Add support for gRPC tags propagation.
+- Use ts-mocha to run tests.
+- Add `MetricOptions` to simplify all addXGauge.
 
 ## 0.0.9 - 2019-02-12
 - Add Metrics API.
