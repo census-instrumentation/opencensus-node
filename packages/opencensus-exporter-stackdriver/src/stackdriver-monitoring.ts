@@ -31,7 +31,6 @@ const OC_HEADER = {
 
 google.options({headers: OC_HEADER});
 const monitoring = google.monitoring('v3');
-const GOOGLEAPIS_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 
 /** Format and sends Stats to Stackdriver */
 export class StackdriverStatsExporter implements StatsEventListener {
@@ -209,21 +208,16 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * Gets the Google Application Credentials from the environment variables
    * and authenticates the client.
    */
-  private authorize(): Promise<JWT> {
-    return auth.getApplicationDefault()
-        .then((client) => {
-          let authClient = client.credential as JWT;
-          if (authClient.createScopedRequired &&
-              authClient.createScopedRequired()) {
-            const scopes = [GOOGLEAPIS_SCOPE];
-            authClient = authClient.createScoped(scopes);
-          }
-          return authClient;
-        })
-        .catch((err) => {
-          err.message = `authorize error: ${err.message}`;
-          throw (err);
-        });
+  private async authorize(): Promise<JWT> {
+    try {
+      return await auth.getClient({
+        scopes: ['https://www.google.apis.com/auth/cloud-platform']
+      }) as JWT;
+    } catch (err) {
+      err.message = `authorize error: ${err.message}`;
+      this.logger.error(err.message);
+      throw (err);
+    }
   }
 
   // TODO(mayurkale): Deprecate onRegisterView and onRecord apis after
