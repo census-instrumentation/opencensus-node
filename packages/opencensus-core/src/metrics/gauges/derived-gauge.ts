@@ -56,10 +56,11 @@ export interface ToValueInterface {
 }
 
 type ValueExtractor = () => number;
+type ValueExtractorOrFunction = Function|ValueExtractor;
 
 interface GaugeEntry {
   readonly labelValues: LabelValue[];
-  readonly extractor: ValueExtractor;
+  readonly extractor: ValueExtractorOrFunction;
 }
 
 export type AccessorInterface = LengthAttributeInterface|LengthMethodInterface|
@@ -72,7 +73,7 @@ export class DerivedGauge implements types.Meter {
   private metricDescriptor: MetricDescriptor;
   private labelKeysLength: number;
   private registeredPoints: Map<string, GaugeEntry> = new Map();
-  private extractor?: ValueExtractor;
+  private extractor?: ValueExtractorOrFunction;
   private readonly constantLabelValues: LabelValue[];
 
   private static readonly LABEL_VALUE = 'labelValue';
@@ -172,7 +173,7 @@ export class DerivedGauge implements types.Meter {
     }
 
     if (typeof objOrFn === 'function') {
-      this.extractor = () => objOrFn();
+      this.extractor = objOrFn;
     } else if (DerivedGauge.isToValueInterface(objOrFn)) {
       this.extractor = () => objOrFn.getValue();
     } else if (DerivedGauge.isLengthAttributeInterface(objOrFn)) {
