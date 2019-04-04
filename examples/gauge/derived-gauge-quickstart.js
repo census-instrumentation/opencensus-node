@@ -56,6 +56,4 @@ queue.addJob();
 
 // The value of the gauge is observed from a function whenever metrics are
 // collected. In this case it will be 1.
-gauge.createTimeSeries(labelValues, () => {
-  queue.getPendingJobs();
-});
+gauge.createTimeSeries(labelValues, () => queue.getPendingJobs());
