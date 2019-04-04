@@ -50,8 +50,7 @@ export function validateArrayElementsNotNull<T>(
 export function validateMapElementNotNull<T>(
     map: Map<T, T>, errorMessage: string) {
   for (const [key, value] of map.entries()) {
-    if (key === null || key === undefined || value === null ||
-        value === undefined) {
+    if (key == null || value == null) {
       throw new Error(`${errorMessage} elements should not be a NULL`);
     }
   }
