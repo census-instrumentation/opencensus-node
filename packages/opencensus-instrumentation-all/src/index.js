@@ -21,5 +21,7 @@ exports.DEFAULT_INSTRUMENTATION_MODULES = [
     ,'http2'
     ,'grpc'
     ,'mongodb'
+    ,'redis'
+    ,'ioredis'
 ];
 

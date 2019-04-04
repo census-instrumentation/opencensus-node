@@ -42,6 +42,8 @@
     "@opencensus/instrumentation-http": "^0.0.10",
     "@opencensus/instrumentation-http2": "^0.0.10",
     "@opencensus/instrumentation-https": "^0.0.10",
-    "@opencensus/instrumentation-mongodb": "^0.0.10"
+    "@opencensus/instrumentation-ioredis": "^0.0.10",
+    "@opencensus/instrumentation-mongodb": "^0.0.10",
+    "@opencensus/instrumentation-redis": "^0.0.10"
   }
 }
