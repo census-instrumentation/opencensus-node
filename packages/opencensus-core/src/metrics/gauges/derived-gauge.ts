@@ -73,6 +73,7 @@ export class DerivedGauge implements types.Meter {
   private labelKeysLength: number;
   private registeredPoints: Map<string, GaugeEntry> = new Map();
   private extractor?: ValueExtractor;
+  private readonly constantLabelValues: LabelValue[];
 
   private static readonly LABEL_VALUE = 'labelValue';
   private static readonly LABEL_VALUES = 'labelValues';
@@ -94,12 +95,19 @@ export class DerivedGauge implements types.Meter {
    * @param {string} unit The unit of the metric.
    * @param {MetricDescriptorType} type The type of metric.
    * @param {LabelKey[]} labelKeys The list of the label keys.
+   * @param {Map<LabelKey, LabelValue>} constantLabels The map of constant
+   *     labels for the Metric.
    */
   constructor(
       name: string, description: string, unit: string,
-      type: MetricDescriptorType, labelKeys: LabelKey[]) {
-    this.metricDescriptor = {name, description, unit, type, labelKeys};
+      type: MetricDescriptorType, labelKeys: LabelKey[],
+      readonly constantLabels: Map<LabelKey, LabelValue>) {
     this.labelKeysLength = labelKeys.length;
+    const keysAndConstantKeys = [...labelKeys, ...constantLabels.keys()];
+    this.constantLabelValues = [...constantLabels.values()];
+
+    this.metricDescriptor =
+        {name, description, unit, type, labelKeys: keysAndConstantKeys};
   }
 
   // Checks if the specified collection is a LengthAttributeInterface.
@@ -211,7 +219,8 @@ export class DerivedGauge implements types.Meter {
       timeseries: Array.from(
           this.registeredPoints,
           ([_, gaugeEntry]) => ({
-            labelValues: gaugeEntry.labelValues,
+            labelValues:
+                [...gaugeEntry.labelValues, ...this.constantLabelValues],
             points: [{value: gaugeEntry.extractor(), timestamp}]
           } as TimeSeries))
     };

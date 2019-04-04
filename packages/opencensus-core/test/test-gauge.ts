@@ -32,6 +32,9 @@ const LABEL_VALUES_EXRTA: LabelValue[] = [{value: '200'}, {value: '400'}];
 const UNSET_LABEL_VALUE: LabelValue = {
   value: null
 };
+const EMPTY_CONSTANT_LABELS = new Map();
+const CONSTANT_LABELS = new Map();
+CONSTANT_LABELS.set({key: 'host', description: 'host'}, {value: 'localhost'});
 
 describe('GAUGE_INT64', () => {
   let instance: Gauge;
@@ -48,7 +51,8 @@ describe('GAUGE_INT64', () => {
 
   beforeEach(() => {
     instance = new Gauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, LABEL_KEYS);
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, LABEL_KEYS,
+        EMPTY_CONSTANT_LABELS);
 
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
@@ -168,7 +172,8 @@ describe('GAUGE_INT64', () => {
     it('should return same timeseries for interchanged labels', () => {
       instance = new Gauge(
           METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64,
-          [{key: 'k1', description: 'desc'}, {key: 'k2', description: 'desc'}]);
+          [{key: 'k1', description: 'desc'}, {key: 'k2', description: 'desc'}],
+          EMPTY_CONSTANT_LABELS);
       const point =
           instance.getOrCreateTimeSeries([{value: '200'}, {value: '400'}]);
       point.add(200);
@@ -178,11 +183,40 @@ describe('GAUGE_INT64', () => {
       const metric = instance.getMetric();
       assert.equal(metric!.timeseries.length, 1);
     });
-    it('should create same labelValues as labelKeys', () => {
-      instance = new Gauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, [
+
+    it('should add constant labels', () => {
+      instance = new Gauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64,
+          [{key: 'k1', description: 'desc'}, {key: 'k2', description: 'desc'}],
+          CONSTANT_LABELS);
+      const point =
+          instance.getOrCreateTimeSeries([{value: '200'}, {value: '400'}]);
+      point.add(200);
+      const metric = instance.getMetric();
+      assert.equal(metric!.timeseries.length, 1);
+      assert.deepStrictEqual(metric!.descriptor.labelKeys, [
         {key: 'k1', description: 'desc'}, {key: 'k2', description: 'desc'},
-        {key: 'k3', description: 'desc'}
+        {key: 'host', description: 'host'}
       ]);
+      assert.deepStrictEqual(
+          metric!.timeseries, [{
+            labelValues: [{value: '200'}, {value: '400'}, {value: 'localhost'}],
+            points: [{
+              value: 200,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
+          }]);
+    });
+
+    it('should create same labelValues as labelKeys', () => {
+      instance = new Gauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64,
+          [
+            {key: 'k1', description: 'desc'}, {key: 'k2', description: 'desc'},
+            {key: 'k3', description: 'desc'}
+          ],
+          EMPTY_CONSTANT_LABELS);
       const point = instance.getDefaultTimeSeries();
       point.add(200);
       const metric = instance.getMetric();
@@ -279,7 +313,8 @@ describe('GAUGE_DOUBLE', () => {
 
   beforeEach(() => {
     instance = new Gauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, LABEL_KEYS);
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, LABEL_KEYS,
+        EMPTY_CONSTANT_LABELS);
 
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
@@ -428,11 +463,13 @@ describe('GAUGE_DOUBLE', () => {
       ]);
     });
     it('should create same labelValues as labelKeys', () => {
-      instance =
-          new Gauge(METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, [
+      instance = new Gauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE,
+          [
             {key: 'k1', description: 'desc'}, {key: 'k2', description: 'desc'},
             {key: 'k3', description: 'desc'}
-          ]);
+          ],
+          EMPTY_CONSTANT_LABELS);
       const point = instance.getDefaultTimeSeries();
       point.add(10.1);
       const metric = instance.getMetric();

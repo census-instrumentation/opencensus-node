@@ -15,7 +15,6 @@
  */
 
 import * as assert from 'assert';
-
 import {TEST_ONLY} from '../src/common/time-util';
 import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
 import {DerivedGauge} from '../src/metrics/gauges/derived-gauge';
@@ -29,6 +28,9 @@ const LABEL_KEYS: LabelKey[] = [{key: 'code', description: 'desc'}];
 const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
 const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
 const LABEL_VALUES_EXRTA: LabelValue[] = [{value: '200'}, {value: '400'}];
+const EMPTY_CONSTANT_LABELS = new Map();
+const CONSTANT_LABELS = new Map();
+CONSTANT_LABELS.set({key: 'host', description: 'host'}, {value: 'localhost'});
 
 describe('DerivedGauge', () => {
   let instance: DerivedGauge;
@@ -45,7 +47,8 @@ describe('DerivedGauge', () => {
 
   beforeEach(() => {
     instance = new DerivedGauge(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, LABEL_KEYS);
+        METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_INT64, LABEL_KEYS,
+        EMPTY_CONSTANT_LABELS);
 
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
@@ -148,7 +151,8 @@ describe('DerivedGauge', () => {
       }
       const obj = new QueueManager();
       const doubleInstance = new DerivedGauge(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, LABEL_KEYS);
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, LABEL_KEYS,
+          EMPTY_CONSTANT_LABELS);
       doubleInstance.createTimeSeries(LABEL_VALUES_200, obj);
       const metric = doubleInstance.getMetric();
       assert.notEqual(metric, null);
@@ -163,6 +167,39 @@ describe('DerivedGauge', () => {
       assert.deepStrictEqual(
           metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
+            points: [{
+              value: 0.7,
+              timestamp:
+                  {nanos: mockedTime.nanos, seconds: mockedTime.seconds}
+            }]
+          }]);
+    });
+
+    it('should return a Metric (Double) - custom object', () => {
+      class QueueManager {
+        getValue(): number {
+          return 0.7;
+        }
+      }
+      const obj = new QueueManager();
+      const doubleInstance = new DerivedGauge(
+          METRIC_NAME, METRIC_DESCRIPTION, UNIT, GAUGE_DOUBLE, LABEL_KEYS,
+          CONSTANT_LABELS);
+      doubleInstance.createTimeSeries(LABEL_VALUES_200, obj);
+      const metric = doubleInstance.getMetric();
+      assert.notEqual(metric, null);
+      assert.deepStrictEqual(metric!.descriptor, {
+        name: METRIC_NAME,
+        description: METRIC_DESCRIPTION,
+        unit: UNIT,
+        type: GAUGE_DOUBLE,
+        labelKeys: [...LABEL_KEYS, ...Array.from(CONSTANT_LABELS.keys())]
+      });
+      assert.equal(metric!.timeseries.length, 1);
+      assert.deepStrictEqual(
+          metric!.timeseries, [{
+            labelValues:
+                [...LABEL_VALUES_200, ...Array.from(CONSTANT_LABELS.values())],
             points: [{
               value: 0.7,
               timestamp:

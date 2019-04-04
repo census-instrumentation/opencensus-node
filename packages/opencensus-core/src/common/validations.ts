@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {LabelKey, LabelValue} from '../metrics/export/types';
+
 /**
  * Validates that an object reference passed as a parameter to the calling
  * method is not null.
@@ -41,5 +43,26 @@ export function validateArrayElementsNotNull<T>(
       element => element !== null && typeof element !== 'undefined');
   if (!areAllDefined) {
     throw new Error(`${errorMessage} elements should not be a NULL`);
+  }
+}
+
+/** Throws an error if any of the map elements is null. */
+export function validateMapElementNotNull<T>(
+    map: Map<T, T>, errorMessage: string) {
+  for (const [key, value] of map.entries()) {
+    if (key == null || value == null) {
+      throw new Error(`${errorMessage} elements should not be a NULL`);
+    }
+  }
+}
+
+/** Throws an error if any of the array element present in the map. */
+export function validateDuplicateKeys(
+    keys: LabelKey[], constantLabels: Map<LabelKey, LabelValue>) {
+  const keysAndConstantKeys =
+      new Set([...keys, ...constantLabels.keys()].map(k => k.key));
+  if (keysAndConstantKeys.size !== (keys.length + constantLabels.size)) {
+    throw new Error(
+        `The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys`);
   }
 }
