@@ -84,8 +84,8 @@ export function createTimeEvents(
           messageEvent: {
             id: String(messageEvent.id),
             type: createMessageEventType(messageEvent.type),
-            uncompressedSize: String(messageEvent.uncompressedSize || 0),
-            compressedSize: String(messageEvent.compressedSize || 0)
+            uncompressedSizeBytes: String(messageEvent.uncompressedSize || 0),
+            compressedSizeBytes: String(messageEvent.compressedSize || 0)
           }
         })));
   }

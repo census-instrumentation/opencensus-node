@@ -144,18 +144,30 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
         }
       },
       {
-        messageEvent:
-            {compressedSize: '100', id: '1', type: 1, uncompressedSize: '12'},
+        messageEvent: {
+          compressedSizeBytes: '100',
+          id: '1',
+          type: 1,
+          uncompressedSizeBytes: '12'
+        },
         time: '1970-01-02T10:17:36.789Z',
       },
       {
-        messageEvent:
-            {compressedSize: '0', id: '1', type: 2, uncompressedSize: '0'},
+        messageEvent: {
+          compressedSizeBytes: '0',
+          id: '1',
+          type: 2,
+          uncompressedSizeBytes: '0'
+        },
         time: '1970-01-02T10:17:36.789Z',
       },
       {
-        messageEvent:
-            {compressedSize: '0', id: '1', type: 0, uncompressedSize: '0'},
+        messageEvent: {
+          compressedSizeBytes: '0',
+          id: '1',
+          type: 0,
+          uncompressedSizeBytes: '0'
+        },
         time: '1970-01-02T10:17:36.789Z',
       }
     ];
