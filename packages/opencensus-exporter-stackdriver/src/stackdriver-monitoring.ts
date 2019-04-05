@@ -31,7 +31,6 @@ const OC_HEADER = {
 
 google.options({headers: OC_HEADER});
 const monitoring = google.monitoring('v3');
-const GOOGLEAPIS_SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
 
 /** Format and sends Stats to Stackdriver */
 export class StackdriverStatsExporter implements StatsEventListener {
@@ -187,13 +186,21 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        monitoring.projects.metricDescriptors.create(
-            request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
-            (err: Error|null) => {
-              this.logger.debug('sent metric descriptor', request.resource);
-              err ? reject(err) : resolve();
-            });
-      });
+               monitoring.projects.metricDescriptors.create(
+                   request,
+                   {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
+                   (err: Error|null) => {
+                     this.logger.debug(
+                         'sent metric descriptor', request.resource);
+                     err ? reject(err) : resolve();
+                   });
+             })
+          .catch((err) => {
+            this.logger.error(
+                `StackdriverStatsExporter: Failed to write data: ${
+                    err.message}`);
+            this.stop();
+          });
     });
   }
 
@@ -209,21 +216,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * Gets the Google Application Credentials from the environment variables
    * and authenticates the client.
    */
-  private authorize(): Promise<JWT> {
-    return auth.getApplicationDefault()
-        .then((client) => {
-          let authClient = client.credential as JWT;
-          if (authClient.createScopedRequired &&
-              authClient.createScopedRequired()) {
-            const scopes = [GOOGLEAPIS_SCOPE];
-            authClient = authClient.createScoped(scopes);
-          }
-          return authClient;
-        })
-        .catch((err) => {
-          err.message = `authorize error: ${err.message}`;
-          throw (err);
-        });
+  private async authorize(): Promise<JWT> {
+    const client = await auth.getClient(
+        {scopes: ['https://www.googleapis.com/auth/cloud-platform']});
+    return client as JWT;
   }
 
   // TODO(mayurkale): Deprecate onRegisterView and onRecord apis after

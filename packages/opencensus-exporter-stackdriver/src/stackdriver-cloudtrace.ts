@@ -149,28 +149,21 @@ export class StackdriverTraceExporter implements Exporter {
    * authenticates the client and calls a method to send the spans data.
    * @param stackdriverSpans The spans to export
    */
-  private authorize(stackdriverSpans: Span[]) {
-    return auth.getApplicationDefault()
-        .then((client) => {
-          let authClient = client.credential as JWT;
+  private async authorize(stackdriverSpans: Span[]):
+      Promise<SpansWithCredentials> {
+    try {
+      const client = await auth.getClient(
+          {scopes: ['https://www.googleapis.com/auth/cloud-platform']});
 
-          if (authClient.createScopedRequired &&
-              authClient.createScopedRequired()) {
-            const scopes = ['https://www.googleapis.com/auth/cloud-platform'];
-            authClient = authClient.createScoped(scopes);
-          }
-
-          const spans: SpansWithCredentials = {
-            name: `projects/${this.projectId}`,
-            resource: {spans: stackdriverSpans},
-            auth: authClient
-          };
-          return spans;
-        })
-        .catch((err) => {
-          err.message = `authorize error: ${err.message}`;
-          this.logger.error(err.message);
-          throw (err);
-        });
+      return {
+        name: `projects/${this.projectId}`,
+        resource: {spans: stackdriverSpans},
+        auth: client as JWT
+      };
+    } catch (err) {
+      err.message = `authorize error: ${err.message}`;
+      this.logger.error(err.message);
+      throw (err);
+    }
   }
 }
