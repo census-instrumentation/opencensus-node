@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger} from '@opencensus/core';
+import {CoreTracer, LinkType, logger} from '@opencensus/core';
 import * as assert from 'assert';
-import {JaegerTraceExporter, JaegerTraceExporterOptions} from '../src/';
-import {spanToThrift, ThriftUtils, UDPSender} from '../src/jaeger-driver';
 
-const DEFAULT_BUFFER_TIMEOUT = 10;  // time in milliseconds
-
+import {JaegerTraceExporter, JaegerTraceExporterOptions,} from '../src/';
+import {spanToThrift, ThriftReferenceType, ThriftUtils, UDPSender} from '../src/jaeger-driver';
 import {ThriftProcess} from '../src/jaeger-driver';
 import {SenderCallback} from '../src/jaeger-driver';
 
+const DEFAULT_BUFFER_TIMEOUT = 10;  // time in milliseconds
 
 /**
  * Controls if the tests will use a real network or not
@@ -116,6 +115,13 @@ describe('Jaeger Exporter', () => {
         span.addAnnotation('something happened', {
           'error': true,
         });
+        const traceIdHigh = '6e0c63257de34c92';
+        const traceIdLow = 'bf9efcd03927272e';
+        const traceId = traceIdHigh + traceIdLow;
+        const spanId = '6e0c63257de34c92';
+        span.addLink(traceId, spanId, LinkType.CHILD_LINKED_SPAN);
+        span.addLink(traceId, spanId, LinkType.PARENT_LINKED_SPAN);
+        span.addLink(traceId, spanId, LinkType.UNSPECIFIED);
         span.end();
         rootSpan.end();
         const thriftSpan = spanToThrift(span);
@@ -145,6 +151,22 @@ describe('Jaeger Exporter', () => {
         });
 
         assert.ok(testBoolSeen && testStringSeen && testNumSeen);
+
+        assert.equal(thriftSpan.references.length, 2);
+        assert.deepEqual(thriftSpan.references, [
+          {
+            refType: ThriftReferenceType.CHILD_OF,
+            traceIdHigh: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146]),
+            traceIdLow: Buffer.from([191, 158, 252, 208, 57, 39, 39, 46]),
+            spanId: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146])
+          },
+          {
+            refType: ThriftReferenceType.FOLLOWS_FROM,
+            traceIdHigh: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146]),
+            traceIdLow: Buffer.from([191, 158, 252, 208, 57, 39, 39, 46]),
+            spanId: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146])
+          }
+        ]);
 
         assert.strictEqual(thriftSpan.logs.length, 1);
         thriftSpan.logs.forEach((log) => {

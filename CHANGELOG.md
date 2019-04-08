@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 - Gauge: Add support for constant labels.
+- Add support for Opencensus Span links to Thrift Span references.
 
 ## 0.0.10 - 2019-04-03
 - Add optional `compressedSize` and `uncompressedSize` params to `Span.addMessageEvent`

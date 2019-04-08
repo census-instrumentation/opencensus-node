@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Span} from '@opencensus/core';
+import {Link, LinkType, Span} from '@opencensus/core';
 
 // tslint:disable-next-line:variable-name
 export const UDPSender =
@@ -139,7 +139,7 @@ export function spanToThrift(span: Span): ThriftSpan {
     spanId: Utils.encodeInt64(span.spanContext.spanId),
     parentSpanId: parentSpan,
     operationName: span.name,
-    references: [],
+    references: getThriftReference(span.links),
     flags: span.spanContext.options || 0x1,
     startTime:
         Utils.encodeInt64(span.startTime.getTime() * 1000),  // to microseconds
@@ -147,4 +147,34 @@ export function spanToThrift(span: Span): ThriftSpan {
     tags: spanTags,
     logs: spanLogs,
   };
+}
+
+function getThriftReference(links: Link[]): ThriftReference[] {
+  return links
+             .map(
+                 (link):
+                     ThriftReference|
+                 null => {
+                   const refType = getThriftType(link.type);
+                   if (!refType) return null;
+
+                   const traceId =
+                       `00000000000000000000000000000000${link.traceId}`.slice(
+                           -32);
+                   const traceIdHigh = Utils.encodeInt64(traceId.slice(0, 16));
+                   const traceIdLow = Utils.encodeInt64(traceId.slice(16));
+                   const spanId = Utils.encodeInt64(link.spanId);
+                   return {traceIdLow, traceIdHigh, spanId, refType};
+                 })
+             .filter(ref => !!ref) as ThriftReference[];
+}
+
+function getThriftType(type: number): ThriftReferenceType|null {
+  if (type === LinkType.CHILD_LINKED_SPAN) {
+    return ThriftReferenceType.CHILD_OF;
+  }
+  if (type === LinkType.PARENT_LINKED_SPAN) {
+    return ThriftReferenceType.FOLLOWS_FROM;
+  }
+  return null;
 }
