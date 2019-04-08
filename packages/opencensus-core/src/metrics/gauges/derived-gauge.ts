@@ -17,7 +17,7 @@
 import {getTimestampWithProcessHRTime} from '../../common/time-util';
 import {validateArrayElementsNotNull, validateNotNull} from '../../common/validations';
 import {LabelKey, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, TimeSeries, Timestamp} from '../export/types';
-import * as types from '../gauges/types';
+import * as types from '../types';
 import {hashLabelValues} from '../utils';
 
 /**

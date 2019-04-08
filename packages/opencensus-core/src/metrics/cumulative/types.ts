@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2019, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,21 @@
 
 import {TimeSeries, Timestamp} from '../export/types';
 
-export interface Point {
-  /**
-   * Adds the given value to the current value. The values can be negative.
-   *
-   * @param {number} amt The value to add.
-   */
-  add(amt: number): void;
+export interface CumulativePoint {
+  /** Reset cumulative metric. */
+  reset(): void;
 
   /**
-   * Sets the given value.
-   *
+   * Increment the cumulative metric.
    * @param {number} val The new value.
    */
-  set(val: number): void;
+  inc(val?: number): void;
 
   /**
    * Returns the TimeSeries with one or more Point.
    *
-   * @param {Timestamp} timestamp The time at which the gauge is recorded.
+   * @param {Timestamp} now The time at which the cumulative is recorded.
    * @returns {TimeSeries} The TimeSeries.
    */
-  getTimeSeries(timestamp: Timestamp): TimeSeries;
+  getTimeSeries(now: Timestamp): TimeSeries;
 }
