@@ -48,7 +48,7 @@ describe('Plugin Loader', () => {
   });
 
 
-  describe.skip('PluginLoader', () => {
+  describe('PluginLoader', () => {
     const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
     const tracer = new CoreTracer();
     tracer.start({logger: log});
