@@ -151,26 +151,30 @@ export function spanToThrift(span: Span): ThriftSpan {
 
 function getThriftReference(links: Link[]): ThriftReference[] {
   return links
-             .map(link => {
-               const refType = getThriftType(link.type);
-               if (!refType) return null;
+             .map(
+                 (link):
+                     ThriftReference|
+                 null => {
+                   const refType = getThriftType(link.type);
+                   if (!refType) return null;
 
-               const traceId =
-                   `00000000000000000000000000000000${link.traceId}`.slice(-32);
-               const traceIdHigh = Utils.encodeInt64(traceId.slice(0, 16));
-               const traceIdLow = Utils.encodeInt64(traceId.slice(16));
-               const spanId = Utils.encodeInt64(link.spanId);
-               return {traceIdLow, traceIdHigh, spanId, refType};
-             })
+                   const traceId =
+                       `00000000000000000000000000000000${link.traceId}`.slice(
+                           -32);
+                   const traceIdHigh = Utils.encodeInt64(traceId.slice(0, 16));
+                   const traceIdLow = Utils.encodeInt64(traceId.slice(16));
+                   const spanId = Utils.encodeInt64(link.spanId);
+                   return {traceIdLow, traceIdHigh, spanId, refType};
+                 })
              .filter(ref => !!ref) as ThriftReference[];
 }
 
 function getThriftType(type: number): ThriftReferenceType|null {
   if (type === LinkType.CHILD_LINKED_SPAN) {
     return ThriftReferenceType.CHILD_OF;
-  } else if (type === LinkType.PARENT_LINKED_SPAN) {
-    return ThriftReferenceType.FOLLOWS_FROM;
-  } else {
-    return null;
   }
+  if (type === LinkType.PARENT_LINKED_SPAN) {
+    return ThriftReferenceType.FOLLOWS_FROM;
+  }
+  return null;
 }
