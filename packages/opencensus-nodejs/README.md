@@ -19,7 +19,16 @@ npm install @opencensus/nodejs
 
 ### Instrumenting an Application
 
-OpenCensus for Node.js has automatic instrumentation for [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md) and [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md) out of the box. This means that spans are automatically created for operations of those packages. To use it, simply start the tracing instance.
+OpenCensus for Node.js has automatic instrumentation out of the box for those modules:
+
+- [HTTP](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http/README.md)
+- [HTTPS](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-https/README.md)
+- [HTTP2](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-http2/README.md)
+- [GRPC](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-grpc/README.md)
+- [IORedis](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-ioredis/README.md)
+- [Redis](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-instrumentation-redis/README.md)
+
+This means that spans are automatically created for operations of those packages. To use it, simply start the tracing instance.
 
 ```javascript
 const tracing = require('@opencensus/nodejs');
