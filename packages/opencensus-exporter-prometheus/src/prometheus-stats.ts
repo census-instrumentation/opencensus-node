@@ -39,7 +39,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   static readonly DEFAULT_OPTIONS = {
     port: 9464,
     startServer: false,
-    contentType: 'text/plain; text/plain; version=0.0.10; charset=utf-8',
+    contentType: 'text/plain; text/plain; version=0.0.12; charset=utf-8',
     prefix: ''
   };
 
