@@ -137,13 +137,10 @@ export class Span implements types.Span {
 
   /** Recursively gets the descendant spans. */
   allDescendants(): types.Span[] {
-    console.log('Calling allDescendants', this.name);
     return this.spansLocal.reduce((acc: types.Span[], cur) => {
-      console.log('Name', cur.name, acc.length);
       acc.push(cur);
       const desc = cur.allDescendants();
       acc = acc.concat(desc);
-      console.log(cur.name, acc.length);
       return acc;
     }, []);
   }
@@ -159,7 +156,7 @@ export class Span implements types.Span {
   }
 
   /**
-   * Gives a timestap that indicates the span's end time in RFC3339 UTC
+   * Gives a timestamp that indicates the span's end time in RFC3339 UTC
    * "Zulu" format.
    */
   get endTime(): Date {
@@ -172,8 +169,7 @@ export class Span implements types.Span {
   }
 
   /**
-   * Gives a timestap that indicates the span's duration in RFC3339 UTC
-   * "Zulu" format.
+   * Gets the duration of the clock.
    */
   get duration(): number {
     if (!this.clock) {

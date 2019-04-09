@@ -19,7 +19,7 @@ import * as types from '../types';
 import {NoRecordSpan} from './no-record-span';
 
 /** Implementation for the Span class that does not record trace events. */
-export class NoRecordRootSpan extends NoRecordSpan implements types.Span {
+export class NoRecordRootSpan extends NoRecordSpan {
   /** A tracer object */
   private tracer: types.Tracer;
   /** Its trace ID. */

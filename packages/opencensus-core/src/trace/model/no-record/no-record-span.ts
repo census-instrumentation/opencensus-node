@@ -93,7 +93,7 @@ export class NoRecordSpan implements types.Span {
   /** Gets the ID of the parent span. */
   get parentSpanId(): string {
     if (!this.parentSpan) {
-      return 'no-parent';
+      return '';
     }
     return this.parentSpan.id;
   }

@@ -109,7 +109,6 @@ function serializeSpan(inputSpan: Span): SerializedSpan {
     parentSpanId: inputSpan.id,
     spans: undefined
   };
-  // tslint:disable-next-line:no-any
   span.spans = inputSpan.spans.map((childSpan: Span) => ({
                                      startTime: childSpan.startTime,
                                      id: childSpan.id,
