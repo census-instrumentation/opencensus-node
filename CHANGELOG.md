@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+
+## 0.0.11 - 2019-04-08
 - Gauge: Add support for constant labels.
 - Add support for Opencensus Span links to Thrift Span references.
+- Add Redis and IORedis instrumentation plugins by default.
+- Fix(deps): update dependency googleapis to v39.
+- Fix error in Opencensus to stackdriver translation (compressedSize -> compressedSizeBytes and uncompressedSize -> uncompressedSizeBytes)
+- Remove createScopedRequired usage.
 
 ## 0.0.10 - 2019-04-03
 - Add optional `compressedSize` and `uncompressedSize` params to `Span.addMessageEvent`

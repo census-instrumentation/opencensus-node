@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.4.0",
-    "@opencensus/exporter-stackdriver": "^0.0.10",
-    "@opencensus/instrumentation-grpc": "^0.0.10",
-    "@opencensus/nodejs": "^0.0.10",
+    "@opencensus/exporter-stackdriver": "^0.0.11",
+    "@opencensus/instrumentation-grpc": "^0.0.11",
+    "@opencensus/nodejs": "^0.0.11",
     "grpc": "^1.18.0"
   },
   "devDependencies": {
