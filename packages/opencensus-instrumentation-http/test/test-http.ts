@@ -19,6 +19,7 @@ import * as assert from 'assert';
 import * as http from 'http';
 import * as nock from 'nock';
 import * as shimmer from 'shimmer';
+import * as url from 'url';
 
 import {HttpPlugin, plugin} from '../src/';
 import * as stats from '../src/http-stats';
@@ -370,6 +371,25 @@ describe('HttpPlugin', () => {
 
            const span = rootSpanVerifier.endedRootSpans[0];
            assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
+           assertClientStats(testExporter, 301, 'GET');
+         });
+         nock.disableNetConnect();
+       });
+
+    it('should create a rootSpan for GET requests and add propagation headers with Expect headers',
+       async () => {
+         nock.enableNetConnect();
+         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+         const options = Object.assign(
+             {headers: {Expect: '100-continue'}},
+             url.parse('http://google.fr/'));
+         await httpRequest.get(options).then((result) => {
+           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+           assert.ok(
+               rootSpanVerifier.endedRootSpans[0].name.indexOf('GET /') >= 0);
+
+           const span = rootSpanVerifier.endedRootSpans[0];
+           assertSpanAttributes(span, 301, 'GET', 'google.fr', '/', undefined);
            assertClientStats(testExporter, 301, 'GET');
          });
          nock.disableNetConnect();
