@@ -106,8 +106,8 @@ function serializeSpan(inputSpan: Span): SerializedSpan {
     duration: inputSpan.duration,
     traceId: inputSpan.traceId,
     id: inputSpan.id,
-    parentSpanId: inputSpan.id,
-    spans: undefined
+    parentSpanId: inputSpan.parentSpanId,
+    spans: []
   };
   span.spans = inputSpan.spans.map((childSpan: Span) => ({
                                      startTime: childSpan.startTime,

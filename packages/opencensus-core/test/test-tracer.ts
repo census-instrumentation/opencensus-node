@@ -350,6 +350,40 @@ describe('Tracer', () => {
         assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
       });
     });
+
+    it('should support nested children', () => {
+      tracer.startRootSpan(options, (rootSpan) => {
+        assert.strictEqual(rootSpan.numberOfChildren, 0);
+        const child1 =
+            tracer.startChildSpan('child1', types.SpanKind.UNSPECIFIED);
+        assert.strictEqual(rootSpan.numberOfChildren, 1);
+        assert.strictEqual(child1.numberOfChildren, 0);
+        const child2 =
+            tracer.startChildSpan('child2', types.SpanKind.UNSPECIFIED);
+        assert.strictEqual(rootSpan.numberOfChildren, 2);
+        const grandchild1 = child1.startChildSpan({
+          name: 'grandchild1',
+          kind: types.SpanKind.UNSPECIFIED,
+        });
+        assert.strictEqual(rootSpan.numberOfChildren, 2);
+        assert.strictEqual(child1.numberOfChildren, 1);
+        assert.strictEqual(child2.numberOfChildren, 0);
+        assert.strictEqual(grandchild1.numberOfChildren, 0);
+
+        assert.strictEqual(rootSpan.spans.length, 2);
+        assert.strictEqual(child1, rootSpan.spans[0]);
+        assert.strictEqual(child2, rootSpan.spans[1]);
+        assert.strictEqual(grandchild1.parentSpanId, child1.id);
+
+        assert.strictEqual(child1.spans.length, 1);
+        assert.strictEqual(grandchild1, child1.spans[0]);
+
+        assert.strictEqual(child2.spans.length, 0);
+        assert.strictEqual(grandchild1.spans.length, 0);
+
+        assert.strictEqual(rootSpan.allDescendants().length, 3);
+      });
+    });
   });
 
   /** Should not create a Span instance */
