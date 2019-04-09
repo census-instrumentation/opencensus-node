@@ -360,7 +360,10 @@ export class HttpPlugin extends BasePlugin {
 
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
-          // https://github.com/googleapis/cloud-trace-nodejs/pull/766
+          // If outgoing request headers contain the "Expect" header, the
+          // returned ClientRequest will throw an error if any new headers are
+          // added. We need to set the header directly in the headers object
+          // which has been cloned earlier.
           if (plugin.hasExpectHeader(options) && options.headers) {
             options.headers[name] = value;
           } else {
@@ -372,12 +375,9 @@ export class HttpPlugin extends BasePlugin {
       const propagation = plugin.tracer.propagation;
       if (propagation) {
         // If outgoing request headers contain the "Expect" header, the returned
-        // ClientRequest will throw an error if any new headers are added. For
-        // this reason, only in this scenario, we opt to clone the options
-        // object to inject the trace context header instead of using
-        // ClientRequest#setHeader. (We don't do this generally because cloning
-        // the options object is an expensive operation.)
-        // https://github.com/googleapis/cloud-trace-nodejs/pull/766
+        // ClientRequest will throw an error if any new headers are added.
+        // So we need to clone the options object to be able to inject new
+        // header.
         if (options.headers && plugin.hasExpectHeader(options)) {
           options = Object.assign({}, options) as RequestOptions;
           options.headers = Object.assign({}, options.headers);
