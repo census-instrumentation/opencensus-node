@@ -361,9 +361,10 @@ describe('Tracer', () => {
         const child2 =
             tracer.startChildSpan('child2', types.SpanKind.UNSPECIFIED);
         assert.strictEqual(rootSpan.numberOfChildren, 2);
-        const grandchild1 = child1.startChildSpan({
+        const grandchild1 = tracer.startChildSpan({
           name: 'grandchild1',
           kind: types.SpanKind.UNSPECIFIED,
+          childOf: child1
         });
         assert.strictEqual(rootSpan.numberOfChildren, 2);
         assert.strictEqual(child1.numberOfChildren, 1);

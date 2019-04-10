@@ -239,6 +239,8 @@ export interface SpanOptions {
   name: string;
   /** Span kind */
   kind?: SpanKind;
+  /** The new span's parent */
+  childOf?: Span;
 }
 
 export type TraceState = string;

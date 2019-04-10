@@ -249,6 +249,9 @@ export class CoreTracer implements types.Tracer {
           'no current trace found - must start a new root span first');
       return new NoRecordSpan();
     }
+    if (typeof nameOrOptions === 'object' && nameOrOptions.childOf) {
+      return nameOrOptions.childOf.startChildSpan(nameOrOptions, kind);
+    }
     return this.currentRootSpan.startChildSpan(nameOrOptions, kind);
   }
 
