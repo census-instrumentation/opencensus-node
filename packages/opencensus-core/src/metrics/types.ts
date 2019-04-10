@@ -17,11 +17,13 @@
 import {MeasureUnit} from './../stats/types';
 import {LabelKey, LabelValue, Metric} from './export/types';
 
+/** Provides a {@link Metric} with one or more {@link TimeSeries} */
 export interface Meter {
   /**
    * Provides a Metric with one or more TimeSeries.
    *
-   * @returns {Metric} The Metric.
+   * @returns {Metric} The Metric, or null if TimeSeries is not present in
+   *     Metric.
    */
   getMetric(): Metric|null;
 }

@@ -131,7 +131,8 @@ export class Cumulative implements Meter {
   /**
    * Provides a Metric with one or more TimeSeries.
    *
-   * @returns {Metric} The Metric.
+   * @returns {Metric} The Metric, or null if TimeSeries is not present in
+   *     Metric.
    */
   getMetric(): Metric|null {
     if (this.registeredPoints.size === 0) {
