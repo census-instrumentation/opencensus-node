@@ -170,11 +170,11 @@ export class CumulativePointEntry implements CumulativePoint {
    * @param {number} val The new value.
    */
   inc(val?: number): void {
-    if (val && !Number.isFinite(val)) {
+    if ((val && !Number.isFinite(val)) || (val !== undefined && isNaN(val))) {
       throw new TypeError(`Value is not a valid number: ${val}`);
     }
     if (val && val < 0) {
-      throw new Error('It is not possible to decrease a counter');
+      throw new Error('It is not possible to decrease a cumulative metric');
     }
     const incValue = (val === null || val === undefined) ? 1 : val;
     this.value += incValue;

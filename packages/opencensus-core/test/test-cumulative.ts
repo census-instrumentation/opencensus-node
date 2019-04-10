@@ -112,7 +112,14 @@ describe('CUMULATIVE', () => {
       const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       assert.throws(() => {
         point.inc(-10);
-      }, /^Error: It is not possible to decrease a counter$/);
+      }, /^Error: It is not possible to decrease a cumulative metric$/);
+    });
+
+    it('should throw an error when the inc input is NaN', () => {
+      const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
+      assert.throws(() => {
+        point.inc(NaN);
+      }, /^TypeError: Value is not a valid number: NaN$/);
     });
 
     it('should throw a TypeError when the inc number is not finite', () => {
