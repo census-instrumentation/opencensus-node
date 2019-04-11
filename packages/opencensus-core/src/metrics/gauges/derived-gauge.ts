@@ -56,15 +56,19 @@ export interface ToValueInterface {
 }
 
 type ValueExtractor = () => number;
-type ValueExtractorOrFunction = Function|ValueExtractor;
 
 interface GaugeEntry {
   readonly labelValues: LabelValue[];
-  readonly extractor: ValueExtractorOrFunction;
+  readonly extractor: ValueExtractor;
 }
 
-export type AccessorInterface = LengthAttributeInterface|LengthMethodInterface|
-    SizeAttributeInterface|SizeMethodInterface|ToValueInterface;
+interface AccessorFunction {
+  (): number;
+}
+
+export type AccessorInterface =
+    LengthAttributeInterface|LengthMethodInterface|SizeAttributeInterface|
+    SizeMethodInterface|ToValueInterface|AccessorFunction;
 
 /**
  * DerivedGauge metric
@@ -73,7 +77,7 @@ export class DerivedGauge implements types.Meter {
   private metricDescriptor: MetricDescriptor;
   private labelKeysLength: number;
   private registeredPoints: Map<string, GaugeEntry> = new Map();
-  private extractor?: ValueExtractorOrFunction;
+  private extractor?: ValueExtractor;
   private readonly constantLabelValues: LabelValue[];
 
   private static readonly LABEL_VALUE = 'labelValue';
@@ -157,8 +161,8 @@ export class DerivedGauge implements types.Meter {
    *     fn is the function that will be called to get the current value
    *     of the gauge.
    */
-  createTimeSeries(
-      labelValues: LabelValue[], objOrFn: AccessorInterface|Function): void {
+  createTimeSeries(labelValues: LabelValue[], objOrFn: AccessorInterface):
+      void {
     validateArrayElementsNotNull(
         validateNotNull(labelValues, DerivedGauge.LABEL_VALUES),
         DerivedGauge.LABEL_VALUE);
@@ -172,7 +176,7 @@ export class DerivedGauge implements types.Meter {
       throw new Error(DerivedGauge.ERROR_MESSAGE_INVALID_SIZE);
     }
 
-    if (typeof objOrFn === 'function') {
+    if (objOrFn instanceof Function) {
       this.extractor = objOrFn;
     } else if (DerivedGauge.isToValueInterface(objOrFn)) {
       this.extractor = () => objOrFn.getValue();
