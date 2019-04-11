@@ -15,7 +15,7 @@
  */
 
 
-import {CoreTracer, logger, MessageEventType, RootSpan, Span, SpanEventListener} from '@opencensus/core';
+import {CoreTracer, logger, MessageEventType, Span, SpanEventListener} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http2 from 'http2';
 import * as semver from 'semver';
@@ -26,10 +26,10 @@ import {Http2Plugin} from '../src/';
 const VERSION = process.versions.node;
 
 class RootSpanVerifier implements SpanEventListener {
-  endedRootSpans: RootSpan[] = [];
+  endedRootSpans: Span[] = [];
 
-  onStartSpan(root: RootSpan): void {}
-  onEndSpan(root: RootSpan) {
+  onStartSpan(root: Span): void {}
+  onEndSpan(root: Span) {
     this.endedRootSpans.push(root);
   }
 }
@@ -180,7 +180,7 @@ describe('Http2Plugin', () => {
       const requestOptions = {':method': 'GET', ':path': testPath};
       const options = {name: 'TestRootSpan'};
 
-      return tracer.startRootSpan(options, async (root: RootSpan) => {
+      return tracer.startRootSpan(options, async (root: Span) => {
         await http2Request.get(client, requestOptions).then((result) => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
@@ -200,7 +200,7 @@ describe('Http2Plugin', () => {
            const requestOptions = {':method': 'GET', ':path': testPath};
            const options = {name: 'TestRootSpan'};
 
-           return tracer.startRootSpan(options, async (root: RootSpan) => {
+           return tracer.startRootSpan(options, async (root: Span) => {
              await http2Request.get(client, requestOptions).then((result) => {
                assert.ok(root.name.indexOf('TestRootSpan') >= 0);
                assert.strictEqual(root.spans.length, 1);
@@ -221,7 +221,7 @@ describe('Http2Plugin', () => {
       const num = 5;
       const options = {name: 'TestRootSpan'};
 
-      return tracer.startRootSpan(options, async (root: RootSpan) => {
+      return tracer.startRootSpan(options, async (root: Span) => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
           await http2Request.get(client, requestOptions).then((result) => {

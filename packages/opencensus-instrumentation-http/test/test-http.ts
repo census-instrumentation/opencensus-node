@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, MessageEventType, Propagation, RootSpan, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
+import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, MessageEventType, Propagation, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as nock from 'nock';
@@ -92,10 +92,10 @@ class DummyPropagation implements Propagation {
 }
 
 class RootSpanVerifier implements SpanEventListener {
-  endedRootSpans: RootSpan[] = [];
+  endedRootSpans: Span[] = [];
 
-  onStartSpan(span: RootSpan): void {}
-  onEndSpan(root: RootSpan) {
+  onStartSpan(span: Span): void {}
+  onEndSpan(root: Span) {
     this.endedRootSpans.push(root);
   }
 }
@@ -261,7 +261,7 @@ describe('HttpPlugin', () => {
       const testPath = '/outgoing/rootSpan/childs/1';
       doNock(urlHost, testPath, 200, 'Ok');
       const options = {name: 'TestRootSpan'};
-      return tracer.startRootSpan(options, async (root: RootSpan) => {
+      return tracer.startRootSpan(options, async (root: Span) => {
         await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
@@ -286,7 +286,7 @@ describe('HttpPlugin', () => {
                urlHost, testPath, httpErrorCodes[i],
                httpErrorCodes[i].toString());
            const options = {name: 'TestRootSpan'};
-           return tracer.startRootSpan(options, async (root: RootSpan) => {
+           return tracer.startRootSpan(options, async (root: Span) => {
              await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
                assert.ok(root.name.indexOf('TestRootSpan') >= 0);
                assert.strictEqual(root.spans.length, 1);
@@ -307,7 +307,7 @@ describe('HttpPlugin', () => {
       const num = 5;
       doNock(urlHost, testPath, 200, 'Ok', num);
       const options = {name: 'TestRootSpan'};
-      return tracer.startRootSpan(options, async (root: RootSpan) => {
+      return tracer.startRootSpan(options, async (root: Span) => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
           await httpRequest.get(`${urlHost}${testPath}`).then((result) => {

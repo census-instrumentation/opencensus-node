@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {RootSpan, Span} from '@opencensus/core';
+import {Span} from '@opencensus/core';
 import * as ejs from 'ejs';
 import {LatencyBucketBoundaries} from '../latency-bucket-boundaries';
 import {templatesDir} from './templates-dir';
@@ -33,8 +33,17 @@ export type Latency = {
  */
 export interface SelectedTraces {
   name: string;
-  traces: Array<Partial<Span>>;
+  traces: SerializedSpan[];
   getCanonicalCode: (status: number) => string;
+}
+
+export interface SerializedSpan {
+  startTime: Date;
+  duration: number;
+  traceId?: string;
+  id: string;
+  parentSpanId?: string;
+  spans?: SerializedSpan[];
 }
 
 /**
@@ -91,27 +100,21 @@ const getCanonicalCode = (status: number) => {
  * This change should be made in the core module.
  * @param inputSpan The span to serialize.
  */
-function serializeSpan(inputSpan: Span|RootSpan): Partial<Span> {
-  const span: Partial<Span> = {
+function serializeSpan(inputSpan: Span): SerializedSpan {
+  const span: SerializedSpan = {
     startTime: inputSpan.startTime,
     duration: inputSpan.duration,
     traceId: inputSpan.traceId,
     id: inputSpan.id,
-    parentSpanId: inputSpan.id
+    parentSpanId: inputSpan.parentSpanId,
+    spans: []
   };
-  if (inputSpan.isRootSpan) {
-    // We possibly need to assign the spans field that is only available
-    // on root spans. The core module doesn't export this as an
-    // exportable field.
-    // tslint:disable-next-line:no-any
-    (span as any).spans =
-        (inputSpan as RootSpan).spans.map((childSpan: Span) => ({
-                                            startTime: childSpan.startTime,
-                                            id: childSpan.id,
-                                            name: childSpan.name,
-                                            duration: childSpan.duration
-                                          }));
-  }
+  span.spans = inputSpan.spans.map((childSpan: Span) => ({
+                                     startTime: childSpan.startTime,
+                                     id: childSpan.id,
+                                     name: childSpan.name,
+                                     duration: childSpan.duration
+                                   }));
   return span;
 }
 

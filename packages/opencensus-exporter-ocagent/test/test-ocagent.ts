@@ -15,7 +15,7 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {CanonicalCode, LinkType, MessageEventType, RootSpan, SpanKind, TraceOptions, Tracing} from '@opencensus/core';
+import {CanonicalCode, LinkType, MessageEventType, Span, SpanKind, TraceOptions, Tracing} from '@opencensus/core';
 import * as nodeTracing from '@opencensus/nodejs';
 import * as assert from 'assert';
 import {EventEmitter} from 'events';
@@ -191,7 +191,7 @@ describe('OpenCensus Agent Exporter', () => {
           name: ROOT_SPAN_NAME,
           spanContext: {traceId: hexId(), spanId: hexId(), options: 0x1}
         },
-        (rootSpan: RootSpan) => {
+        (rootSpan: Span) => {
           const childSpan =
               rootSpan.startChildSpan(CHILD_SPAN_NAME, SpanKind.UNSPECIFIED);
 
@@ -245,7 +245,7 @@ describe('OpenCensus Agent Exporter', () => {
       }
     };
 
-    tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
+    tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: Span) => {
       // Status
       rootSpan.setStatus(CanonicalCode.OK);
 
@@ -477,7 +477,7 @@ describe('OpenCensus Agent Exporter', () => {
          }
        };
 
-       tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: RootSpan) => {
+       tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: Span) => {
          // Status
          rootSpan.setStatus(CanonicalCode.OK);
 

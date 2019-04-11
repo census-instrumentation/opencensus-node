@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span} from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, Span} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import {request} from 'http';
 
@@ -60,9 +60,9 @@ export class InstanaTraceExporter implements Exporter {
     this.exporterBuffer = new ExporterBuffer(this, options);
   }
 
-  onStartSpan(root: RootSpan) {}
+  onStartSpan(root: Span) {}
 
-  onEndSpan(root: RootSpan) {
+  onEndSpan(root: Span) {
     this.exporterBuffer.addToBuffer(root);
   }
 
@@ -79,7 +79,7 @@ export class InstanaTraceExporter implements Exporter {
    * @param rootSpans The spans to transmit to Instana
    * @returns An indicator whether publishing was successful.
    */
-  publish(rootSpans: RootSpan[]): Promise<void> {
+  publish(rootSpans: Span[]): Promise<void> {
     try {
       return this
           .transmit(this.translateRootSpans(rootSpans))
@@ -92,7 +92,7 @@ export class InstanaTraceExporter implements Exporter {
     }
   }
 
-  private translateRootSpans(rootSpans: RootSpan[]): InstanaSpan[] {
+  private translateRootSpans(rootSpans: Span[]): InstanaSpan[] {
     const result: InstanaSpan[] = [];
     return rootSpans.reduce((agg, rootSpan) => {
       agg.push(this.translateSpan(rootSpan));

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, RootSpan, Span, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
+import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, Span, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
@@ -79,7 +79,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    * Called whenever a span is started.
    * @param root the started span
    */
-  onStartSpan(root: RootSpan) {
+  onStartSpan(root: Span) {
     this.sendTrace(root);
   }
 
@@ -87,7 +87,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    * Called whenever a span is ended.
    * @param root the ended span
    */
-  onEndSpan(root: RootSpan) {
+  onEndSpan(root: Span) {
     this.sendTrace(root);
   }
 
@@ -141,7 +141,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    * Send a trace to traces array
    * @param trace the rootSpan to be sent to the array list
    */
-  private sendTrace(trace: RootSpan) {
+  private sendTrace(trace: Span) {
     this.pushSpan(trace);
 
     for (const span of trace.spans) {

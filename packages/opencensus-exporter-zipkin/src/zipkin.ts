@@ -15,7 +15,7 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-import {Exporter, ExporterBuffer, ExporterConfig, RootSpan, Span, SpanKind} from '@opencensus/core';
+import {Exporter, ExporterBuffer, ExporterConfig, Span, SpanKind} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
 import * as http from 'http';
 import * as url from 'url';
@@ -75,12 +75,12 @@ export class ZipkinTraceExporter implements Exporter {
    * Is called whenever a span is ended.
    * @param root the ended span
    */
-  onEndSpan(root: RootSpan) {
+  onEndSpan(root: Span) {
     this.buffer.addToBuffer(root);
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: RootSpan) {}
+  onStartSpan(root: Span) {}
 
   /**
    * Send a trace to zipkin service
@@ -132,9 +132,9 @@ export class ZipkinTraceExporter implements Exporter {
 
   /**
    * Mount a list (array) of spans translated to Zipkin format
-   * @param rootSpans Rootspan array to be translated
+   * @param rootSpans Span array to be translated
    */
-  private mountSpanList(rootSpans: RootSpan[]): TranslatedSpan[] {
+  private mountSpanList(rootSpans: Span[]): TranslatedSpan[] {
     const spanList: TranslatedSpan[] = [];
 
     for (const root of rootSpans) {
@@ -153,9 +153,8 @@ export class ZipkinTraceExporter implements Exporter {
   /**
    * Translate OpenSensus Span to Zipkin format
    * @param span Span to be translated
-   * @param rootSpan Only necessary if the span has rootSpan
    */
-  translateSpan(span: Span|RootSpan): TranslatedSpan {
+  translateSpan(span: Span): TranslatedSpan {
     const spanTraslated = {
       traceId: span.traceId,
       name: span.name,
@@ -178,7 +177,7 @@ export class ZipkinTraceExporter implements Exporter {
     return spanTraslated;
   }
 
-  /** Converts OpenCensus Attributes ans Status to Zipkin Tags format. */
+  /** Converts OpenCensus Attributes and Status to Zipkin Tags format. */
   private createTags(
       attributes: coreTypes.Attributes, status: coreTypes.Status) {
     const tags: {[key: string]: string} = {};
@@ -221,9 +220,9 @@ export class ZipkinTraceExporter implements Exporter {
   // returning void
   /**
    * Send the rootSpans to zipkin service
-   * @param rootSpans RootSpan array
+   * @param rootSpans Span array
    */
-  publish(rootSpans: RootSpan[]) {
+  publish(rootSpans: Span[]) {
     const spanList = this.mountSpanList(rootSpans);
 
     return this.sendTraces(spanList).catch((err) => {

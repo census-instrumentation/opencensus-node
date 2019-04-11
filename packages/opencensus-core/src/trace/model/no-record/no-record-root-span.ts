@@ -17,19 +17,20 @@
 import * as logger from '../../../common/console-logger';
 import * as types from '../types';
 import {NoRecordSpan} from './no-record-span';
-import {NoRecordSpanBase} from './no-record-span-base';
 
-/** Implementation for the RootSpan class that does not record trace events. */
-export class NoRecordRootSpan extends NoRecordSpanBase implements
-    types.RootSpan {
+/** Implementation for the Span class that does not record trace events. */
+export class NoRecordRootSpan extends NoRecordSpan {
   /** A tracer object */
   private tracer: types.Tracer;
   /** Its trace ID. */
   private traceIdLocal: string;
   /** Its trace state. */
   private traceStateLocal?: types.TraceState;
-  /** set isRootSpan = true */
-  readonly isRootSpan = true;
+  /**
+   * This span's parent Id.  This is a string and not a Span because the
+   * parent was likely started on another machine.
+   */
+  private parentSpanIdLocal: string;
 
   /**
    * Constructs a new NoRecordRootSpanImpl instance.
@@ -49,7 +50,7 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
     this.traceIdLocal = traceId;
     this.name = name;
     this.kind = kind;
-    this.parentSpanId = parentSpanId;
+    this.parentSpanIdLocal = parentSpanId;
     if (traceState) {
       this.traceStateLocal = traceState;
     }
@@ -57,13 +58,13 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   }
 
   /** No-op implementation of this method. */
-  get spans(): types.Span[] {
-    return [];
-  }
-
-  /** No-op implementation of this method. */
   get traceId(): string {
     return this.traceIdLocal;
+  }
+
+  /** Gets the ID of the parent span. */
+  get parentSpanId(): string {
+    return this.parentSpanIdLocal;
   }
 
   /** No-op implementation of this method. */
@@ -84,30 +85,5 @@ export class NoRecordRootSpan extends NoRecordSpanBase implements
   /** No-op implementation of this method. */
   end() {
     super.end();
-  }
-
-  /**
-   * Starts a new no record child span in the no record root span.
-   * @param nameOrOptions Span name string or SpanOptions object.
-   * @param kind Span kind if not using SpanOptions object.
-   */
-  startChildSpan(
-      nameOrOptions?: string|types.SpanOptions,
-      kind?: types.SpanKind): types.Span {
-    const noRecordChild = new NoRecordSpan();
-
-    const spanName =
-        typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
-    const spanKind =
-        typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
-    if (spanName) {
-      noRecordChild.name = spanName;
-    }
-    if (spanKind) {
-      noRecordChild.kind = spanKind;
-    }
-
-    noRecordChild.start();
-    return noRecordChild;
   }
 }

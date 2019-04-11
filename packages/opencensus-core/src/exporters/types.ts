@@ -25,7 +25,7 @@ export interface Exporter extends modelTypes.SpanEventListener {
    * Sends a list of root spans to the service.
    * @param rootSpans A list of root spans to publish.
    */
-  publish(rootSpans: modelTypes.RootSpan[]): Promise<number|string|void>;
+  publish(rootSpans: modelTypes.Span[]): Promise<number|string|void>;
 }
 
 /**

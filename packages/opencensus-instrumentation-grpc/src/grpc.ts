@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, deserializeBinary, MessageEventType, PluginInternalFiles, RootSpan, serializeBinary, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
+import {BasePlugin, CanonicalCode, deserializeBinary, MessageEventType, PluginInternalFiles, serializeBinary, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
 import {deserializeSpanContext, serializeSpanContext} from '@opencensus/propagation-binaryformat';
 import {EventEmitter} from 'events';
 import * as grpcTypes from 'grpc';
@@ -205,7 +205,7 @@ export class GrpcPlugin extends BasePlugin {
    * Handler Unary and Client Stream Calls
    */
   private clientStreamAndUnaryHandler<RequestType, ResponseType>(
-      plugin: GrpcPlugin, rootSpan: RootSpan, call: ServerCallWithMeta,
+      plugin: GrpcPlugin, rootSpan: Span, call: ServerCallWithMeta,
       callback: SendUnaryDataCallback,
       original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
     const startTime = Date.now();
@@ -253,7 +253,7 @@ export class GrpcPlugin extends BasePlugin {
    * Handler Server Stream and Bidirectional Stream Calls
    */
   private serverStreamAndBidiHandler<RequestType, ResponseType>(
-      plugin: GrpcPlugin, rootSpan: RootSpan, call: ServerCallWithMeta,
+      plugin: GrpcPlugin, rootSpan: Span, call: ServerCallWithMeta,
       original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
     let spanEnded = false;
     const endSpan = () => {

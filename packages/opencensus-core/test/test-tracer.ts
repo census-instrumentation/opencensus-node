@@ -22,7 +22,6 @@ import {TracerConfig} from '../src/trace/config/types';
 import {TraceParams} from '../src/trace/config/types';
 import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
 import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
-import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
@@ -31,9 +30,9 @@ import {SpanEventListener} from '../src/trace/model/types';
 class OnEndSpanClass implements SpanEventListener {
   /** Counter for test use */
   testCount = 0;
-  onStartSpan(span: RootSpan): void {}
+  onStartSpan(span: Span): void {}
   /** Happens when a span is ended */
-  onEndSpan(span: RootSpan): void {
+  onEndSpan(span: Span): void {
     this.testCount++;
   }
 }
@@ -59,7 +58,7 @@ describe('Tracer', () => {
     it('should get the current RootSpan from tracer instance', () => {
       tracer.startRootSpan(options, (root) => {
         assert.ok(root);
-        assert.ok(tracer.currentRootSpan instanceof RootSpan);
+        assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, root);
       });
     });
@@ -136,7 +135,7 @@ describe('Tracer', () => {
 
   /** Should create and start a new RootSpan instance with options */
   describe('startRootSpan() with options', () => {
-    let rootSpanLocal: types.RootSpan;
+    let rootSpanLocal: types.Span;
     before(() => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
@@ -145,7 +144,7 @@ describe('Tracer', () => {
       });
     });
     it('should create a new RootSpan instance', () => {
-      assert.ok(rootSpanLocal instanceof RootSpan);
+      assert.ok(rootSpanLocal instanceof Span);
     });
     it('should start the rootSpan', () => {
       assert.ok(rootSpanLocal.started);
@@ -168,7 +167,7 @@ describe('Tracer', () => {
          tracer.start(config);
          tracer.startRootSpan({name: 'test', samplingRate: 1}, (rootSpan) => {
            assert.ok(rootSpan);
-           assert.ok(tracer.currentRootSpan instanceof RootSpan);
+           assert.ok(tracer.currentRootSpan instanceof Span);
            assert.strictEqual(tracer.currentRootSpan, rootSpan);
          });
        });
@@ -182,7 +181,7 @@ describe('Tracer', () => {
       tracer.start(config);
       tracer.startRootSpan(options, (rootSpan) => {
         assert.ok(rootSpan);
-        assert.ok(tracer.currentRootSpan instanceof RootSpan);
+        assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, rootSpan);
       });
     });
@@ -349,6 +348,41 @@ describe('Tracer', () => {
         assert.ok(spanWithObject.started);
         assert.strictEqual(spanWithObject.name, 'span');
         assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
+      });
+    });
+
+    it('should support nested children', () => {
+      tracer.startRootSpan(options, (rootSpan) => {
+        assert.strictEqual(rootSpan.numberOfChildren, 0);
+        const child1 =
+            tracer.startChildSpan('child1', types.SpanKind.UNSPECIFIED);
+        assert.strictEqual(rootSpan.numberOfChildren, 1);
+        assert.strictEqual(child1.numberOfChildren, 0);
+        const child2 =
+            tracer.startChildSpan('child2', types.SpanKind.UNSPECIFIED);
+        assert.strictEqual(rootSpan.numberOfChildren, 2);
+        const grandchild1 = tracer.startChildSpan({
+          name: 'grandchild1',
+          kind: types.SpanKind.UNSPECIFIED,
+          childOf: child1
+        });
+        assert.strictEqual(rootSpan.numberOfChildren, 2);
+        assert.strictEqual(child1.numberOfChildren, 1);
+        assert.strictEqual(child2.numberOfChildren, 0);
+        assert.strictEqual(grandchild1.numberOfChildren, 0);
+
+        assert.strictEqual(rootSpan.spans.length, 2);
+        assert.strictEqual(child1, rootSpan.spans[0]);
+        assert.strictEqual(child2, rootSpan.spans[1]);
+        assert.strictEqual(grandchild1.parentSpanId, child1.id);
+
+        assert.strictEqual(child1.spans.length, 1);
+        assert.strictEqual(grandchild1, child1.spans[0]);
+
+        assert.strictEqual(child2.spans.length, 0);
+        assert.strictEqual(grandchild1.spans.length, 0);
+
+        assert.strictEqual(rootSpan.allDescendants().length, 3);
       });
     });
   });
