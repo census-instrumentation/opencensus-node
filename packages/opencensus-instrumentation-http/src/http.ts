@@ -378,7 +378,7 @@ export class HttpPlugin extends BasePlugin {
         // ClientRequest will throw an error if any new headers are added.
         // So we need to clone the options object to be able to inject new
         // header.
-        if (options.headers && plugin.hasExpectHeader(options)) {
+        if (plugin.hasExpectHeader(options)) {
           options = Object.assign({}, options) as RequestOptions;
           options.headers = Object.assign({}, options.headers);
         }

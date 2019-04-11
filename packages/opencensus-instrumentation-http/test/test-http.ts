@@ -389,7 +389,7 @@ describe('HttpPlugin', () => {
                rootSpanVerifier.endedRootSpans[0].name.indexOf('GET /') >= 0);
 
            const span = rootSpanVerifier.endedRootSpans[0];
-           assertSpanAttributes(span, 301, 'GET', 'google.fr', '/', undefined);
+           assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
            assertClientStats(testExporter, 301, 'GET');
          });
          nock.disableNetConnect();
