@@ -31,7 +31,7 @@ const rpcProto = grpc.loadPackageDefinition(definition).rpc;
 
 /** Implements the Capitalize RPC method. */
 function capitalize (call, callback) {
-  const span = tracer.startChildSpan('octutorials.FetchImpl.capitalize');
+  const span = tracer.startChildSpan({ name: 'octutorials.FetchImpl.capitalize' });
   const data = call.request.data.toString('utf8');
   const capitalized = data.toUpperCase();
   for (let i = 0; i < 100000000; i++) {}

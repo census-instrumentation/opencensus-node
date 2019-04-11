@@ -30,6 +30,7 @@ export {Metric, MetricDescriptor, TimeSeries, MetricDescriptorType, LabelKey, La
 
 // domain models impls
 export * from './trace/model/tracer';
+export * from './trace/model/tracer-cls';
 
 // sampler impl
 export * from './trace/sampler/sampler';

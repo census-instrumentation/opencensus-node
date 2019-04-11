@@ -18,9 +18,9 @@ import * as assert from 'assert';
 import {SpanKind} from '../src';
 import {ConsoleExporter, NoopExporter} from '../src/exporters/console-exporter';
 import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import {CoreTracerCls} from '../src/trace/model/tracer-cls';
 
-const tracer = new CoreTracer().start({samplingRate: 1.0});
+const tracer = new CoreTracerCls().start({samplingRate: 1.0});
 const defaultBufferConfig = {
   bufferSize: 1,
   bufferTimeout: 20000  // time in milliseconds
@@ -91,7 +91,7 @@ describe('ConsoleLogExporter', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      rootSpan.startChildSpan('name', SpanKind.UNSPECIFIED);
+      rootSpan.startChildSpan({name: 'name', kind: SpanKind.UNSPECIFIED});
       const queue: RootSpan[] = [rootSpan];
 
       return exporter.publish(queue).then(() => {

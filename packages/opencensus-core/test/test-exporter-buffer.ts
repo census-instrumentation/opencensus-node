@@ -20,12 +20,12 @@ import * as logger from '../src/common/console-logger';
 import {NoopExporter} from '../src/exporters/console-exporter';
 import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import {CoreTracerCls} from '../src/trace/model/tracer-cls';
 
 const exporter = new NoopExporter();
 const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 2000;  // time in milliseconds
-const tracer = new CoreTracer().start({});
+const tracer = new CoreTracerCls().start({});
 
 const defaultBufferConfig = {
   bufferSize: DEFAULT_BUFFER_SIZE,
@@ -45,7 +45,8 @@ const createRootSpans = (num: number): RootSpan[] => {
         new RootSpan(tracer, `rootSpan.${i}`, kind, traceId, parentSpanId);
     rootSpan.start();
     for (let j = 0; j < 10; j++) {
-      rootSpan.startChildSpan(`childSpan.${i}.${j}`, SpanKind.CLIENT);
+      rootSpan.startChildSpan(
+          {name: `childSpan.${i}.${j}`, kind: SpanKind.CLIENT});
     }
     rootSpans.push(rootSpan);
   }

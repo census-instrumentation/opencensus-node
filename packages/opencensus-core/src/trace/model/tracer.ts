@@ -17,7 +17,6 @@
 import * as uuid from 'uuid';
 import * as logger from '../../common/console-logger';
 import * as loggerTypes from '../../common/types';
-import * as cls from '../../internal/cls';
 import * as configTypes from '../config/types';
 import {TraceParams} from '../config/types';
 import {noopPropagation} from '../propagation/noop-propagation';
@@ -35,8 +34,6 @@ import * as types from './types';
 export class CoreTracer implements types.Tracer {
   /** Indicates if the tracer is active */
   private activeLocal: boolean;
-  /** Manage context automatic propagation */
-  private contextManager: cls.Namespace;
   /** A configuration for starting the tracer */
   private config!: configTypes.TracerConfig;
   /** A list of end span event listeners */
@@ -53,21 +50,7 @@ export class CoreTracer implements types.Tracer {
   /** Constructs a new TraceImpl instance. */
   constructor() {
     this.activeLocal = false;
-    this.contextManager = cls.getNamespace();
-    this.clearCurrentTrace();
     this.activeTraceParams = {};
-  }
-
-  /** Gets the current root span. */
-  get currentRootSpan(): types.Span {
-    return this.contextManager.get('rootspan');
-  }
-
-  /** Sets the current root span. */
-  set currentRootSpan(root: types.Span) {
-    if (this.contextManager.active) {
-      this.contextManager.set('rootspan', root);
-    }
   }
 
   /** A propagation instance */
@@ -82,7 +65,7 @@ export class CoreTracer implements types.Tracer {
    * Starts a tracer.
    * @param config A tracer configuration object to start a tracer.
    */
-  start(config: configTypes.TracerConfig): types.Tracer {
+  start(config: configTypes.TracerConfig): this {
     this.activeLocal = true;
     this.config = config;
     this.logger = this.config.logger || logger.logger();
@@ -104,7 +87,7 @@ export class CoreTracer implements types.Tracer {
   }
 
   /** Stops the tracer. */
-  stop(): types.Tracer {
+  stop(): this {
     this.activeLocal = false;
     return this;
   }
@@ -126,43 +109,39 @@ export class CoreTracer implements types.Tracer {
    */
   startRootSpan<T>(options: types.TraceOptions, fn: (root: types.Span) => T):
       T {
-    return this.contextManager.runAndReturn((root) => {
-      let traceId;
-      if (options && options.spanContext && options.spanContext.traceId) {
-        traceId = options.spanContext.traceId;
-      } else {
-        // New root span.
-        traceId = uuid.v4().split('-').join('');
-      }
-      const name = options && options.name ? options.name : 'span';
-      const kind =
-          options && options.kind ? options.kind : types.SpanKind.UNSPECIFIED;
+    let traceId;
+    if (options && options.spanContext && options.spanContext.traceId) {
+      traceId = options.spanContext.traceId;
+    } else {
+      // New root span.
+      traceId = uuid.v4().split('-').join('');
+    }
+    const name = options && options.name ? options.name : 'span';
+    const kind =
+        options && options.kind ? options.kind : types.SpanKind.UNSPECIFIED;
 
-      let parentSpanId = '';
-      let traceState;
-      if (options && options.spanContext) {
-        // New child span.
-        parentSpanId = options.spanContext.spanId || '';
-        traceState = options.spanContext.traceState;
-      }
+    let parentSpanId = '';
+    let traceState;
+    if (options && options.spanContext) {
+      // New child span.
+      parentSpanId = options.spanContext.spanId || '';
+      traceState = options.spanContext.traceState;
+    }
 
-      if (this.active) {
-        const sampleDecision = this.makeSamplingDecision(options, traceId);
-        if (sampleDecision) {
-          const rootSpan =
-              new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
-          this.currentRootSpan = rootSpan;
-          rootSpan.start();
-          return fn(rootSpan);
-        }
-      } else {
-        this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
+    if (this.active) {
+      const sampleDecision = this.makeSamplingDecision(options, traceId);
+      if (sampleDecision) {
+        const rootSpan =
+            new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
+        rootSpan.start();
+        return fn(rootSpan);
       }
-      const noRecordRootSpan = new NoRecordRootSpan(
-          this, name, kind, traceId, parentSpanId, traceState);
-      this.currentRootSpan = noRecordRootSpan;
-      return fn(noRecordRootSpan);
-    });
+    } else {
+      this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
+    }
+    const noRecordRootSpan = new NoRecordRootSpan(
+        this, name, kind, traceId, parentSpanId, traceState);
+    return fn(noRecordRootSpan);
   }
 
   /** Notifies listeners of the span start. */
@@ -170,10 +149,6 @@ export class CoreTracer implements types.Tracer {
     if (!this.active) return;
     if (!root) {
       return this.logger.debug('cannot start trace - no active trace found');
-    }
-    if (this.currentRootSpan !== root) {
-      this.logger.debug(
-          'currentRootSpan != root on notifyStart. Need more investigation.');
     }
     this.notifyStartSpan(root);
   }
@@ -184,10 +159,6 @@ export class CoreTracer implements types.Tracer {
     if (!root) {
       this.logger.debug('cannot end trace - no active trace found');
       return;
-    }
-    if (this.currentRootSpan !== root) {
-      this.logger.debug(
-          'currentRootSpan != root on notifyEnd. Need more investigation.');
     }
     this.notifyEndSpan(root);
   }
@@ -229,60 +200,17 @@ export class CoreTracer implements types.Tracer {
     }
   }
 
-  /** Clears the current root span. */
-  clearCurrentTrace() {
-    // TODO: Remove null reference and ts-ignore check.
-    //@ts-ignore
-    this.currentRootSpan = null;
-  }
-
   /**
    * Starts a span.
-   * @param nameOrOptions Span name string or SpanOptions object.
-   * @param kind Span kind if not using SpanOptions object.
+   * @param [options] span options
    */
-  startChildSpan(
-      nameOrOptions?: string|types.SpanOptions,
-      kind?: types.SpanKind): types.Span {
-    if (!this.currentRootSpan) {
+  startChildSpan(options?: types.SpanOptions): types.Span {
+    if (!options || !options.childOf) {
       this.logger.debug(
           'no current trace found - must start a new root span first');
       return new NoRecordSpan();
     }
-    if (typeof nameOrOptions === 'object' && nameOrOptions.childOf) {
-      return nameOrOptions.childOf.startChildSpan(nameOrOptions, kind);
-    }
-    return this.currentRootSpan.startChildSpan(nameOrOptions, kind);
-  }
-
-  /**
-   * Binds the trace context to the given function.
-   * This is necessary in order to create child spans correctly in functions
-   * that are called asynchronously (for example, in a network response
-   * handler).
-   * @param fn A function to which to bind the trace context.
-   */
-  wrap<T>(fn: types.Func<T>): types.Func<T> {
-    if (!this.active) {
-      return fn;
-    }
-    const namespace = this.contextManager;
-    return namespace.bind<T>(fn);
-  }
-
-  /**
-   * Binds the trace context to the given event emitter.
-   * This is necessary in order to create child spans correctly in event
-   * handlers.
-   * @param emitter An event emitter whose handlers should have
-   *     the trace context binded to them.
-   */
-  wrapEmitter(emitter: NodeJS.EventEmitter): void {
-    if (!this.active) {
-      return;
-    }
-    const namespace = this.contextManager;
-    namespace.bindEmitter(emitter);
+    return options.childOf.startChildSpan(options.name, options.kind);
   }
 
   /** Determine whether to sample request or not. */

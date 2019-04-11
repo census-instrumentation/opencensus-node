@@ -17,14 +17,14 @@
 import * as assert from 'assert';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import {CoreTracerCls} from '../src/trace/model/tracer-cls';
 import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link} from '../src/trace/model/types';
 
 // TODO: we should evaluate a way to merge similar test cases between span and
 // rootspan
 
-const tracer = new CoreTracer();
+const tracer = new CoreTracerCls();
 tracer.activeTraceParams = {
   numberOfAttributesPerSpan: 32,
   numberOfLinksPerSpan: 32,

@@ -18,11 +18,11 @@ import * as assert from 'assert';
 import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import {CoreTracerCls} from '../src/trace/model/tracer-cls';
 import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link} from '../src/trace/model/types';
 
-const tracer = new CoreTracer();
+const tracer = new CoreTracerCls();
 
 describe('RootSpan', () => {
   const name = 'MySpanName';
@@ -66,11 +66,12 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
       assert.equal(root.numberOfChildren, 0);
-      root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
+      root.startChildSpan({name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
       assert.equal(root.numberOfChildren, 1);
 
       for (let i = 0; i < 10; i++) {
-        root.startChildSpan('spanName' + i, types.SpanKind.UNSPECIFIED);
+        root.startChildSpan(
+            {name: 'spanName' + i, kind: types.SpanKind.UNSPECIFIED});
       }
       assert.equal(root.numberOfChildren, 11);
     });
@@ -81,10 +82,12 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
       assert.equal(root.numberOfChildren, 0);
-      const child1 = root.startChildSpan('child1', types.SpanKind.UNSPECIFIED);
+      const child1 = root.startChildSpan(
+          {name: 'child1', kind: types.SpanKind.UNSPECIFIED});
       assert.equal(root.numberOfChildren, 1);
       assert.equal(child1.numberOfChildren, 0);
-      const child2 = root.startChildSpan('child2', types.SpanKind.UNSPECIFIED);
+      const child2 = root.startChildSpan(
+          {name: 'child2', kind: types.SpanKind.UNSPECIFIED});
       assert.equal(root.numberOfChildren, 2);
       const grandchild1 = child1.startChildSpan({
         name: 'grandchild1',
@@ -119,7 +122,8 @@ describe('RootSpan', () => {
       root.start();
       assert.equal(root.traceId, root.spanContext.traceId);
 
-      const child = root.startChildSpan('child', types.SpanKind.UNSPECIFIED);
+      const child = root.startChildSpan(
+          {name: 'child', kind: types.SpanKind.UNSPECIFIED});
       assert.equal(root.traceId, child.traceId);
     });
   });
@@ -144,7 +148,8 @@ describe('RootSpan', () => {
     before(() => {
       root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
-      span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
+      span = root.startChildSpan(
+          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
     });
 
     it('should create span instance', () => {
@@ -162,7 +167,8 @@ describe('RootSpan', () => {
   describe('startSpan() before start rootspan', () => {
     it('should create NoRecordSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
-      const span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
+      const span = root.startChildSpan(
+          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
       assert.ok(span instanceof NoRecordSpan);
     });
   });
@@ -175,7 +181,8 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
       root.end();
-      const span = root.startChildSpan('spanName', types.SpanKind.UNSPECIFIED);
+      const span = root.startChildSpan(
+          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
       assert.ok(span instanceof NoRecordSpan);
     });
   });
@@ -210,8 +217,10 @@ describe('RootSpan', () => {
     it('should end all spans inside rootspan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
-      const child = root.startChildSpan('child', types.SpanKind.UNSPECIFIED);
-      child.startChildSpan('grandchild', types.SpanKind.UNSPECIFIED);
+      const child = root.startChildSpan(
+          {name: 'child', kind: types.SpanKind.UNSPECIFIED});
+      child.startChildSpan(
+          {name: 'grandchild', kind: types.SpanKind.UNSPECIFIED});
       root.end();
 
       for (const span of root.allDescendants()) {

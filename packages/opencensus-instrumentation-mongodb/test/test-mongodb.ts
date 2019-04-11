@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, Span, SpanEventListener, SpanKind} from '@opencensus/core';
+import {CoreTracerCls, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import * as assert from 'assert';
 import * as mongodb from 'mongodb';
 import {plugin} from '../src/';
@@ -95,7 +95,7 @@ describe('MongoDBPlugin', () => {
   const COLLECTION_NAME = 'test';
   const VERSION = process.versions.node;
 
-  const tracer = new CoreTracer();
+  const tracer = new CoreTracerCls();
   const rootSpanVerifier = new RootSpanVerifier();
   let client: mongodb.MongoClient;
   let collection: mongodb.Collection;

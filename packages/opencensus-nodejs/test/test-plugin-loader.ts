@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger} from '@opencensus/core';
+import {CoreTracerCls, logger} from '@opencensus/core';
 import * as assert from 'assert';
 import {Constants} from '../src/trace/constants';
 import {PluginLoader} from '../src/trace/instrumentation/plugin-loader';
@@ -50,7 +50,7 @@ describe('Plugin Loader', () => {
 
   describe('PluginLoader', () => {
     const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
-    const tracer = new CoreTracer();
+    const tracer = new CoreTracerCls();
     tracer.start({logger: log});
 
     /** Should get the plugins to use. */

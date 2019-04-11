@@ -52,7 +52,7 @@ function main () {
 function doWork () {
   // 5. Start another span. In this example, the main method already started a
   // span, so that'll be the parent span, and this will be a child span.
-  const span = tracer.startChildSpan('doWork');
+  const span = tracer.startChildSpan({ name: 'doWork' });
 
   console.log('doing busy work');
   for (let i = 0; i <= 40000000; i++) {} // short delay

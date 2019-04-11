@@ -93,8 +93,8 @@ export class MongoDBPlugin extends BasePlugin {
             type = 'command';
           }
 
-          const span =
-              plugin.tracer.startChildSpan(`${ns}.${type}`, SpanKind.SERVER);
+          const span = plugin.tracer.startChildSpan(
+              {name: `${ns}.${type}`, kind: SpanKind.SERVER});
           if (typeof options === 'function') {
             return original.call(
                 this, ns, command, plugin.patchEnd(span, options));
@@ -121,8 +121,8 @@ export class MongoDBPlugin extends BasePlugin {
             typeof options === 'function' ? options : callback;
         if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
             typeof resultHandler === 'function') {
-          const span =
-              plugin.tracer.startChildSpan(`${ns}.query`, SpanKind.SERVER);
+          const span = plugin.tracer.startChildSpan(
+              {name: `${ns}.query`, kind: SpanKind.SERVER});
           if (typeof options === 'function') {
             return original.call(
                 this, ns, command, plugin.patchEnd(span, options));
@@ -147,7 +147,7 @@ export class MongoDBPlugin extends BasePlugin {
         if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
             typeof resultHandler === 'function') {
           const span = plugin.tracer.startChildSpan(
-              `${this.ns}.cursor`, SpanKind.SERVER);
+              {name: `${this.ns}.cursor`, kind: SpanKind.SERVER});
           resultHandler = plugin.patchEnd(span, resultHandler);
         }
 

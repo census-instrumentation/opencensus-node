@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger, Span, SpanEventListener, SpanKind} from '@opencensus/core';
+import {CoreTracerCls, logger, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import * as assert from 'assert';
 import * as redis from 'redis';
 
@@ -69,7 +69,7 @@ describe('RedisPlugin', () => {
   const VERSION = '2.8.0';
   const REDIS_QUERY_TYPE = SpanKind.CLIENT;
 
-  const tracer = new CoreTracer();
+  const tracer = new CoreTracerCls();
   const rootSpanVerifier = new RootSpanVerifier();
   let client: redis.RedisClient;
 

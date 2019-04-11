@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, Span, SpanKind, TracerConfig} from '@opencensus/core';
+import {CoreTracerCls, Span, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as nock from 'nock';
 import {InstanaTraceExporter} from '../src/instana';
@@ -44,7 +44,7 @@ describe('Instana Exporter', function() {
   describe('publish()', () => {
     it('should send traces to Instana agent', async () => {
       const exporter = new InstanaTraceExporter();
-      const tracer = new CoreTracer();
+      const tracer = new CoreTracerCls();
       tracer.start(defaultConfig);
 
       return tracer
