@@ -360,12 +360,28 @@ export class HttpPlugin extends BasePlugin {
 
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
-          request.setHeader(name, value);
+          // If outgoing request headers contain the "Expect" header, the
+          // returned ClientRequest will throw an error if any new headers are
+          // added. We need to set the header directly in the headers object
+          // which has been cloned earlier.
+          if (plugin.hasExpectHeader(options) && options.headers) {
+            options.headers[name] = value;
+          } else {
+            request.setHeader(name, value);
+          }
         }
       };
 
       const propagation = plugin.tracer.propagation;
       if (propagation) {
+        // If outgoing request headers contain the "Expect" header, the returned
+        // ClientRequest will throw an error if any new headers are added.
+        // So we need to clone the options object to be able to inject new
+        // header.
+        if (plugin.hasExpectHeader(options)) {
+          options = Object.assign({}, options) as RequestOptions;
+          options.headers = Object.assign({}, options.headers);
+        }
         propagation.inject(setter, span.spanContext);
       }
 
@@ -484,6 +500,16 @@ export class HttpPlugin extends BasePlugin {
       plugin.stats.record(measureList, tags);
     } catch (ignore) {
     }
+  }
+
+  /**
+   * Returns whether the Expect header is on the given options object.
+   * @param options Options for http.request.
+   */
+  hasExpectHeader(options: RequestOptions|url.URL): boolean {
+    return !!(
+        (options as RequestOptions).headers &&
+        (options as RequestOptions).headers!.Expect);
   }
 }
 
