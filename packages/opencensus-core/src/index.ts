@@ -71,6 +71,9 @@ export * from './common/version';
 export * from './metrics/metrics';
 export * from './metrics/metric-registry';
 
+// Cumulative CLASSES
+export * from './metrics/cumulative/cumulative';
+
 // GAUGES CLASSES
 export * from './metrics/gauges/derived-gauge';
 export * from './metrics/gauges/gauge';

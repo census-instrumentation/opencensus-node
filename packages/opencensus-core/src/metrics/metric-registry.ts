@@ -20,7 +20,7 @@ import {BaseMetricProducer} from './export/base-metric-producer';
 import {Metric, MetricDescriptorType, MetricProducer} from './export/types';
 import {DerivedGauge} from './gauges/derived-gauge';
 import {Gauge} from './gauges/gauge';
-import {Meter, MetricOptions} from './gauges/types';
+import {Meter, MetricOptions} from './types';
 
 /**
  * Creates and manages application's set of metrics.
