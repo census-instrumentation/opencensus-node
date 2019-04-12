@@ -15,4 +15,5 @@
  */
 
 export * from './resource-labels';
+export * from './constants';
 export * from './detect-resource';

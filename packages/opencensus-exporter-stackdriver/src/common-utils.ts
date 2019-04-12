@@ -16,6 +16,7 @@
 
 import {Labels} from '@opencensus/core';
 import * as resource from '@opencensus/resource-util';
+import {CLOUD_RESOURCE, CONTAINER_RESOURCE, HOST_RESOURCE, K8S_RESOURCE} from '@opencensus/resource-util';
 import {MonitoredResource} from './types';
 
 const STACKDRIVER_PROJECT_ID_KEY = 'project_id';
@@ -29,7 +30,7 @@ export async function getDefaultResource(projectId: string):
   const [type, mappings] = getTypeAndMappings(autoDetectedResource.type);
   Object.keys(mappings).forEach((key) => {
     if (autoDetectedResource.labels[mappings[key]]) {
-      if (mappings[key] === resource.AWS_REGION_KEY) {
+      if (mappings[key] === CLOUD_RESOURCE.REGION_KEY) {
         labels[key] = `${AWS_REGION_VALUE_PREFIX}${
             autoDetectedResource.labels[mappings[key]]}`;
       } else {
@@ -47,8 +48,8 @@ function getTypeAndMappings(resourceType: string|null): [string, Labels] {
       return [
         'gce_instance', {
           'project_id': STACKDRIVER_PROJECT_ID_KEY,
-          'instance_id': resource.GCP_INSTANCE_ID_KEY,
-          'zone': resource.GCP_ZONE_KEY
+          'instance_id': HOST_RESOURCE.ID_KEY,
+          'zone': CLOUD_RESOURCE.ZONE_KEY
         }
       ];
     case resource.K8S_CONTAINER_TYPE:
@@ -56,11 +57,11 @@ function getTypeAndMappings(resourceType: string|null): [string, Labels] {
       return [
         'k8s_container', {
           'project_id': STACKDRIVER_PROJECT_ID_KEY,
-          'location': resource.GCP_ZONE_KEY,
-          'cluster_name': resource.K8S_CLUSTER_NAME_KEY,
-          'namespace_name': resource.K8S_NAMESPACE_NAME_KEY,
-          'pod_name': resource.K8S_POD_NAME_KEY,
-          'container_name': resource.K8S_CONTAINER_NAME_KEY
+          'location': CLOUD_RESOURCE.ZONE_KEY,
+          'cluster_name': K8S_RESOURCE.CLUSTER_NAME_KEY,
+          'namespace_name': K8S_RESOURCE.NAMESPACE_NAME_KEY,
+          'pod_name': K8S_RESOURCE.POD_NAME_KEY,
+          'container_name': CONTAINER_RESOURCE.NAME_KEY
         }
       ];
     case resource.AWS_EC2_INSTANCE_TYPE:
@@ -68,9 +69,9 @@ function getTypeAndMappings(resourceType: string|null): [string, Labels] {
       return [
         'aws_ec2_instance', {
           'project_id': STACKDRIVER_PROJECT_ID_KEY,
-          'instance_id': resource.AWS_INSTANCE_ID_KEY,
-          'region': resource.AWS_REGION_KEY,
-          'aws_account': resource.AWS_ACCOUNT_KEY
+          'instance_id': HOST_RESOURCE.ID_KEY,
+          'region': CLOUD_RESOURCE.REGION_KEY,
+          'aws_account': CLOUD_RESOURCE.ACCOUNT_ID_KEY
         }
       ];
     default:
