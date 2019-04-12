@@ -21,7 +21,11 @@ import {CoreTracerBase} from './tracer-base';
 import * as types from './types';
 
 /**
- * This class represent a tracer with CLS.
+ * This class represents a tracer with Cointunues Local Storage (CLS).
+ *
+ * CLS helps keep tracking the root span over function calls automatically.
+ * CLS comes with some performance overhead, you can read more about it here:
+ * https://github.com/othiym23/node-continuation-local-storage/issues/59
  */
 export class CoreTracer extends CoreTracerBase implements types.Tracer {
   /** Manage context automatic propagation */
@@ -98,7 +102,7 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
 
   /**
    * Starts a span.
-   * @param [options] span options
+   * @param [options] A SpanOptions object to start a child span.
    */
   startChildSpan(options?: types.SpanOptions): types.Span {
     if (!this.currentRootSpan) {

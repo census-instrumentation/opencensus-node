@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+ **This release has a breaking change. Please test your code accordingly after upgrading.**
+
+ - removing Tracer's `startChildSpan(name?: string, kind?: types.SpanKind)` interface
+
+ ##### Old code
+
+```js
+// Multi argument interface
+const span = tracer.startChildSpan('my-span', types.SpanKind.SERVER);
+
+// Or options object interface
+const span = tracer.startChildSpan({
+  name: 'my-span',
+  kind: types.SpanKind.SERVER
+});
+```
+
+##### New code
+
+```js
+// Only options object interface is supported
+const span = tracer.startChildSpan({
+  name: 'my-span',
+  kind: types.SpanKind.SERVER
+});
+```
 
 ## 0.0.11 - 2019-04-08
 - Gauge: Add support for constant labels.

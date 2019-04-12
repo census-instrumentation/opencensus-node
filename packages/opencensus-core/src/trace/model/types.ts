@@ -516,9 +516,7 @@ export interface TracerBase extends SpanEventListener {
   /**
    * Start a new Span instance to the currentRootSpan
    * @param childOf Span
-   * @param [name] Span name
-   * @param [kind] Span kind
-   * @param [options] Span Options
+   * @param [options] A TraceOptions object to start a root span.
    * @returns The new Span instance started
    */
   startChildSpan(options?: SpanOptions): Span;
@@ -528,7 +526,6 @@ export interface TracerBase extends SpanEventListener {
 export interface Tracer extends TracerBase {
   /** Get and set the currentRootSpan to tracer instance */
   currentRootSpan: Span;
-
 
   /** Clear the currentRootSpan from tracer instance */
   clearCurrentTrace(): void;

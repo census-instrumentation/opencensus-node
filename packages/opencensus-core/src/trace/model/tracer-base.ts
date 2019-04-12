@@ -29,7 +29,7 @@ import {RootSpan} from './root-span';
 import * as types from './types';
 
 /**
- * This class represent a tracer.
+ * This class represents a tracer.
  */
 export class CoreTracerBase implements types.TracerBase {
   /** Indicates if the tracer is active */
@@ -109,24 +109,13 @@ export class CoreTracerBase implements types.TracerBase {
    */
   startRootSpan<T>(options: types.TraceOptions, fn: (root: types.Span) => T):
       T {
-    let traceId;
-    if (options && options.spanContext && options.spanContext.traceId) {
-      traceId = options.spanContext.traceId;
-    } else {
-      // New root span.
-      traceId = uuid.v4().split('-').join('');
-    }
-    const name = options && options.name ? options.name : 'span';
-    const kind =
-        options && options.kind ? options.kind : types.SpanKind.UNSPECIFIED;
-
-    let parentSpanId = '';
-    let traceState;
-    if (options && options.spanContext) {
-      // New child span.
-      parentSpanId = options.spanContext.spanId || '';
-      traceState = options.spanContext.traceState;
-    }
+    const spanContext: types.SpanContext = options.spanContext ||
+        {spanId: '', traceId: uuid.v4().split('-').join('')};
+    const parentSpanId = spanContext.spanId;
+    const traceId = spanContext.traceId;
+    const name = options.name || 'span';
+    const kind = options.kind || types.SpanKind.UNSPECIFIED;
+    const traceState = spanContext.traceState;
 
     if (this.active) {
       const sampleDecision = this.makeSamplingDecision(options, traceId);
@@ -202,7 +191,7 @@ export class CoreTracerBase implements types.TracerBase {
 
   /**
    * Starts a span.
-   * @param [options] span options
+   * @param [options] A SpanOptions object to start a child span.
    */
   startChildSpan(options?: types.SpanOptions): types.Span {
     if (!options || !options.childOf) {
