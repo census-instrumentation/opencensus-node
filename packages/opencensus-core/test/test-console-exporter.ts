@@ -18,9 +18,9 @@ import * as assert from 'assert';
 import {SpanKind} from '../src';
 import {ConsoleExporter, NoopExporter} from '../src/exporters/console-exporter';
 import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracerCls} from '../src/trace/model/tracer-cls';
+import {CoreTracer} from '../src/trace/model/tracer';
 
-const tracer = new CoreTracerCls().start({samplingRate: 1.0});
+const tracer = new CoreTracer().start({samplingRate: 1.0});
 const defaultBufferConfig = {
   bufferSize: 1,
   bufferTimeout: 20000  // time in milliseconds

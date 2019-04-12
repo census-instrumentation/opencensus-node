@@ -38,7 +38,7 @@ export abstract class BasePlugin implements types.Plugin {
   /** The module name */
   protected moduleName: string;
   /** A tracer object. */
-  protected tracer!: modelTypes.TracerCls;
+  protected tracer!: modelTypes.Tracer;
   /** The module version. */
   protected version!: string;
   /** a logger */
@@ -73,7 +73,7 @@ export abstract class BasePlugin implements types.Plugin {
    */
   private setPluginContext(
       // tslint:disable-next-line:no-any
-      moduleExports: any, tracer: modelTypes.TracerCls, version: string,
+      moduleExports: any, tracer: modelTypes.Tracer, version: string,
       options: types.PluginConfig, basedir?: string, stats?: Stats) {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
@@ -100,7 +100,7 @@ export abstract class BasePlugin implements types.Plugin {
    * @param stats an optional stats instance
    */
   enable<T>(
-      moduleExports: T, tracer: modelTypes.TracerCls, version: string,
+      moduleExports: T, tracer: modelTypes.Tracer, version: string,
       options: types.PluginConfig, basedir?: string, stats?: Stats) {
     this.setPluginContext(
         moduleExports, tracer, version, options, basedir, stats);

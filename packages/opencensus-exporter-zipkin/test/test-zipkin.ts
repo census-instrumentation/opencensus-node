@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CanonicalCode, CoreTracerCls, MessageEventType, Span, SpanKind, TracerConfig} from '@opencensus/core';
+import {CanonicalCode, CoreTracer, MessageEventType, Span, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
 import * as nock from 'nock';
 
@@ -68,7 +68,7 @@ describe('Zipkin Exporter', function() {
   describe('onEndSpan()', () => {
     it('Should add spans to the exporter buffer', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
-      const tracer = new CoreTracerCls();
+      const tracer = new CoreTracer();
       tracer.registerSpanEventListener(exporter);
       tracer.start(defaultConfig);
 
@@ -86,7 +86,7 @@ describe('Zipkin Exporter', function() {
   describe('publish()', () => {
     it('should send traces to Zipkin service', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
-      const tracer = new CoreTracerCls();
+      const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
       return tracer.startRootSpan(
@@ -105,7 +105,7 @@ describe('Zipkin Exporter', function() {
   describe('translateSpan()', () => {
     it('should translate traces to Zipkin format', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
-      const tracer = new CoreTracerCls();
+      const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
       return tracer.startRootSpan({name: 'root-test'}, (rootSpan: Span) => {
@@ -180,7 +180,7 @@ describe('Zipkin Exporter', function() {
          } as ZipkinExporterOptions;
 
          const exporter = new ZipkinTraceExporter(options);
-         const tracer = new CoreTracerCls();
+         const tracer = new CoreTracer();
          tracer.start(defaultConfig);
 
          return tracer.startRootSpan(

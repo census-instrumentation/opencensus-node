@@ -463,8 +463,8 @@ export interface Span {
   startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind): Span;
 }
 
-/** Interface for Tracer */
-export interface Tracer extends SpanEventListener {
+/** Interface for TracerBase */
+export interface TracerBase extends SpanEventListener {
   /** A sampler that will decide if the span will be sampled or not */
   sampler: samplerTypes.Sampler;
 
@@ -524,8 +524,8 @@ export interface Tracer extends SpanEventListener {
   startChildSpan(options?: SpanOptions): Span;
 }
 
-/** Interface for TracerCls */
-export interface TracerCls extends Tracer {
+/** Interface for Tracer */
+export interface Tracer extends TracerBase {
   /** Get and set the currentRootSpan to tracer instance */
   currentRootSpan: Span;
 

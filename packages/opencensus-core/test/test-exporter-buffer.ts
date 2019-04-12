@@ -20,12 +20,12 @@ import * as logger from '../src/common/console-logger';
 import {NoopExporter} from '../src/exporters/console-exporter';
 import {ExporterBuffer} from '../src/exporters/exporter-buffer';
 import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracerCls} from '../src/trace/model/tracer-cls';
+import {CoreTracer} from '../src/trace/model/tracer';
 
 const exporter = new NoopExporter();
 const DEFAULT_BUFFER_SIZE = 3;
 const DEFAULT_BUFFER_TIMEOUT = 2000;  // time in milliseconds
-const tracer = new CoreTracerCls().start({});
+const tracer = new CoreTracer().start({});
 
 const defaultBufferConfig = {
   bufferSize: DEFAULT_BUFFER_SIZE,

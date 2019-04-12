@@ -18,11 +18,11 @@ import * as assert from 'assert';
 import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
-import {CoreTracerCls} from '../src/trace/model/tracer-cls';
+import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
 import {Annotation, Attributes, Link} from '../src/trace/model/types';
 
-const tracer = new CoreTracerCls();
+const tracer = new CoreTracer();
 
 describe('RootSpan', () => {
   const name = 'MySpanName';

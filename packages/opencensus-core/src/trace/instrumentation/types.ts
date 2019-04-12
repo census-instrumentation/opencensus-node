@@ -15,7 +15,7 @@
  */
 
 import {Stats} from '../../stats/types';
-import {Tracer} from '../model/types';
+import {TracerBase} from '../model/types';
 
 /** Interface Plugin to apply patch. */
 export interface Plugin {
@@ -30,8 +30,8 @@ export interface Plugin {
    * @param stats an optional stats instance
    */
   enable<T>(
-      moduleExports: T, tracer: Tracer, version: string, options: PluginConfig,
-      basedir?: string, stats?: Stats): T;
+      moduleExports: T, tracer: TracerBase, version: string,
+      options: PluginConfig, basedir?: string, stats?: Stats): T;
   /** Method to disable the instrumentation  */
   disable(): void;
 }

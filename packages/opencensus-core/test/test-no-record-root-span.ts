@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {CanonicalCode, CoreTracerCls, LinkType, MessageEventType, SpanKind} from '../src';
+import {CanonicalCode, CoreTracer, LinkType, MessageEventType, SpanKind} from '../src';
 import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
 
-const tracer = new CoreTracerCls();
+const tracer = new CoreTracer();
 
 describe('NoRecordRootSpan()', () => {
   it('do not crash', () => {

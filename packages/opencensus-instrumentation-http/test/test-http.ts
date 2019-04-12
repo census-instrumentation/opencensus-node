@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracerCls, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, MessageEventType, Propagation, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
+import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, MessageEventType, Propagation, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as nock from 'nock';
@@ -159,7 +159,7 @@ describe('HttpPlugin', () => {
   let server: http.Server;
   let serverPort = 0;
   const log = logger.logger();
-  const tracer = new CoreTracerCls();
+  const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   tracer.start(
       {samplingRate: 1, logger: log, propagation: new DummyPropagation()});

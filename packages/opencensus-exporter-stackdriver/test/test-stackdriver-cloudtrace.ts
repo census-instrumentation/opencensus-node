@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracerCls, logger, Span as OCSpan, version} from '@opencensus/core';
+import {CoreTracer, logger, Span as OCSpan, version} from '@opencensus/core';
 import * as assert from 'assert';
 import * as nock from 'nock';
 
@@ -31,7 +31,7 @@ describe('Stackdriver Trace Exporter', function() {
   const testLogger = logger.logger();
   let exporterOptions: StackdriverExporterOptions;
   let exporter: StackdriverTraceExporter;
-  let tracer: CoreTracerCls;
+  let tracer: CoreTracer;
 
   before(() => {
     nock.disableNetConnect();
@@ -45,7 +45,7 @@ describe('Stackdriver Trace Exporter', function() {
   beforeEach(() => {
     nocks.noDetectResource();
     exporter = new StackdriverTraceExporter(exporterOptions);
-    tracer = new CoreTracerCls();
+    tracer = new CoreTracer();
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(exporter);
   });
@@ -156,7 +156,7 @@ describe('Stackdriver Trace Exporter', function() {
         logger: logger.logger('debug')
       };
       const failExporter = new StackdriverTraceExporter(failExporterOptions);
-      const failTracer = new CoreTracerCls();
+      const failTracer = new CoreTracer();
       failTracer.start({samplingRate: 1});
       failTracer.registerSpanEventListener(failExporter);
       return failTracer.startRootSpan(

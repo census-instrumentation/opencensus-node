@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracerCls, logger, Span, SpanEventListener, SpanKind} from '@opencensus/core';
+import {CoreTracer, logger, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import * as assert from 'assert';
 import * as ioredis from 'ioredis';
 
@@ -68,7 +68,7 @@ describe('IORedisPlugin', () => {
   const URL = `redis://${OPENCENSUS_REDIS_HOST || 'localhost'}:6379`;
   const VERSION = '4.6.2';
 
-  const tracer = new CoreTracerCls();
+  const tracer = new CoreTracer();
   const rootSpanVerifier = new RootSpanVerifier();
   let client: ioredis.Redis;
 

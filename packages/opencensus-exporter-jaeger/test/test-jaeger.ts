@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracerCls, LinkType, logger} from '@opencensus/core';
+import {CoreTracer, LinkType, logger} from '@opencensus/core';
 import * as assert from 'assert';
 
 import {JaegerTraceExporter, JaegerTraceExporterOptions,} from '../src/';
@@ -36,7 +36,7 @@ describe('Jaeger Exporter', () => {
   const dryrun = !OPENCENSUS_NETWORK_TESTS;
   let exporterOptions: JaegerTraceExporterOptions;
   let exporter: JaegerTraceExporter;
-  let tracer: CoreTracerCls;
+  let tracer: CoreTracer;
 
 
   before(() => {
@@ -57,7 +57,7 @@ describe('Jaeger Exporter', () => {
     if (dryrun) {
       mockUDPSender(exporter);
     }
-    tracer = new CoreTracerCls();
+    tracer = new CoreTracer();
     tracer.start({samplingRate: 1});
     tracer.registerSpanEventListener(exporter);
   });

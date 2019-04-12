@@ -21,7 +21,7 @@ import * as types from './types';
 /** Defines a root span */
 export class RootSpan extends Span {
   /** A tracer object */
-  private tracer: types.Tracer;
+  private tracer: types.TracerBase;
   /** Its trace ID. */
   private traceIdLocal: string;
   /** Its trace state. */
@@ -43,8 +43,8 @@ export class RootSpan extends Span {
    * @param traceState An optional traceState.
    */
   constructor(
-      tracer: types.Tracer, name: string, kind: types.SpanKind, traceId: string,
-      parentSpanId: string, traceState?: types.TraceState) {
+      tracer: types.TracerBase, name: string, kind: types.SpanKind,
+      traceId: string, parentSpanId: string, traceState?: types.TraceState) {
     super();
     this.tracer = tracer;
     this.traceIdLocal = traceId;

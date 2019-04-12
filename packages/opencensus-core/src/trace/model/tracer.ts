@@ -14,92 +14,36 @@
  * limitations under the License.
  */
 
-import * as uuid from 'uuid';
-import * as logger from '../../common/console-logger';
-import * as loggerTypes from '../../common/types';
-import * as configTypes from '../config/types';
-import {TraceParams} from '../config/types';
-import {noopPropagation} from '../propagation/noop-propagation';
-import {Propagation} from '../propagation/types';
-import {DEFAULT_SAMPLING_RATE, SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
-import * as samplerTypes from '../sampler/types';
-import {NoRecordRootSpan} from './no-record/no-record-root-span';
+import * as cls from '../../internal/cls';
+
 import {NoRecordSpan} from './no-record/no-record-span';
-import {RootSpan} from './root-span';
+import {CoreTracerBase} from './tracer-base';
 import * as types from './types';
 
 /**
- * This class represent a tracer.
+ * This class represent a tracer with CLS.
  */
-export class CoreTracer implements types.Tracer {
-  /** Indicates if the tracer is active */
-  private activeLocal: boolean;
-  /** A configuration for starting the tracer */
-  private config!: configTypes.TracerConfig;
-  /** A list of end span event listeners */
-  private eventListenersLocal: types.SpanEventListener[] = [];
-  /** Bit to represent whether trace is sampled or not. */
-  private readonly IS_SAMPLED = 0x1;
-  /** A sampler used to make sample decisions */
-  sampler!: samplerTypes.Sampler;
-  /** A configuration for starting the tracer */
-  logger: loggerTypes.Logger = logger.logger();
-  /** A configuration object for trace parameters */
-  activeTraceParams: TraceParams;
+export class CoreTracer extends CoreTracerBase implements types.Tracer {
+  /** Manage context automatic propagation */
+  private contextManager: cls.Namespace;
 
   /** Constructs a new TraceImpl instance. */
   constructor() {
-    this.activeLocal = false;
-    this.activeTraceParams = {};
+    super();
+    this.contextManager = cls.getNamespace();
+    this.clearCurrentTrace();
   }
 
-  /** A propagation instance */
-  get propagation(): Propagation {
-    if (this.config && this.config.propagation) {
-      return this.config.propagation;
+  /** Gets the current root span. */
+  get currentRootSpan(): types.Span {
+    return this.contextManager.get('rootspan');
+  }
+
+  /** Sets the current root span. */
+  set currentRootSpan(root: types.Span) {
+    if (this.contextManager.active) {
+      this.contextManager.set('rootspan', root);
     }
-    return noopPropagation;
-  }
-
-  /**
-   * Starts a tracer.
-   * @param config A tracer configuration object to start a tracer.
-   */
-  start(config: configTypes.TracerConfig): this {
-    this.activeLocal = true;
-    this.config = config;
-    this.logger = this.config.logger || logger.logger();
-    this.sampler =
-        SamplerBuilder.getSampler(config.samplingRate || DEFAULT_SAMPLING_RATE);
-    if (config.traceParams) {
-      this.activeTraceParams.numberOfAnnontationEventsPerSpan =
-          TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
-              config.traceParams);
-      this.activeTraceParams.numberOfAttributesPerSpan =
-          TraceParamsBuilder.getNumberOfAttributesPerSpan(config.traceParams);
-      this.activeTraceParams.numberOfMessageEventsPerSpan =
-          TraceParamsBuilder.getNumberOfMessageEventsPerSpan(
-              config.traceParams);
-      this.activeTraceParams.numberOfLinksPerSpan =
-          TraceParamsBuilder.getNumberOfLinksPerSpan(config.traceParams);
-    }
-    return this;
-  }
-
-  /** Stops the tracer. */
-  stop(): this {
-    this.activeLocal = false;
-    return this;
-  }
-
-  /** Gets the list of event listeners. */
-  get eventListeners(): types.SpanEventListener[] {
-    return this.eventListenersLocal;
-  }
-
-  /** Indicates if the tracer is active or not. */
-  get active(): boolean {
-    return this.activeLocal;
   }
 
   /**
@@ -109,39 +53,13 @@ export class CoreTracer implements types.Tracer {
    */
   startRootSpan<T>(options: types.TraceOptions, fn: (root: types.Span) => T):
       T {
-    let traceId;
-    if (options && options.spanContext && options.spanContext.traceId) {
-      traceId = options.spanContext.traceId;
-    } else {
-      // New root span.
-      traceId = uuid.v4().split('-').join('');
-    }
-    const name = options && options.name ? options.name : 'span';
-    const kind =
-        options && options.kind ? options.kind : types.SpanKind.UNSPECIFIED;
-
-    let parentSpanId = '';
-    let traceState;
-    if (options && options.spanContext) {
-      // New child span.
-      parentSpanId = options.spanContext.spanId || '';
-      traceState = options.spanContext.traceState;
-    }
-
-    if (this.active) {
-      const sampleDecision = this.makeSamplingDecision(options, traceId);
-      if (sampleDecision) {
-        const rootSpan =
-            new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
-        rootSpan.start();
-        return fn(rootSpan);
-      }
-    } else {
-      this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
-    }
-    const noRecordRootSpan = new NoRecordRootSpan(
-        this, name, kind, traceId, parentSpanId, traceState);
-    return fn(noRecordRootSpan);
+    const self = this;
+    return self.contextManager.runAndReturn(() => {
+      return super.startRootSpan(options, (root) => {
+        self.currentRootSpan = root;
+        return fn(root);
+      });
+    });
   }
 
   /** Notifies listeners of the span start. */
@@ -150,7 +68,11 @@ export class CoreTracer implements types.Tracer {
     if (!root) {
       return this.logger.debug('cannot start trace - no active trace found');
     }
-    this.notifyStartSpan(root);
+    if (this.currentRootSpan !== root) {
+      this.logger.debug(
+          'currentRootSpan != root on notifyStart. Need more investigation.');
+    }
+    return super.onStartSpan(root);
   }
 
   /** Notifies listeners of the span end. */
@@ -160,44 +82,18 @@ export class CoreTracer implements types.Tracer {
       this.logger.debug('cannot end trace - no active trace found');
       return;
     }
-    this.notifyEndSpan(root);
-  }
-
-  /**
-   * Registers an end span event listener.
-   * @param listener The listener to register.
-   */
-  registerSpanEventListener(listener: types.SpanEventListener) {
-    this.eventListenersLocal.push(listener);
-  }
-
-  /**
-   * Unregisters an end span event listener.
-   * @param listener The listener to unregister.
-   */
-  unregisterSpanEventListener(listener: types.SpanEventListener) {
-    const index = this.eventListenersLocal.indexOf(listener, 0);
-    if (index > -1) {
-      this.eventListeners.splice(index, 1);
+    if (this.currentRootSpan !== root) {
+      this.logger.debug(
+          'currentRootSpan != root on notifyEnd. Need more investigation.');
     }
+    super.onEndSpan(root);
   }
 
-  private notifyStartSpan(root: types.Span) {
-    this.logger.debug('starting to notify listeners the start of rootspans');
-    if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
-      for (const listener of this.eventListenersLocal) {
-        listener.onStartSpan(root);
-      }
-    }
-  }
-
-  private notifyEndSpan(root: types.Span) {
-    this.logger.debug('starting to notify listeners the end of rootspans');
-    if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
-      for (const listener of this.eventListenersLocal) {
-        listener.onEndSpan(root);
-      }
-    }
+  /** Clears the current root span. */
+  clearCurrentTrace() {
+    // TODO: Remove null reference and ts-ignore check.
+    //@ts-ignore
+    this.currentRootSpan = null;
   }
 
   /**
@@ -205,35 +101,42 @@ export class CoreTracer implements types.Tracer {
    * @param [options] span options
    */
   startChildSpan(options?: types.SpanOptions): types.Span {
-    if (!options || !options.childOf) {
+    if (!this.currentRootSpan) {
       this.logger.debug(
           'no current trace found - must start a new root span first');
-      return new NoRecordSpan();
     }
-    return options.childOf.startChildSpan(options.name, options.kind);
+
+    return super.startChildSpan(Object.assign(
+        {childOf: this.currentRootSpan || new NoRecordSpan()}, options));
   }
 
-  /** Determine whether to sample request or not. */
-  private makeSamplingDecision(options: types.TraceOptions, traceId: string):
-      boolean {
-    // If users set a specific sampler in the TraceOptions, use it.
-    if (options && options.samplingRate !== undefined &&
-        options.samplingRate !== null) {
-      return SamplerBuilder.getSampler(options.samplingRate)
-          .shouldSample(traceId);
+  /**
+   * Binds the trace context to the given function.
+   * This is necessary in order to create child spans correctly in functions
+   * that are called asynchronously (for example, in a network response
+   * handler).
+   * @param fn A function to which to bind the trace context.
+   */
+  wrap<T>(fn: types.Func<T>): types.Func<T> {
+    if (!this.active) {
+      return fn;
     }
-    let propagatedSample = null;
-    // if there is a context propagation, keep the decision
-    if (options && options.spanContext && options.spanContext.options) {
-      propagatedSample =
-          ((options.spanContext.options & this.IS_SAMPLED) !== 0);
-    }
+    const namespace = this.contextManager;
+    return namespace.bind<T>(fn);
+  }
 
-    let sampleDecision = !!propagatedSample;
-    if (!sampleDecision) {
-      // Use the default global sampler
-      sampleDecision = this.sampler.shouldSample(traceId);
+  /**
+   * Binds the trace context to the given event emitter.
+   * This is necessary in order to create child spans correctly in event
+   * handlers.
+   * @param emitter An event emitter whose handlers should have
+   *     the trace context binded to them.
+   */
+  wrapEmitter(emitter: NodeJS.EventEmitter): void {
+    if (!this.active) {
+      return;
     }
-    return sampleDecision;
+    const namespace = this.contextManager;
+    namespace.bindEmitter(emitter);
   }
 }

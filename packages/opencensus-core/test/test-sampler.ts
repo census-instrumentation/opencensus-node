@@ -18,10 +18,10 @@ import * as assert from 'assert';
 import {SpanKind} from '../src';
 import {TraceParams} from '../src/trace/config/types';
 import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracerCls} from '../src/trace/model/tracer-cls';
+import {CoreTracer} from '../src/trace/model/tracer';
 import {SamplerBuilder, TraceParamsBuilder} from '../src/trace/sampler/sampler';
 
-const tracer = new CoreTracerCls();
+const tracer = new CoreTracer();
 
 const traceParameters: TraceParams = {
   numberOfAnnontationEventsPerSpan: 12,
