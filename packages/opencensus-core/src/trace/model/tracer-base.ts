@@ -42,7 +42,7 @@ export class CoreTracerBase implements types.TracerBase {
   private readonly IS_SAMPLED = 0x1;
   /** A sampler used to make sample decisions */
   sampler!: samplerTypes.Sampler;
-  /** A configuration for starting the tracer */
+  /** An object to log information */
   logger: loggerTypes.Logger = logger.logger();
   /** A configuration object for trace parameters */
   activeTraceParams: TraceParams;
@@ -117,17 +117,26 @@ export class CoreTracerBase implements types.TracerBase {
     const kind = options.kind || types.SpanKind.UNSPECIFIED;
     const traceState = spanContext.traceState;
 
+    // Tracer is active
     if (this.active) {
       const sampleDecision = this.makeSamplingDecision(options, traceId);
+      // Sampling is on
       if (sampleDecision) {
         const rootSpan =
             new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
         rootSpan.start();
         return fn(rootSpan);
       }
-    } else {
-      this.logger.debug('Tracer is inactive, can\'t start new RootSpan');
+
+      // Sampling is off
+      this.logger.debug('Sampling is off, starting new no record root span');
+      const noRecordRootSpan = new NoRecordRootSpan(
+          this, name, kind, traceId, parentSpanId, traceState);
+      return fn(noRecordRootSpan);
     }
+
+    // Tracer is inactive
+    this.logger.debug('Tracer is inactive, starting new no record root span');
     const noRecordRootSpan = new NoRecordRootSpan(
         this, name, kind, traceId, parentSpanId, traceState);
     return fn(noRecordRootSpan);

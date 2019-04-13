@@ -52,7 +52,7 @@ describe('Tracer', () => {
     });
   });
 
-  // /** Should get/set the current RootSpan from tracer instance */
+  /** Should get/set the current RootSpan from tracer instance */
   describe('get/set currentRootSpan()', () => {
     const tracer = new CoreTracer().start(defaultConfig);
     it('should get the current RootSpan from tracer instance', () => {

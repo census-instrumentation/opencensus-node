@@ -21,9 +21,11 @@ import {CoreTracerBase} from './tracer-base';
 import * as types from './types';
 
 /**
- * This class represents a tracer with Cointunues Local Storage (CLS).
+ * This class represents a tracer with Continuation Local Storage (CLS).
  *
  * CLS helps keep tracking the root span over function calls automatically.
+ * It is capable of storing, propagating and retrieving arbitrary
+ * continuation-local data (also called "context").
  * CLS comes with some performance overhead, you can read more about it here:
  * https://github.com/othiym23/node-continuation-local-storage/issues/59
  */
