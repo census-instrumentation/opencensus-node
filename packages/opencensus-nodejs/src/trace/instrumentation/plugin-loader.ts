@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Logger, Plugin, PluginConfig, PluginNames, Stats, Tracer} from '@opencensus/core';
+import {Logger, Plugin, PluginConfig, PluginNames, Stats, Tracer, TracerBase} from '@opencensus/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
@@ -33,7 +33,7 @@ enum HookState {
  */
 export class PluginLoader {
   /** The tracer */
-  private tracer: Tracer;
+  private tracer: Tracer | TracerBase;
   /** logger */
   private logger: Logger;
   /** The stats */
@@ -50,7 +50,7 @@ export class PluginLoader {
    * Constructs a new PluginLoader instance.
    * @param tracer The tracer.
    */
-  constructor(logger: Logger, tracer: Tracer, stats?: Stats) {
+  constructor(logger: Logger, tracer: Tracer | TracerBase, stats?: Stats) {
     this.tracer = tracer;
     this.logger = logger;
     this.stats = stats;
