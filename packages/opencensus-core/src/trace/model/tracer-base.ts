@@ -224,7 +224,7 @@ export class CoreTracerBase implements types.TracerBase {
     // if there is a context propagation, keep the decision
     if (options && options.spanContext && options.spanContext.options) {
       propagatedSample =
-          ((options.spanContext.options & this.IS_SAMPLED) !== 0);
+          (options.spanContext.options & this.IS_SAMPLED) !== 0;
     }
 
     let sampleDecision = !!propagatedSample;
