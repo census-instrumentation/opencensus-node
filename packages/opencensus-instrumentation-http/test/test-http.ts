@@ -320,7 +320,7 @@ describe('HttpPlugin', () => {
         // 5 child spans ended
         assert.strictEqual(spanVerifier.endedSpans.length, 5);
         root.end();
-        // 5 child spand + root span ended
+        // 5 child spans + root span ended
         assert.strictEqual(spanVerifier.endedSpans.length, 6);
       });
     });

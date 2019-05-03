@@ -103,13 +103,16 @@ describe('Zipkin Exporter', function() {
   });
 
   describe('translateSpan()', () => {
-    it('should translate traces to Zipkin format', () => {
-      const exporter = new ZipkinTraceExporter(zipkinOptions);
+    let rootSpan: Span;
+    let span: Span;
+
+    before((done) => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
-      return tracer.startRootSpan({name: 'root-test'}, (rootSpan: Span) => {
-        const span =
+      return tracer.startRootSpan({name: 'root-test'}, (_rootSpan: Span) => {
+        rootSpan = _rootSpan;
+        span =
             rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
         span.addAttribute('my-int-attribute', 100);
         span.addAttribute('my-str-attribute', 'value');
@@ -124,48 +127,56 @@ describe('Zipkin Exporter', function() {
         span.end();
         rootSpan.end();
 
-        const rootSpanTranslated = exporter.translateSpan(rootSpan);
-        assert.deepEqual(rootSpanTranslated, {
-          'annotations': [],
-          'debug': true,
-          'duration': Math.round(rootSpan.duration * MICROS_PER_MILLI),
-          'id': rootSpan.id,
-          'kind': 'SERVER',
-          'localEndpoint': {'serviceName': 'opencensus-tests'},
-          'name': 'root-test',
-          'shared': true,
-          'tags': {'census.status_code': '0'},
-          'timestamp': rootSpan.startTime.getTime() * MICROS_PER_MILLI,
-          'traceId': rootSpan.traceId
-        });
+        done();
+      });
+    });
 
-        const chilsSpanTranslated = exporter.translateSpan(span);
-        assert.deepEqual(chilsSpanTranslated, {
-          'annotations': [
-            {'timestamp': 1550213104708000, 'value': 'processing'},
-            {'timestamp': 1550213104708000, 'value': 'done'},
-            {'timestamp': 1550213104708000, 'value': 'SENT'},
-            {'timestamp': 1550213104708000, 'value': 'RECEIVED'},
-            {'timestamp': 1550213104708000, 'value': 'UNSPECIFIED'}
-          ],
-          'debug': true,
-          'duration': Math.round(span.duration * MICROS_PER_MILLI),
-          'id': span.id,
-          'kind': 'CLIENT',
-          'localEndpoint': {'serviceName': 'opencensus-tests'},
-          'name': 'spanTest',
-          'parentId': rootSpan.id,
-          'shared': false,
-          'tags': {
-            'census.status_code': '8',
-            'census.status_description': 'RESOURCE_EXHAUSTED',
-            'my-int-attribute': '100',
-            'my-str-attribute': 'value',
-            'my-bool-attribute': 'true'
-          },
-          'timestamp': span.startTime.getTime() * MICROS_PER_MILLI,
-          'traceId': span.traceId
-        });
+    it('should translate root span to Zipkin format', () => {
+      const exporter = new ZipkinTraceExporter(zipkinOptions);
+      const rootSpanTranslated = exporter.translateSpan(rootSpan);
+      assert.deepEqual(rootSpanTranslated, {
+        'annotations': [],
+        'debug': true,
+        'duration': Math.round(rootSpan.duration * MICROS_PER_MILLI),
+        'id': rootSpan.id,
+        'kind': 'SERVER',
+        'localEndpoint': {'serviceName': 'opencensus-tests'},
+        'name': 'root-test',
+        'shared': true,
+        'tags': {'census.status_code': '0'},
+        'timestamp': rootSpan.startTime.getTime() * MICROS_PER_MILLI,
+        'traceId': rootSpan.traceId
+      });
+    });
+
+    it('should translate child span to Zipkin format', () => {
+      const exporter = new ZipkinTraceExporter(zipkinOptions);
+      const chilsSpanTranslated = exporter.translateSpan(span);
+      assert.deepEqual(chilsSpanTranslated, {
+        'annotations': [
+          {'timestamp': 1550213104708000, 'value': 'processing'},
+          {'timestamp': 1550213104708000, 'value': 'done'},
+          {'timestamp': 1550213104708000, 'value': 'SENT'},
+          {'timestamp': 1550213104708000, 'value': 'RECEIVED'},
+          {'timestamp': 1550213104708000, 'value': 'UNSPECIFIED'}
+        ],
+        'debug': true,
+        'duration': Math.round(span.duration * MICROS_PER_MILLI),
+        'id': span.id,
+        'kind': 'CLIENT',
+        'localEndpoint': {'serviceName': 'opencensus-tests'},
+        'name': 'spanTest',
+        'parentId': rootSpan.id,
+        'shared': false,
+        'tags': {
+          'census.status_code': '8',
+          'census.status_description': 'RESOURCE_EXHAUSTED',
+          'my-int-attribute': '100',
+          'my-str-attribute': 'value',
+          'my-bool-attribute': 'true'
+        },
+        'timestamp': span.startTime.getTime() * MICROS_PER_MILLI,
+        'traceId': span.traceId
       });
     });
   });
