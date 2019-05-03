@@ -155,7 +155,7 @@ describe('Zipkin Exporter', function() {
           'localEndpoint': {'serviceName': 'opencensus-tests'},
           'name': 'spanTest',
           'parentId': rootSpan.id,
-          'shared': true,
+          'shared': false,
           'tags': {
             'census.status_code': '8',
             'census.status_description': 'RESOURCE_EXHAUSTED',

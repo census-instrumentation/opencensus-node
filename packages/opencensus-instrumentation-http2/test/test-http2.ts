@@ -25,12 +25,12 @@ import {Http2Plugin} from '../src/';
 
 const VERSION = process.versions.node;
 
-class RootSpanVerifier implements SpanEventListener {
-  endedRootSpans: Span[] = [];
+class SpanVerifier implements SpanEventListener {
+  endedSpans: Span[] = [];
 
-  onStartSpan(root: Span): void {}
-  onEndSpan(root: Span) {
-    this.endedRootSpans.push(root);
+  onStartSpan(span: Span): void {}
+  onEndSpan(span: Span) {
+    this.endedSpans.push(span);
   }
 }
 
@@ -89,7 +89,7 @@ describe('Http2Plugin', () => {
 
   const log = logger.logger();
   const tracer = new CoreTracer();
-  const rootSpanVerifier = new RootSpanVerifier();
+  const spanVerifier = new SpanVerifier();
   tracer.start({samplingRate: 1, logger: log});
 
   it('should return a plugin', () => {
@@ -97,7 +97,7 @@ describe('Http2Plugin', () => {
   });
 
   before(() => {
-    tracer.registerSpanEventListener(rootSpanVerifier);
+    tracer.registerSpanEventListener(spanVerifier);
 
     plugin.enable(http2, tracer, VERSION, {}, '');
     server = http2.createServer();
@@ -116,7 +116,7 @@ describe('Http2Plugin', () => {
   });
 
   beforeEach(() => {
-    rootSpanVerifier.endedRootSpans = [];
+    spanVerifier.endedSpans = [];
   });
 
   after(() => {
@@ -131,22 +131,20 @@ describe('Http2Plugin', () => {
       const statusCode = 200;
       const testPath = `/${statusCode}`;
       const requestOptions = {':method': 'GET', ':path': testPath};
-      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
       await http2Request.get(client, requestOptions).then((result) => {
         assert.strictEqual(result, `${statusCode}`);
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
-        assert.ok(
-            rootSpanVerifier.endedRootSpans[1].name.indexOf(testPath) >= 0);
+        assert.strictEqual(spanVerifier.endedSpans.length, 2);
+        assert.ok(spanVerifier.endedSpans[1].name.indexOf(testPath) >= 0);
 
-        const span = rootSpanVerifier.endedRootSpans[1];
+        const span = spanVerifier.endedSpans[1];
         assertSpanAttributes(span, 200, 'GET', host, testPath);
         assert.equal(span.messageEvents.length, 1);
         assert.equal(span.messageEvents[0].type, MessageEventType.SENT);
         assert.equal(span.messageEvents[0].id, '1');
 
-        const messageEvents =
-            rootSpanVerifier.endedRootSpans[0].messageEvents[0];
+        const messageEvents = spanVerifier.endedSpans[0].messageEvents[0];
         assert.equal(messageEvents.type, MessageEventType.RECEIVED);
         assert.equal(messageEvents.id, '1');
       });
@@ -159,16 +157,14 @@ describe('Http2Plugin', () => {
          async () => {
            const testPath = `/${errorCode}`;
            const requestOptions = {':method': 'GET', ':path': testPath};
-           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+           assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
            await http2Request.get(client, requestOptions).then((result) => {
              assert.strictEqual(result, errorCode.toString());
-             assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
-             assert.ok(
-                 rootSpanVerifier.endedRootSpans[1].name.indexOf(testPath) >=
-                 0);
+             assert.strictEqual(spanVerifier.endedSpans.length, 2);
+             assert.ok(spanVerifier.endedSpans[1].name.indexOf(testPath) >= 0);
 
-             const span = rootSpanVerifier.endedRootSpans[1];
+             const span = spanVerifier.endedSpans[1];
              assertSpanAttributes(span, errorCode, 'GET', host, testPath);
            });
          });
@@ -230,9 +226,11 @@ describe('Http2Plugin', () => {
             assert.strictEqual(root.traceId, root.spans[i].traceId);
           });
         }
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, num);
+        // 5 child spans ended (+ super class ends)
+        assert.strictEqual(spanVerifier.endedSpans.length, 2 * num);
         root.end();
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1 + num);
+        // 5 child spans + root span ended (+ super class ends)
+        assert.strictEqual(spanVerifier.endedSpans.length, 1 + 2 * num);
       });
     });
 
@@ -246,10 +244,10 @@ describe('Http2Plugin', () => {
            'x-opencensus-outgoing-request': 1
          };
 
-         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+         assert.strictEqual(spanVerifier.endedSpans.length, 0);
          await http2Request.get(client, requestOptions).then((result) => {
            assert.strictEqual(result, `${statusCode}`);
-           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+           assert.strictEqual(spanVerifier.endedSpans.length, 1);
          });
        });
   });
@@ -266,13 +264,12 @@ describe('Http2Plugin', () => {
         'User-Agent': 'Android'
       };
 
-      assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
       await http2Request.get(client, requestOptions).then((result) => {
-        assert.ok(
-            rootSpanVerifier.endedRootSpans[0].name.indexOf(testPath) >= 0);
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 2);
-        const span = rootSpanVerifier.endedRootSpans[0];
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+        assert.strictEqual(spanVerifier.endedSpans.length, 2);
+        const span = spanVerifier.endedSpans[0];
         assertSpanAttributes(span, 200, 'GET', host, testPath, 'Android');
       });
     });

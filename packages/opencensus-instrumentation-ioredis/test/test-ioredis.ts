@@ -27,8 +27,11 @@ class RootSpanVerifier implements SpanEventListener {
   onStartSpan(span: Span): void {
     return;
   }
-  onEndSpan(root: Span) {
-    this.endedRootSpans.push(root);
+  onEndSpan(span: Span) {
+    if (span.parentSpanId) {
+      return;
+    }
+    this.endedRootSpans.push(span);
   }
 }
 

@@ -80,7 +80,7 @@ export class ExporterBuffer {
    */
   addToBuffer(root: modelTypes.Span) {
     this.queue.push(root);
-    this.logger.debug('ExporterBuffer: added new rootspan');
+    this.logger.debug('ExporterBuffer: added new span');
 
     if (this.queue.length > this.bufferSize) {
       this.flush();

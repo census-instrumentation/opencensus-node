@@ -254,8 +254,12 @@ class RootSpanVerifier implements SpanEventListener {
   endedRootSpans: Span[] = [];
 
   onStartSpan(span: Span): void {}
-  onEndSpan(root: Span) {
-    this.endedRootSpans.push(root);
+  onEndSpan(span: Span) {
+    // TODO(hekike): Tests depends on the order of recorded spans.
+    // Capturing child spand breaks this order.
+    if (span.constructor.name === 'RootSpan') {
+      this.endedRootSpans.push(span);
+    }
   }
 }
 

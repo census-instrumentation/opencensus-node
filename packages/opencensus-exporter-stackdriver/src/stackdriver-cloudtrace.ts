@@ -43,14 +43,14 @@ export class StackdriverTraceExporter implements Exporter {
 
   /**
    * Is called whenever a span is ended.
-   * @param root the ended span
+   * @param span the ended span
    */
-  onEndSpan(root: OCSpan) {
-    this.exporterBuffer.addToBuffer(root);
+  onEndSpan(span: OCSpan) {
+    this.exporterBuffer.addToBuffer(span);
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: OCSpan) {}
+  onStartSpan(span: OCSpan) {}
 
   /**
    * Publishes a list of root spans to Stackdriver.
