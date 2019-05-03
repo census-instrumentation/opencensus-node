@@ -463,11 +463,8 @@ export interface Span {
   startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind): Span;
 }
 
-/** Interface for Tracer */
-export interface Tracer extends SpanEventListener {
-  /** Get and set the currentRootSpan to tracer instance */
-  currentRootSpan: Span;
-
+/** Interface for TracerBase */
+export interface TracerBase extends SpanEventListener {
   /** A sampler that will decide if the span will be sampled or not */
   sampler: samplerTypes.Sampler;
 
@@ -491,10 +488,10 @@ export interface Tracer extends SpanEventListener {
    * @param config Configuration for tracer instace
    * @returns A tracer instance started
    */
-  start(config: configTypes.TracerConfig): Tracer;
+  start(config: configTypes.TracerConfig): this;
 
   /** Stop the tracer instance */
-  stop(): Tracer;
+  stop(): this;
 
   /**
    * Start a new RootSpan to currentRootSpan
@@ -516,18 +513,22 @@ export interface Tracer extends SpanEventListener {
    */
   unregisterSpanEventListener(listener: SpanEventListener): void;
 
-  /** Clear the currentRootSpan from tracer instance */
-  clearCurrentTrace(): void;
-
   /**
    * Start a new Span instance to the currentRootSpan
-   * @param name Span name
-   * @param kind Span kind
-   * @param options Span Options
+   * @param childOf Span
+   * @param [options] A TraceOptions object to start a root span.
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, kind?: SpanKind): Span;
   startChildSpan(options?: SpanOptions): Span;
+}
+
+/** Interface for Tracer */
+export interface Tracer extends TracerBase {
+  /** Get and set the currentRootSpan to tracer instance */
+  currentRootSpan: Span;
+
+  /** Clear the currentRootSpan from tracer instance */
+  clearCurrentTrace(): void;
 
   /**
    * Binds the trace context to the given function.

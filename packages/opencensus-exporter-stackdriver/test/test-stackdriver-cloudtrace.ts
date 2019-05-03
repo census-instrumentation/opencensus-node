@@ -57,7 +57,7 @@ describe('Stackdriver Trace Exporter', function() {
         assert.strictEqual(exporter.exporterBuffer.getQueue().length, 0);
 
         const spanName = 'sdBufferTestChildSpan';
-        const span = tracer.startChildSpan(spanName);
+        const span = tracer.startChildSpan({name: spanName});
         span.end();
         rootSpan.end();
 
@@ -77,7 +77,7 @@ describe('Stackdriver Trace Exporter', function() {
     it('should translate to stackdriver spans', () => {
       return tracer.startRootSpan(
           {name: 'root-test'}, async (rootSpan: OCSpan) => {
-            const span = tracer.startChildSpan('spanTest');
+            const span = tracer.startChildSpan({name: 'spanTest'});
             span.end();
             rootSpan.end();
 
@@ -161,7 +161,8 @@ describe('Stackdriver Trace Exporter', function() {
       failTracer.registerSpanEventListener(failExporter);
       return failTracer.startRootSpan(
           {name: 'sdNoExportTestRootSpan'}, async (rootSpan: OCSpan) => {
-            const span = failTracer.startChildSpan('sdNoExportTestChildSpan');
+            const span =
+                failTracer.startChildSpan({name: 'sdNoExportTestChildSpan'});
             span.end();
             rootSpan.end();
 
@@ -179,7 +180,7 @@ describe('Stackdriver Trace Exporter', function() {
     it('should export traces to stackdriver', () => {
       return tracer.startRootSpan(
           {name: 'sdExportTestRootSpan'}, async (rootSpan: OCSpan) => {
-            const span = tracer.startChildSpan('sdExportTestChildSpan');
+            const span = tracer.startChildSpan({name: 'sdExportTestChildSpan'});
 
             nocks.oauth2(body => true);
             nocks.batchWrite(PROJECT_ID, (body: {spans: Span[]}): boolean => {
@@ -210,7 +211,8 @@ describe('Stackdriver Trace Exporter', function() {
 
       return tracer.startRootSpan(
           {name: 'sdErrorExportTestRootSpan'}, (rootSpan: OCSpan) => {
-            const span = tracer.startChildSpan('sdErrorExportTestChildSpan');
+            const span =
+                tracer.startChildSpan({name: 'sdErrorExportTestChildSpan'});
             span.end();
             rootSpan.end();
 

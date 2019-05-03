@@ -91,7 +91,7 @@ describe('ConsoleLogExporter', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      rootSpan.startChildSpan('name', SpanKind.UNSPECIFIED);
+      rootSpan.startChildSpan({name: 'name', kind: SpanKind.UNSPECIFIED});
       const queue: RootSpan[] = [rootSpan];
 
       return exporter.publish(queue).then(() => {

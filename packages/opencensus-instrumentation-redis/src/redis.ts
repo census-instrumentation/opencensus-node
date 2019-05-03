@@ -121,7 +121,7 @@ export class RedisPlugin extends BasePlugin {
         // of separate named arguments.
         if (arguments.length === 1 && typeof cmd === 'object') {
           const span = plugin.tracer.startChildSpan(
-              `redis-${cmd.command}`, SpanKind.CLIENT);
+              {name: `redis-${cmd.command}`, kind: SpanKind.CLIENT});
           if (span === null) return original.apply(this, arguments);
 
           span.addAttribute('command', cmd.command);

@@ -21,7 +21,7 @@ import * as modelTypes from './model/types';
 /** Main interface for tracing. */
 export interface Tracing {
   /** Object responsible for managing a trace. */
-  readonly tracer: modelTypes.Tracer;
+  readonly tracer: modelTypes.TracerBase;
 
   /** Service to send collected traces to. */
   readonly exporter: exportersTypes.Exporter;

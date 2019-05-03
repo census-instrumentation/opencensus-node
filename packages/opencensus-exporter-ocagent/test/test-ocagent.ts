@@ -192,8 +192,8 @@ describe('OpenCensus Agent Exporter', () => {
           spanContext: {traceId: hexId(), spanId: hexId(), options: 0x1}
         },
         (rootSpan: Span) => {
-          const childSpan =
-              rootSpan.startChildSpan(CHILD_SPAN_NAME, SpanKind.UNSPECIFIED);
+          const childSpan = rootSpan.startChildSpan(
+              {name: CHILD_SPAN_NAME, kind: SpanKind.UNSPECIFIED});
 
           // When the stream is connected, we end both spans, which should
           // trigger the spans to be sent to the agent.

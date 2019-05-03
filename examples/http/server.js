@@ -42,7 +42,7 @@ function startServer (port) {
 
 /** A function which handles requests and send response. */
 function handleRequest (request, response) {
-  const span = tracer.startChildSpan('octutorials.handleRequest');
+  const span = tracer.startChildSpan({ name: 'octutorials.handleRequest' });
   try {
     let body = [];
     request.on('error', err => console.log(err));

@@ -45,7 +45,8 @@ const createRootSpans = (num: number): RootSpan[] => {
         new RootSpan(tracer, `rootSpan.${i}`, kind, traceId, parentSpanId);
     rootSpan.start();
     for (let j = 0; j < 10; j++) {
-      rootSpan.startChildSpan(`childSpan.${i}.${j}`, SpanKind.CLIENT);
+      rootSpan.startChildSpan(
+          {name: `childSpan.${i}.${j}`, kind: SpanKind.CLIENT});
     }
     rootSpans.push(rootSpan);
   }
