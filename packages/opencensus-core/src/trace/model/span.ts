@@ -195,7 +195,7 @@ export class Span implements types.Span {
    * @param key Describes the value added.
    * @param value The result of an operation.
    */
-  addAttribute(key: string, value: string|number|boolean) {
+  addAttribute(key: string, value: string|number|boolean|object) {
     if (this.attributes[key]) {
       delete this.attributes[key];
     }
@@ -208,7 +208,9 @@ export class Span implements types.Span {
         delete this.attributes[attributeKeyToDelete];
       }
     }
-    this.attributes[key] = value;
+    const serializedValue =
+        typeof value === 'object' ? JSON.stringify(value) : value;
+    this.attributes[key] = serializedValue;
   }
 
   /**
