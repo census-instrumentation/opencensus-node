@@ -17,13 +17,10 @@ import * as core from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as assert from 'assert';
 import {defaultConfig} from '../src/trace/config/default-config';
-import {Constants} from '../src/trace/constants';
 import {TracingBase} from '../src/trace/tracing-base';
 
 const NOOP_EXPORTER = new core.NoopExporter();
 describe('TracingBase', () => {
-  Constants.DEFAULT_INSTRUMENTATION_MODULES = [];
-
   /** Should create a TracingBase instance */
   describe('new TracingBase()', () => {
     it('should create a Tracer instance', () => {

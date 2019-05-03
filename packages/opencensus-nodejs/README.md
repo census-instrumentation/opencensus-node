@@ -44,7 +44,26 @@ tracing.start();
 
 ### Manually Instrument an Application
 
-For manual insturmentation see the `@opencensus/nodejs-base` package.
+In addition to automatic tracing, it is possible to manually create your own root and child spans.
+
+```typescript
+const rootSpanOptions = { name: 'your root span' };
+tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan) => {
+
+    // You can create as many child spans as needed
+    childSpan = tracing.tracer.startChildSpan({
+        name: 'name of your child span'
+    });
+    // Do some operation...
+    // Finish the child span at the end of it's operation
+    childSpan.end();
+
+    // Finish the root span at the end of the operation
+    rootSpan.end();
+});
+```
+
+For manual only instrumentation see the `@opencensus/nodejs-base` package.
 
 ### Tracing Options
 

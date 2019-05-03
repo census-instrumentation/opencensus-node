@@ -24,6 +24,7 @@ export class Tracing extends TracingBase {
 
   /** Constructs a new TracingImpl instance. */
   constructor() {
+    /** Default list of target modules to be instrumented */
     super(DEFAULT_INSTRUMENTATION_MODULES);
     this.tracer = new core.CoreTracer();
   }
