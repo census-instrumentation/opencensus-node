@@ -33,7 +33,7 @@ enum HookState {
  */
 export class PluginLoader {
   /** The tracer */
-  private tracer: Tracer | TracerBase;
+  private tracer: Tracer|TracerBase;
   /** logger */
   private logger: Logger;
   /** The stats */
@@ -50,7 +50,7 @@ export class PluginLoader {
    * Constructs a new PluginLoader instance.
    * @param tracer The tracer.
    */
-  constructor(logger: Logger, tracer: Tracer | TracerBase, stats?: Stats) {
+  constructor(logger: Logger, tracer: Tracer|TracerBase, stats?: Stats) {
     this.tracer = tracer;
     this.logger = logger;
     this.stats = stats;

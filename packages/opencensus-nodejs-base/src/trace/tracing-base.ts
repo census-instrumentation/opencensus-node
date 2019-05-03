@@ -17,7 +17,6 @@ import * as core from '@opencensus/core';
 import {logger} from '@opencensus/core';
 import * as extend from 'extend';
 import {defaultConfig} from './config/default-config';
-import {Constants} from './constants';
 import {PluginLoader} from './instrumentation/plugin-loader';
 
 const NOOP_EXPORTER = new core.NoopExporter();
@@ -29,7 +28,7 @@ export class TracingBase implements core.Tracing {
   /** A plugin loader object */
   private pluginLoader?: PluginLoader;
   /** Plugin names */
-  private defaultPlugins: core.PluginNames;
+  protected defaultPlugins: core.PluginNames;
   /** A configuration object to start the tracing */
   private configLocal: core.Config = {};
   /** An object to log information to. Logs to the JS console by default. */
@@ -40,10 +39,9 @@ export class TracingBase implements core.Tracing {
   private activeLocal = false;
 
   /** Constructs a new TracingImpl instance. */
-  constructor() {
+  constructor(pluginNames: string[] = []) {
     this.tracer = new core.CoreTracerBase();
-    this.defaultPlugins = PluginLoader.defaultPluginsFromArray(
-        Constants.DEFAULT_INSTRUMENTATION_MODULES);
+    this.defaultPlugins = PluginLoader.defaultPluginsFromArray(pluginNames);
   }
 
   /** Gets the tracing instance. */
@@ -66,7 +64,7 @@ export class TracingBase implements core.Tracing {
    * @param userConfig A configuration object to start tracing.
    * @returns The started Tracing instance.
    */
-  start(userConfig?: core.Config): core.Tracing | TracingBase {
+  start(userConfig?: core.Config): core.Tracing|TracingBase {
     this.configLocal = extend(
         true, {}, defaultConfig, {plugins: this.defaultPlugins}, userConfig);
 
@@ -111,7 +109,7 @@ export class TracingBase implements core.Tracing {
    * Registers an exporter to send the collected traces to.
    * @param exporter The exporter to send the traces to.
    */
-  registerExporter(exporter: core.Exporter): core.Tracing | TracingBase {
+  registerExporter(exporter: core.Exporter): core.Tracing|TracingBase {
     if (this.configLocal.exporter) {
       this.unregisterExporter(this.configLocal.exporter);
     }

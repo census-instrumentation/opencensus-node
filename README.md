@@ -20,6 +20,13 @@ Install OpenCensus with:
 npm install @opencensus/nodejs
 ```
 
+
+Install OpenCensus Base without automatic instrumentation:
+
+```bash
+npm install @opencensus/nodejs-base
+```
+
 ## Plugins
 
 OpenCensus can collect tracing data automatically using plugins. Users can also create and use their own plugins. Currently, OpenCensus supports automatic tracing for:

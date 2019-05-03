@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 import * as core from '@opencensus/core';
-import {TracingBase} from './tracing-base';
+import {DEFAULT_INSTRUMENTATION_MODULES} from '@opencensus/instrumentation-all';
+import {TracingBase} from '@opencensus/nodejs-base';
 
-/** Implements a Tracing. */
+/** Implements a Tracing with Continuation Local Storage (CLS). */
 export class Tracing extends TracingBase {
   /** A tracer object */
   readonly tracer: core.Tracer;
 
   /** Constructs a new TracingImpl instance. */
   constructor() {
-    super();
+    super(DEFAULT_INSTRUMENTATION_MODULES);
     this.tracer = new core.CoreTracer();
   }
 }
