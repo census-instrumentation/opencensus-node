@@ -102,7 +102,7 @@ export class Http2Plugin extends HttpPlugin {
         // case there is no root span, this means that the outgoing request is
         // the first operation, therefore we create a root span.
         if (!plugin.tracer.currentRootSpan) {
-          return plugin.tracer.startRootSpan(
+          return plugin.tracer.startWithRootSpan(
               traceOptions,
               plugin.getMakeHttp2RequestTraceFunction(
                   request, headers, authority, plugin));
@@ -232,7 +232,7 @@ export class Http2Plugin extends HttpPlugin {
           return stream.respond.apply(this, arguments);
         };
 
-        return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
+        return plugin.tracer.startWithRootSpan(traceOptions, rootSpan => {
           if (!rootSpan) return original.apply(this, arguments);
 
           plugin.tracer.wrapEmitter(stream);

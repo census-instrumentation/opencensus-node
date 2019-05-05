@@ -186,7 +186,7 @@ describe('OpenCensus Agent Exporter', () => {
 
     // Create a rootSpan and one childSpan, then validate that those spans
     // arrived at the server through the grpc stream.
-    tracing.tracer.startRootSpan(
+    tracing.tracer.startWithRootSpan(
         {
           name: ROOT_SPAN_NAME,
           spanContext: {traceId: hexId(), spanId: hexId(), options: 0x1}
@@ -245,7 +245,7 @@ describe('OpenCensus Agent Exporter', () => {
       }
     };
 
-    tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: Span) => {
+    tracing.tracer.startWithRootSpan(rootSpanOptions, (rootSpan: Span) => {
       // Status
       rootSpan.setStatus(CanonicalCode.OK);
 
@@ -477,7 +477,7 @@ describe('OpenCensus Agent Exporter', () => {
          }
        };
 
-       tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan: Span) => {
+       tracing.tracer.startWithRootSpan(rootSpanOptions, (rootSpan: Span) => {
          // Status
          rootSpan.setStatus(CanonicalCode.OK);
 

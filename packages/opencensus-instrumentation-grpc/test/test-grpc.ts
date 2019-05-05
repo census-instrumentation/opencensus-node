@@ -497,7 +497,7 @@ describe('GrpcPlugin() ', function() {
                const options = {name: 'TestRootSpan'};
                const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
                let serverRoot: Span;
-               return tracer.startRootSpan(options, async (root: Span) => {
+               return tracer.startWithRootSpan(options, async (root: Span) => {
                  assert.strictEqual(root.name, options.name);
                  const args = [client, method.request];
                  await method.method.apply(this, args)
@@ -536,34 +536,37 @@ describe('GrpcPlugin() ', function() {
                tags.set({name: 'testKey1'}, {value: 'value1'});
                tags.set({name: 'testKey2'}, {value: 'value2'});
                return globalStats.withTagContext(tags, async () => {
-                 return tracer.startRootSpan(options, async (root: Span) => {
-                   assert.strictEqual(root.name, options.name);
-                   const args = [client, method.request];
-                   await method.method.apply(this, args)
-                       .then(
-                           (result: TestRequestResponse|
-                            TestRequestResponse[]) => {
-                             assert.ok(checkEqual(result)(method.result));
-                             assert.strictEqual(
-                                 rootSpanVerifier.endedRootSpans.length, 1);
+                 return tracer.startWithRootSpan(
+                     options, async (root: Span) => {
+                       assert.strictEqual(root.name, options.name);
+                       const args = [client, method.request];
+                       await method.method.apply(this, args)
+                           .then(
+                               (result: TestRequestResponse|
+                                TestRequestResponse[]) => {
+                                 assert.ok(checkEqual(result)(method.result));
+                                 assert.strictEqual(
+                                     rootSpanVerifier.endedRootSpans.length, 1);
 
-                             serverRoot = rootSpanVerifier.endedRootSpans[0];
-                             assertSpan(
-                                 serverRoot, spanName, SpanKind.SERVER,
-                                 grpcModule.status.OK);
-                           });
-                   root.end();
-                   assert.strictEqual(
-                       rootSpanVerifier.endedRootSpans.length, 2);
-                   const clientChild =
-                       rootSpanVerifier.endedRootSpans[1].spans[0];
-                   assertSpan(
-                       clientChild, spanName, SpanKind.CLIENT,
-                       grpcModule.status.OK);
-                   // propagation
-                   assertPropagation(clientChild, serverRoot);
-                   assert.deepEqual(globalStats.getCurrentTagContext(), tags);
-                 });
+                                 serverRoot =
+                                     rootSpanVerifier.endedRootSpans[0];
+                                 assertSpan(
+                                     serverRoot, spanName, SpanKind.SERVER,
+                                     grpcModule.status.OK);
+                               });
+                       root.end();
+                       assert.strictEqual(
+                           rootSpanVerifier.endedRootSpans.length, 2);
+                       const clientChild =
+                           rootSpanVerifier.endedRootSpans[1].spans[0];
+                       assertSpan(
+                           clientChild, spanName, SpanKind.CLIENT,
+                           grpcModule.status.OK);
+                       // propagation
+                       assertPropagation(clientChild, serverRoot);
+                       assert.deepEqual(
+                           globalStats.getCurrentTagContext(), tags);
+                     });
                });
              });
         });
@@ -616,7 +619,7 @@ describe('GrpcPlugin() ', function() {
                const options = {name: 'TestRootSpan'};
                const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
                let serverRoot: Span;
-               return tracer.startRootSpan(options, async (root: Span) => {
+               return tracer.startWithRootSpan(options, async (root: Span) => {
                  assert.strictEqual(root.name, options.name);
                  const errRequest = (method.request instanceof Array) ?
                      method.request.slice(0, method.request.length) :

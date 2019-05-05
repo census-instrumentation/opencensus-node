@@ -148,7 +148,7 @@ describe('MongoDBPlugin', () => {
     it('should create a child span for insert', (done) => {
       const insertData = [{a: 1}, {a: 2}, {a: 3}];
 
-      tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
         collection.insertMany(insertData, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -162,7 +162,7 @@ describe('MongoDBPlugin', () => {
     });
 
     it('should create a child span for update', (done) => {
-      tracer.startRootSpan({name: 'updateRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'updateRootSpan'}, (rootSpan: Span) => {
         collection.updateOne({a: 2}, {$set: {b: 1}}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -176,7 +176,7 @@ describe('MongoDBPlugin', () => {
     });
 
     it('should create a child span for remove', (done) => {
-      tracer.startRootSpan({name: 'removeRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'removeRootSpan'}, (rootSpan: Span) => {
         collection.deleteOne({a: 3}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -193,7 +193,7 @@ describe('MongoDBPlugin', () => {
   /** Should intercept cursor */
   describe('Instrumenting cursor operations', () => {
     it('should create a child span for find', (done) => {
-      tracer.startRootSpan({name: 'findRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'findRootSpan'}, (rootSpan: Span) => {
         collection.find({}).toArray((err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -210,7 +210,7 @@ describe('MongoDBPlugin', () => {
   /** Should intercept command */
   describe('Instrumenting command operations', () => {
     it('should create a child span for create index', (done) => {
-      tracer.startRootSpan({name: 'indexRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'indexRootSpan'}, (rootSpan: Span) => {
         collection.createIndex({a: 1}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -224,7 +224,7 @@ describe('MongoDBPlugin', () => {
     });
 
     it('should create a child span for count', (done) => {
-      tracer.startRootSpan({name: 'countRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'countRootSpan'}, (rootSpan: Span) => {
         collection.count({a: 1}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -246,7 +246,7 @@ describe('MongoDBPlugin', () => {
     it('should not create a child span for query', (done) => {
       const insertData = [{a: 1}, {a: 2}, {a: 3}];
 
-      tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
         collection.insertMany(insertData, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -260,7 +260,7 @@ describe('MongoDBPlugin', () => {
     });
 
     it('should not create a child span for cursor', (done) => {
-      tracer.startRootSpan({name: 'findRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'findRootSpan'}, (rootSpan: Span) => {
         collection.find({}).toArray((err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
@@ -274,7 +274,7 @@ describe('MongoDBPlugin', () => {
     });
 
     it('should not create a child span for command', (done) => {
-      tracer.startRootSpan({name: 'indexRootSpan'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'indexRootSpan'}, (rootSpan: Span) => {
         collection.createIndex({a: 1}, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();

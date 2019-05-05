@@ -170,30 +170,33 @@ export class GrpcPlugin extends BasePlugin {
                 plugin.logger.debug(
                     'path func: %s', JSON.stringify(traceOptions));
 
-                return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
-                  if (!rootSpan) {
-                    return originalFunc.call(self, call, callback);
-                  }
+                return plugin.tracer.startWithRootSpan(
+                    traceOptions, rootSpan => {
+                      if (!rootSpan) {
+                        return originalFunc.call(self, call, callback);
+                      }
 
-                  rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, name);
-                  if (traceOptions.kind) {
-                    rootSpan.addAttribute(
-                        GrpcPlugin.ATTRIBUTE_GRPC_KIND, traceOptions.kind);
-                  }
+                      rootSpan.addAttribute(
+                          GrpcPlugin.ATTRIBUTE_GRPC_METHOD, name);
+                      if (traceOptions.kind) {
+                        rootSpan.addAttribute(
+                            GrpcPlugin.ATTRIBUTE_GRPC_KIND, traceOptions.kind);
+                      }
 
-                  switch (type) {
-                    case 'unary':
-                    case 'client_stream':
-                      return plugin.clientStreamAndUnaryHandler(
-                          plugin, rootSpan, call, callback, originalFunc, self);
-                    case 'server_stream':
-                    case 'bidi':
-                      return plugin.serverStreamAndBidiHandler(
-                          plugin, rootSpan, call, originalFunc, self);
-                    default:
-                      break;
-                  }
-                });
+                      switch (type) {
+                        case 'unary':
+                        case 'client_stream':
+                          return plugin.clientStreamAndUnaryHandler(
+                              plugin, rootSpan, call, callback, originalFunc,
+                              self);
+                        case 'server_stream':
+                        case 'bidi':
+                          return plugin.serverStreamAndBidiHandler(
+                              plugin, rootSpan, call, originalFunc, self);
+                        default:
+                          break;
+                      }
+                    });
               };
             });
         return result;
@@ -332,7 +335,7 @@ export class GrpcPlugin extends BasePlugin {
         // function call is the first operation, therefore we create a root
         // span.
         if (!plugin.tracer.currentRootSpan) {
-          return plugin.tracer.startRootSpan(
+          return plugin.tracer.startWithRootSpan(
               traceOptions,
               plugin.makeGrpcClientRemoteCall(original, args, this, plugin));
         } else {

@@ -262,7 +262,7 @@ describe('HttpPlugin', () => {
       const testPath = '/outgoing/rootSpan/childs/1';
       doNock(urlHost, testPath, 200, 'Ok');
       const options = {name: 'TestRootSpan'};
-      return tracer.startRootSpan(options, async (root: Span) => {
+      return tracer.startWithRootSpan(options, async (root: Span) => {
         await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
@@ -287,7 +287,7 @@ describe('HttpPlugin', () => {
                urlHost, testPath, httpErrorCodes[i],
                httpErrorCodes[i].toString());
            const options = {name: 'TestRootSpan'};
-           return tracer.startRootSpan(options, async (root: Span) => {
+           return tracer.startWithRootSpan(options, async (root: Span) => {
              await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
                assert.ok(root.name.indexOf('TestRootSpan') >= 0);
                assert.strictEqual(root.spans.length, 1);
@@ -308,7 +308,7 @@ describe('HttpPlugin', () => {
       const num = 5;
       doNock(urlHost, testPath, 200, 'Ok', num);
       const options = {name: 'TestRootSpan'};
-      return tracer.startRootSpan(options, async (root: Span) => {
+      return tracer.startWithRootSpan(options, async (root: Span) => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
           await httpRequest.get(`${urlHost}${testPath}`).then((result) => {

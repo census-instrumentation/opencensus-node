@@ -497,9 +497,17 @@ export interface TracerBase extends SpanEventListener {
    * Start a new RootSpan to currentRootSpan
    * @param options Options for tracer instance
    * @param fn Callback function
-   * @returns The callback return
+   * @returns {Span} A root span
    */
-  startRootSpan<T>(options: TraceOptions, fn: (root: Span) => T): T;
+  startRootSpan(options: TraceOptions): Span;
+
+  /**
+   * Start a new Span instance to the currentRootSpan
+   * @param childOf Span
+   * @param [options] A TraceOptions object to start a root span.
+   * @returns The new Span instance started
+   */
+  startChildSpan(options?: SpanOptions): Span;
 
   /**
    * Register a OnEndSpanEventListener on the tracer instance
@@ -512,14 +520,6 @@ export interface TracerBase extends SpanEventListener {
    * @param listener The listener to unregister.
    */
   unregisterSpanEventListener(listener: SpanEventListener): void;
-
-  /**
-   * Start a new Span instance to the currentRootSpan
-   * @param childOf Span
-   * @param [options] A TraceOptions object to start a root span.
-   * @returns The new Span instance started
-   */
-  startChildSpan(options?: SpanOptions): Span;
 }
 
 /** Interface for Tracer */
@@ -529,6 +529,20 @@ export interface Tracer extends TracerBase {
 
   /** Clear the currentRootSpan from tracer instance */
   clearCurrentTrace(): void;
+
+  /**
+   * Sets span to CLS
+   * @param span Span to setup in context.
+   * @param fn A callback function that runs after context setup.
+   */
+  withSpan<T>(span: Span, fn: () => T): T;
+
+  /**
+   * Starts a root span and sets it to context.
+   * @param options Options for tracer instance
+   * @param fn A callback function to run after starting a root span.
+   */
+  startWithRootSpan<T>(options: TraceOptions, fn: (root: Span) => T): T;
 
   /**
    * Binds the trace context to the given function.

@@ -131,12 +131,13 @@ describe('Zpages Exporter', () => {
       tracing.start(defaultConfig);
       tracing.registerExporter(zpages);
 
-      tracing.tracer.startRootSpan({name: 'rootSpanTest'}, (rootSpan: Span) => {
-        const span = tracing.tracer.startChildSpan(
-            {name: 'spanNameTest', kind: SpanKind.CLIENT});
-        span.end();
-        rootSpan.end();
-      });
+      tracing.tracer.startWithRootSpan(
+          {name: 'rootSpanTest'}, (rootSpan: Span) => {
+            const span = tracing.tracer.startChildSpan(
+                {name: 'spanNameTest', kind: SpanKind.CLIENT});
+            span.end();
+            rootSpan.end();
+          });
       zpages.startServer(done);
     });
 
@@ -171,7 +172,7 @@ describe('Zpages Exporter', () => {
       tracing.start(defaultConfig);
       tracing.registerExporter(zpages);
 
-      tracing.tracer.startRootSpan({name: 'runningSpanTest'}, () => {});
+      tracing.tracer.startWithRootSpan({name: 'runningSpanTest'}, () => {});
       zpages.startServer(done);
     });
 

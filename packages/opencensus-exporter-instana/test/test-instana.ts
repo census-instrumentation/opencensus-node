@@ -48,7 +48,7 @@ describe('Instana Exporter', function() {
       tracer.start(defaultConfig);
 
       return tracer
-          .startRootSpan(
+          .startWithRootSpan(
               {name: 'root-test'},
               async (rootSpan: Span) => {
                 const span = rootSpan.startChildSpan(

@@ -194,7 +194,7 @@ export class HttpPlugin extends BasePlugin {
           }
         }
 
-        return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
+        return plugin.tracer.startWithRootSpan(traceOptions, rootSpan => {
           if (!rootSpan) return original.apply(this, arguments);
 
           plugin.tracer.wrapEmitter(request);
@@ -326,7 +326,7 @@ export class HttpPlugin extends BasePlugin {
         // the first operation, therefore we create a root span.
         if (!plugin.tracer.currentRootSpan) {
           plugin.logger.debug('outgoingRequest starting a root span');
-          return plugin.tracer.startRootSpan(
+          return plugin.tracer.startWithRootSpan(
               traceOptions,
               plugin.getMakeRequestTraceFunction(request, options, plugin));
         } else {

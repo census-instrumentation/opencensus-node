@@ -180,7 +180,7 @@ describe('Http2Plugin', () => {
       const requestOptions = {':method': 'GET', ':path': testPath};
       const options = {name: 'TestRootSpan'};
 
-      return tracer.startRootSpan(options, async (root: Span) => {
+      return tracer.startWithRootSpan(options, async (root: Span) => {
         await http2Request.get(client, requestOptions).then((result) => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
@@ -200,7 +200,7 @@ describe('Http2Plugin', () => {
            const requestOptions = {':method': 'GET', ':path': testPath};
            const options = {name: 'TestRootSpan'};
 
-           return tracer.startRootSpan(options, async (root: Span) => {
+           return tracer.startWithRootSpan(options, async (root: Span) => {
              await http2Request.get(client, requestOptions).then((result) => {
                assert.ok(root.name.indexOf('TestRootSpan') >= 0);
                assert.strictEqual(root.spans.length, 1);
@@ -221,7 +221,7 @@ describe('Http2Plugin', () => {
       const num = 5;
       const options = {name: 'TestRootSpan'};
 
-      return tracer.startRootSpan(options, async (root: Span) => {
+      return tracer.startWithRootSpan(options, async (root: Span) => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
           await http2Request.get(client, requestOptions).then((result) => {

@@ -41,7 +41,7 @@ describe('Tracer', () => {
   describe('get/set currentRootSpan()', () => {
     const tracer = new CoreTracer().start(defaultConfig);
     it('should get the current RootSpan from tracer instance', () => {
-      tracer.startRootSpan(options, (root) => {
+      tracer.startWithRootSpan(options, (root) => {
         assert.ok(root);
         assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, root);
@@ -56,7 +56,7 @@ describe('Tracer', () => {
     before(() => {
       tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startWithRootSpan(options, (rootSpan) => {
         rootSpanLocal = rootSpan;
       });
     });
@@ -64,7 +64,7 @@ describe('Tracer', () => {
       assert.ok(rootSpanLocal instanceof Span);
     });
     it('should set current root span', () => {
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startWithRootSpan(options, (rootSpan) => {
         assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, rootSpan);
       });
@@ -76,7 +76,7 @@ describe('Tracer', () => {
     it('should set the current root span to null', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startWithRootSpan(options, (rootSpan) => {
         assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, rootSpan);
         tracer.clearCurrentTrace();
@@ -89,11 +89,11 @@ describe('Tracer', () => {
   describe('startChildSpan()', () => {
     let span: types.Span;
     let rootSpanLocal: types.Span;
-    let tracer: types.TracerBase;
+    let tracer: types.Tracer;
     before(() => {
       tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startWithRootSpan(options, (rootSpan) => {
         rootSpanLocal = rootSpan;
         span = tracer.startChildSpan(
             {name: 'spanName', kind: types.SpanKind.CLIENT});
