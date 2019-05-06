@@ -23,6 +23,8 @@ export * from './trace/instrumentation/types';
 export * from './trace/propagation/types';
 export * from './exporters/types';
 export * from './common/types';
+export * from './metrics/types';
+export * from './metrics/cumulative/types';
 export * from './metrics/gauges/types';
 export {Metric, MetricDescriptor, TimeSeries, MetricDescriptorType, LabelKey, LabelValue, Point as TimeSeriesPoint, DistributionValue, BucketOptions, Bucket as DistributionBucket, SummaryValue, Explicit, Exemplar, Timestamp, Snapshot, ValueAtPercentile, MetricProducerManager, MetricProducer} from './metrics/export/types';
 
@@ -74,6 +76,7 @@ export * from './metrics/metric-registry';
 
 // Cumulative CLASSES
 export * from './metrics/cumulative/cumulative';
+export * from './metrics/cumulative/derived-cumulative';
 
 // GAUGES CLASSES
 export * from './metrics/gauges/derived-gauge';

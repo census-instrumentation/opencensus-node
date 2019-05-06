@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2019, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,85 +17,83 @@
 import {getTimestampWithProcessHRTime} from '../../common/time-util';
 import {validateArrayElementsNotNull, validateNotNull} from '../../common/validations';
 import {LabelKey, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, TimeSeries, Timestamp} from '../export/types';
-import * as types from '../types';
+import {Meter} from '../types';
 import {AccessorInterface} from '../types';
 import * as util from '../utils';
 
 type ValueExtractor = () => number;
 
-interface GaugeEntry {
+interface CumulativeEntry {
   readonly labelValues: LabelValue[];
   readonly extractor: ValueExtractor;
+  prevValue: number;
 }
 
 /**
- * DerivedGauge metric
+ * DerivedCumulative metric is used to record aggregated metrics that
+ * represents a single numerical value accumulated over a time interval.
  */
-export class DerivedGauge implements types.Meter {
+export class DerivedCumulative implements Meter {
   private metricDescriptor: MetricDescriptor;
   private labelKeysLength: number;
-  private registeredPoints: Map<string, GaugeEntry> = new Map();
+  private registeredPoints: Map<string, CumulativeEntry> = new Map();
   private extractor?: ValueExtractor;
   private readonly constantLabelValues: LabelValue[];
-
-  private static readonly LABEL_VALUE = 'labelValue';
-  private static readonly LABEL_VALUES = 'labelValues';
-  private static readonly OBJECT = 'obj';
-  private static readonly ERROR_MESSAGE_INVALID_SIZE =
-      'Label Keys and Label Values don\'t have same size';
-  private static readonly ERROR_MESSAGE_DUPLICATE_TIME_SERIES =
-      'A different time series with the same labels already exists.';
-  private static readonly ERROR_MESSAGE_UNKNOWN_INTERFACE =
-      'Unknown interface/object type';
+  private startTime: Timestamp;
 
   /**
-   * Constructs a new DerivedGauge instance.
+   * Constructs a new DerivedCumulative instance.
    *
-   * @param name The name of the metric.
-   * @param description The description of the metric.
-   * @param unit The unit of the metric.
-   * @param type The type of metric.
-   * @param labelKeys The list of the label keys.
-   * @param constantLabels The map of constant labels for the Metric.
+   * @param {string} name The name of the metric.
+   * @param {string} description The description of the metric.
+   * @param {string} unit The unit of the metric.
+   * @param {MetricDescriptorType} type The type of metric.
+   * @param {LabelKey[]} labelKeys The list of the label keys.
+   * @param {Map<LabelKey, LabelValue>} constantLabels The map of constant
+   *     labels for the Metric.
+   * @param {Timestamp} startTime The time when the cumulative metric start
+   *     measuring the value.
    */
   constructor(
       name: string, description: string, unit: string,
       type: MetricDescriptorType, labelKeys: LabelKey[],
-      readonly constantLabels: Map<LabelKey, LabelValue>) {
+      readonly constantLabels: Map<LabelKey, LabelValue>,
+      startTime: Timestamp) {
     this.labelKeysLength = labelKeys.length;
     const keysAndConstantKeys = [...labelKeys, ...constantLabels.keys()];
     this.constantLabelValues = [...constantLabels.values()];
 
     this.metricDescriptor =
         {name, description, unit, type, labelKeys: keysAndConstantKeys};
+    this.startTime = startTime;
   }
 
   /**
    * Creates a TimeSeries. The value of a single point in the TimeSeries is
-   * observed from a obj or a function. The ValueExtractor is invoked whenever
+   * observed from a obj. The ValueExtractor is invoked whenever
    * metrics are collected, meaning the reported value is up-to-date.
    *
-   * @param labelValues The list of the label values.
+   * @param {LabelValue[]} labelValues The list of the label values.
    * @param objOrFn obj The obj to get the size or length or value from. If
    *     multiple options are available, the value (ToValueInterface) takes
    *     precedence first, followed by length and size. e.g value -> length ->
    *     size.
    *     fn is the function that will be called to get the current value
-   *     of the gauge.
+   *     of the cumulative.
    */
   createTimeSeries(labelValues: LabelValue[], objOrFn: AccessorInterface):
       void {
     validateArrayElementsNotNull(
-        validateNotNull(labelValues, DerivedGauge.LABEL_VALUES),
-        DerivedGauge.LABEL_VALUE);
-    validateNotNull(objOrFn, DerivedGauge.OBJECT);
+        validateNotNull(labelValues, 'labelValues'), 'labelValue');
+    validateNotNull(objOrFn, 'obj');
 
     const hash = util.hashLabelValues(labelValues);
     if (this.registeredPoints.has(hash)) {
-      throw new Error(DerivedGauge.ERROR_MESSAGE_DUPLICATE_TIME_SERIES);
+      throw new Error(
+          'A different time series with the same labels already exists.');
     }
     if (this.labelKeysLength !== labelValues.length) {
-      throw new Error(DerivedGauge.ERROR_MESSAGE_INVALID_SIZE);
+      throw new Error('Label Keys and Label Values don\'t have same size');
     }
 
     if (objOrFn instanceof Function) {
@@ -111,26 +109,27 @@ export class DerivedGauge implements types.Meter {
     } else if (util.isSizeMethodInterface(objOrFn)) {
       this.extractor = () => objOrFn.size();
     } else {
-      throw new Error(DerivedGauge.ERROR_MESSAGE_UNKNOWN_INTERFACE);
+      throw new Error('Unknown interface/object type');
     }
 
-    this.registeredPoints.set(hash, {labelValues, extractor: this.extractor});
+    this.registeredPoints.set(
+        hash, {labelValues, extractor: this.extractor, prevValue: 0});
   }
 
   /**
-   * Removes the TimeSeries from the gauge metric, if it is present. i.e.
+   * Removes the TimeSeries from the cumulative metric, if it is present. i.e.
    * references to previous Point objects are invalid (not part of the
    * metric).
    *
-   * @param labelValues The list of label values.
+   * @param {LabelValue[]} labelValues The list of label values.
    */
   removeTimeSeries(labelValues: LabelValue[]): void {
-    validateNotNull(labelValues, DerivedGauge.LABEL_VALUES);
+    validateNotNull(labelValues, 'labelValues');
     this.registeredPoints.delete(util.hashLabelValues(labelValues));
   }
 
   /**
-   * Removes all TimeSeries from the gauge metric. i.e. references to all
+   * Removes all TimeSeries from the cumulative metric. i.e. references to all
    * previous Point objects are invalid (not part of the metric).
    */
   clear(): void {
@@ -140,7 +139,8 @@ export class DerivedGauge implements types.Meter {
   /**
    * Provides a Metric with one or more TimeSeries.
    *
-   * @returns The Metric, or null if TimeSeries is not present in Metric.
+   * @returns {Metric} The Metric, or null if TimeSeries is not present in
+   *     Metric.
    */
   getMetric(): Metric|null {
     if (this.registeredPoints.size === 0) {
@@ -151,11 +151,20 @@ export class DerivedGauge implements types.Meter {
       descriptor: this.metricDescriptor,
       timeseries: Array.from(
           this.registeredPoints,
-          ([_, gaugeEntry]) => ({
-            labelValues:
-                [...gaugeEntry.labelValues, ...this.constantLabelValues],
-            points: [{value: gaugeEntry.extractor(), timestamp}]
-          } as TimeSeries))
+          ([_, cumulativeEntry]) => {
+            const newValue = cumulativeEntry.extractor();
+            const value = newValue > cumulativeEntry.prevValue ?
+                newValue :
+                cumulativeEntry.prevValue;
+            cumulativeEntry.prevValue = value;
+
+            return {
+              labelValues:
+                  [...cumulativeEntry.labelValues, ...this.constantLabelValues],
+              points: [{value, timestamp}],
+              startTimestamp: this.startTime
+            } as TimeSeries;
+          })
     };
   }
 }
