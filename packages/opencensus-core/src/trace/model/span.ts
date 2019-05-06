@@ -194,7 +194,7 @@ export class Span implements types.Span {
    * Adds an atribute to the span.
    * @param key Describes the value added.
    * @param value The result of an operation. If the value is a typeof object
-   * it has to be JSON.stringify-able, cannot contain circular dependencies.
+   *     it has to be JSON.stringify-able, cannot contain circular dependencies.
    */
   addAttribute(key: string, value: string|number|boolean|object) {
     if (this.attributes[key]) {
