@@ -195,6 +195,10 @@ describe('Span', () => {
         assert.equal(
             span.attributes['testKey' + attType], 'testValue' + attType);
       });
+      span.addAttribute('object', {foo: 'bar'});
+      assert.equal(span.attributes['object'], '{"foo":"bar"}');
+      span.addAttribute('array', [1, 2, 3]);
+      assert.equal(span.attributes['array'], '[1,2,3]');
     });
 
     it('should drop extra attributes', () => {

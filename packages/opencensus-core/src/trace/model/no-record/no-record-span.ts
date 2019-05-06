@@ -149,7 +149,7 @@ export class NoRecordSpan implements types.Span {
   }
 
   /** No-op implementation of this method. */
-  addAttribute(key: string, value: string|number|boolean) {}
+  addAttribute(key: string, value: string|number|boolean|object) {}
 
   /** No-op implementation of this method. */
   addAnnotation(

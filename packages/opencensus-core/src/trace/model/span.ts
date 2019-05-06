@@ -193,9 +193,10 @@ export class Span implements types.Span {
   /**
    * Adds an atribute to the span.
    * @param key Describes the value added.
-   * @param value The result of an operation.
+   * @param value The result of an operation. If the value is a typeof object
+   *     it has to be JSON.stringify-able, cannot contain circular dependencies.
    */
-  addAttribute(key: string, value: string|number|boolean) {
+  addAttribute(key: string, value: string|number|boolean|object) {
     if (this.attributes[key]) {
       delete this.attributes[key];
     }
@@ -208,7 +209,9 @@ export class Span implements types.Span {
         delete this.attributes[attributeKeyToDelete];
       }
     }
-    this.attributes[key] = value;
+    const serializedValue =
+        typeof value === 'object' ? JSON.stringify(value) : value;
+    this.attributes[key] = serializedValue;
   }
 
   /**
