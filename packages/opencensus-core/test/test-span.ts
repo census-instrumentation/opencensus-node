@@ -41,7 +41,7 @@ describe('Span', () => {
   /**
    * Should create a span
    */
-  describe('new Span(tracer, )', () => {
+  describe('new Span()', () => {
     it('should create a Span instance', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       const span = new Span(tracer, rootSpan);

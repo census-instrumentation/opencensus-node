@@ -256,7 +256,8 @@ class RootSpanVerifier implements SpanEventListener {
   onStartSpan(span: Span): void {}
   onEndSpan(span: Span) {
     // TODO(hekike): Tests depends on the order of recorded spans.
-    // Capturing child spand breaks this order.
+    // Capturing child spans breaks this order.
+    // https://github.com/census-instrumentation/opencensus-node/issues/501
     if (span.constructor.name === 'RootSpan') {
       this.endedRootSpans.push(span);
     }

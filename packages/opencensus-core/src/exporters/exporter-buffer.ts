@@ -75,11 +75,11 @@ export class ExporterBuffer {
   }
 
   /**
-   * Add a rootSpan in the buffer.
-   * @param root RootSpan to be added in the buffer.
+   * Add a span in the buffer.
+   * @param span Span to be added in the buffer.
    */
-  addToBuffer(root: modelTypes.Span) {
-    this.queue.push(root);
+  addToBuffer(span: modelTypes.Span) {
+    this.queue.push(span);
     this.logger.debug('ExporterBuffer: added new span');
 
     if (this.queue.length > this.bufferSize) {

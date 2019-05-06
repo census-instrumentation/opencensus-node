@@ -98,24 +98,24 @@ export class JaegerTraceExporter implements Exporter {
 
   /**
    * Is called whenever a span is ended.
-   * @param root the ended span
+   * @param span the ended span
    */
-  onEndSpan(root: Span) {
+  onEndSpan(span: Span) {
     // Add spans of a trace together when root is ended, skip non root spans.
-    if (root.constructor.name !== 'RootSpan') {
+    if (span.constructor.name !== 'RootSpan') {
       return;
     }
 
-    this.logger.debug('onEndSpan: adding rootSpan: %s', root.name);
+    this.logger.debug('onEndSpan: adding rootSpan: %s', span.name);
 
     // UDPSender buffer is limited by maxPacketSize
-    this.addSpanToSenderBuffer(root)
+    this.addSpanToSenderBuffer(span)
         .then(result => {
-          this.addToBuffer(root, result as number);
-          for (const span of root.spans) {
-            this.addSpanToSenderBuffer(span)
+          this.addToBuffer(span, result as number);
+          for (const localSpan of span.spans) {
+            this.addSpanToSenderBuffer(localSpan)
                 .then(result => {
-                  this.addToBuffer(span, result as number);
+                  this.addToBuffer(localSpan, result as number);
                 })
                 .catch(err => {
                   return;
