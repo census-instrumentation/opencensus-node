@@ -242,9 +242,8 @@ export class TracezPageHandler {
       const renderedSummary =
           ejs.render(summaryFile, {latencyBucketNames}, options);
       /** HTML selected trace list */
-      const renderedSelectedTraces: string = selectedTraces ?
-          ejs.render(spansFile, {selectedTraces}, options) :
-          '';
+      const renderedSelectedTraces: string =
+          selectedTraces ? ejs.render(spansFile, selectedTraces, options) : '';
       /** RootSpan lines */
       const renderedSpanCells: string =
           spanCells.map(spanCell => ejs.render(spanCellFile, spanCell, options))
