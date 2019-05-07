@@ -370,6 +370,170 @@ describe('addDerivedDoubleGauge', () => {
   });
 });
 
+describe('addInt64Cumulative', () => {
+  let registry: MetricRegistry;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
+  });
+
+  it('should return a metric', () => {
+    const int64Gauge = registry.addInt64Cumulative(METRIC_NAME, METRIC_OPTIONS);
+    const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
+    pointEntry.inc();
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      labelKeys: LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.CUMULATIVE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 1);
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+  });
+
+  it('should return a metric without options', () => {
+    const int64Gauge = registry.addInt64Cumulative(METRIC_NAME);
+    const pointEntry = int64Gauge.getDefaultTimeSeries();
+    pointEntry.inc(100);
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: '',
+      labelKeys: [],
+      unit: UNIT,
+      type: MetricDescriptorType.CUMULATIVE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 100);
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+  });
+
+  it('should throw an error when the duplicate keys in labelKeys and constantLabels',
+     () => {
+       const constantLabels = new Map();
+       constantLabels.set({key: 'k1'}, {value: 'v1'});
+       const labelKeys = [{key: 'k1', description: 'desc'}];
+       assert.throws(() => {
+         registry.addInt64Cumulative(METRIC_NAME, {constantLabels, labelKeys});
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys$/);
+     });
+});
+
+describe('addDoubleCumulative', () => {
+  let registry: MetricRegistry;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
+  });
+
+  it('should return a metric', () => {
+    const int64Gauge =
+        registry.addDoubleCumulative(METRIC_NAME, METRIC_OPTIONS);
+    const pointEntry = int64Gauge.getOrCreateTimeSeries(LABEL_VALUES_200);
+    pointEntry.inc(1.1);
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      labelKeys: LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.CUMULATIVE_DOUBLE
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 1.1);
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+  });
+
+  it('should return a metric without options', () => {
+    const int64Gauge = registry.addDoubleCumulative(METRIC_NAME);
+    const pointEntry = int64Gauge.getDefaultTimeSeries();
+    pointEntry.inc();
+    pointEntry.inc(100.12);
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: '',
+      labelKeys: [],
+      unit: UNIT,
+      type: MetricDescriptorType.CUMULATIVE_DOUBLE
+    });
+    assert.strictEqual(timeseries.length, 1);
+    const [{points}] = timeseries;
+    const [point] = points;
+    assert.equal(point.value, 101.12);
+    assert.deepStrictEqual(
+        point.timestamp,
+        {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
+  });
+
+  it('should throw an error when the duplicate keys in labelKeys and constantLabels',
+     () => {
+       const constantLabels = new Map();
+       constantLabels.set({key: 'k1'}, {value: 'v1'});
+       const labelKeys = [{key: 'k1', description: 'desc'}];
+       assert.throws(() => {
+         registry.addDoubleCumulative(METRIC_NAME, {constantLabels, labelKeys});
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys$/);
+     });
+});
+
 describe('Add multiple gauges', () => {
   let registry: MetricRegistry;
   const realHrtimeFn = process.hrtime;
@@ -406,9 +570,13 @@ describe('Add multiple gauges', () => {
       size: () => arr.length,
     });
 
+    const int64Cumulative =
+        registry.addInt64Cumulative('metric-name4', METRIC_OPTIONS);
+    int64Cumulative.getOrCreateTimeSeries(LABEL_VALUES_200).inc();
+
     const metrics = registry.getMetricProducer().getMetrics();
-    assert.strictEqual(metrics.length, 3);
-    const [{descriptor: descriptor1, timeseries: timeseries1}, {descriptor: descriptor2, timeseries: timeseries2}, {descriptor: descriptor3, timeseries: timeseries3}] = metrics;
+    assert.strictEqual(metrics.length, 4);
+    const [{descriptor: descriptor1, timeseries: timeseries1}, {descriptor: descriptor2, timeseries: timeseries2}, {descriptor: descriptor3, timeseries: timeseries3}, {descriptor: descriptor4, timeseries: timeseries4}] = metrics;
     assert.deepStrictEqual(descriptor1, {
       name: 'metric-name1',
       description: METRIC_DESCRIPTION,
@@ -430,6 +598,13 @@ describe('Add multiple gauges', () => {
       unit: UNIT,
       type: MetricDescriptorType.GAUGE_INT64
     });
+    assert.deepStrictEqual(descriptor4, {
+      name: 'metric-name4',
+      description: METRIC_DESCRIPTION,
+      labelKeys: LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.CUMULATIVE_INT64
+    });
     assert.strictEqual(timeseries1.length, 1);
     assert.strictEqual(timeseries1[0].points.length, 1);
     assert.equal(timeseries1[0].points[0].value, 100);
@@ -446,5 +621,8 @@ describe('Add multiple gauges', () => {
         timeseries1[0].points[0].timestamp, timeseries2[0].points[0].timestamp);
     assert.deepStrictEqual(
         timeseries2[0].points[0].timestamp, timeseries3[0].points[0].timestamp);
+    assert.strictEqual(timeseries4.length, 1);
+    assert.strictEqual(timeseries4[0].points.length, 1);
+    assert.equal(timeseries4[0].points[0].value, 1);
   });
 });

@@ -16,6 +16,7 @@
 
 import {validateArrayElementsNotNull, validateDuplicateKeys, validateMapElementNotNull, validateNotNull} from '../common/validations';
 import {MeasureUnit} from '../stats/types';
+import {Cumulative} from './cumulative/cumulative';
 import {BaseMetricProducer} from './export/base-metric-producer';
 import {Metric, MetricDescriptorType, MetricProducer} from './export/types';
 import {DerivedGauge} from './gauges/derived-gauge';
@@ -163,6 +164,68 @@ export class MetricRegistry {
         MetricDescriptorType.GAUGE_DOUBLE, labelKeysCopy, constantLabels);
     this.registerMetric(name, derivedDoubleGauge);
     return derivedDoubleGauge;
+  }
+
+  /**
+   * Builds a new Int64 cumulative to be added to the registry. This API is
+   * useful when you want to manually increase and reset values as per service
+   * requirements.
+   *
+   * @param {string} name The name of the metric.
+   * @param {MetricOptions} options The options for the metric.
+   * @returns {Cumulative} A Int64 Cumulative metric.
+   */
+  addInt64Cumulative(name: string, options?: MetricOptions): Cumulative {
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
+
+    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
+    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
+    validateDuplicateKeys(labelKeys, constantLabels);
+
+    const labelKeysCopy = Object.assign([], labelKeys);
+    const int64Cumulative = new Cumulative(
+        validateNotNull(name, MetricRegistry.NAME), description, unit,
+        MetricDescriptorType.CUMULATIVE_INT64, labelKeysCopy, constantLabels);
+    this.registerMetric(name, int64Cumulative);
+    return int64Cumulative;
+  }
+
+  /**
+   * Builds a new double cumulative to be added to the registry. This API is
+   * useful when you want to manually increase and reset values as per service
+   * requirements.
+   *
+   * @param {string} name The name of the metric.
+   * @param {MetricOptions} options The options for the metric.
+   * @returns {Cumulative} A Double Cumulative metric.
+   */
+  addDoubleCumulative(name: string, options?: MetricOptions): Cumulative {
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
+
+    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
+    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
+    validateDuplicateKeys(labelKeys, constantLabels);
+
+    const labelKeysCopy = Object.assign([], labelKeys);
+    const doubleCumulative = new Cumulative(
+        validateNotNull(name, MetricRegistry.NAME), description, unit,
+        MetricDescriptorType.CUMULATIVE_DOUBLE, labelKeysCopy, constantLabels);
+    this.registerMetric(name, doubleCumulative);
+    return doubleCumulative;
   }
 
   /**
