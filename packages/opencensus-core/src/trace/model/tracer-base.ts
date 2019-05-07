@@ -105,10 +105,9 @@ export class CoreTracerBase implements types.TracerBase {
   /**
    * Starts a root span.
    * @param options A TraceOptions object to start a root span.
-   * @param fn A callback function to run after starting a root span.
+   * @returns {Span} A new root span.
    */
-  startRootSpan<T>(options: types.TraceOptions, fn: (root: types.Span) => T):
-      T {
+  startRootSpan(options: types.TraceOptions): types.Span {
     const spanContext: types.SpanContext = options.spanContext ||
         {spanId: '', traceId: uuid.v4().split('-').join('')};
     const parentSpanId = spanContext.spanId;
@@ -125,21 +124,21 @@ export class CoreTracerBase implements types.TracerBase {
         const rootSpan =
             new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
         rootSpan.start();
-        return fn(rootSpan);
+        return rootSpan;
       }
 
       // Sampling is off
       this.logger.debug('Sampling is off, starting new no record root span');
       const noRecordRootSpan = new NoRecordRootSpan(
           this, name, kind, traceId, parentSpanId, traceState);
-      return fn(noRecordRootSpan);
+      return noRecordRootSpan;
     }
 
     // Tracer is inactive
     this.logger.debug('Tracer is inactive, starting new no record root span');
     const noRecordRootSpan = new NoRecordRootSpan(
         this, name, kind, traceId, parentSpanId, traceState);
-    return fn(noRecordRootSpan);
+    return noRecordRootSpan;
   }
 
   /** Notifies listeners of the span start. */

@@ -72,7 +72,7 @@ describe('Zipkin Exporter', function() {
       tracer.registerSpanEventListener(exporter);
       tracer.start(defaultConfig);
 
-      tracer.startRootSpan({name: 'root-test'}, (rootSpan: Span) => {
+      tracer.startWithRootSpan({name: 'root-test'}, (rootSpan: Span) => {
         const span =
             rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
         span.end();
@@ -89,7 +89,7 @@ describe('Zipkin Exporter', function() {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
-      return tracer.startRootSpan(
+      return tracer.startWithRootSpan(
           {name: 'root-test'}, async (rootSpan: Span) => {
             const span = rootSpan.startChildSpan(
                 {name: 'spanTest', kind: SpanKind.CLIENT});
@@ -108,7 +108,7 @@ describe('Zipkin Exporter', function() {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
-      return tracer.startRootSpan({name: 'root-test'}, (rootSpan: Span) => {
+      return tracer.startWithRootSpan({name: 'root-test'}, (rootSpan: Span) => {
         const span =
             rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
         span.addAttribute('my-int-attribute', 100);
@@ -183,7 +183,7 @@ describe('Zipkin Exporter', function() {
          const tracer = new CoreTracer();
          tracer.start(defaultConfig);
 
-         return tracer.startRootSpan(
+         return tracer.startWithRootSpan(
              {name: 'root-test'}, async (rootSpan: Span) => {
                const span = rootSpan.startChildSpan(
                    {name: 'spanTest', kind: SpanKind.CLIENT});

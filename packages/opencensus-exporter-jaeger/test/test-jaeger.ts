@@ -107,7 +107,7 @@ describe('Jaeger Exporter', () => {
   /* Should export spans to Jaeger */
   describe('test spans are valid', () => {
     it('should encode as thrift', () => {
-      return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
+      return tracer.startWithRootSpan({name: 'root-s01'}, (rootSpan) => {
         const span = tracer.startChildSpan({name: 'child-s01'});
         span.addAttribute('testBool', true);
         span.addAttribute('testString', 'here');
@@ -193,7 +193,7 @@ describe('Jaeger Exporter', () => {
   /* Should export spans to Jaeger */
   describe('publish()', () => {
     it('should export spans to Jaeger', () => {
-      return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
+      return tracer.startWithRootSpan({name: 'root-s01'}, (rootSpan) => {
         const span = tracer.startChildSpan({name: 'child-s01'});
         span.end();
         rootSpan.end();
@@ -209,7 +209,7 @@ describe('Jaeger Exporter', () => {
   describe('addToBuffer force flush by timeout ', () => {
     it('should flush by timeout', (done) => {
       assert.strictEqual(exporter.queue.length, 0);
-      tracer.startRootSpan({name: 'root-s02'}, (rootSpan) => {
+      tracer.startWithRootSpan({name: 'root-s02'}, (rootSpan) => {
         const span = tracer.startChildSpan({name: 'child-s02'});
         span.end();
         rootSpan.end();

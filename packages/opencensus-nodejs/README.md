@@ -48,7 +48,7 @@ In addition to automatic tracing, it is possible to manually create your own roo
 
 ```typescript
 const rootSpanOptions = { name: 'your root span' };
-tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan) => {
+tracing.tracer.startWithRootSpan(rootSpanOptions, (rootSpan) => {
 
     // You can create as many child spans as needed
     childSpan = tracing.tracer.startChildSpan({ name: 'name of your child span' });

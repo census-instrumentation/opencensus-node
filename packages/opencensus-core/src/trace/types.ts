@@ -19,7 +19,7 @@ import * as configTypes from './config/types';
 import * as modelTypes from './model/types';
 
 /** Main interface for tracing. */
-export interface Tracing {
+export interface TracingBase {
   /** Object responsible for managing a trace. */
   readonly tracer: modelTypes.TracerBase;
 
@@ -51,4 +51,10 @@ export interface Tracing {
    * @param exporter The exporter to stop sending traces to.
    */
   unregisterExporter(exporter: exportersTypes.Exporter): Tracing;
+}
+
+/** Main interface for tracing. */
+export interface Tracing extends TracingBase {
+  /** Object responsible for managing a trace. */
+  readonly tracer: modelTypes.Tracer;
 }

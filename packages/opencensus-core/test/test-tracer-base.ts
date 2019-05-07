@@ -127,9 +127,7 @@ describe('Tracer Base', () => {
     before(() => {
       const tracer = new CoreTracerBase();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
-        rootSpanLocal = rootSpan;
-      });
+      rootSpanLocal = tracer.startRootSpan(options);
     });
     it('should create a new RootSpan instance', () => {
       assert.ok(rootSpanLocal instanceof Span);
@@ -145,17 +143,15 @@ describe('Tracer Base', () => {
 
     it('should start the new NoRecordRootSpan instance', () => {
       tracer.start(config);
-      tracer.startRootSpan(options, (rootSpan) => {
-        assert.ok(rootSpan instanceof NoRecordRootSpan);
-      });
+      const rootSpan = tracer.startRootSpan(options);
+      assert.ok(rootSpan instanceof NoRecordRootSpan);
     });
 
     it('should start the new RootSpan instance when always sampling provided at span level',
        () => {
          tracer.start(config);
-         tracer.startRootSpan({name: 'test', samplingRate: 1}, (rootSpan) => {
-           assert.ok(rootSpan);
-         });
+         const rootSpan = tracer.startRootSpan({name: 'test', samplingRate: 1});
+         assert.ok(rootSpan);
        });
   });
 
@@ -165,17 +161,15 @@ describe('Tracer Base', () => {
 
     it('should start the new RootSpan instance', () => {
       tracer.start(config);
-      tracer.startRootSpan(options, (rootSpan) => {
-        assert.ok(rootSpan);
-      });
+      const rootSpan = tracer.startRootSpan(options);
+      assert.ok(rootSpan);
     });
 
     it('should start the new NoRecordRootSpan instance when never sampling provided at span level',
        () => {
          tracer.start(config);
-         tracer.startRootSpan({name: 'test', samplingRate: 0}, (rootSpan) => {
-           assert.ok(rootSpan instanceof NoRecordRootSpan);
-         });
+         const rootSpan = tracer.startRootSpan({name: 'test', samplingRate: 0});
+         assert.ok(rootSpan instanceof NoRecordRootSpan);
        });
   });
 
@@ -184,9 +178,8 @@ describe('Tracer Base', () => {
        () => {
          const tracer = new CoreTracerBase();
          assert.strictEqual(tracer.active, false);
-         tracer.startRootSpan(options, (rootSpan) => {
-           assert.ok(rootSpan instanceof NoRecordRootSpan);
-         });
+         const rootSpan = tracer.startRootSpan(options);
+         assert.ok(rootSpan instanceof NoRecordRootSpan);
        });
   });
 
@@ -197,11 +190,10 @@ describe('Tracer Base', () => {
     it('should create new RootSpan instance, no propagation', () => {
       const tracer = new CoreTracerBase();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(traceOptions, (rootSpan) => {
-        assert.ok(rootSpan);
-        assert.strictEqual(rootSpan.name, traceOptions.name);
-        assert.strictEqual(rootSpan.kind, traceOptions.kind);
-      });
+      const rootSpan = tracer.startRootSpan(traceOptions);
+      assert.ok(rootSpan);
+      assert.strictEqual(rootSpan.name, traceOptions.name);
+      assert.strictEqual(rootSpan.kind, traceOptions.kind);
     });
 
     const spanContextPropagated = {
@@ -215,13 +207,12 @@ describe('Tracer Base', () => {
       const tracer = new CoreTracerBase();
       tracer.start(defaultConfig);
       traceOptions.spanContext = spanContextPropagated;
-      tracer.startRootSpan(traceOptions, (rootSpan) => {
-        assert.ok(rootSpan);
-        assert.strictEqual(rootSpan.name, traceOptions.name);
-        assert.strictEqual(rootSpan.kind, traceOptions.kind);
-        assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
-        assert.strictEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
-      });
+      const rootSpan = tracer.startRootSpan(traceOptions);
+      assert.ok(rootSpan);
+      assert.strictEqual(rootSpan.name, traceOptions.name);
+      assert.strictEqual(rootSpan.kind, traceOptions.kind);
+      assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
+      assert.strictEqual(rootSpan.parentSpanId, spanContextPropagated.spanId);
     });
 
     it('should create the new RootSpan with no propagation (options bit is not set)',
@@ -229,14 +220,13 @@ describe('Tracer Base', () => {
          const tracer = new CoreTracerBase();
          tracer.start(defaultConfig);
          traceOptions.spanContext!.options = 0x0;
-         tracer.startRootSpan(traceOptions, (rootSpan) => {
-           assert.ok(rootSpan);
-           assert.strictEqual(rootSpan.name, traceOptions.name);
-           assert.strictEqual(rootSpan.kind, traceOptions.kind);
-           assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
-           assert.strictEqual(
-               rootSpan.parentSpanId, spanContextPropagated.spanId);
-         });
+         const rootSpan = tracer.startRootSpan(traceOptions);
+         assert.ok(rootSpan);
+         assert.strictEqual(rootSpan.name, traceOptions.name);
+         assert.strictEqual(rootSpan.kind, traceOptions.kind);
+         assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
+         assert.strictEqual(
+             rootSpan.parentSpanId, spanContextPropagated.spanId);
        });
 
     it('should create a tracer with default TraceParams when no parameters are specified upon initialisation',
@@ -280,10 +270,9 @@ describe('Tracer Base', () => {
     before(() => {
       tracer = new CoreTracerBase();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
-        span = tracer.startChildSpan(
-            {name: 'spanName', kind: types.SpanKind.CLIENT, childOf: rootSpan});
-      });
+      const rootSpan = tracer.startRootSpan(options);
+      span = tracer.startChildSpan(
+          {name: 'spanName', kind: types.SpanKind.CLIENT, childOf: rootSpan});
     });
     it('should create a Span instance', () => {
       assert.ok(span instanceof Span);
@@ -295,72 +284,67 @@ describe('Tracer Base', () => {
     });
 
     it('should start a span with SpanObject', () => {
-      tracer.startRootSpan(options, (rootSpan) => {
-        const spanWithObject = tracer.startChildSpan(
-            {name: 'my-span', kind: types.SpanKind.SERVER, childOf: rootSpan});
-        assert.ok(spanWithObject.started);
-        assert.strictEqual(spanWithObject.name, 'my-span');
-        assert.strictEqual(spanWithObject.kind, types.SpanKind.SERVER);
-      });
+      const rootSpan = tracer.startRootSpan(options);
+      const spanWithObject = tracer.startChildSpan(
+          {name: 'my-span', kind: types.SpanKind.SERVER, childOf: rootSpan});
+      assert.ok(spanWithObject.started);
+      assert.strictEqual(spanWithObject.name, 'my-span');
+      assert.strictEqual(spanWithObject.kind, types.SpanKind.SERVER);
     });
 
     it('should start a span with SpanObject-name', () => {
-      tracer.startRootSpan(options, (rootSpan) => {
-        const spanWithObject =
-            tracer.startChildSpan({name: 'my-span1', childOf: rootSpan});
-        assert.ok(spanWithObject.started);
-        assert.strictEqual(spanWithObject.name, 'my-span1');
-        assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
-      });
+      const rootSpan = tracer.startRootSpan(options);
+      const spanWithObject =
+          tracer.startChildSpan({name: 'my-span1', childOf: rootSpan});
+      assert.ok(spanWithObject.started);
+      assert.strictEqual(spanWithObject.name, 'my-span1');
+      assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
     });
 
     it('should start a no-record span without params', () => {
-      tracer.startRootSpan(options, (rootSpan) => {
-        const spanWithObject = tracer.startChildSpan();
-        assert.strictEqual(spanWithObject.name, 'no-record');
-        assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
-      });
+      const spanWithObject = tracer.startChildSpan();
+      assert.strictEqual(spanWithObject.name, 'no-record');
+      assert.strictEqual(spanWithObject.kind, types.SpanKind.UNSPECIFIED);
     });
 
     it('should support nested children', () => {
-      tracer.startRootSpan(options, (rootSpan) => {
-        assert.strictEqual(rootSpan.numberOfChildren, 0);
-        const child1 = tracer.startChildSpan({
-          name: 'child1',
-          kind: types.SpanKind.UNSPECIFIED,
-          childOf: rootSpan
-        });
-        assert.strictEqual(rootSpan.numberOfChildren, 1);
-        assert.strictEqual(child1.numberOfChildren, 0);
-        const child2 = tracer.startChildSpan({
-          name: 'child2',
-          kind: types.SpanKind.UNSPECIFIED,
-          childOf: rootSpan
-        });
-        assert.strictEqual(rootSpan.numberOfChildren, 2);
-        const grandchild1 = tracer.startChildSpan({
-          name: 'grandchild1',
-          kind: types.SpanKind.UNSPECIFIED,
-          childOf: child1
-        });
-        assert.strictEqual(rootSpan.numberOfChildren, 2);
-        assert.strictEqual(child1.numberOfChildren, 1);
-        assert.strictEqual(child2.numberOfChildren, 0);
-        assert.strictEqual(grandchild1.numberOfChildren, 0);
-
-        assert.strictEqual(rootSpan.spans.length, 2);
-        assert.strictEqual(child1, rootSpan.spans[0]);
-        assert.strictEqual(child2, rootSpan.spans[1]);
-        assert.strictEqual(grandchild1.parentSpanId, child1.id);
-
-        assert.strictEqual(child1.spans.length, 1);
-        assert.strictEqual(grandchild1, child1.spans[0]);
-
-        assert.strictEqual(child2.spans.length, 0);
-        assert.strictEqual(grandchild1.spans.length, 0);
-
-        assert.strictEqual(rootSpan.allDescendants().length, 3);
+      const rootSpan = tracer.startRootSpan(options);
+      assert.strictEqual(rootSpan.numberOfChildren, 0);
+      const child1 = tracer.startChildSpan({
+        name: 'child1',
+        kind: types.SpanKind.UNSPECIFIED,
+        childOf: rootSpan
       });
+      assert.strictEqual(rootSpan.numberOfChildren, 1);
+      assert.strictEqual(child1.numberOfChildren, 0);
+      const child2 = tracer.startChildSpan({
+        name: 'child2',
+        kind: types.SpanKind.UNSPECIFIED,
+        childOf: rootSpan
+      });
+      assert.strictEqual(rootSpan.numberOfChildren, 2);
+      const grandchild1 = tracer.startChildSpan({
+        name: 'grandchild1',
+        kind: types.SpanKind.UNSPECIFIED,
+        childOf: child1
+      });
+      assert.strictEqual(rootSpan.numberOfChildren, 2);
+      assert.strictEqual(child1.numberOfChildren, 1);
+      assert.strictEqual(child2.numberOfChildren, 0);
+      assert.strictEqual(grandchild1.numberOfChildren, 0);
+
+      assert.strictEqual(rootSpan.spans.length, 2);
+      assert.strictEqual(child1, rootSpan.spans[0]);
+      assert.strictEqual(child2, rootSpan.spans[1]);
+      assert.strictEqual(grandchild1.parentSpanId, child1.id);
+
+      assert.strictEqual(child1.spans.length, 1);
+      assert.strictEqual(grandchild1, child1.spans[0]);
+
+      assert.strictEqual(child2.spans.length, 0);
+      assert.strictEqual(grandchild1.spans.length, 0);
+
+      assert.strictEqual(rootSpan.allDescendants().length, 3);
     });
   });
 
@@ -383,10 +367,9 @@ describe('Tracer Base', () => {
       tracer.registerSpanEventListener(eventListener);
       tracer.start(defaultConfig);
 
-      tracer.startRootSpan(options, (rootSpan) => {
-        rootSpan.end();
-        assert.equal(eventListener.testCount, tracer.eventListeners.length);
-      });
+      const rootSpan = tracer.startRootSpan(options);
+      rootSpan.end();
+      assert.equal(eventListener.testCount, tracer.eventListeners.length);
     });
   });
 });
