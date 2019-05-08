@@ -60,10 +60,10 @@ export class InstanaTraceExporter implements Exporter {
     this.exporterBuffer = new ExporterBuffer(this, options);
   }
 
-  onStartSpan(root: Span) {}
+  onStartSpan(span: Span) {}
 
-  onEndSpan(root: Span) {
-    this.exporterBuffer.addToBuffer(root);
+  onEndSpan(span: Span) {
+    this.exporterBuffer.addToBuffer(span);
   }
 
   /**

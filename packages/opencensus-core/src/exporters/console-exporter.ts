@@ -48,14 +48,14 @@ export class ConsoleExporter implements Exporter {
     this.logger = config.logger;
   }
 
-  onStartSpan(root: modelTypes.Span) {}
+  onStartSpan(span: modelTypes.Span) {}
 
   /**
    * Event called when a span is ended.
-   * @param root Ended span.
+   * @param span Ended span.
    */
-  onEndSpan(root: modelTypes.Span) {
-    this.buffer.addToBuffer(root);
+  onEndSpan(span: modelTypes.Span) {
+    this.buffer.addToBuffer(span);
   }
 
   /**

@@ -44,7 +44,7 @@ describe('Span', () => {
   describe('new Span()', () => {
     it('should create a Span instance', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       assert.ok(span instanceof Span);
     });
   });
@@ -56,7 +56,7 @@ describe('Span', () => {
     it('should return the trace id', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       assert.equal(span.traceId, rootSpan.traceId);
     });
   });
@@ -69,7 +69,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       const context = span.spanContext;
 
       assert.equal(context.traceId, rootSpan.traceId);
@@ -87,7 +87,7 @@ describe('Span', () => {
     before(() => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      span = new Span(rootSpan);
+      span = new Span(tracer, rootSpan);
     });
     it('should get startTime()', () => {
       assert.ok(span.startTime);
@@ -108,7 +108,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       assert.ok(span.started);
@@ -122,7 +122,7 @@ describe('Span', () => {
     it('should not change the initial startTime', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
       const initialStartTime = span.startTime;
       span.start();
@@ -139,7 +139,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
       span.end();
 
@@ -155,7 +155,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.end();
 
       assert.ok(!span.ended);
@@ -169,7 +169,7 @@ describe('Span', () => {
     it('should not change the endTime', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
       span.end();
       const initialEndTime = span.endTime;
@@ -187,7 +187,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       ['String', 'Number', 'Boolean'].map(attType => {
@@ -205,7 +205,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
       for (let i = 0; i < 40; i++) {
         span.addAttribute('attr' + i, 100);
@@ -230,7 +230,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       span.addAnnotation('description test', {} as Attributes, Date.now());
@@ -244,7 +244,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
       for (let i = 0; i < 40; i++) {
         span.addAnnotation('description test', {} as Attributes, Date.now());
@@ -268,7 +268,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       span.addLink(
@@ -282,7 +282,7 @@ describe('Span', () => {
     it('should drop extra links', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       for (let i = 0; i < 35; i++) {
@@ -308,7 +308,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       span.addMessageEvent(
@@ -332,7 +332,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
       for (let i = 0; i < 35; i++) {
         span.addMessageEvent(types.MessageEventType.UNSPECIFIED, 1);
@@ -348,7 +348,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       assert.equal(rootSpan.status.code, 0);
@@ -360,7 +360,7 @@ describe('Span', () => {
     it('should set an error status', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
       span.setStatus(types.CanonicalCode.PERMISSION_DENIED, 'This is an error');
 

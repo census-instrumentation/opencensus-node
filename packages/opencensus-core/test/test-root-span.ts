@@ -293,7 +293,7 @@ describe('RootSpan', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      const span = new Span(rootSpan);
+      const span = new Span(tracer, rootSpan);
       span.start();
 
       rootSpan.addLink(

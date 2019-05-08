@@ -180,20 +180,20 @@ export class CoreTracerBase implements types.TracerBase {
     }
   }
 
-  private notifyStartSpan(root: types.Span) {
-    this.logger.debug('starting to notify listeners the start of rootspans');
+  private notifyStartSpan(span: types.Span) {
+    this.logger.debug('starting to notify listeners the start of spans');
     if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
       for (const listener of this.eventListenersLocal) {
-        listener.onStartSpan(root);
+        listener.onStartSpan(span);
       }
     }
   }
 
-  private notifyEndSpan(root: types.Span) {
-    this.logger.debug('starting to notify listeners the end of rootspans');
+  private notifyEndSpan(span: types.Span) {
+    this.logger.debug('starting to notify listeners the end of spans');
     if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
       for (const listener of this.eventListenersLocal) {
-        listener.onEndSpan(root);
+        listener.onEndSpan(span);
       }
     }
   }

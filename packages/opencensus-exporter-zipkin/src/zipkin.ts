@@ -73,14 +73,14 @@ export class ZipkinTraceExporter implements Exporter {
 
   /**
    * Is called whenever a span is ended.
-   * @param root the ended span
+   * @param span the ended span
    */
-  onEndSpan(root: Span) {
-    this.buffer.addToBuffer(root);
+  onEndSpan(span: Span) {
+    this.buffer.addToBuffer(span);
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: Span) {}
+  onStartSpan(span: Span) {}
 
   /**
    * Send a trace to zipkin service
@@ -155,7 +155,7 @@ export class ZipkinTraceExporter implements Exporter {
    * @param span Span to be translated
    */
   translateSpan(span: Span): TranslatedSpan {
-    const spanTraslated = {
+    const spanTranslated = {
       traceId: span.traceId,
       name: span.name,
       id: span.id,
@@ -165,16 +165,16 @@ export class ZipkinTraceExporter implements Exporter {
       timestamp: span.startTime.getTime() * MICROS_PER_MILLI,
       duration: Math.round(span.duration * MICROS_PER_MILLI),
       debug: true,
-      shared: true,
+      shared: !span.parentSpanId,
       localEndpoint: {serviceName: this.serviceName},
       tags: this.createTags(span.attributes, span.status),
       annotations: this.createAnnotations(span.annotations, span.messageEvents)
     } as TranslatedSpan;
 
     if (span.parentSpanId) {
-      spanTraslated.parentId = span.parentSpanId;
+      spanTranslated.parentId = span.parentSpanId;
     }
-    return spanTraslated;
+    return spanTranslated;
   }
 
   /** Converts OpenCensus Attributes and Status to Zipkin Tags format. */

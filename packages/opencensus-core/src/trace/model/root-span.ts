@@ -20,8 +20,6 @@ import * as types from './types';
 
 /** Defines a root span */
 export class RootSpan extends Span {
-  /** A tracer object */
-  private tracer: types.TracerBase;
   /** Its trace ID. */
   private traceIdLocal: string;
   /** Its trace state. */
@@ -45,8 +43,7 @@ export class RootSpan extends Span {
   constructor(
       tracer: types.TracerBase, name: string, kind: types.SpanKind,
       traceId: string, parentSpanId: string, traceState?: types.TraceState) {
-    super();
-    this.tracer = tracer;
+    super(tracer);
     this.traceIdLocal = traceId;
     this.name = name;
     this.kind = kind;
@@ -70,18 +67,5 @@ export class RootSpan extends Span {
 
   get parentSpanId(): string {
     return this.parentSpanIdLocal;
-  }
-
-  /** Starts a rootspan instance. */
-  start() {
-    super.start();
-
-    this.tracer.onStartSpan(this);
-  }
-
-  /** Ends a rootspan instance. */
-  end() {
-    super.end();
-    this.tracer.onEndSpan(this);
   }
 }

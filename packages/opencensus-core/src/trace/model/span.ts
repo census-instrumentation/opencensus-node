@@ -29,6 +29,8 @@ const STATUS_OK = {
 /** Defines a base model for spans. */
 export class Span implements types.Span {
   protected className: string;
+  /** A tracer object */
+  private tracer: types.TracerBase;
   /** The clock used to mesure the beginning and ending of a span */
   private clock!: Clock;
   /** Indicates if this span was started */
@@ -77,7 +79,8 @@ export class Span implements types.Span {
   droppedMessageEventsCount = 0;
 
   /** Constructs a new Span instance. */
-  constructor(parent?: Span) {
+  constructor(tracer: types.TracerBase, parent?: Span) {
+    this.tracer = tracer;
     this.className = this.constructor.name;
     this.id = randomSpanId();
     this.spansLocal = [];
@@ -310,6 +313,8 @@ export class Span implements types.Span {
       parentSpanId: this.parentSpanId,
       traceState: this.traceState
     });
+
+    this.tracer.onStartSpan(this);
   }
 
   /** Ends the span and all of its children, recursively. */
@@ -335,6 +340,8 @@ export class Span implements types.Span {
         span.truncate();
       }
     }
+
+    this.tracer.onEndSpan(this);
   }
 
   /** Forces the span to end. */
@@ -366,7 +373,7 @@ export class Span implements types.Span {
       return new NoRecordSpan();
     }
 
-    const child = new Span(this);
+    const child = new Span(this.tracer, this);
     const spanName =
         typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
     const spanKind =

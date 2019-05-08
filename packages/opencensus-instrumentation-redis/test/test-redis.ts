@@ -21,14 +21,14 @@ import * as redis from 'redis';
 import {plugin} from '../src';
 
 /** Collects ended root spans to allow for later analysis. */
-class RootSpanVerifier implements SpanEventListener {
-  endedRootSpans: Span[] = [];
+class SpanVerifier implements SpanEventListener {
+  endedSpans: Span[] = [];
 
   onStartSpan(span: Span): void {
     return;
   }
-  onEndSpan(root: Span) {
-    this.endedRootSpans.push(root);
+  onEndSpan(span: Span) {
+    this.endedSpans.push(span);
   }
 }
 
@@ -40,16 +40,16 @@ class RootSpanVerifier implements SpanEventListener {
  * @param expectedKind The expected kind of the first root span.
  */
 function assertSpan(
-    rootSpanVerifier: RootSpanVerifier, expectedName: string,
+    rootSpanVerifier: SpanVerifier, expectedName: string,
     expectedKind: SpanKind, verifyAttribute?: (span: Span) => boolean) {
-  assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-  assert.strictEqual(rootSpanVerifier.endedRootSpans[0].spans.length, 1);
+  assert.strictEqual(rootSpanVerifier.endedSpans.length, 2);
+  assert.strictEqual(rootSpanVerifier.endedSpans[1].spans.length, 1);
   assert.strictEqual(
-      rootSpanVerifier.endedRootSpans[0].spans[0].name, expectedName);
+      rootSpanVerifier.endedSpans[1].spans[0].name, expectedName);
   assert.strictEqual(
-      rootSpanVerifier.endedRootSpans[0].spans[0].kind, expectedKind);
+      rootSpanVerifier.endedSpans[1].spans[0].kind, expectedKind);
   if (typeof verifyAttribute === 'function') {
-    for (const span of rootSpanVerifier.endedRootSpans[0].spans) {
+    for (const span of rootSpanVerifier.endedSpans[1].spans) {
       assert(verifyAttribute(span), 'failed to verify attribute');
     }
   }
@@ -70,7 +70,7 @@ describe('RedisPlugin', () => {
   const REDIS_QUERY_TYPE = SpanKind.CLIENT;
 
   const tracer = new CoreTracer();
-  const rootSpanVerifier = new RootSpanVerifier();
+  const rootSpanVerifier = new SpanVerifier();
   let client: redis.RedisClient;
 
   before((done) => {
@@ -91,7 +91,7 @@ describe('RedisPlugin', () => {
     if (!shouldTest) {
       this.skip();
     }
-    rootSpanVerifier.endedRootSpans = [];
+    rootSpanVerifier.endedSpans = [];
     // Non traced insertion of basic data to perform tests
     client.set('test', 'data', done);
   });
@@ -112,7 +112,7 @@ describe('RedisPlugin', () => {
       tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
         client.hset('hash', 'random', 'random', (err, result) => {
           assert.ifError(err);
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assertSpan(
               rootSpanVerifier, `redis-hset`, REDIS_QUERY_TYPE, (span) => {
@@ -128,7 +128,7 @@ describe('RedisPlugin', () => {
         client.get('test', (err, result) => {
           assert.ifError(err);
           assert.strictEqual(result, 'data');
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assertSpan(
               rootSpanVerifier, `redis-get`, REDIS_QUERY_TYPE, (span) => {
@@ -143,7 +143,7 @@ describe('RedisPlugin', () => {
       tracer.startRootSpan({name: 'removeRootSpan'}, (rootSpan: Span) => {
         client.del('test', (err, result) => {
           assert.ifError(err);
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assertSpan(
               rootSpanVerifier, `redis-del`, REDIS_QUERY_TYPE, (span) => {
@@ -165,11 +165,10 @@ describe('RedisPlugin', () => {
       tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
         client.hset('hash', 'random', 'random', (err, result) => {
           assert.ifError(err);
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 0);
           rootSpan.end();
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-          assert.strictEqual(
-              rootSpanVerifier.endedRootSpans[0].spans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
+          assert.strictEqual(rootSpanVerifier.endedSpans[0].spans.length, 0);
           done();
         });
       });
@@ -181,9 +180,8 @@ describe('RedisPlugin', () => {
           assert.ifError(err);
           assert.strictEqual(result, 'data');
           rootSpan.end();
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-          assert.strictEqual(
-              rootSpanVerifier.endedRootSpans[0].spans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
+          assert.strictEqual(rootSpanVerifier.endedSpans[0].spans.length, 0);
           done();
         });
       });
@@ -193,11 +191,10 @@ describe('RedisPlugin', () => {
       tracer.startRootSpan({name: 'removeRootSpan'}, (rootSpan: Span) => {
         client.del('test', (err, result) => {
           assert.ifError(err);
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 0);
           rootSpan.end();
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-          assert.strictEqual(
-              rootSpanVerifier.endedRootSpans[0].spans.length, 0);
+          assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
+          assert.strictEqual(rootSpanVerifier.endedSpans[0].spans.length, 0);
           done();
         });
       });

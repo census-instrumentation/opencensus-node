@@ -77,18 +77,18 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
 
   /**
    * Called whenever a span is started.
-   * @param root the started span
+   * @param span the started span
    */
-  onStartSpan(root: Span) {
-    this.sendTrace(root);
+  onStartSpan(span: Span) {
+    this.sendTrace(span);
   }
 
   /**
    * Called whenever a span is ended.
-   * @param root the ended span
+   * @param span the ended span
    */
-  onEndSpan(root: Span) {
-    this.sendTrace(root);
+  onEndSpan(span: Span) {
+    this.sendTrace(span);
   }
 
   /**
