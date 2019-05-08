@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.0.11",
-    "@opencensus/nodejs-base": "^0.0.11",
-    "@opencensus/instrumentation-all": "^0.0.11"
+    "@opencensus/instrumentation-all": "^0.0.11",
+    "@opencensus/nodejs-base": "^0.0.11"
   }
 }

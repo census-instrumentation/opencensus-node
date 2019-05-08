@@ -20,9 +20,11 @@ npm install @opencensus/nodejs-base
 
 ### Automatically Instrumenting an Application
 
-For automatic insturmentation see the `@opencensus/nodejs` package.
+For automatic insturmentation see the
+[@opencensus/nodejs](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs)
+package.
 
-### Manually Instrument an Application
+### Manually Instrumenting an Application
 
 With `@opencensus/nodejs-base` you have a full control over instrumentation and
 span creation. The base package doesn't load Continuation Local Storage (CLS)

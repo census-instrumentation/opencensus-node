@@ -1,2 +1,2 @@
 fixes:
-  - "::packages/opencensus-nodejs/"
+  - "::packages/opencensus-nodejs-base/"

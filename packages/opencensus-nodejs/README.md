@@ -63,7 +63,9 @@ tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan) => {
 });
 ```
 
-For manual only instrumentation see the `@opencensus/nodejs-base` package.
+For manual only instrumentation see the
+[@opencensus/nodejs-base](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs-base)
+package.
 
 ### Tracing Options
 
