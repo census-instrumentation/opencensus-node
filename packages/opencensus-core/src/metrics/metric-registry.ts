@@ -47,9 +47,9 @@ export class MetricRegistry {
    * convenient form when you want to manually increase and decrease values as
    * per your service requirements.
    *
-   * @param {string} name The name of the metric.
-   * @param {MetricOptions} options The options for the metric.
-   * @returns {Gauge} A Int64 Gauge metric.
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Int64 Gauge metric.
    */
   addInt64Gauge(name: string, options?: MetricOptions): Gauge {
     const description =
@@ -78,9 +78,9 @@ export class MetricRegistry {
    * convenient form when you want to manually increase and decrease values as
    * per your service requirements.
    *
-   * @param {string} name The name of the metric.
-   * @param {MetricOptions} options The options for the metric.
-   * @returns {Gauge} A Double Gauge metric.
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Double Gauge metric.
    */
   addDoubleGauge(name: string, options?: MetricOptions): Gauge {
     const description =
@@ -109,9 +109,9 @@ export class MetricRegistry {
    * convenient form when you want to manually increase and decrease values as
    * per your service requirements.
    *
-   * @param {string} name The name of the metric.
-   * @param {MetricOptions} options The options for the metric.
-   * @returns {DerivedGauge} A Int64 DerivedGauge metric.
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Int64 DerivedGauge metric.
    */
   addDerivedInt64Gauge(name: string, options?: MetricOptions): DerivedGauge {
     const description =
@@ -140,9 +140,9 @@ export class MetricRegistry {
    * convenient form when you want to manually increase and decrease values as
    * per your service requirements.
    *
-   * @param {string} name The name of the metric.
-   * @param {MetricOptions} options The options for the metric.
-   * @returns {DerivedGauge} A Double DerivedGauge metric.
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Double DerivedGauge metric.
    */
   addDerivedDoubleGauge(name: string, options?: MetricOptions): DerivedGauge {
     const description =
@@ -171,9 +171,9 @@ export class MetricRegistry {
    * useful when you want to manually increase and reset values as per service
    * requirements.
    *
-   * @param {string} name The name of the metric.
-   * @param {MetricOptions} options The options for the metric.
-   * @returns {Cumulative} A Int64 Cumulative metric.
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Int64 Cumulative metric.
    */
   addInt64Cumulative(name: string, options?: MetricOptions): Cumulative {
     const description =
@@ -202,9 +202,9 @@ export class MetricRegistry {
    * useful when you want to manually increase and reset values as per service
    * requirements.
    *
-   * @param {string} name The name of the metric.
-   * @param {MetricOptions} options The options for the metric.
-   * @returns {Cumulative} A Double Cumulative metric.
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Double Cumulative metric.
    */
   addDoubleCumulative(name: string, options?: MetricOptions): Cumulative {
     const description =
@@ -231,8 +231,8 @@ export class MetricRegistry {
   /**
    * Registers metric to register.
    *
-   * @param {string} name The name of the metric.
-   * @param {Meter} meter The metric to register.
+   * @param name The name of the metric.
+   * @param meter The metric to register.
    */
   private registerMetric(name: string, meter: Meter): void {
     if (this.registeredMetrics.has(name)) {
@@ -245,7 +245,7 @@ export class MetricRegistry {
   /**
    * Gets a metric producer for registry.
    *
-   * @returns {MetricProducer} The metric producer.
+   * @returns The metric producer.
    */
   getMetricProducer(): MetricProducer {
     return this.metricProducer;
@@ -267,7 +267,7 @@ class MetricProducerForRegistry extends BaseMetricProducer {
   /**
    * Gets a collection of produced Metric`s to be exported.
    *
-   * @returns {Metric[]} The list of metrics.
+   * @returns The list of metrics.
    */
   getMetrics(): Metric[] {
     return Array.from(this.registeredMetrics.values())
