@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Add Cumulative (`DoubleCumulative`, `Int64Cumulative`) APIs.
+
  **This release has a breaking change. Please test your code accordingly after upgrading.**
 
  - removing Tracer's `startChildSpan(name?: string, kind?: types.SpanKind)` interface
