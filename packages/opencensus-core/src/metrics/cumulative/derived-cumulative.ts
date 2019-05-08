@@ -44,15 +44,14 @@ export class DerivedCumulative implements Meter {
   /**
    * Constructs a new DerivedCumulative instance.
    *
-   * @param {string} name The name of the metric.
-   * @param {string} description The description of the metric.
-   * @param {string} unit The unit of the metric.
-   * @param {MetricDescriptorType} type The type of metric.
-   * @param {LabelKey[]} labelKeys The list of the label keys.
-   * @param {Map<LabelKey, LabelValue>} constantLabels The map of constant
-   *     labels for the Metric.
-   * @param {Timestamp} startTime The time when the cumulative metric start
-   *     measuring the value.
+   * @param name The name of the metric.
+   * @param description The description of the metric.
+   * @param unit The unit of the metric.
+   * @param type The type of metric.
+   * @param labelKeys The list of the label keys.
+   * @param constantLabels The map of constant labels for the Metric.
+   * @param startTime The time when the cumulative metric start measuring the
+   *     value.
    */
   constructor(
       name: string, description: string, unit: string,
@@ -70,10 +69,10 @@ export class DerivedCumulative implements Meter {
 
   /**
    * Creates a TimeSeries. The value of a single point in the TimeSeries is
-   * observed from a obj. The ValueExtractor is invoked whenever
+   * observed from an object or function. The ValueExtractor is invoked whenever
    * metrics are collected, meaning the reported value is up-to-date.
    *
-   * @param {LabelValue[]} labelValues The list of the label values.
+   * @param labelValues The list of the label values.
    * @param objOrFn obj The obj to get the size or length or value from. If
    *     multiple options are available, the value (ToValueInterface) takes
    *     precedence first, followed by length and size. e.g value -> length ->
@@ -121,7 +120,7 @@ export class DerivedCumulative implements Meter {
    * references to previous Point objects are invalid (not part of the
    * metric).
    *
-   * @param {LabelValue[]} labelValues The list of label values.
+   * @param labelValues The list of label values.
    */
   removeTimeSeries(labelValues: LabelValue[]): void {
     validateNotNull(labelValues, 'labelValues');
@@ -139,8 +138,7 @@ export class DerivedCumulative implements Meter {
   /**
    * Provides a Metric with one or more TimeSeries.
    *
-   * @returns {Metric} The Metric, or null if TimeSeries is not present in
-   *     Metric.
+   * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
   getMetric(): Metric|null {
     if (this.registeredPoints.size === 0) {
