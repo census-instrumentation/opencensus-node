@@ -41,7 +41,7 @@ describe('TracingBase', () => {
   describe('start()', () => {
     let aTracingBase: core.Tracing;
     const tracing = new TracingBase();
-    // tslint:disable:no-any
+
     beforeEach(() => {
       if (tracing.active) {
         tracing.stop();
