@@ -23,9 +23,16 @@ import * as util from '../utils';
 
 type ValueExtractor = () => number;
 
+/**
+ * An interface that describes the entry for every TimeSeries (Point) added to
+ * the Cumulative metric.
+ */
 interface CumulativeEntry {
+  /** The list of the label values. */
   readonly labelValues: LabelValue[];
+  /** The function to get the actual value of point. */
   readonly extractor: ValueExtractor;
+  /** The previous value of the point. */
   prevValue: number;
 }
 
