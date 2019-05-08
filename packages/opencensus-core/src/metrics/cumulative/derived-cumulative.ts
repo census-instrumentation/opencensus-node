@@ -149,20 +149,22 @@ export class DerivedCumulative implements Meter {
       descriptor: this.metricDescriptor,
       timeseries: Array.from(
           this.registeredPoints,
-          ([_, cumulativeEntry]) => {
-            const newValue = cumulativeEntry.extractor();
-            const value = newValue > cumulativeEntry.prevValue ?
-                newValue :
-                cumulativeEntry.prevValue;
-            cumulativeEntry.prevValue = value;
+          ([_, cumulativeEntry]):
+              TimeSeries => {
+                const newValue = cumulativeEntry.extractor();
+                const value = newValue > cumulativeEntry.prevValue ?
+                    newValue :
+                    cumulativeEntry.prevValue;
+                cumulativeEntry.prevValue = value;
 
-            return {
-              labelValues:
-                  [...cumulativeEntry.labelValues, ...this.constantLabelValues],
-              points: [{value, timestamp}],
-              startTimestamp: this.startTime
-            } as TimeSeries;
-          })
+                return {
+                  labelValues: [
+                    ...cumulativeEntry.labelValues, ...this.constantLabelValues
+                  ],
+                  points: [{value, timestamp}],
+                  startTimestamp: this.startTime
+                };
+              })
     };
   }
 }
