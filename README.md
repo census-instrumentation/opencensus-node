@@ -85,9 +85,9 @@ months before removing it, if possible.
 [codecov-url]: https://codecov.io/gh/census-instrumentation/opencensus-node
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
 [gitter-url]: https://gitter.im/census-instrumentation/lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-[npm-url]: https://www.npmjs.com/package/@opencensus/exporter-prometheus
-[npm-img]: https://badge.fury.io/js/%40opencensus%2Fexporter-prometheus.svg
-[node-img]: https://img.shields.io/node/v/@opencensus/exporter-prometheus.svg
+[npm-url]: https://www.npmjs.com/package/@opencensus/nodejs
+[npm-img]: https://badge.fury.io/js/%40opencensus%2Fnodejs.svg
+[node-img]: https://img.shields.io/node/v/@opencensus/nodejs.svg
 [license-image]: https://img.shields.io/badge/license-Apache_2.0-green.svg?style=flat
 [snyk-image]: https://snyk.io/test/github/census-instrumentation/opencensus-node/badge.svg?style=flat
 [snyk-url]: https://snyk.io/test/github/census-instrumentation/opencensus-node
