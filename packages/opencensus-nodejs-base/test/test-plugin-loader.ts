@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger} from '@opencensus/core';
+import {CoreTracerBase, logger} from '@opencensus/core';
 import * as assert from 'assert';
 import {Constants} from '../src/trace/constants';
 import {PluginLoader} from '../src/trace/instrumentation/plugin-loader';
@@ -50,13 +50,12 @@ describe('Plugin Loader', () => {
 
   describe('PluginLoader', () => {
     const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
-    const tracer = new CoreTracer();
+    const tracer = new CoreTracerBase();
     tracer.start({logger: log});
 
     /** Should get the plugins to use. */
     describe('static defaultPluginsFromArray()', () => {
       it('should get the default plugins from a module name array', () => {
-        const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
         assert.ok(plugins[TEST_MODULES[0]]);
         assert.ok(plugins[TEST_MODULES[1]]);
         assert.ok(plugins[TEST_MODULES[2]]);
@@ -121,7 +120,7 @@ describe('Plugin Loader', () => {
       });
 
 
-      it('should not load a non existing plugin and just log an erro', () => {
+      it('should not load a non existing plugin and just log an error', () => {
         const intercept = require('intercept-stdout');
 
         const pluginLoader = new PluginLoader(log, tracer);

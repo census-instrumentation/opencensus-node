@@ -51,7 +51,9 @@ const rootSpanOptions = { name: 'your root span' };
 tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan) => {
 
     // You can create as many child spans as needed
-    childSpan = tracing.tracer.startChildSpan({ name: 'name of your child span' });
+    childSpan = tracing.tracer.startChildSpan({
+        name: 'name of your child span'
+    });
     // Do some operation...
     // Finish the child span at the end of it's operation
     childSpan.end();
@@ -60,6 +62,10 @@ tracing.tracer.startRootSpan(rootSpanOptions, (rootSpan) => {
     rootSpan.end();
 });
 ```
+
+For manual only instrumentation see the
+[@opencensus/nodejs-base](https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-nodejs-base)
+package.
 
 ### Tracing Options
 

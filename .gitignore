@@ -23,7 +23,7 @@ bin
 
 # nodejs
 node_modules/
-!packages/opencensus-nodejs/test/instrumentation/node_modules
+!packages/opencensus-nodejs-base/test/instrumentation/node_modules
 npm-debug.log
 .nyc_output/
 build/
