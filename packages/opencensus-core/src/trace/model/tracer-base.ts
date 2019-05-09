@@ -124,6 +124,12 @@ export class CoreTracerBase implements types.TracerBase {
       if (sampleDecision) {
         const rootSpan =
             new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
+        // Add tracer attributes
+        if (this.config.attributes) {
+          for (const key of Object.keys(this.config.attributes)) {
+            rootSpan.addAttribute(key, this.config.attributes[key]);
+          }
+        }
         rootSpan.start();
         return fn(rootSpan);
       }
@@ -208,7 +214,14 @@ export class CoreTracerBase implements types.TracerBase {
           'no current trace found - must start a new root span first');
       return new NoRecordSpan();
     }
-    return options.childOf.startChildSpan(options.name, options.kind);
+    const span = options.childOf.startChildSpan(options.name, options.kind);
+    // Add tracer attributes
+    if (this.config.attributes) {
+      for (const key of Object.keys(this.config.attributes)) {
+        span.addAttribute(key, this.config.attributes[key]);
+      }
+    }
+    return span;
   }
 
   /** Determine whether to sample request or not. */

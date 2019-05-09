@@ -73,15 +73,16 @@ Tracing has many options available to choose from. At `tracing.start()`, you can
 
 | Options | Type | Description |
 | ------- | ---- | ----------- |
-| [`bufferSize`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L25) | `number` | The number of traces to be collected before exporting to a backend |
-| [`bufferTimeout`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L27) | `number` | Maximum time to wait before exporting to a backend |
-| [`logger`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L29) | `Logger` | A logger object |
-| [`logLevel`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L47) | `number` | Level of logger - 0: disable, 1: error, 2: warn, 3: info, 4: debug |
-| [`samplingRate`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L35) | `number` | Determines the span's sampling rate. Ranges from 0.0 to 1.0 |
-| [`propagation`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L41) | `Propagation` | A propagation instance to use |
-| [`maximumLabelValueSize`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L52) | `number` | The maximum number of characters reported on a label value |
-| [`plugin`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L68) | `PluginNames` | A list of trace instrumentations plugins to load |
-| [`exporter`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L70) | `Exporter` | An exporter object |
+| [`attributes`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L37) | `Attributes` | Default attributes added to every span created by the tracer |
+| [`bufferSize`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L27) | `number` | The number of traces to be collected before exporting to a backend |
+| [`bufferTimeout`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L29) | `number` | Maximum time to wait before exporting to a backend |
+| [`logger`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L31) | `Logger` | A logger object |
+| [`logLevel`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L51) | `number` | Level of logger - 0: disable, 1: error, 2: warn, 3: info, 4: debug |
+| [`samplingRate`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L39) | `number` | Determines the span's sampling rate. Ranges from 0.0 to 1.0 |
+| [`propagation`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L43) | `Propagation` | A propagation instance to use |
+| [`maximumLabelValueSize`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L56) | `number` | The maximum number of characters reported on a label value |
+| [`plugins`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#72) | `PluginNames` | A list of trace instrumentations plugins to load |
+| [`exporter`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L74) | `Exporter` | An exporter object |
 
 ## Plugins
 
