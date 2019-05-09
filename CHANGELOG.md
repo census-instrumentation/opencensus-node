@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-- Add Cumulative (`DoubleCumulative`, `Int64Cumulative`) APIs.
+- Add Cumulative (`DoubleCumulative`, `LongCumulative`, , `DerivedDoubleCumulative`, `DerivedLongCumulative`) APIs.
 
  **This release has a breaking change. Please test your code accordingly after upgrading.**
 

@@ -47,8 +47,8 @@ export function validateArrayElementsNotNull<T>(
 }
 
 /** Throws an error if any of the map elements is null. */
-export function validateMapElementNotNull<T>(
-    map: Map<T, T>, errorMessage: string) {
+export function validateMapElementNotNull<K, V>(
+    map: Map<K, V>, errorMessage: string) {
   for (const [key, value] of map.entries()) {
     if (key == null || value == null) {
       throw new Error(`${errorMessage} elements should not be a NULL`);
