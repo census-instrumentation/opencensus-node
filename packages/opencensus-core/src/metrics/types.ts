@@ -41,3 +41,36 @@ export interface MetricOptions {
   // TODO(mayurkale): Add resource information.
   // https://github.com/census-instrumentation/opencensus-specs/pull/248
 }
+
+/** Interface for objects with "length()" method. */
+export interface LengthMethodInterface {
+  length(): number;
+}
+
+/** Interface for objects with "length" attribute (e.g. Array). */
+export interface LengthAttributeInterface {
+  length: number;
+}
+
+/** Interface for objects with "size" method. */
+export interface SizeMethodInterface {
+  size(): number;
+}
+
+/** Interface for objects with "size" attribute (e.g. Map, Set). */
+export interface SizeAttributeInterface {
+  size: number;
+}
+
+/** Interface for objects with "getValue" method. */
+export interface ToValueInterface {
+  getValue(): number;
+}
+
+export interface AccessorFunction {
+  (): number;
+}
+
+export type AccessorInterface =
+    LengthAttributeInterface|LengthMethodInterface|SizeAttributeInterface|
+    SizeMethodInterface|ToValueInterface|AccessorFunction;

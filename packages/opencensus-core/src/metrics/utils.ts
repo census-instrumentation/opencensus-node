@@ -15,6 +15,7 @@
  */
 
 import {LabelValue} from './export/types';
+import {LengthAttributeInterface, LengthMethodInterface, SizeAttributeInterface, SizeMethodInterface, ToValueInterface} from './types';
 
 const COMMA_SEPARATOR = ',';
 const UNSET_LABEL_VALUE: LabelValue = {
@@ -39,4 +40,43 @@ export function hashLabelValues(labelValues: LabelValue[]): string {
  */
 export function initializeDefaultLabels(count: number): LabelValue[] {
   return new Array(count).fill(UNSET_LABEL_VALUE);
+}
+
+// TODO(mayurkale): Consider to use unknown type instead of any for below
+// functions, unknown type is available since TypeScript 3.0
+// Fact: unknown acts like a type-safe version of any by requiring us to
+// perform some type of checking before we can use the value of the unknown
+// element or any of its properties.
+
+// Checks if the specified collection is a LengthAttributeInterface.
+// tslint:disable-next-line:no-any
+export function isLengthAttributeInterface(obj: any):
+    obj is LengthAttributeInterface {
+  return obj && typeof obj.length === 'number';
+}
+
+// Checks if the specified collection is a LengthMethodInterface.
+// tslint:disable-next-line:no-any
+export function isLengthMethodInterface(obj: any):
+    obj is LengthMethodInterface {
+  return obj && typeof obj.length === 'function';
+}
+
+// Checks if the specified collection is a SizeAttributeInterface.
+// tslint:disable-next-line:no-any
+export function isSizeAttributeInterface(obj: any):
+    obj is SizeAttributeInterface {
+  return obj && typeof obj.size === 'number';
+}
+
+// Checks if the specified collection is a SizeMethodInterface.
+// tslint:disable-next-line:no-any
+export function isSizeMethodInterface(obj: any): obj is SizeMethodInterface {
+  return obj && typeof obj.size === 'function';
+}
+
+// Checks if the specified callbackFn is a ToValueInterface.
+// tslint:disable-next-line:no-any
+export function isToValueInterface(obj: any): obj is ToValueInterface {
+  return obj && typeof obj.getValue === 'function';
 }
