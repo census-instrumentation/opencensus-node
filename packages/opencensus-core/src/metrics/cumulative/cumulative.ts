@@ -36,13 +36,12 @@ export class Cumulative implements Meter {
   /**
    * Constructs a new Cumulative instance.
    *
-   * @param {string} name The name of the metric.
-   * @param {string} description The description of the metric.
-   * @param {string} unit The unit of the metric.
-   * @param {MetricDescriptorType} type The type of metric.
-   * @param {LabelKey[]} labelKeys The list of the label keys.
-   * @param {Map<LabelKey, LabelValue>} constantLabels The map of constant
-   *     labels for the Metric.
+   * @param name The name of the metric.
+   * @param description The description of the metric.
+   * @param unit The unit of the metric.
+   * @param type The type of metric.
+   * @param labelKeys The list of the label keys.
+   * @param constantLabels The map of constant labels for the Metric.
    */
   constructor(
       name: string, description: string, unit: string,
@@ -65,8 +64,8 @@ export class Cumulative implements Meter {
    * It is recommended to keep a reference to the Point instead of always
    * calling this method for manual operations.
    *
-   * @param {LabelValue[]} labelValues The list of the label values.
-   * @returns {CumulativePoint} The value of single cumulative.
+   * @param labelValues The list of the label values.
+   * @returns The value of single cumulative.
    */
   getOrCreateTimeSeries(labelValues: LabelValue[]): CumulativePoint {
     validateArrayElementsNotNull(
@@ -78,7 +77,7 @@ export class Cumulative implements Meter {
    * Returns a Point for a cumulative with all labels not set, or default
    * labels.
    *
-   * @returns {CumulativePoint} The value of single cumulative.
+   * @returns The value of single cumulative.
    */
   getDefaultTimeSeries(): CumulativePoint {
     return this.registerTimeSeries(this.defaultLabelValues);
@@ -89,7 +88,7 @@ export class Cumulative implements Meter {
    * references to previous Point objects are invalid (not part of the
    * metric).
    *
-   * @param {LabelValue[]} labelValues The list of label values.
+   * @param labelValues The list of label values.
    */
   removeTimeSeries(labelValues: LabelValue[]): void {
     validateNotNull(labelValues, 'labelValues');
@@ -109,8 +108,8 @@ export class Cumulative implements Meter {
    * labelValues is not already associated with this cumulative, else returns an
    * existing Point.
    *
-   * @param {LabelValue[]} labelValues The list of the label values.
-   * @returns {CumulativePoint} The value of single cumulative.
+   * @param labelValues The list of the label values.
+   * @returns The value of single cumulative.
    */
   private registerTimeSeries(labelValues: LabelValue[]): CumulativePoint {
     const hash = hashLabelValues(labelValues);
@@ -131,8 +130,7 @@ export class Cumulative implements Meter {
   /**
    * Provides a Metric with one or more TimeSeries.
    *
-   * @returns {Metric} The Metric, or null if TimeSeries is not present in
-   *     Metric.
+   * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
   getMetric(): Metric|null {
     if (this.registeredPoints.size === 0) {
@@ -168,7 +166,7 @@ export class CumulativePointEntry implements CumulativePoint {
 
   /**
    * Increment the cumulative metric.
-   * @param {number} val The new value.
+   * @param val The new value.
    */
   inc(val?: number): void {
     if ((val && !Number.isFinite(val)) || (val !== undefined && isNaN(val))) {
@@ -184,8 +182,8 @@ export class CumulativePointEntry implements CumulativePoint {
   /**
    * Returns the TimeSeries with one or more Point.
    *
-   * @param {Timestamp} now The time at which the cumulative is recorded.
-   * @returns {TimeSeries} The TimeSeries.
+   * @param now The time at which the cumulative is recorded.
+   * @returns The TimeSeries.
    */
   getTimeSeries(now: Timestamp): TimeSeries {
     return {

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-/** 
+/**
  * A Common JS module for proxying monitoring and trace calls to the server
  */
 
@@ -24,8 +24,8 @@ class WebMetrics {
 
   /**
    * Creates a WebMetrics instance
-   * @param {string} incrementbutton - ID of the increment button DOM element
-   * @param {string} flushbutton - ID of the flush button DOM element
+   * @param incrementbutton - ID of the increment button DOM element
+   * @param flushbutton - ID of the flush button DOM element
    */
   constructor(incrementbutton, flushbutton) {
      // [START web_client_monitoring_click_counter]

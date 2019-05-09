@@ -44,7 +44,7 @@ function resetHrtimeFunctionCache() {
 /**
  * Gets the current timestamp with seconds and nanoseconds.
  *
- * @returns {Timestamp} The Timestamp.
+ * @returns The Timestamp.
  */
 export function getTimestampWithProcessHRTime(): Timestamp {
   const [offsetSecs, offsetNanos] = hrtime(hrtimeOrigin);
@@ -62,9 +62,8 @@ export function getTimestampWithProcessHRTime(): Timestamp {
 /**
  * Creates a new timestamp from the given milliseconds.
  *
- * @param {number} epochMilli the timestamp represented in milliseconds since
- *  epoch.
- * @returns {Timestamp} new timestamp with specified fields.
+ * @param epochMilli the timestamp represented in milliseconds since epoch.
+ * @returns new timestamp with specified fields.
  */
 export function timestampFromMillis(epochMilli: number): Timestamp {
   return {

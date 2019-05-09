@@ -22,8 +22,7 @@ export interface Meter {
   /**
    * Provides a Metric with one or more TimeSeries.
    *
-   * @returns {Metric} The Metric, or null if TimeSeries is not present in
-   *     Metric.
+   * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
   getMetric(): Metric|null;
 }

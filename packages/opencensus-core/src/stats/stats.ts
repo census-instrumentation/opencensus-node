@@ -150,7 +150,7 @@ export class BaseStats implements Stats {
   /**
    * Verifies whether all measurements has positive value
    * @param measurements A list of measurements
-   * @returns {boolean} Whether values is positive
+   * @returns Whether values is positive
    */
   private hasNegativeValue(measurements: Measurement[]): boolean {
     return measurements.some(measurement => measurement.value < 0);
@@ -158,7 +158,7 @@ export class BaseStats implements Stats {
 
   /**
    * Gets a collection of produced Metric`s to be exported.
-   * @returns {Metric[]} List of metrics
+   * @returns The List of metrics.
    */
   getMetrics(): Metric[] {
     const metrics: Metric[] = [];

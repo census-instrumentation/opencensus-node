@@ -35,7 +35,7 @@ export class MetricProducerForStats extends BaseMetricProducer {
 
   /**
    * Gets a collection of produced Metric`s to be exported.
-   * @returns {Metric[]} List of metrics
+   * @returns The List of metrics
    */
   getMetrics(): Metric[] {
     return this.statsManager.getMetrics();

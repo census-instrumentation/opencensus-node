@@ -20,9 +20,9 @@ import {LabelKey, LabelValue} from '../metrics/export/types';
  * Validates that an object reference passed as a parameter to the calling
  * method is not null.
  *
- * @param {T} reference An object reference.
- * @param {string} errorMessage The exception message to use if the check fails.
- * @returns {T} An object reference.
+ * @param reference An object reference.
+ * @param errorMessage The exception message to use if the check fails.
+ * @returns An object reference.
  */
 export function validateNotNull<T>(reference: T, errorMessage: string): T {
   if (reference === null || reference === undefined) {
@@ -34,8 +34,8 @@ export function validateNotNull<T>(reference: T, errorMessage: string): T {
 /**
  * Validates that an array passed as a parameter doesn't contain null element.
  *
- * @param {T} list The argument list to check for null.
- * @param {string} errorMessage The exception message to use if the check fails.
+ * @param list The argument list to check for null.
+ * @param errorMessage The exception message to use if the check fails.
  */
 export function validateArrayElementsNotNull<T>(
     array: T[], errorMessage: string) {

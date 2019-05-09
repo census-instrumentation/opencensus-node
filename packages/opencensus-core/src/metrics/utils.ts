@@ -24,8 +24,8 @@ const UNSET_LABEL_VALUE: LabelValue = {
 /**
  * Returns a string(comma separated) from the list of label values.
  *
- * @param  {LabelValue[]} labelValues The list of the label values.
- * @returns {string} The hashed label values string.
+ * @param labelValues The list of the label values.
+ * @returns The hashed label values string.
  */
 export function hashLabelValues(labelValues: LabelValue[]): string {
   return labelValues.map(lv => lv.value).sort().join(COMMA_SEPARATOR);
@@ -34,8 +34,8 @@ export function hashLabelValues(labelValues: LabelValue[]): string {
 /**
  * Returns default label values.
  *
- * @param  {number} count The number of label values.
- * @returns {LabelValue[]} The list of the label values.
+ * @param count The number of label values.
+ * @returns The list of the label values.
  */
 export function initializeDefaultLabels(count: number): LabelValue[] {
   return new Array(count).fill(UNSET_LABEL_VALUE);

@@ -25,7 +25,7 @@ export class MetricUtils {
    * Gets the corresponding metric type for the given stats type.
    * @param measure The measure for which to find a metric type
    * @param aggregation The aggregation for which to find a metric type
-   * @returns {MetricDescriptorType} Type of metric descriptor
+   * @returns The Type of metric descriptor
    */
   private static getType(measure: Measure, aggregation: AggregationType):
       MetricDescriptorType {
@@ -58,7 +58,7 @@ export class MetricUtils {
   /**
    * Gets a MetricDescriptor for given view.
    * @param view The view for which to build a metric descriptor
-   * @returns {MetricDescriptor}
+   * @returns The MetricDescriptor.
    */
   static viewToMetricDescriptor(view: View): MetricDescriptor {
     return {
@@ -75,7 +75,7 @@ export class MetricUtils {
   /**
    * Converts tag values to label values.
    * @param tagValues the list of tag values
-   * @returns {LabelValue[]} List of label values
+   * @returns The List of label values
    */
   static tagValuesToLabelValues(tagValues: Array<TagValue|null>): LabelValue[] {
     return tagValues.map(

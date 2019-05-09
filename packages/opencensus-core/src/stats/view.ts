@@ -193,7 +193,7 @@ export class BaseView implements View {
   /**
    * Gets view`s metric
    * @param start The start timestamp in epoch milliseconds
-   * @returns {Metric}
+   * @returns The Metric.
    */
   getMetric(start: number): Metric {
     const {type} = this.metricDescriptor;
@@ -227,7 +227,7 @@ export class BaseView implements View {
    * Converts snapshot to point
    * @param timestamp The timestamp
    * @param data The aggregated data
-   * @returns {Point}
+   * @returns The Point.
    */
   private toPoint(timestamp: Timestamp, data: AggregationData): Point {
     let value;
@@ -257,7 +257,7 @@ export class BaseView implements View {
   /**
    * Returns a snapshot of an AggregationData for that tags/labels values.
    * @param tags The desired data's tags
-   * @returns {AggregationData}
+   * @returns The AggregationData.
    */
   getSnapshot(tagValues: Array<TagValue|null>): AggregationData {
     return this.tagValueAggregationMap[this.encodeTagValues(tagValues)];
