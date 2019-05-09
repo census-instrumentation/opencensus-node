@@ -74,3 +74,45 @@ export function isSizeMethodInterface(obj: any): obj is SizeMethodInterface {
 export function isToValueInterface(obj: any): obj is ToValueInterface {
   return obj && typeof obj.getValue === 'function';
 }
+
+// TODO(mayurkale): Consider to use unknown type instead of any for above
+// functions, unknown type is available since TypeScript 3.0
+// Fact: unknown acts like a type-safe version of any by requiring us to
+// perform some type of checking before we can use the value of the unknown
+// element or any of its properties. Below functions will help to perform
+// structural check on given object.
+
+// // Performs a structural check on given object.
+// // tslint:disable-next-line:no-any
+// function _isLengthAttributeInterface(obj: any): boolean {
+//   return !!obj && typeof obj === 'object' && 'length' in obj &&
+//       typeof obj.length === 'number';
+// }
+
+// // Performs a structural check on given object.
+// // tslint:disable-next-line:no-any
+// function _isLengthMethodInterface(obj: any): boolean {
+//   return !!obj && typeof obj === 'object' && 'length' in obj &&
+//       typeof obj.length === 'function';
+// }
+
+// // Performs a structural check on given object.
+// // tslint:disable-next-line:no-any
+// function _isSizeAttributeInterface(obj: any): boolean {
+//   return !!obj && typeof obj === 'object' && 'size' in obj &&
+//       typeof obj.size === 'number';
+// }
+
+// // Performs a structural check on given object.
+// // tslint:disable-next-line:no-any
+// function _isSizeMethodInterface(obj: any): boolean {
+//   return !!obj && typeof obj === 'object' && 'size' in obj &&
+//       typeof obj.size === 'function';
+// }
+
+// // Performs a structural check on given object.
+// // tslint:disable-next-line:no-any
+// function _isToValueInterface(obj: any): boolean {
+//   return !!obj && typeof obj === 'object' && 'getValue' in obj &&
+//       typeof obj.getValue === 'function';
+// }
