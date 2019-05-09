@@ -35,8 +35,7 @@ class BaseMetricProducerManager implements MetricProducerManager {
   /**
    * Adds the MetricProducer to the manager if it is not already present.
    *
-   * @param {MetricProducer} metricProducer The MetricProducer to be added to
-   *     the manager.
+   * @param metricProducer The MetricProducer to be added to the manager.
    */
   add(metricProducer: MetricProducer): void {
     validateNotNull(metricProducer, 'metricProducer');
@@ -48,8 +47,7 @@ class BaseMetricProducerManager implements MetricProducerManager {
   /**
    * Removes the MetricProducer to the manager if it is present.
    *
-   * @param {MetricProducer} metricProducer The MetricProducer to be removed
-   *     from the manager.
+   * @param metricProducer The MetricProducer to be removed from the manager.
    */
   remove(metricProducer: MetricProducer): void {
     validateNotNull(metricProducer, 'metricProducer');

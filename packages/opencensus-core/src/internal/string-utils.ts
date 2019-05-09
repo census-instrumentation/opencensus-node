@@ -22,8 +22,8 @@ export class StringUtils {
   /**
    * Determines whether the String contains only printable characters.
    *
-   * @param {string} str The String to be validated.
-   * @returns {boolean} Whether the String contains only printable characters.
+   * @param str The String to be validated.
+   * @returns Whether the String contains only printable characters.
    */
   static isPrintableString(str: string): boolean {
     for (let i = 0; i < str.length; i++) {
@@ -38,8 +38,8 @@ export class StringUtils {
   /**
    * Determines whether the Character is printable.
    *
-   * @param {string} ch The Character to be validated.
-   * @returns {boolean} Whether the Character is printable.
+   * @param ch The Character to be validated.
+   * @returns Whether the Character is printable.
    */
   static isPrintableChar(ch: string): boolean {
     return ch >= ' ' && ch <= '~';

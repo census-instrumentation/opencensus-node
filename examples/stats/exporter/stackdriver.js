@@ -161,7 +161,7 @@ setTimeout(function () {
 
 /**
  * Takes a line and process it.
- * @param {string} line The line to process
+ * @param line The line to process
  */
 function processLine (line) {
   // Currently, it just capitalizes it.
@@ -170,8 +170,8 @@ function processLine (line) {
 
 /**
  * Converts to milliseconds.
- * @param {number} endNanoseconds The end time of REPL.
- * @param {number} startNanoseconds The start time of REPL.
+ * @param endNanoseconds The end time of REPL.
+ * @param startNanoseconds The start time of REPL.
  */
 function sinceInMilliseconds (endNanoseconds, startNanoseconds) {
   return (endNanoseconds - startNanoseconds) / 1e6;

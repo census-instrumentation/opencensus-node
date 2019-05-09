@@ -22,15 +22,15 @@ export interface CumulativePoint {
 
   /**
    * Increment the cumulative metric.
-   * @param {number} val The new value.
+   * @param val The new value.
    */
   inc(val?: number): void;
 
   /**
    * Returns the TimeSeries with one or more Point.
    *
-   * @param {Timestamp} now The time at which the cumulative is recorded.
-   * @returns {TimeSeries} The TimeSeries.
+   * @param now The time at which the cumulative is recorded.
+   * @returns The TimeSeries.
    */
   getTimeSeries(now: Timestamp): TimeSeries;
 }

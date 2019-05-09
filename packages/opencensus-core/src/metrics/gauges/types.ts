@@ -20,22 +20,22 @@ export interface Point {
   /**
    * Adds the given value to the current value. The values can be negative.
    *
-   * @param {number} amt The value to add.
+   * @param amt The value to add.
    */
   add(amt: number): void;
 
   /**
    * Sets the given value.
    *
-   * @param {number} val The new value.
+   * @param val The new value.
    */
   set(val: number): void;
 
   /**
    * Returns the TimeSeries with one or more Point.
    *
-   * @param {Timestamp} timestamp The time at which the gauge is recorded.
-   * @returns {TimeSeries} The TimeSeries.
+   * @param timestamp The time at which the gauge is recorded.
+   * @returns The TimeSeries.
    */
   getTimeSeries(timestamp: Timestamp): TimeSeries;
 }

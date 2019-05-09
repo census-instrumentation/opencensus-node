@@ -39,13 +39,12 @@ export class Gauge implements Meter {
   /**
    * Constructs a new Gauge instance.
    *
-   * @param {string} name The name of the metric.
-   * @param {string} description The description of the metric.
-   * @param {string} unit The unit of the metric.
-   * @param {MetricDescriptorType} type The type of metric.
-   * @param {LabelKey[]} labelKeys The list of the label keys.
-   * @param {Map<LabelKey, LabelValue>} constantLabels The map of constant
-   *     labels for the Metric.
+   * @param name The name of the metric.
+   * @param description The description of the metric.
+   * @param unit The unit of the metric.
+   * @param type The type of metric.
+   * @param labelKeys The list of the label keys.
+   * @param constantLabels The map of constant labels for the Metric.
    */
   constructor(
       name: string, description: string, unit: string,
@@ -68,8 +67,8 @@ export class Gauge implements Meter {
    * It is recommended to keep a reference to the Point instead of always
    * calling this method for manual operations.
    *
-   * @param {LabelValue[]} labelValues The list of the label values.
-   * @returns {types.Point} The value of single gauge.
+   * @param labelValues The list of the label values.
+   * @returns The value of single gauge.
    */
   getOrCreateTimeSeries(labelValues: LabelValue[]): types.Point {
     validateArrayElementsNotNull(
@@ -81,7 +80,7 @@ export class Gauge implements Meter {
    * Returns a Point for a gauge with all labels not set, or default
    * labels.
    *
-   * @returns {types.Point} The value of single gauge.
+   * @returns The value of single gauge.
    */
   getDefaultTimeSeries(): types.Point {
     return this.registerTimeSeries(this.defaultLabelValues);
@@ -92,7 +91,7 @@ export class Gauge implements Meter {
    * references to previous Point objects are invalid (not part of the
    * metric).
    *
-   * @param {LabelValue[]} labelValues The list of label values.
+   * @param labelValues The list of label values.
    */
   removeTimeSeries(labelValues: LabelValue[]): void {
     validateNotNull(labelValues, Gauge.LABEL_VALUES);
@@ -112,8 +111,8 @@ export class Gauge implements Meter {
    * labelValues is not already associated with this gauge, else returns an
    * existing Point.
    *
-   * @param {LabelValue[]} labelValues The list of the label values.
-   * @returns {types.Point} The value of single gauge.
+   * @param labelValues The list of the label values.
+   * @returns The value of single gauge.
    */
   private registerTimeSeries(labelValues: LabelValue[]): types.Point {
     const hash = hashLabelValues(labelValues);
@@ -133,7 +132,7 @@ export class Gauge implements Meter {
   /**
    * Provides a Metric with one or more TimeSeries.
    *
-   * @returns {Metric} The Metric.
+   * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
   getMetric(): Metric|null {
     if (this.registeredPoints.size === 0) {
@@ -162,7 +161,7 @@ export class PointEntry implements types.Point {
   /**
    * Adds the given value to the current value. The values can be negative.
    *
-   * @param {number} amt The value to add.
+   * @param amt The value to add.
    */
   add(amt: number): void {
     this.value = this.value + amt;
@@ -171,7 +170,7 @@ export class PointEntry implements types.Point {
   /**
    * Sets the given value.
    *
-   * @param {number} val The new value.
+   * @param val The new value.
    */
   set(val: number): void {
     this.value = val;
@@ -180,8 +179,8 @@ export class PointEntry implements types.Point {
   /**
    * Returns the TimeSeries with one or more Point.
    *
-   * @param {Timestamp} timestamp The time at which the gauge is recorded.
-   * @returns {TimeSeries} The TimeSeries.
+   * @param timestamp The time at which the gauge is recorded.
+   * @returns The TimeSeries.
    */
   getTimeSeries(timestamp: Timestamp): TimeSeries {
     return {

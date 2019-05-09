@@ -49,7 +49,7 @@ export class CoreResource {
    * Returns a Resource. This resource information is loaded from the
    * OC_RESOURCE_TYPE and OC_RESOURCE_LABELS environment variables.
    *
-   * @returns {Resource} The resource.
+   * @returns The resource.
    */
   static createFromEnvironmentVariables(): Resource {
     return {type: CoreResource.ENV_TYPE, labels: CoreResource.ENV_LABEL_MAP};
@@ -60,8 +60,8 @@ export class CoreResource {
    * their results. In case a type of label key is already set, the first set
    * value takes precedence.
    *
-   * @param  {Resource[]} resources The list of the resources.
-   * @returns {Resource} The resource.
+   * @param resources The list of the resources.
+   * @returns The resource.
    */
   static mergeResources(resources: Resource[]): Resource {
     if (resources.length === 0) return {type: 'global', labels: {}};
@@ -78,8 +78,8 @@ export class CoreResource {
    * OC_RESOURCE_TYPE: A string that describes the type of the resource
    * prefixed by a domain namespace, e.g. “kubernetes.io/container”.
    *
-   * @param  {string} rawEnvType The resource type.
-   * @returns {string} The sanitized resource type.
+   * @param rawEnvType The resource type.
+   * @returns The sanitized resource type.
    */
   private static parseResourceType(rawEnvType?: string): string|null {
     if (!rawEnvType) return null;
@@ -97,9 +97,9 @@ export class CoreResource {
    * are accepted as label keys. Values may be quoted or unquoted in general. If
    * a value contains whitespaces, =, or " characters, it must always be quoted.
    *
-   * @param {string} rawEnvLabels The resource labels as a comma-seperated list
+   * @param rawEnvLabels The resource labels as a comma-seperated list
    * of key/value pairs.
-   * @returns {Labels} The sanitized resource labels.
+   * @returns The sanitized resource labels.
    */
   private static parseResourceLabels(rawEnvLabels?: string): Labels {
     if (!rawEnvLabels) return {};
@@ -133,9 +133,9 @@ export class CoreResource {
    * Returns a new, merged Resource by merging two resources. In case of
    * a collision, first resource takes precedence.
    *
-   * @param {Resource} resource The resource object.
-   * @param {Resource} otherResource The resource object.
-   * @returns {Resource} A new, merged Resource.
+   * @param resource The resource object.
+   * @param otherResource The resource object.
+   * @returns A new, merged Resource.
    */
   private static merge(resource: Resource, otherResource: Resource): Resource {
     if (!resource) {
@@ -155,8 +155,8 @@ export class CoreResource {
    * Determines whether the given String is a valid printable ASCII string with
    * a length not exceed MAX_LENGTH characters.
    *
-   * @param {string} str The String to be validated.
-   * @returns {boolean} Whether the String is valid.
+   * @param str The String to be validated.
+   * @returns Whether the String is valid.
    */
   private static isValid(name: string): boolean {
     return name.length <= CoreResource.MAX_LENGTH &&
@@ -167,8 +167,8 @@ export class CoreResource {
    * Determines whether the given String is a valid printable ASCII string with
    * a length greater than 0 and not exceed MAX_LENGTH characters.
    *
-   * @param {string} str The String to be validated.
-   * @returns {boolean} Whether the String is valid and not empty.
+   * @param str The String to be validated.
+   * @returns Whether the String is valid and not empty.
    */
   private static isValidAndNotEmpty(name: string): boolean {
     return name.length > 0 && CoreResource.isValid(name);
