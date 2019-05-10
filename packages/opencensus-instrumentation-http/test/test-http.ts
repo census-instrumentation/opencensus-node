@@ -421,6 +421,35 @@ describe('HttpPlugin', () => {
       });
     });
 
+    it('should handle incoming requests with long request url path',
+       async () => {
+         const testPath = '/test&code=' +
+             'a'.repeat(300);
+         const options = {
+           host: 'localhost',
+           path: testPath,
+           port: serverPort,
+           headers: {'User-Agent': 'Android'}
+         };
+         shimmer.unwrap(http, 'get');
+         shimmer.unwrap(http, 'request');
+         nock.enableNetConnect();
+
+         assert.strictEqual(spanVerifier.endedSpans.length, 0);
+
+         await httpRequest.get(options).then((result) => {
+           assert.strictEqual(spanVerifier.endedSpans.length, 1);
+           assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+           const [span] = spanVerifier.endedSpans;
+           assertSpanAttributes(
+               span, 200, 'GET', 'localhost', testPath, 'Android');
+           assertServerStats(
+               testExporter, 200, 'GET',
+               '/test&code=' +
+                   'a'.repeat(244));
+         });
+       });
+
     for (const ignored of ['string', 'function', 'regexp']) {
       it(`should not trace ignored requests with type ${ignored}`, async () => {
         const testPath = `/ignored/${ignored}`;

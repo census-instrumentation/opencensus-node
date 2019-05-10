@@ -228,7 +228,12 @@ export class HttpPlugin extends BasePlugin {
               rootSpan.addAttribute(
                   HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path || '');
               tags.set(
-                  stats.HTTP_SERVER_ROUTE, {value: requestUrl.path || ''},
+                  stats.HTTP_SERVER_ROUTE, {
+                    value: ((requestUrl.path && requestUrl.path.length > 255) ?
+                                requestUrl.path.substring(0, 255) :
+                                requestUrl.path) ||
+                        ''
+                  },
                   UNLIMITED_PROPAGATION_MD);
             }
             if (userAgent) {
