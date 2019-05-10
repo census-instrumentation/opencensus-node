@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import {getTimestampWithProcessHRTime} from '../common/time-util';
 import {validateArrayElementsNotNull, validateDuplicateKeys, validateMapElementNotNull, validateNotNull} from '../common/validations';
 import {MeasureUnit} from '../stats/types';
 import {Cumulative} from './cumulative/cumulative';
+import {DerivedCumulative} from './cumulative/derived-cumulative';
 import {BaseMetricProducer} from './export/base-metric-producer';
-import {Metric, MetricDescriptorType, MetricProducer} from './export/types';
+import {LabelKey, LabelValue, Metric, MetricDescriptorType, MetricProducer, Timestamp} from './export/types';
 import {DerivedGauge} from './gauges/derived-gauge';
 import {Gauge} from './gauges/gauge';
 import {Meter, MetricOptions} from './types';
@@ -61,9 +63,7 @@ export class MetricRegistry {
         MetricRegistry.DEFAULT_CONSTANT_LABEL;
     // TODO(mayurkale): Add support for resource
 
-    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
-    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
-    validateDuplicateKeys(labelKeys, constantLabels);
+    this.validateLables(labelKeys, constantLabels);
 
     const labelKeysCopy = Object.assign([], labelKeys);
     const int64Gauge = new Gauge(
@@ -92,9 +92,7 @@ export class MetricRegistry {
         MetricRegistry.DEFAULT_CONSTANT_LABEL;
     // TODO(mayurkale): Add support for resource
 
-    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
-    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
-    validateDuplicateKeys(labelKeys, constantLabels);
+    this.validateLables(labelKeys, constantLabels);
 
     const labelKeysCopy = Object.assign([], labelKeys);
     const doubleGauge = new Gauge(
@@ -123,9 +121,7 @@ export class MetricRegistry {
         MetricRegistry.DEFAULT_CONSTANT_LABEL;
     // TODO(mayurkale): Add support for resource
 
-    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
-    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
-    validateDuplicateKeys(labelKeys, constantLabels);
+    this.validateLables(labelKeys, constantLabels);
 
     const labelKeysCopy = Object.assign([], labelKeys);
     const derivedInt64Gauge = new DerivedGauge(
@@ -154,9 +150,7 @@ export class MetricRegistry {
         MetricRegistry.DEFAULT_CONSTANT_LABEL;
     // TODO(mayurkale): Add support for resource
 
-    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
-    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
-    validateDuplicateKeys(labelKeys, constantLabels);
+    this.validateLables(labelKeys, constantLabels);
 
     const labelKeysCopy = Object.assign([], labelKeys);
     const derivedDoubleGauge = new DerivedGauge(
@@ -185,9 +179,7 @@ export class MetricRegistry {
         MetricRegistry.DEFAULT_CONSTANT_LABEL;
     // TODO(mayurkale): Add support for resource
 
-    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
-    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
-    validateDuplicateKeys(labelKeys, constantLabels);
+    this.validateLables(labelKeys, constantLabels);
 
     const labelKeysCopy = Object.assign([], labelKeys);
     const int64Cumulative = new Cumulative(
@@ -216,9 +208,7 @@ export class MetricRegistry {
         MetricRegistry.DEFAULT_CONSTANT_LABEL;
     // TODO(mayurkale): Add support for resource
 
-    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
-    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
-    validateDuplicateKeys(labelKeys, constantLabels);
+    this.validateLables(labelKeys, constantLabels);
 
     const labelKeysCopy = Object.assign([], labelKeys);
     const doubleCumulative = new Cumulative(
@@ -226,6 +216,66 @@ export class MetricRegistry {
         MetricDescriptorType.CUMULATIVE_DOUBLE, labelKeysCopy, constantLabels);
     this.registerMetric(name, doubleCumulative);
     return doubleCumulative;
+  }
+
+  /**
+   * Builds a new derived Int64 Cumulative to be added to the registry.
+   *
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Int64 DerivedCumulative metric.
+   */
+  addDerivedInt64Cumulative(name: string, options?: MetricOptions):
+      DerivedCumulative {
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
+
+    this.validateLables(labelKeys, constantLabels);
+
+    const labelKeysCopy = Object.assign([], labelKeys);
+    const startTime: Timestamp = getTimestampWithProcessHRTime();
+    const derivedInt64Cumulative = new DerivedCumulative(
+        validateNotNull(name, MetricRegistry.NAME), description, unit,
+        MetricDescriptorType.CUMULATIVE_INT64, labelKeysCopy, constantLabels,
+        startTime);
+    this.registerMetric(name, derivedInt64Cumulative);
+    return derivedInt64Cumulative;
+  }
+
+  /**
+   * Builds a new derived Double Cumulative to be added to the registry.
+   *
+   * @param name The name of the metric.
+   * @param options The options for the metric.
+   * @returns A Double DerivedCumulative metric.
+   */
+  addDerivedDoubleCumulative(name: string, options?: MetricOptions):
+      DerivedCumulative {
+    const description =
+        (options && options.description) || MetricRegistry.DEFAULT_DESCRIPTION;
+    const unit = (options && options.unit) || MetricRegistry.DEFAULT_UNIT;
+    const labelKeys =
+        (options && options.labelKeys) || MetricRegistry.DEFAULT_LABEL_KEYS;
+    const constantLabels = (options && options.constantLabels) ||
+        MetricRegistry.DEFAULT_CONSTANT_LABEL;
+    // TODO(mayurkale): Add support for resource
+
+    this.validateLables(labelKeys, constantLabels);
+
+    const labelKeysCopy = Object.assign([], labelKeys);
+    const startTime: Timestamp = getTimestampWithProcessHRTime();
+    const derivedDoubleCumulative = new DerivedCumulative(
+        validateNotNull(name, MetricRegistry.NAME), description, unit,
+        MetricDescriptorType.CUMULATIVE_DOUBLE, labelKeysCopy, constantLabels,
+        startTime);
+    this.registerMetric(name, derivedDoubleCumulative);
+    return derivedDoubleCumulative;
   }
 
   /**
@@ -249,6 +299,14 @@ export class MetricRegistry {
    */
   getMetricProducer(): MetricProducer {
     return this.metricProducer;
+  }
+
+  /** Validates labelKeys and constantLabels. */
+  private validateLables(
+      labelKeys: LabelKey[], constantLabels: Map<LabelKey, LabelValue>) {
+    validateArrayElementsNotNull(labelKeys, MetricRegistry.LABEL_KEY);
+    validateMapElementNotNull(constantLabels, MetricRegistry.CONSTANT_LABELS);
+    validateDuplicateKeys(labelKeys, constantLabels);
   }
 }
 

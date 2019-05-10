@@ -534,6 +534,223 @@ describe('addDoubleCumulative', () => {
      });
 });
 
+describe('addDerivedInt64Cumulative', () => {
+  let registry: MetricRegistry;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
+  });
+
+  it('should return a metric', () => {
+    const map = new Map();
+    map.set('key', 'value');
+    const derivedInt64Cumulative =
+        registry.addDerivedInt64Cumulative(METRIC_NAME, METRIC_OPTIONS);
+    derivedInt64Cumulative.createTimeSeries(LABEL_VALUES_200, map);
+    map.set('key1', 'value1');
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      labelKeys: LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.CUMULATIVE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    assert.deepStrictEqual(timeseries, [{
+                             labelValues: LABEL_VALUES_200,
+                             points: [{value: 2, timestamp: mockedTime}],
+                             startTimestamp: mockedTime
+                           }]);
+  });
+
+  it('should throw an error when the register same metric', () => {
+    registry.addDerivedInt64Cumulative(METRIC_NAME, METRIC_OPTIONS);
+    assert.throws(() => {
+      registry.addDerivedInt64Cumulative(METRIC_NAME, METRIC_OPTIONS);
+    }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
+
+  it('should throw an error when the duplicate keys in labelKeys and constantLabels',
+     () => {
+       const constantLabels = new Map();
+       constantLabels.set({key: 'k1'}, {value: 'v1'});
+       const labelKeys = [{key: 'k1', description: 'desc'}];
+       assert.throws(() => {
+         registry.addDerivedInt64Cumulative(
+             METRIC_NAME, {constantLabels, labelKeys});
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys$/);
+     });
+
+  it('should throw an error when the constant labels elements are null', () => {
+    const constantLabels = new Map();
+    constantLabels.set({key: 'k1'}, null);
+    assert.throws(() => {
+      registry.addDerivedInt64Cumulative(METRIC_NAME, {constantLabels});
+    }, /^Error: constantLabels elements should not be a NULL$/);
+  });
+
+  it('should return a metric without options', () => {
+    const map = new Map();
+    map.set('key', 'value');
+    const derivedInt64Cumulative =
+        registry.addDerivedInt64Cumulative(METRIC_NAME);
+    derivedInt64Cumulative.createTimeSeries([], map);
+    map.set('key1', 'value1');
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: '',
+      labelKeys: [],
+      unit: '1',
+      type: MetricDescriptorType.CUMULATIVE_INT64
+    });
+    assert.strictEqual(timeseries.length, 1);
+    assert.deepStrictEqual(timeseries, [{
+                             labelValues: [],
+                             points: [{value: 2, timestamp: mockedTime}],
+                             startTimestamp: mockedTime
+                           }]);
+  });
+});
+
+describe('addDerivedDoubleCumulative', () => {
+  let registry: MetricRegistry;
+  const realHrtimeFn = process.hrtime;
+  const realNowFn = Date.now;
+  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
+
+  beforeEach(() => {
+    registry = new MetricRegistry();
+
+    process.hrtime = () => [100, 1e7];
+    Date.now = () => 1450000000000;
+    // Force the clock to recalibrate the time offset with the mocked time
+    TEST_ONLY.setHrtimeReference();
+  });
+
+  afterEach(() => {
+    process.hrtime = realHrtimeFn;
+    Date.now = realNowFn;
+    // Reset the hrtime reference so that it uses a real clock again.
+    TEST_ONLY.resetHrtimeFunctionCache();
+  });
+
+  it('should return a metric', () => {
+    class QueueManager {
+      get Value(): number {
+        return 45.5;
+      }
+    }
+    const queue = new QueueManager();
+    const derivedDoubleCumulative =
+        registry.addDerivedDoubleCumulative(METRIC_NAME, METRIC_OPTIONS);
+    derivedDoubleCumulative.createTimeSeries(LABEL_VALUES_200, () => {
+      return queue.Value;
+    });
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: METRIC_DESCRIPTION,
+      labelKeys: LABEL_KEYS,
+      unit: UNIT,
+      type: MetricDescriptorType.CUMULATIVE_DOUBLE
+    });
+    assert.strictEqual(timeseries.length, 1);
+    assert.deepStrictEqual(timeseries, [{
+                             labelValues: LABEL_VALUES_200,
+                             points: [{value: 45.5, timestamp: mockedTime}],
+                             startTimestamp: mockedTime
+                           }]);
+  });
+
+  it('should throw an error when the register same metric', () => {
+    registry.addDerivedDoubleCumulative(METRIC_NAME, METRIC_OPTIONS);
+    assert.throws(() => {
+      registry.addDerivedDoubleCumulative(METRIC_NAME, METRIC_OPTIONS);
+    }, /^Error: A metric with the name metric-name has already been registered.$/);
+  });
+
+  it('should throw an error when the duplicate keys in labelKeys and constantLabels',
+     () => {
+       const constantLabels = new Map();
+       constantLabels.set({key: 'k1'}, {value: 'v1'});
+       const labelKeys = [{key: 'k1', description: 'desc'}];
+       assert.throws(() => {
+         registry.addDerivedDoubleCumulative(
+             METRIC_NAME, {constantLabels, labelKeys});
+       }, /^Error: The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys$/);
+     });
+
+  it('should throw an error when the constant labels elements are null', () => {
+    const constantLabels = new Map();
+    constantLabels.set({key: 'k1'}, null);
+    assert.throws(() => {
+      registry.addDerivedDoubleCumulative(METRIC_NAME, {constantLabels});
+    }, /^Error: constantLabels elements should not be a NULL$/);
+  });
+
+  it('should return a metric without options', () => {
+    class MemoryInfo {
+      current = 45.5;
+      get Value(): number {
+        return this.current;
+      }
+      inc() {
+        this.current++;
+      }
+    }
+    const mem = new MemoryInfo();
+    const derivedDoubleCumulative =
+        registry.addDerivedDoubleCumulative(METRIC_NAME);
+    derivedDoubleCumulative.createTimeSeries([], () => {
+      return mem.Value;
+    });
+    mem.inc();
+
+    const metrics = registry.getMetricProducer().getMetrics();
+    assert.strictEqual(metrics.length, 1);
+    const [{descriptor, timeseries}] = metrics;
+    assert.deepStrictEqual(descriptor, {
+      name: METRIC_NAME,
+      description: '',
+      labelKeys: [],
+      unit: '1',
+      type: MetricDescriptorType.CUMULATIVE_DOUBLE
+    });
+    assert.strictEqual(timeseries.length, 1);
+    assert.deepStrictEqual(timeseries, [{
+                             labelValues: [],
+                             points: [{value: 46.5, timestamp: mockedTime}],
+                             startTimestamp: mockedTime
+                           }]);
+  });
+});
+
 describe('Add multiple gauges', () => {
   let registry: MetricRegistry;
   const realHrtimeFn = process.hrtime;
