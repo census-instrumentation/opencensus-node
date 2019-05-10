@@ -125,7 +125,7 @@ export class CoreTracerBase implements types.TracerBase {
         const rootSpan =
             new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
         // Add default attributes
-        const defaultAttributes = this.config.defaultAttributes;
+        const defaultAttributes = this.config && this.config.defaultAttributes;
         if (defaultAttributes) {
           Object.keys(defaultAttributes).forEach((key) => {
             rootSpan.addAttribute(key, defaultAttributes[key]);
@@ -218,7 +218,7 @@ export class CoreTracerBase implements types.TracerBase {
     const span = options.childOf.startChildSpan(options.name, options.kind);
 
     // Add default attributes
-    const defaultAttributes = this.config.defaultAttributes;
+    const defaultAttributes = this.config && this.config.defaultAttributes;
     if (defaultAttributes) {
       Object.keys(defaultAttributes).forEach((key) => {
         span.addAttribute(key, defaultAttributes[key]);
