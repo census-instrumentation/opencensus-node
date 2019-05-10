@@ -120,26 +120,4 @@ describe('Tracer', () => {
       assert.ok(span instanceof NoRecordSpan);
     });
   });
-
-  /** Should add tracer attributes to every span created by tracer */
-  describe('startRootSpan() and startChildSpan() with attributes', () => {
-    let attributes: types.Attributes;
-    let tracer: types.TracerBase;
-    let span: types.Span;
-    let rootSpanLocal: types.Span;
-    before(() => {
-      tracer = new CoreTracer();
-      attributes = {cluster_name: 'test-cluster', asg_name: 'test-asg'};
-      tracer.start(Object.assign({attributes}, defaultConfig));
-      tracer.startRootSpan(options, (rootSpan) => {
-        rootSpanLocal = rootSpan;
-        span = tracer.startChildSpan(
-            {name: 'spanName', kind: types.SpanKind.CLIENT});
-      });
-    });
-    it('should add add attributes to spans', () => {
-      assert.deepStrictEqual(rootSpanLocal.attributes, attributes);
-      assert.deepStrictEqual(span.attributes, attributes);
-    });
-  });
 });

@@ -73,7 +73,7 @@ Tracing has many options available to choose from. At `tracing.start()`, you can
 
 | Options | Type | Description |
 | ------- | ---- | ----------- |
-| [`attributes`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L37) | `Attributes` | Default attributes added to every span created by the tracer |
+| [`defaultAttributes`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L37) | `Attributes` | Default attributes added to every span created by the tracer |
 | [`bufferSize`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L27) | `number` | The number of traces to be collected before exporting to a backend |
 | [`bufferTimeout`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L29) | `number` | Maximum time to wait before exporting to a backend |
 | [`logger`](https://github.com/census-instrumentation/opencensus-node/blob/master/packages/opencensus-core/src/trace/config/types.ts#L31) | `Logger` | A logger object |

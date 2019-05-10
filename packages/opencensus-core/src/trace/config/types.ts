@@ -33,8 +33,8 @@ export interface BufferConfig {
 
 /** Defines tracer configuration parameters */
 export interface TracerConfig {
-  /** A set of attributes each in the format [KEY]:[VALUE] */
-  attributes?: Attributes;
+  /** A set of default attributes each in the format [KEY]:[VALUE] */
+  defaultAttributes?: Attributes;
   /** Determines the sampling rate. Ranges from 0.0 to 1.0 */
   samplingRate?: number;
   /** A logger object  */

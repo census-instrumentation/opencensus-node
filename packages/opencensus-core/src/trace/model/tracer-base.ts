@@ -124,11 +124,12 @@ export class CoreTracerBase implements types.TracerBase {
       if (sampleDecision) {
         const rootSpan =
             new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
-        // Add tracer attributes
-        if (this.config.attributes) {
-          for (const key of Object.keys(this.config.attributes)) {
-            rootSpan.addAttribute(key, this.config.attributes[key]);
-          }
+        // Add default attributes
+        const defaultAttributes = this.config.defaultAttributes;
+        if (defaultAttributes) {
+          Object.keys(defaultAttributes).forEach((key) => {
+            rootSpan.addAttribute(key, defaultAttributes[key]);
+          });
         }
         rootSpan.start();
         return fn(rootSpan);
@@ -215,11 +216,13 @@ export class CoreTracerBase implements types.TracerBase {
       return new NoRecordSpan();
     }
     const span = options.childOf.startChildSpan(options.name, options.kind);
-    // Add tracer attributes
-    if (this.config.attributes) {
-      for (const key of Object.keys(this.config.attributes)) {
-        span.addAttribute(key, this.config.attributes[key]);
-      }
+
+    // Add default attributes
+    const defaultAttributes = this.config.defaultAttributes;
+    if (defaultAttributes) {
+      Object.keys(defaultAttributes).forEach((key) => {
+        span.addAttribute(key, defaultAttributes[key]);
+      });
     }
     return span;
   }
