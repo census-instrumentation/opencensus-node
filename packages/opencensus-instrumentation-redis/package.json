@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-redis",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Opencensus Redis automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -54,7 +54,7 @@
     "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.11",
+    "@opencensus/core": "^0.0.12",
     "semver": "^6.0.0",
     "shimmer": "^1.2.0"
   }
