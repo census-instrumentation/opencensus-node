@@ -34,6 +34,8 @@ const UNLIMITED_PROPAGATION_MD = {
   tagTtl: TagTtl.UNLIMITED_PROPAGATION
 };
 
+const TAG_VALUE_MAX_LENGTH = 255;
+
 /** Http instrumentation plugin for Opencensus */
 export class HttpPlugin extends BasePlugin {
   /**
@@ -229,10 +231,8 @@ export class HttpPlugin extends BasePlugin {
                   HttpPlugin.ATTRIBUTE_HTTP_ROUTE, requestUrl.path || '');
               tags.set(
                   stats.HTTP_SERVER_ROUTE, {
-                    value: ((requestUrl.path && requestUrl.path.length > 255) ?
-                                requestUrl.path.substring(0, 255) :
-                                requestUrl.path) ||
-                        ''
+                    value: (requestUrl.path ||
+                            '').substring(0, TAG_VALUE_MAX_LENGTH)
                   },
                   UNLIMITED_PROPAGATION_MD);
             }
