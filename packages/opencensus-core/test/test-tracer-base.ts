@@ -375,6 +375,33 @@ describe('Tracer Base', () => {
     });
   });
 
+  /** Should add tracer attributes to every span created by tracer */
+  describe('startRootSpan() and startChildSpan() with attributes', () => {
+    let tracerConfig: TracerConfig;
+    let tracer: types.TracerBase;
+    let span: types.Span;
+    let rootSpanLocal: types.Span;
+    before(() => {
+      tracer = new CoreTracerBase();
+      tracerConfig = {
+        ...defaultConfig,
+        defaultAttributes:
+            {cluster_name: 'test-cluster', asg_name: 'test-asg'}
+      };
+      tracer.start(tracerConfig);
+      tracer.startRootSpan(options, (rootSpan) => {
+        rootSpanLocal = rootSpan;
+        span = tracer.startChildSpan(
+            {name: 'spanName', kind: types.SpanKind.CLIENT, childOf: rootSpan});
+      });
+    });
+    it('should add add attributes to spans', () => {
+      assert.deepStrictEqual(
+          rootSpanLocal.attributes, tracerConfig.defaultAttributes);
+      assert.deepStrictEqual(span.attributes, tracerConfig.defaultAttributes);
+    });
+  });
+
   /** Should run eventListeners when the rootSpan ends */
   describe('onEndSpan()', () => {
     it('should run eventListeners when the rootSpan ends', () => {

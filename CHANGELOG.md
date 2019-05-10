@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Add `defaultAttributes` config to `Tracer.start(config)`
 - Add Cumulative (`DoubleCumulative`, `Int64Cumulative`) APIs.
 
  **This release has a breaking change. Please test your code accordingly after upgrading.**

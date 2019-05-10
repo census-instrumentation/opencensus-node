@@ -18,6 +18,7 @@ import {Logger} from '../../common/types';
 import {Exporter} from '../../exporters/types';
 import {Stats} from '../../stats/types';
 import {PluginNames} from '../instrumentation/types';
+import {Attributes} from '../model/types';
 import {Propagation} from '../propagation/types';
 
 /** Interface configuration for a buffer. */
@@ -32,6 +33,8 @@ export interface BufferConfig {
 
 /** Defines tracer configuration parameters */
 export interface TracerConfig {
+  /** A set of default attributes each in the format [KEY]:[VALUE] */
+  defaultAttributes?: Attributes;
   /** Determines the sampling rate. Ranges from 0.0 to 1.0 */
   samplingRate?: number;
   /** A logger object  */
