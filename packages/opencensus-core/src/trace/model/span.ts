@@ -354,12 +354,9 @@ export class Span implements types.Span {
 
   /**
    * Starts a new child span.
-   * @param nameOrOptions Span name string or SpanOptions object.
-   * @param kind Span kind if not using SpanOptions object.
+   * @param [options] A SpanOptions object to start a child span.
    */
-  startChildSpan(
-      nameOrOptions?: string|types.SpanOptions,
-      kind?: types.SpanKind): types.Span {
+  startChildSpan(options?: types.SpanOptions): types.Span {
     if (this.ended) {
       this.logger.debug(
           'calling %s.startSpan() on ended %s %o', this.className,
@@ -374,12 +371,8 @@ export class Span implements types.Span {
     }
 
     const child = new Span(this.tracer, this);
-    const spanName =
-        typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
-    const spanKind =
-        typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
-    if (spanName) child.name = spanName;
-    if (spanKind) child.kind = spanKind;
+    if (options && options.name) child.name = options.name;
+    if (options && options.kind) child.kind = options.kind;
 
     child.start();
     this.spansLocal.push(child);
