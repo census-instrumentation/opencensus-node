@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-mongodb",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Opencensus MongoDB automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -64,7 +64,7 @@
     "typescript": "~2.9.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.11",
+    "@opencensus/core": "^0.0.12",
     "shimmer": "^1.2.0"
   }
 }
