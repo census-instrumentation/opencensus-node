@@ -157,12 +157,35 @@ describe('Stackdriver Stats Exporter Utils', () => {
   });
 
   describe('createDistribution()', () => {
+    const attachments = {'k1': 'v1'};
+    const spanContext = {
+      traceId: '3ad17e665f514aabb896341f670179ed',
+      spanId: '3aaeb440a89d9e82',
+      options: 0x1
+    };
     const distributionValue: DistributionValue = {
       count: 3,
       sum: 2,
       sumOfSquaredDeviation: 14,
       bucketOptions: {explicit: {bounds: [1.0, 3.0, 5.0]}},
-      buckets: [{count: 3}, {count: 1}, {count: 2}, {count: 4}],
+      buckets: [
+        {
+          count: 3,
+          exemplar: {
+            value: 5,
+            timestamp: {seconds: 1450000000, nanos: 0},
+            attachments
+          }
+        },
+        {count: 1}, {count: 2}, {
+          count: 4,
+          exemplar: {
+            value: 5,
+            timestamp: {seconds: 1450000000, nanos: 0},
+            attachments: {'SpanContext': `'${spanContext}'`}
+          }
+        }
+      ],
     };
     it('should return a Stackdriver Distribution', () => {
       const distribution: Distribution =
@@ -175,6 +198,15 @@ describe('Stackdriver Stats Exporter Utils', () => {
           distribution.bucketOptions,
           {explicitBuckets: {bounds: [0, 1, 3, 5]}});
       assert.deepStrictEqual(distribution.bucketCounts, [0, 3, 1, 2, 4]);
+      assert.deepStrictEqual(
+          distribution.exemplars, [{
+            'attachments': [{
+              '@type': 'type.googleapis.com/google.protobuf.StringValue',
+              'value': 'v1'
+            }],
+            'timestamp': '2015-12-13T09:46:40.Z',
+            'value': 5
+          }]);
     });
   });
 
@@ -290,7 +322,8 @@ describe('Stackdriver Stats Exporter Utils', () => {
             mean: 0.6666666666666666,
             sumOfSquaredDeviation: 14,
             bucketOptions: {explicitBuckets: {bounds: [0, 1.2, 3.2, 5.2]}},
-            bucketCounts: [0, 3, 1, 2, 4]
+            bucketCounts: [0, 3, 1, 2, 4],
+            exemplars: []
           }
         },
         interval: {
