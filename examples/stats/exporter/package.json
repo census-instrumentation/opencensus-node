@@ -26,8 +26,8 @@
     "semistandard": "^13.0.1"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.11",
-    "@opencensus/exporter-prometheus": "^0.0.11",
-    "@opencensus/exporter-stackdriver": "^0.0.11"
+    "@opencensus/core": "^0.0.12",
+    "@opencensus/exporter-prometheus": "^0.0.12",
+    "@opencensus/exporter-stackdriver": "^0.0.12"
   }
 }

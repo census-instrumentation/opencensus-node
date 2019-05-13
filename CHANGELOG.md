@@ -4,8 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+
+## 0.0.12 - 2019-05-13
 - Add `defaultAttributes` config to `Tracer.start(config)`
+- http-instrumentation: Handle incoming requests with long request url path.
 - Add Cumulative (`DoubleCumulative`, `LongCumulative`, , `DerivedDoubleCumulative`, `DerivedLongCumulative`) APIs.
+- Export `TracerBase` as a separate `@opencensus/nodejs-base` package.
+- Fix(deps): update dependency nyc to v14.
+- Fix(deps): update dependency grpc to ~1.20.0
+- chore(package): update handlebar to avoid security vulnabirity.
+- Move propagation-binaryformat package to dependencies.
+- Fix(deps): update dependency @grpc/proto-loader to ^0.5.0
+- http-instrumentation: fix propagation errors when using Expect header.
+- Consolidate Span and RootSpan to allow Spans to recursively have children.
 
  **This release has a breaking change. Please test your code accordingly after upgrading.**
 
