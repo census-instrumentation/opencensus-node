@@ -38,8 +38,6 @@ workflows:
   version: 2
   tests:
     jobs:
-      - node6:
-          filters: *release_tags
       - node8:
           filters: *release_tags
       - node10:
