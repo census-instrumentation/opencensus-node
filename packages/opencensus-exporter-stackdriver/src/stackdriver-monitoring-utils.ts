@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BucketOptions, DistributionBucket, DistributionValue, LabelKey, LabelValue, Metric, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
+import {BucketOptions, DistributionBucket, DistributionValue, Exemplar as OCExemplar, LabelKey, LabelValue, Metric, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
 import * as os from 'os';
 import * as path from 'path';
 import {Any, Distribution, Exemplar, LabelDescriptor, MetricDescriptor, MetricKind, MonitoredResource, Point, TimeSeries, ValueType} from './types';
@@ -234,24 +234,28 @@ function createExemplars(buckets: DistributionBucket[]): Exemplar[] {
       .map((bucket) => ({
              value: bucket.exemplar!.value,
              timestamp: toISOString(bucket.exemplar!.timestamp),
-             attachments: Object.keys(bucket.exemplar!.attachments)
-                              .map((key) => {
-                                if (key === ATTACHMENT_KEY_SPAN_CONTEXT) {
-                                  // TODO: add support for SpanContext
-                                  // attachment.
-                                  return null;
-                                } else {
-                                  // Everything else will be treated as plain
-                                  // strings for now.
-                                  return {
-                                    '@type': EXEMPLAR_ATTACHMENT_TYPE_STRING,
-                                    value: bucket.exemplar!.attachments[key]
-                                  };
-                                }
-                              })
-                              .filter(attachment => !!attachment) as Any[]
+             attachments: _createAttachments(bucket.exemplar!)
            }))
       .filter((exemplar) => exemplar.attachments.length > 0);
+}
+
+function _createAttachments(exemplar: OCExemplar): Any[] {
+  return Object.keys(exemplar.attachments)
+             .map((key) => {
+               if (key === ATTACHMENT_KEY_SPAN_CONTEXT) {
+                 // TODO: add support for SpanContext
+                 // attachment.
+                 return null;
+               } else {
+                 // Everything else will be treated as plain
+                 // strings for now.
+                 return {
+                   '@type': EXEMPLAR_ATTACHMENT_TYPE_STRING,
+                   value: exemplar.attachments[key]
+                 };
+               }
+             })
+             .filter(attachment => !!attachment) as Any[];
 }
 
 /** Returns a task label value in the format of 'nodejs-<pid>@<hostname>'. */
