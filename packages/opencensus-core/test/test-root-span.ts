@@ -20,7 +20,7 @@ import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
-import {Annotation, Attributes, Link} from '../src/trace/model/types';
+import {Annotation, Link} from '../src/trace/model/types';
 
 const tracer = new CoreTracer();
 
