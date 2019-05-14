@@ -48,11 +48,11 @@ import tracing from '@opencensus/nodejs';
 import { JaegerTraceExporter } from '@opencensus/exporter-jaeger';
 
 const options = {
-  serviceName: 'my-service';
-  tags: []; // optional
-  host: localhost; // optional
-  port: 6832; // optional
-  maxPacketSize: 65000; // optional
+  serviceName: 'my-service',
+  tags: [], // optional
+  host: 'localhost', // optional
+  port: 6832, // optional
+  maxPacketSize: 65000 // optional
 }
 const exporter = new JaegerTraceExporter(options);
 ```
