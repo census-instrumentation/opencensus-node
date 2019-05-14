@@ -32,10 +32,10 @@ const postPath = '/api/v2/spans';
 const OPENCENSUS_NETWORK_TESTS = process.env.OPENCENSUS_NETWORK_TESTS;
 
 /** Default options for zipkin tests */
-const zipkinOptions = {
+const zipkinOptions: ZipkinExporterOptions = {
   url: zipkinHost + postPath,
   serviceName: 'opencensus-tests'
-} as ZipkinExporterOptions;
+};
 
 /** Default config for traces tests */
 const defaultConfig: TracerConfig = {
@@ -185,10 +185,10 @@ describe('Zipkin Exporter', function() {
     it('shouldn\'t send traces to Zipkin service and return an 404 error',
        () => {
          /** Creating new options with a wrong url */
-         const options = {
+         const options: ZipkinExporterOptions = {
            url: zipkinHost + '/wrong',
            serviceName: 'opencensus-tests'
-         } as ZipkinExporterOptions;
+         };
 
          const exporter = new ZipkinTraceExporter(options);
          const tracer = new CoreTracer();

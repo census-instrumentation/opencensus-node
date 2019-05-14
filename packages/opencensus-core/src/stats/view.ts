@@ -230,7 +230,6 @@ export class BaseView implements View {
    * @returns The Point.
    */
   private toPoint(timestamp: Timestamp, data: AggregationData): Point {
-    let value;
     if (data.type === AggregationType.DISTRIBUTION) {
       const {count, sum, sumOfSquaredDeviation, exemplars} = data;
       const buckets = [];
@@ -241,17 +240,18 @@ export class BaseView implements View {
           buckets.push(this.getMetricBucket(bucketCount, statsExemplar));
         }
       }
-      value = {
+      const value: DistributionValue = {
         count,
         sum,
         sumOfSquaredDeviation,
         buckets,
         bucketOptions: {explicit: {bounds: data.buckets}},
-      } as DistributionValue;
+      };
+      return {timestamp, value};
     } else {
-      value = data.value as number;
+      const value: number = data.value;
+      return {timestamp, value};
     }
-    return {timestamp, value};
   }
 
   /**

@@ -39,11 +39,11 @@ import * as tracing from '@opencensus/nodejs';
 import {ZpagesExporter, ZpagesExporterOptions} from '@opencensus/zpages-exporter';
 
 // Add your zipkin url and application name to the Zipkin options
-const options = {
+const options: ZpagesExporterOptions = {
   port: 8080,   // default
   startServer: true,  // default
   spanNames: ['predefined/span1', 'predefined/span2']
-} as ZpagesExporterOptions;
+};
 
 const exporter = new ZpagesExporter(options);
 ```

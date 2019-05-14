@@ -224,17 +224,14 @@ export class Span implements types.Span {
    * @param timestamp A time, in milliseconds. Defaults to Date.now()
    */
   addAnnotation(
-      description: string, attributes?: types.Attributes, timestamp = 0) {
+      description: string, attributes: types.Attributes = {},
+      timestamp = Date.now()) {
     if (this.annotations.length >=
         this.activeTraceParams.numberOfAnnontationEventsPerSpan!) {
       this.annotations.shift();
       this.droppedAnnotationsCount++;
     }
-    this.annotations.push({
-      'description': description,
-      'attributes': attributes || {},
-      'timestamp': timestamp ? timestamp : Date.now(),
-    } as types.Annotation);
+    this.annotations.push({description, attributes, timestamp});
   }
 
   /**
@@ -246,18 +243,13 @@ export class Span implements types.Span {
    */
   addLink(
       traceId: string, spanId: string, type: types.LinkType,
-      attributes?: types.Attributes) {
+      attributes: types.Attributes = {}) {
     if (this.links.length >= this.activeTraceParams.numberOfLinksPerSpan!) {
       this.links.shift();
       this.droppedLinksCount++;
     }
 
-    this.links.push({
-      'traceId': traceId,
-      'spanId': spanId,
-      'type': type,
-      'attributes': attributes || {}
-    } as types.Link);
+    this.links.push({traceId, spanId, type, attributes});
   }
 
   /**
@@ -270,7 +262,7 @@ export class Span implements types.Span {
    *     zero or undefined, assumed to be the same size as uncompressed.
    */
   addMessageEvent(
-      type: types.MessageEventType, id: number, timestamp = 0,
+      type: types.MessageEventType, id: number, timestamp = Date.now(),
       uncompressedSize?: number, compressedSize?: number) {
     if (this.messageEvents.length >=
         this.activeTraceParams.numberOfMessageEventsPerSpan!) {
@@ -281,10 +273,10 @@ export class Span implements types.Span {
     this.messageEvents.push({
       type,
       id,
-      timestamp: timestamp ? timestamp : Date.now(),
+      timestamp,
       uncompressedSize,
       compressedSize,
-    } as types.MessageEvent);
+    });
   }
 
   /**

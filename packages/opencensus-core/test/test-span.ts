@@ -233,7 +233,7 @@ describe('Span', () => {
       const span = new Span(tracer, rootSpan);
       span.start();
 
-      span.addAnnotation('description test', {} as Attributes, Date.now());
+      span.addAnnotation('description test', {}, Date.now());
 
       assert.ok(span.annotations.length > 0);
       assert.equal(span.droppedAnnotationsCount, 0);
@@ -247,7 +247,7 @@ describe('Span', () => {
       const span = new Span(tracer, rootSpan);
       span.start();
       for (let i = 0; i < 40; i++) {
-        span.addAnnotation('description test', {} as Attributes, Date.now());
+        span.addAnnotation('description test', {}, Date.now());
       }
 
       assert.equal(span.annotations.length, 32);

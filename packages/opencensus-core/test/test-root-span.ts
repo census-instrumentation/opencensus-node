@@ -260,7 +260,7 @@ describe('RootSpan', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      rootSpan.addAnnotation('description test', {} as Attributes, Date.now());
+      rootSpan.addAnnotation('description test', {}, Date.now());
 
       assert.ok(rootSpan.annotations.length > 0);
       assert.ok(instanceOfAnnotation(rootSpan.annotations[0]));

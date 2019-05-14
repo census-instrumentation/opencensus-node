@@ -46,11 +46,11 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
   private port: number;
   private traces: Map<string, Span[]> = new Map();
   private logger: Logger;
-  private statsParams = {
+  private statsParams: StatsParams = {
     registeredViews: [],
     registeredMeasures: [],
     recordedData: {}
-  } as StatsParams;
+  };
 
   constructor(options: ZpagesExporterOptions) {
     /** create express app */
