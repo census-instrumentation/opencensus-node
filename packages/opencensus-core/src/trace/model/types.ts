@@ -458,9 +458,7 @@ export interface Span {
   truncate(): void;
 
   /** Starts a new Span instance as a child of this instance */
-  startChildSpan(name?: string, kind?: SpanKind): Span;
   startChildSpan(options?: SpanOptions): Span;
-  startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind): Span;
 }
 
 /** Interface for TracerBase */
@@ -515,7 +513,6 @@ export interface TracerBase extends SpanEventListener {
 
   /**
    * Start a new Span instance to the currentRootSpan
-   * @param childOf Span
    * @param [options] A TraceOptions object to start a root span.
    * @returns The new Span instance started
    */

@@ -184,25 +184,12 @@ export class NoRecordSpan implements types.Span {
 
   /**
    * Starts a new no record child span in the no record root span.
-   * @param nameOrOptions Span name string or SpanOptions object.
-   * @param kind Span kind if not using SpanOptions object.
+   * @param [options] A SpanOptions object to start a child span.
    */
-  startChildSpan(
-      nameOrOptions?: string|types.SpanOptions,
-      kind?: types.SpanKind): types.Span {
+  startChildSpan(options?: types.SpanOptions): types.Span {
     const noRecordChild = new NoRecordSpan(this);
-
-    const spanName =
-        typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
-    const spanKind =
-        typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
-    if (spanName) {
-      noRecordChild.name = spanName;
-    }
-    if (spanKind) {
-      noRecordChild.kind = spanKind;
-    }
-
+    if (options && options.name) noRecordChild.name = options.name;
+    if (options && options.kind) noRecordChild.kind = options.kind;
     noRecordChild.start();
     return noRecordChild;
   }

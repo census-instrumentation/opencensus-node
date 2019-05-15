@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+**This release has a breaking change. Please test your code accordingly after upgrading.**
+
+- Remove Span's `startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind)` interface, now only `SpanOptions` object interface is supported.
 
 ## 0.0.12 - 2019-05-13
 - Add `defaultAttributes` config to `Tracer.start(config)`
