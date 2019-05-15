@@ -19,7 +19,7 @@ import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
-import {Annotation, Attributes, Link} from '../src/trace/model/types';
+import {Annotation, Link} from '../src/trace/model/types';
 
 // TODO: we should evaluate a way to merge similar test cases between span and
 // rootspan
@@ -233,7 +233,7 @@ describe('Span', () => {
       const span = new Span(tracer, rootSpan);
       span.start();
 
-      span.addAnnotation('description test', {} as Attributes, Date.now());
+      span.addAnnotation('description test', {}, Date.now());
 
       assert.ok(span.annotations.length > 0);
       assert.equal(span.droppedAnnotationsCount, 0);
@@ -247,7 +247,7 @@ describe('Span', () => {
       const span = new Span(tracer, rootSpan);
       span.start();
       for (let i = 0; i < 40; i++) {
-        span.addAnnotation('description test', {} as Attributes, Date.now());
+        span.addAnnotation('description test', {}, Date.now());
       }
 
       assert.equal(span.annotations.length, 32);

@@ -151,11 +151,11 @@ export class DerivedGauge implements types.Meter {
       descriptor: this.metricDescriptor,
       timeseries: Array.from(
           this.registeredPoints,
-          ([_, gaugeEntry]) => ({
+          ([_, gaugeEntry]): TimeSeries => ({
             labelValues:
                 [...gaugeEntry.labelValues, ...this.constantLabelValues],
             points: [{value: gaugeEntry.extractor(), timestamp}]
-          } as TimeSeries))
+          }))
     };
   }
 }

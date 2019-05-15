@@ -253,7 +253,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
         sumOfSquaredDeviation: 14,
         bucketOptions: {explicit: {bounds: [1.2, 3.2, 5.2]}},
         buckets: [{count: 3}, {count: 1}, {count: 2}, {count: 4}],
-      } as DistributionValue,
+      },
       timestamp: pointTimestamp
     };
 

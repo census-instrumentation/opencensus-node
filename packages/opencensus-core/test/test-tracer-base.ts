@@ -141,7 +141,7 @@ describe('Tracer Base', () => {
 
   describe('startRootSpan() with sampler never', () => {
     const tracer = new CoreTracerBase();
-    const config = {samplingRate: 0} as TracerConfig;
+    const config: TracerConfig = {samplingRate: 0};
 
     it('should start the new NoRecordRootSpan instance', () => {
       tracer.start(config);
@@ -161,7 +161,7 @@ describe('Tracer Base', () => {
 
   describe('startRootSpan() with sampler always', () => {
     const tracer = new CoreTracerBase();
-    const config = {samplingRate: 1} as TracerConfig;
+    const config: TracerConfig = {samplingRate: 1};
 
     it('should start the new RootSpan instance', () => {
       tracer.start(config);
@@ -191,8 +191,10 @@ describe('Tracer Base', () => {
   });
 
   describe('startRootSpan() with context propagation', () => {
-    const traceOptions = {name: 'rootName', kind: types.SpanKind.UNSPECIFIED} as
-        types.TraceOptions;
+    const traceOptions: types.TraceOptions = {
+      name: 'rootName',
+      kind: types.SpanKind.UNSPECIFIED
+    };
 
     it('should create new RootSpan instance, no propagation', () => {
       const tracer = new CoreTracerBase();
@@ -204,11 +206,11 @@ describe('Tracer Base', () => {
       });
     });
 
-    const spanContextPropagated = {
+    const spanContextPropagated: types.SpanContext = {
       traceId: uuid.v4().split('-').join(''),
       spanId: randomSpanId(),
       options: 0x1
-    } as types.SpanContext;
+    };
 
 
     it('should create the new RootSpan with propagation', () => {

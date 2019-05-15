@@ -155,7 +155,7 @@ export class ZipkinTraceExporter implements Exporter {
    * @param span Span to be translated
    */
   translateSpan(span: Span): TranslatedSpan {
-    const spanTranslated = {
+    const spanTranslated: TranslatedSpan = {
       traceId: span.traceId,
       name: span.name,
       id: span.id,
@@ -169,7 +169,7 @@ export class ZipkinTraceExporter implements Exporter {
       localEndpoint: {serviceName: this.serviceName},
       tags: this.createTags(span.attributes, span.status),
       annotations: this.createAnnotations(span.annotations, span.messageEvents)
-    } as TranslatedSpan;
+    };
 
     if (span.parentSpanId) {
       spanTranslated.parentId = span.parentSpanId;

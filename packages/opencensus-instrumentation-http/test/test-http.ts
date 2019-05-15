@@ -79,7 +79,7 @@ const VERSION = process.versions.node;
 
 class DummyPropagation implements Propagation {
   extract(getter: HeaderGetter): SpanContext {
-    return {traceId: 'dummy-trace-id', spanId: 'dummy-span-id'} as SpanContext;
+    return {traceId: 'dummy-trace-id', spanId: 'dummy-span-id'};
   }
 
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
@@ -88,7 +88,7 @@ class DummyPropagation implements Propagation {
   }
 
   generate(): SpanContext {
-    return {traceId: 'dummy-trace-id', spanId: 'dummy-span-id'} as SpanContext;
+    return {traceId: 'dummy-trace-id', spanId: 'dummy-span-id'};
   }
 }
 

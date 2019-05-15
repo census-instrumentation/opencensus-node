@@ -26,11 +26,11 @@ import {TraceConfigzData, TraceConfigzParams} from '../src/zpages-frontend/page-
 import {TracezData, TracezParams} from '../src/zpages-frontend/page-handlers/tracez.page-handler';
 
 /** Default options for zpages tests */
-const options = {
+const options: ZpagesExporterOptions = {
   port: 8081,
   spanNames: ['predefined/span1', 'predefined/span2'],
   startServer: false
-} as ZpagesExporterOptions;
+};
 
 /** Zpages Server URL, just to support tests, shouldn't be changed */
 const zpagesServerUrl = 'http://localhost:' + options.port;

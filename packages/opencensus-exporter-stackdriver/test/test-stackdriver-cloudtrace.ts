@@ -39,7 +39,7 @@ describe('Stackdriver Trace Exporter', function() {
       projectId: PROJECT_ID,
       bufferTimeout: 200,
       logger: testLogger
-    } as StackdriverExporterOptions;
+    };
   });
 
   beforeEach(() => {

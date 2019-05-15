@@ -49,7 +49,7 @@ describe('Jaeger Exporter', () => {
       bufferTimeout: DEFAULT_BUFFER_TIMEOUT,
       logger: testLogger,
       maxPacketSize: 1000
-    } as JaegerTraceExporterOptions;
+    };
   });
 
   beforeEach(() => {

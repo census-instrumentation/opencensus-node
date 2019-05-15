@@ -20,7 +20,7 @@ import {RootSpan} from '../src/trace/model/root-span';
 import {Span} from '../src/trace/model/span';
 import {CoreTracer} from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
-import {Annotation, Attributes, Link} from '../src/trace/model/types';
+import {Annotation, Link} from '../src/trace/model/types';
 
 const tracer = new CoreTracer();
 
@@ -260,7 +260,7 @@ describe('RootSpan', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
 
-      rootSpan.addAnnotation('description test', {} as Attributes, Date.now());
+      rootSpan.addAnnotation('description test', {}, Date.now());
 
       assert.ok(rootSpan.annotations.length > 0);
       assert.ok(instanceOfAnnotation(rootSpan.annotations[0]));
