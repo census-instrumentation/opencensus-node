@@ -55,7 +55,7 @@ export type PluginNames = {
 };
 
 export type PluginInternalFilesVersion = {
-  [pluginName: string]: string
+  [pluginName: string]: string;
 };
 
 /**

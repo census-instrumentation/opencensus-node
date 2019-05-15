@@ -15,10 +15,13 @@
  */
 
 import {StatsEventListener} from '../exporters/types';
-import * as cls from '../internal/cls';
 import {Metric} from '../metrics/export/types';
 import {TagMap} from '../tags/tag-map';
 import {TagKey, TagValue} from '../tags/types';
+
+/** Default type for functions */
+// tslint:disable:no-any
+type Func<T> = (...args: any[]) => T;
 
 /** Main interface for stats. */
 export interface Stats {
@@ -107,7 +110,7 @@ export interface Stats {
    * @param fn Callback function.
    * @returns The callback return.
    */
-  withTagContext<T>(tags: TagMap, fn: cls.Func<T>): T;
+  withTagContext<T>(tags: TagMap, fn: Func<T>): T;
 
   /** Gets the current tag context. */
   getCurrentTagContext(): TagMap;
