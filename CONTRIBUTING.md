@@ -28,5 +28,6 @@ Follow either of the two links above to access the appropriate CLA and instructi
 1. Fork the desired repo, develop and test your code changes.
 1. In the directory for each of the packages that you have made changes in, run `npm run test` to run the tests and check coverage. Ensure there are no new failures after your changes. 
 1. From the top level directory run `npm run check` and address any failures. This builds all of the packages and runs the linter. This ensures changes you have made do not affect any of the packages (which can happen even if you have not changed them specifically).
+1. The easiest way to fix linter errors is to run `npm run fix`
 1. Submit a pull request.
 1. If your proposed change is accepted, and you haven't already done so, sign a Contributor License Agreement (see details above).
