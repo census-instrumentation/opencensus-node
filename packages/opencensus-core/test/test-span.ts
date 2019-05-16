@@ -370,4 +370,27 @@ describe('Span', () => {
       assert.equal(span.status.message, 'This is an error');
     });
   });
+
+  describe('get traceState()', () => {
+    it('should return the traceState', () => {
+      const rootSpan =
+          new RootSpan(tracer, name, kind, traceId, parentSpanId, 'traceState');
+      rootSpan.start();
+      assert.equal(rootSpan.traceState, 'traceState');
+
+      const span = new Span(tracer, rootSpan);
+      assert.equal(span.traceId, rootSpan.traceId);
+      assert.equal(span.traceState, 'traceState');
+    });
+
+    it('should handle optional / undefined traceState', () => {
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
+      rootSpan.start();
+      assert.equal(rootSpan.traceState, undefined);
+
+      const span = new Span(tracer, rootSpan);
+      assert.equal(span.traceId, rootSpan.traceId);
+      assert.equal(span.traceState, undefined);
+    });
+  });
 });

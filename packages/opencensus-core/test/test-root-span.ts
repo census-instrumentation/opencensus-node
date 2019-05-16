@@ -324,4 +324,19 @@ describe('RootSpan', () => {
       assert.ok(instanceOfLink(rootSpan.messageEvents[0]));
     });
   });
+
+  describe('get traceState()', () => {
+    it('should handle optional / undefined traceState', () => {
+      const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
+      assert.ok(root instanceof RootSpan);
+      assert.equal(root.traceState, undefined);
+    });
+
+    it('should create a RootSpan instance with traceState', () => {
+      const root =
+          new RootSpan(tracer, name, kind, traceId, parentSpanId, 'traceState');
+      assert.ok(root instanceof RootSpan);
+      assert.equal(root.traceState, 'traceState');
+    });
+  });
 });

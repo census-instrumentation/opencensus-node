@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as assert from 'assert';
 import {CanonicalCode, LinkType, MessageEventType} from '../src';
 import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
 
@@ -28,5 +29,6 @@ describe('NoRecordSpan()', () => {
     noRecordSpan.addMessageEvent(MessageEventType.RECEIVED, 1, 123456789);
     noRecordSpan.addAttribute('my_first_attribute', 'foo');
     noRecordSpan.setStatus(CanonicalCode.OK);
+    assert.equal(noRecordSpan.traceState, undefined);
   });
 });

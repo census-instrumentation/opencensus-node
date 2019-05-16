@@ -87,7 +87,7 @@ export class NoRecordSpan implements types.Span {
 
   /** Gets the trace state */
   get traceState(): types.TraceState|undefined {
-    return this.root.traceState;
+    return undefined;
   }
 
   /** Gets the ID of the parent span. */

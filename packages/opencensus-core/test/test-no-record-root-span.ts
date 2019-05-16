@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as assert from 'assert';
 import {CanonicalCode, CoreTracer, LinkType, MessageEventType, SpanKind} from '../src';
 import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
 
@@ -32,5 +33,6 @@ describe('NoRecordRootSpan()', () => {
     noRecordRootSpan.addAttribute('my_first_attribute', 'foo');
     noRecordRootSpan.setStatus(CanonicalCode.OK);
     noRecordRootSpan.startChildSpan();
+    assert.equal(noRecordRootSpan.traceState, undefined);
   });
 });
