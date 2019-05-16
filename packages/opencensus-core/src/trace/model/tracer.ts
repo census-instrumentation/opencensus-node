@@ -47,6 +47,11 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
 
   /** Sets the current root span. */
   set currentRootSpan(root: types.Span) {
+    this.setCurrentRootSpan(root);
+  }
+
+  /** Sets the current root span. */
+  setCurrentRootSpan(root: types.Span) {
     if (this.contextManager.active) {
       this.contextManager.set('rootspan', root);
     }
@@ -62,7 +67,6 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
     const self = this;
     return self.contextManager.runAndReturn(() => {
       return super.startRootSpan(options, (root) => {
-        self.currentRootSpan = root;
         return fn(root);
       });
     });
@@ -74,7 +78,7 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
     if (!root) {
       return this.logger.debug('cannot start trace - no active trace found');
     }
-    if (this.currentRootSpan !== root) {
+    if (this.currentRootSpan.traceId !== root.traceId) {
       this.logger.debug(
           'currentRootSpan != root on notifyStart. Need more investigation.');
     }
@@ -88,7 +92,7 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
       this.logger.debug('cannot end trace - no active trace found');
       return;
     }
-    if (this.currentRootSpan !== root) {
+    if (this.currentRootSpan.traceId !== root.traceId) {
       this.logger.debug(
           'currentRootSpan != root on notifyEnd. Need more investigation.');
     }

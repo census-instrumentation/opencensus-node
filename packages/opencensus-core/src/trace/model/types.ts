@@ -517,6 +517,9 @@ export interface TracerBase extends SpanEventListener {
    * @returns The new Span instance started
    */
   startChildSpan(options?: SpanOptions): Span;
+
+  /** Sets the current root span. */
+  setCurrentRootSpan(root: Span): void;
 }
 
 /** Interface for Tracer */
