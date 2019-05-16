@@ -62,7 +62,9 @@ export class CoreTracerBase implements types.TracerBase {
   }
 
   /** Sets the current root span. */
-  setCurrentRootSpan(root: types.Span) {}
+  setCurrentRootSpan(root: types.Span) {
+    // no-op, this is only required in case of tracer with cls.
+  }
 
   /**
    * Starts a tracer.
