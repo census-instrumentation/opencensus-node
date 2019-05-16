@@ -259,8 +259,9 @@ export interface SpanContext {
 
 /** Defines an end span event listener */
 export interface SpanEventListener {
-  /** Happens when a span is ended */
+  /** Happens when a span is started */
   onStartSpan(span: Span): void;
+  /** Happens when a span is ended */
   onEndSpan(span: Span): void;
 }
 
