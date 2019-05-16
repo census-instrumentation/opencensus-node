@@ -78,7 +78,8 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
     if (!root) {
       return this.logger.debug('cannot start trace - no active trace found');
     }
-    if (this.currentRootSpan.traceId !== root.traceId) {
+    if (!this.currentRootSpan ||
+        this.currentRootSpan.traceId !== root.traceId) {
       this.logger.debug(
           'currentRootSpan != root on notifyStart. Need more investigation.');
     }
@@ -92,7 +93,8 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
       this.logger.debug('cannot end trace - no active trace found');
       return;
     }
-    if (this.currentRootSpan.traceId !== root.traceId) {
+    if (!this.currentRootSpan ||
+        this.currentRootSpan.traceId !== root.traceId) {
       this.logger.debug(
           'currentRootSpan != root on notifyEnd. Need more investigation.');
     }
