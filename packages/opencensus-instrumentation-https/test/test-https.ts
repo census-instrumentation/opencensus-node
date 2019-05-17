@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger, Span, SpanEventListener} from '@opencensus/core';
+import {CoreTracer, logger, Span, SpanEventListener, SpanKind} from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
+import * as http from 'http';
 import * as https from 'https';
 import * as nock from 'nock';
 import * as shimmer from 'shimmer';
@@ -31,6 +32,12 @@ function doNock(
     times?: number) {
   const i = times || 1;
   nock(url).get(path).times(i).reply(httpCode, respBody);
+}
+
+function customAttributeFunction(
+    span: Span, request: http.ClientRequest|http.IncomingMessage,
+    response: http.IncomingMessage|http.ServerResponse): void {
+  span.addAttribute('span kind', span.kind);
 }
 
 type RequestFunction = typeof https.request|typeof https.get;
@@ -97,6 +104,11 @@ function assertSpanAttributes(
       `${httpStatusCode}`);
 }
 
+function assertCustomAttribute(
+    span: Span, attributeName: string, attributeValue: SpanKind) {
+  assert.strictEqual(span.attributes[attributeName], attributeValue);
+}
+
 describe('HttpsPlugin', () => {
   const hostName = 'fake.service.io';
   const urlHost = `https://${hostName}`;
@@ -123,7 +135,8 @@ describe('HttpsPlugin', () => {
             `${urlHost}/ignored/string`,
             /^https:\/\/fake\.service\.io\/ignored\/regexp$/,
             (url: string) => url === `${urlHost}/ignored/function`
-          ]
+          ],
+          applyCustomAttributesOnSpan: customAttributeFunction,
         },
         '');
     tracer.registerSpanEventListener(spanVerifier);
@@ -207,6 +220,22 @@ describe('HttpsPlugin', () => {
               assert.strictEqual(root.traceId, root.spans[0].traceId);
               const span = root.spans[0];
               assertSpanAttributes(span, 200, 'GET', hostName, testPath);
+            });
+          });
+        });
+
+        it('should create a child span for GET requests', async () => {
+          const testPath = '/outgoing/rootSpan/childs/1';
+          doNock(urlHost, testPath, 200, 'Ok');
+          const options = {name: 'TestRootSpan'};
+          return tracer.startRootSpan(options, async (root: Span) => {
+            await requestMethod(`${urlHost}${testPath}`).then((result) => {
+              assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+              assert.strictEqual(root.spans.length, 1);
+              assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
+              assert.strictEqual(root.traceId, root.spans[0].traceId);
+              const span = root.spans[0];
+              assertCustomAttribute(span, 'span kind', SpanKind.CLIENT);
             });
           });
         });
@@ -317,6 +346,27 @@ describe('HttpsPlugin', () => {
         const span = spanVerifier.endedSpans[0];
         assertSpanAttributes(
             span, 200, 'GET', 'localhost', testPath, 'Android');
+      });
+    });
+
+    it('custom attributes should show up on server spans', async () => {
+      const testPath = '/incoming/rootSpan/';
+
+      const options = {
+        host: 'localhost',
+        path: testPath,
+        port: serverPort,
+        headers: {'User-Agent': 'Android'}
+      };
+      nock.enableNetConnect();
+
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+
+      await httpRequest.request(options).then((result) => {
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+        assert.strictEqual(spanVerifier.endedSpans.length, 2);
+        const span = spanVerifier.endedSpans[0];
+        assertCustomAttribute(span, 'span kind', SpanKind.SERVER);
       });
     });
 

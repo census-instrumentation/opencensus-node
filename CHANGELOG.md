@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 **This release has a breaking change. Please test your code accordingly after upgrading.**
 
+- http-instrumentation: add support for the addition of custom attributes to spans
 - Remove Span's `startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind)` interface, now only `SpanOptions` object interface is supported.
 
 ## 0.0.12 - 2019-05-13

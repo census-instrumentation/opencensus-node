@@ -20,7 +20,7 @@ import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 import * as stats from './http-stats';
-import {IgnoreMatcher} from './types';
+import {HttpPluginConfig, IgnoreMatcher} from './types';
 
 export type HttpGetCallback = (res: IncomingMessage) => void;
 export type RequestFunction = typeof request;
@@ -51,6 +51,8 @@ export class HttpPlugin extends BasePlugin {
   // NOT ON OFFICIAL SPEC
   static ATTRIBUTE_HTTP_ERROR_NAME = 'http.error_name';
   static ATTRIBUTE_HTTP_ERROR_MESSAGE = 'http.error_message';
+
+  options!: HttpPluginConfig;
 
   /** Constructs a new HttpPlugin instance. */
   constructor(moduleName: string) {
@@ -120,7 +122,7 @@ export class HttpPlugin extends BasePlugin {
    * @param list List of ignore patterns
    */
   protected isIgnored<T>(
-      url: string, request: T, list: Array<IgnoreMatcher<T>>): boolean {
+      url: string, request: T, list?: Array<IgnoreMatcher<T>>): boolean {
     if (!list) {
       // No ignored urls - trace everything
       return false;
@@ -247,6 +249,11 @@ export class HttpPlugin extends BasePlugin {
             rootSpan.setStatus(
                 HttpPlugin.parseResponseStatus(response.statusCode));
             rootSpan.addMessageEvent(MessageEventType.RECEIVED, 1);
+
+            if (plugin.options.applyCustomAttributesOnSpan) {
+              plugin.options.applyCustomAttributesOnSpan(
+                  rootSpan, request, response);
+            }
 
             tags.set(
                 stats.HTTP_SERVER_METHOD, {value: method},
@@ -425,6 +432,10 @@ export class HttpPlugin extends BasePlugin {
                 {value: response.statusCode.toString()});
           }
           span.addMessageEvent(MessageEventType.SENT, 1);
+
+          if (plugin.options.applyCustomAttributesOnSpan) {
+            plugin.options.applyCustomAttributesOnSpan(span, request, response);
+          }
 
           HttpPlugin.recordStats(span.kind, tags, Date.now() - startTime);
           span.end();

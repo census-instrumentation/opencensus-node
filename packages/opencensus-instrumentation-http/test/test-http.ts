@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, MessageEventType, Propagation, Span, SpanContext, SpanEventListener, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
+import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, MessageEventType, Propagation, Span, SpanContext, SpanEventListener, SpanKind, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as nock from 'nock';
@@ -29,6 +29,12 @@ function doNock(
     times?: number) {
   const i = times || 1;
   nock(url).get(path).times(i).reply(httpCode, respBody);
+}
+
+function customAttributeFunction(
+    span: Span, request: http.ClientRequest|http.IncomingMessage,
+    response: http.IncomingMessage|http.ServerResponse): void {
+  span.addAttribute('span kind', span.kind);
 }
 
 class TestExporter implements StatsEventListener {
@@ -123,6 +129,11 @@ function assertSpanAttributes(
       `${httpStatusCode}`);
 }
 
+function assertCustomAttribute(
+    span: Span, attributeName: string, attributeValue: SpanKind) {
+  assert.strictEqual(span.attributes[attributeName], attributeValue);
+}
+
 function assertClientStats(
     testExporter: TestExporter, httpStatusCode: number, httpMethod: string) {
   const tags = new TagMap();
@@ -161,8 +172,11 @@ describe('HttpPlugin', () => {
   const log = logger.logger();
   const tracer = new CoreTracer();
   const spanVerifier = new SpanVerifier();
-  tracer.start(
-      {samplingRate: 1, logger: log, propagation: new DummyPropagation()});
+  tracer.start({
+    samplingRate: 1,
+    logger: log,
+    propagation: new DummyPropagation(),
+  });
   const testExporter = new TestExporter();
 
   it('should return a plugin', () => {
@@ -180,7 +194,8 @@ describe('HttpPlugin', () => {
             `${urlHost}/ignored/string`,
             /^http:\/\/fake\.service\.io\/ignored\/regexp$/,
             (url: string) => url === `${urlHost}/ignored/function`
-          ]
+          ],
+          applyCustomAttributesOnSpan: customAttributeFunction
         },
         '', globalStats);
     tracer.registerSpanEventListener(spanVerifier);
@@ -374,6 +389,19 @@ describe('HttpPlugin', () => {
          nock.disableNetConnect();
        });
 
+    it('custom attributes should show up on client spans', async () => {
+      nock.enableNetConnect();
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      await httpRequest.get(`http://google.fr/`).then((result) => {
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf('GET /') >= 0);
+
+        const span = spanVerifier.endedSpans[0];
+        assertCustomAttribute(span, 'span kind', SpanKind.CLIENT);
+      });
+      nock.disableNetConnect();
+    });
+
     it('should create a rootSpan for GET requests and add propagation headers with Expect headers',
        async () => {
          nock.enableNetConnect();
@@ -449,6 +477,29 @@ describe('HttpPlugin', () => {
                    'a'.repeat(244));
          });
        });
+
+    it('custom attributes should show up on server spans', async () => {
+      const testPath = '/incoming/rootSpan/';
+
+      const options = {
+        host: 'localhost',
+        path: testPath,
+        port: serverPort,
+        headers: {'User-Agent': 'Android'}
+      };
+      shimmer.unwrap(http, 'get');
+      shimmer.unwrap(http, 'request');
+      nock.enableNetConnect();
+
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+
+      await httpRequest.get(options).then((result) => {
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        const span = spanVerifier.endedSpans[0];
+        assertCustomAttribute(span, 'span kind', SpanKind.SERVER);
+      });
+    });
 
     for (const ignored of ['string', 'function', 'regexp']) {
       it(`should not trace ignored requests with type ${ignored}`, async () => {
