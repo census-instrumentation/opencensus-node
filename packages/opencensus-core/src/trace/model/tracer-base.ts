@@ -61,6 +61,11 @@ export class CoreTracerBase implements types.TracerBase {
     return noopPropagation;
   }
 
+  /** Sets the current root span. */
+  setCurrentRootSpan(root: types.Span) {
+    // no-op, this is only required in case of tracer with cls.
+  }
+
   /**
    * Starts a tracer.
    * @param config A tracer configuration object to start a tracer.
@@ -134,16 +139,13 @@ export class CoreTracerBase implements types.TracerBase {
         rootSpan.start();
         return fn(rootSpan);
       }
-
       // Sampling is off
       this.logger.debug('Sampling is off, starting new no record root span');
-      const noRecordRootSpan = new NoRecordRootSpan(
-          this, name, kind, traceId, parentSpanId, traceState);
-      return fn(noRecordRootSpan);
+    } else {
+      // Tracer is inactive
+      this.logger.debug('Tracer is inactive, starting new no record root span');
     }
 
-    // Tracer is inactive
-    this.logger.debug('Tracer is inactive, starting new no record root span');
     const noRecordRootSpan = new NoRecordRootSpan(
         this, name, kind, traceId, parentSpanId, traceState);
     return fn(noRecordRootSpan);

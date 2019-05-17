@@ -305,6 +305,9 @@ export class Span implements types.Span {
       parentSpanId: this.parentSpanId,
       traceState: this.traceState
     });
+    if (!this.parentSpanId) {
+      this.tracer.setCurrentRootSpan(this);
+    }
 
     this.tracer.onStartSpan(this);
   }

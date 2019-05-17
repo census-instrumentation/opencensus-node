@@ -259,8 +259,9 @@ export interface SpanContext {
 
 /** Defines an end span event listener */
 export interface SpanEventListener {
-  /** Happens when a span is ended */
+  /** Happens when a span is started */
   onStartSpan(span: Span): void;
+  /** Happens when a span is ended */
   onEndSpan(span: Span): void;
 }
 
@@ -517,6 +518,9 @@ export interface TracerBase extends SpanEventListener {
    * @returns The new Span instance started
    */
   startChildSpan(options?: SpanOptions): Span;
+
+  /** Sets the current root span. */
+  setCurrentRootSpan(root: Span): void;
 }
 
 /** Interface for Tracer */
