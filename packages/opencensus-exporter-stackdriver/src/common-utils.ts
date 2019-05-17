@@ -21,6 +21,9 @@ import {MonitoredResource} from './types';
 
 const STACKDRIVER_PROJECT_ID_KEY = 'project_id';
 const AWS_REGION_VALUE_PREFIX = 'aws:';
+const K8S_CONTAINER = 'k8s_container';
+const GCP_GCE_INSTANCE = 'gce_instance';
+const AWS_EC2_INSTANCE = 'aws_ec2_instance';
 
 /* Return a self-configured StackDriver monitored resource. */
 export async function getDefaultResource(projectId: string):
@@ -30,7 +33,8 @@ export async function getDefaultResource(projectId: string):
   const [type, mappings] = getTypeAndMappings(autoDetectedResource.type);
   Object.keys(mappings).forEach((key) => {
     if (autoDetectedResource.labels[mappings[key]]) {
-      if (mappings[key] === CLOUD_RESOURCE.REGION_KEY) {
+      if (type === AWS_EC2_INSTANCE &&
+          mappings[key] === CLOUD_RESOURCE.REGION_KEY) {
         labels[key] = `${AWS_REGION_VALUE_PREFIX}${
             autoDetectedResource.labels[mappings[key]]}`;
       } else {
@@ -46,7 +50,7 @@ function getTypeAndMappings(resourceType: string|null): [string, Labels] {
     case resource.GCP_GCE_INSTANCE_TYPE:
       // https://cloud.google.com/monitoring/api/resources#tag_gce_instance
       return [
-        'gce_instance', {
+        GCP_GCE_INSTANCE, {
           'project_id': STACKDRIVER_PROJECT_ID_KEY,
           'instance_id': HOST_RESOURCE.ID_KEY,
           'zone': CLOUD_RESOURCE.ZONE_KEY
@@ -55,7 +59,7 @@ function getTypeAndMappings(resourceType: string|null): [string, Labels] {
     case resource.K8S_CONTAINER_TYPE:
       // https://cloud.google.com/monitoring/api/resources#tag_k8s_container
       return [
-        'k8s_container', {
+        K8S_CONTAINER, {
           'project_id': STACKDRIVER_PROJECT_ID_KEY,
           'location': CLOUD_RESOURCE.ZONE_KEY,
           'cluster_name': K8S_RESOURCE.CLUSTER_NAME_KEY,
@@ -67,7 +71,7 @@ function getTypeAndMappings(resourceType: string|null): [string, Labels] {
     case resource.AWS_EC2_INSTANCE_TYPE:
       // https://cloud.google.com/monitoring/api/resources#tag_aws_ec2_instance
       return [
-        'aws_ec2_instance', {
+        AWS_EC2_INSTANCE, {
           'project_id': STACKDRIVER_PROJECT_ID_KEY,
           'instance_id': HOST_RESOURCE.ID_KEY,
           'region': CLOUD_RESOURCE.REGION_KEY,
