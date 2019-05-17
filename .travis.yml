@@ -1,0 +1,29 @@
+language: node_js
+node_js:
+  - '8'
+  - '10'
+  - '11'
+  - '12'
+
+services:
+  - redis
+  - mongodb
+
+env:
+  - OPENCENSUS_MONGODB_TESTS=1
+
+install:
+  # Install modules and dependencies.
+  - npm install
+
+script:
+  # Check code style and linting
+  - npm run check
+  # Ensure code compiles to JS.
+  - npm run compile
+  # Run unit tests.
+  - npm run test
+
+after_script:
+  # Submit coverage data to codecov.
+  - npm run codecov
