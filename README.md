@@ -1,5 +1,6 @@
 # OpenCensus - A stats collection and distributed tracing framework
 [![Gitter chat][gitter-image]][gitter-url]
+[![Build Status][travis-image]][travis-url]
 ![Node Version][node-img]
 [![NPM Published Version][npm-img]][npm-url]
 [![codecov][codecov-image]][codecov-url]
@@ -88,6 +89,8 @@ months before removing it, if possible.
 - For more information on OpenCensus, visit: <https://opencensus.io/>
 - For help or feedback on this project, join us on [gitter](https://gitter.im/census-instrumentation/Lobby)
 
+[travis-image]: https://travis-ci.com/census-instrumentation/opencensus-node.svg?branch=master
+[travis-url]: https://travis-ci.com/census-instrumentation/opencensus-node
 [codecov-image]: https://codecov.io/gh/census-instrumentation/opencensus-node/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/census-instrumentation/opencensus-node
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
