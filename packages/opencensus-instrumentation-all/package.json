@@ -24,7 +24,7 @@
   "author": "Google Inc.",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8"
   },
   "files": [
     "build/src/**/*.js",
