@@ -11,6 +11,7 @@ services:
 
 env:
   - OPENCENSUS_MONGODB_TESTS=1
+  - OPENCENSUS_REDIS_TESTS=1
 
 install:
   # Install modules and dependencies.
