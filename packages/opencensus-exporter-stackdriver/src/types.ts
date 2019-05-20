@@ -195,6 +195,7 @@ export interface Distribution {
   sumOfSquaredDeviation: number;
   bucketOptions: {explicitBuckets: {bounds: Bucket[];}};
   bucketCounts: number[];
+  exemplars?: Exemplar[];
 }
 
 export interface Point {
@@ -223,4 +224,33 @@ export interface MonitoredResource {
 
   /** Set of labels that describe the resource. */
   labels: {[key: string]: string};
+}
+
+/**
+ * Exemplars are example points that may be used to annotate aggregated
+ * Distribution values. They are metadata that gives information about a
+ * particular value added to a Distribution bucket.
+ */
+export interface Exemplar {
+  /** Value of the exemplar point. */
+  value: number;
+  /** The observation (sampling) time of the above value. */
+  timestamp: string;
+  /** Contextual information about the example value. */
+  attachments: Any[];
+}
+
+/**
+ * `Any` contains an arbitrary serialized protocol buffer message along with a
+ * URL that describes the type of the serialized message.
+ */
+export interface Any {
+  /**
+   * A URL/resource name that uniquely identifies the type of the serialized
+   * protocol buffer message.
+   */
+  '@type': string;
+
+  /** Must be a valid serialized protocol buffer of the above specified type. */
+  value: string;
 }

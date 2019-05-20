@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Exporter/Stats/Stackdriver: Add support for exemplar
+
 ## 0.0.13 - 2019-05-20
 - Exporter/Stats/Prometheus: Fix missing tags for HTTP metrics
 - http-instrumentation: add support for the addition of custom attributes to spans
