@@ -24,7 +24,7 @@ describe('Prometheus Stats Exporter', () => {
   const prometheusServerUrl = `http://localhost:${options.port}/metrics`;
   const tagKey1 = {name: 'tagKey1'};
   const tagValue1 = {value: 'tagValue1'};
-  const tagKeys = [tagKey1];
+  const tagKeys = [{name: 'tagKey1'}];
   const tagMap = new TagMap();
   tagMap.set(tagKey1, tagValue1);
 

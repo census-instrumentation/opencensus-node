@@ -103,9 +103,16 @@ export class PrometheusStatsExporter implements StatsEventListener {
   private getLabelValues(columns: TagKey[], tags: Map<TagKey, TagValue>):
       labelValues {
     const labels: labelValues = {};
+
+    // TODO: Consider make original tags map with string:TagValue type.
+    const tagsWithStringKey: Map<string, TagValue|undefined> = new Map();
+    for (const key of tags.keys()) {
+      tagsWithStringKey.set(key.name, tags.get(key));
+    }
+
     columns.forEach((tagKey) => {
-      if (tags.has(tagKey)) {
-        const tagValue = tags.get(tagKey);
+      if (tagsWithStringKey.has(tagKey.name)) {
+        const tagValue = tagsWithStringKey.get(tagKey.name);
         if (tagValue) {
           labels[tagKey.name] = tagValue.value;
         }
