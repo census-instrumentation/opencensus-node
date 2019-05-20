@@ -15,7 +15,7 @@
  */
 
 import {Bucket, ExporterConfig} from '@opencensus/core';
-import {JWT} from 'google-auth-library';
+import {JWT, JWTInput} from 'google-auth-library';
 
 export type Span = {
   name?: string,
@@ -151,6 +151,11 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    * of a stackdriver metric. Optional
    */
   prefix?: string;
+  /**
+   * Create a JWT instance using the given credentials input containing
+   * client_email and private_key properties. Optional
+   */
+  credentials?: JWTInput;
 
   /**
    * Is called whenever the exporter fails to upload metrics to stackdriver.
