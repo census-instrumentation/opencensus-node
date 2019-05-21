@@ -4,9 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Exporter/Stats/Stackdriver: Add support for exemplar
+
+## 0.0.13 - 2019-05-20
+- Exporter/Stats/Prometheus: Fix missing tags for HTTP metrics
+- http-instrumentation: add support for the addition of custom attributes to spans
+- Set CurrentRootSpan correctly
+- Chore: update GRPC to 1.12.3
+- Fix: handle infinite loop caused by get traceState()
+- Chore: upgrade engines field to >=8
+- Chore: Fix js-yaml vulnerability from Codecov
+- Change CLS import to do stats type more general
+
 **This release has a breaking change. Please test your code accordingly after upgrading.**
 
-- http-instrumentation: add support for the addition of custom attributes to spans
 - Remove Span's `startChildSpan(nameOrOptions?: string|SpanOptions, kind?: SpanKind)` interface, now only `SpanOptions` object interface is supported.
 
 ## 0.0.12 - 2019-05-13

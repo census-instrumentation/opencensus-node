@@ -39,7 +39,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
   static readonly DEFAULT_OPTIONS = {
     port: 9464,
     startServer: false,
-    contentType: 'text/plain; text/plain; version=0.0.12; charset=utf-8',
+    contentType: 'text/plain; text/plain; version=3; charset=utf-8',
     prefix: ''
   };
 
@@ -103,9 +103,16 @@ export class PrometheusStatsExporter implements StatsEventListener {
   private getLabelValues(columns: TagKey[], tags: Map<TagKey, TagValue>):
       labelValues {
     const labels: labelValues = {};
+
+    // TODO: Consider make original tags map with string:TagValue type.
+    const tagsWithStringKey: Map<string, TagValue|undefined> = new Map();
+    for (const key of tags.keys()) {
+      tagsWithStringKey.set(key.name, tags.get(key));
+    }
+
     columns.forEach((tagKey) => {
-      if (tags.has(tagKey)) {
-        const tagValue = tags.get(tagKey);
+      if (tagsWithStringKey.has(tagKey.name)) {
+        const tagValue = tagsWithStringKey.get(tagKey.name);
         if (tagValue) {
           labels[tagKey.name] = tagValue.value;
         }

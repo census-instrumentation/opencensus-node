@@ -14,14 +14,25 @@
  * limitations under the License.
  */
 
-import {BucketOptions, DistributionBucket, DistributionValue, LabelKey, LabelValue, Metric, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
+import {BucketOptions, DistributionBucket, DistributionValue, Exemplar as OCExemplar, LabelKey, LabelValue, Metric, MetricDescriptor as OCMetricDescriptor, MetricDescriptorType, TimeSeriesPoint, Timestamp} from '@opencensus/core';
 import * as os from 'os';
 import * as path from 'path';
-import {Distribution, LabelDescriptor, MetricDescriptor, MetricKind, MonitoredResource, Point, TimeSeries, ValueType} from './types';
+import {Any, Distribution, Exemplar, LabelDescriptor, MetricDescriptor, MetricKind, MonitoredResource, Point, TimeSeries, ValueType} from './types';
 
 const OPENCENSUS_TASK = 'opencensus_task';
 const OPENCENSUS_TASK_DESCRIPTION = 'Opencensus task identifier';
 export const OPENCENSUS_TASK_VALUE_DEFAULT = generateDefaultTaskValue();
+
+const EXEMPLAR_ATTACHMENT_TYPE_STRING =
+    'type.googleapis.com/google.protobuf.StringValue';
+// TODO: add support for SpanContext attachment.
+// const EXEMPLAR_ATTACHMENT_TYPE_SPAN_CONTEXT =
+//     'type.googleapis.com/google.monitoring.v3.SpanContext';
+const ATTACHMENT_KEY_SPAN_CONTEXT = 'SpanContext';
+
+// TODO: add support for dropped label attachment.
+// const EXEMPLAR_ATTACHMENT_TYPE_DROPPED_LABELS =
+// 'type.googleapis.com/google.monitoring.v3.DroppedLabels';
 
 /** Converts a OpenCensus MetricDescriptor to a StackDriver MetricDescriptor. */
 export function createMetricDescriptorData(
@@ -189,7 +200,8 @@ function createDistribution(distribution: DistributionValue): Distribution {
       explicitBuckets:
           {bounds: createExplicitBucketOptions(distribution.bucketOptions)}
     },
-    bucketCounts: createBucketCounts(distribution.buckets)
+    bucketCounts: createBucketCounts(distribution.buckets),
+    exemplars: createExemplars(distribution.buckets)
   };
 }
 
@@ -214,6 +226,36 @@ function createBucketCounts(buckets: DistributionBucket[]): number[] {
     bucketCounts.push(bucket.count);
   });
   return bucketCounts;
+}
+
+/** Converts a OpenCensus Buckets to a list of proto Exemplars. */
+function createExemplars(buckets: DistributionBucket[]): Exemplar[] {
+  return buckets.filter((bucket => !!bucket.exemplar))
+      .map((bucket) => ({
+             value: bucket.exemplar!.value,
+             timestamp: toISOString(bucket.exemplar!.timestamp),
+             attachments: _createAttachments(bucket.exemplar!)
+           }))
+      .filter((exemplar) => exemplar.attachments.length > 0);
+}
+
+function _createAttachments(exemplar: OCExemplar): Any[] {
+  return Object.keys(exemplar.attachments)
+             .map((key) => {
+               if (key === ATTACHMENT_KEY_SPAN_CONTEXT) {
+                 // TODO: add support for SpanContext
+                 // attachment.
+                 return null;
+               } else {
+                 // Everything else will be treated as plain
+                 // strings for now.
+                 return {
+                   '@type': EXEMPLAR_ATTACHMENT_TYPE_STRING,
+                   value: exemplar.attachments[key]
+                 };
+               }
+             })
+             .filter(attachment => !!attachment) as Any[];
 }
 
 /** Returns a task label value in the format of 'nodejs-<pid>@<hostname>'. */
