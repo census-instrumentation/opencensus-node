@@ -152,8 +152,8 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    */
   prefix?: string;
   /**
-   * Create a JWT instance using the given credentials input containing
-   * client_email and private_key properties. Optional
+   * If this field is set, its contents will be used for authentication
+   * instead of your application default credentials. Optional
    */
   credentials?: JWTInput;
 
