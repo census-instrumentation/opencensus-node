@@ -16,6 +16,7 @@
 
 import {CoreTracer, logger, Span as OCSpan, version} from '@opencensus/core';
 import * as assert from 'assert';
+import * as fs from 'fs';
 import * as nock from 'nock';
 
 import {Span, StackdriverExporterOptions, StackdriverTraceExporter} from '../src/';
@@ -224,6 +225,69 @@ describe('Stackdriver Trace Exporter', function() {
                       'batchWriteSpans error: Simulated Network Error') >= 0);
             });
           });
+    });
+
+    describe('with credentials option', () => {
+      const FAKE_CREDENTIALS = JSON.parse(
+          fs.readFileSync(__dirname + '/fixtures/fakecredentials.json')
+              .toString());
+
+      before(() => {
+        exporterOptions = {
+          projectId: PROJECT_ID,
+          bufferTimeout: 200,
+          logger: testLogger,
+          credentials: FAKE_CREDENTIALS,
+        };
+      });
+
+      it('should export traces to stackdriver', () => {
+        return tracer.startRootSpan(
+            {name: 'sdExportTestRootSpan'}, async (rootSpan: OCSpan) => {
+              const span =
+                  tracer.startChildSpan({name: 'sdExportTestChildSpan'});
+
+              nocks.oauth2(body => true);
+              nocks.batchWrite(PROJECT_ID, (body: {spans: Span[]}): boolean => {
+                assert.strictEqual(body.spans.length, 2);
+                const spans = body.spans;
+                assert.strictEqual(spans[0].spanId, rootSpan.id);
+                assert.strictEqual(spans[1].spanId, span.id);
+                return true;
+              });
+              span.end();
+              rootSpan.end();
+
+              return exporter.publish([rootSpan]).then(result => {
+                assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
+              });
+            });
+      });
+
+      it('should fail exporting by network error', async () => {
+        nock('https://cloudtrace.googleapis.com')
+            .intercept(
+                '/v2/projects/' + exporterOptions.projectId +
+                    '/traces:batchWrite',
+                'post')
+            .reply(443, 'Simulated Network Error');
+
+        nocks.oauth2(body => true);
+
+        return tracer.startRootSpan(
+            {name: 'sdErrorExportTestRootSpan'}, (rootSpan: OCSpan) => {
+              const span =
+                  tracer.startChildSpan({name: 'sdErrorExportTestChildSpan'});
+              span.end();
+              rootSpan.end();
+
+              return exporter.publish([rootSpan]).then(result => {
+                assert.ok(
+                    result.message.indexOf(
+                        'batchWriteSpans error: Simulated Network Error') >= 0);
+              });
+            });
+      });
     });
   });
 });
