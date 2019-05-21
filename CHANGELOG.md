@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 - Exporter/Stats/Stackdriver: Add support for exemplar
+- exporter-stackdriver: Add support the credentials option used for authentication instead of your application default credentials
 
 ## 0.0.13 - 2019-05-20
 - Exporter/Stats/Prometheus: Fix missing tags for HTTP metrics
