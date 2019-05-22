@@ -16,7 +16,7 @@
 
 import {Exporter, ExporterBuffer, Span as OCSpan, SpanContext} from '@opencensus/core';
 import {logger, Logger} from '@opencensus/core';
-import {auth, JWT} from 'google-auth-library';
+import {auth as globalAuth, GoogleAuth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 import {getDefaultResource} from './common-utils';
 import {createAttributes, createLinks, createTimeEvents, getResourceLabels, stringToTruncatableString} from './stackdriver-cloudtrace-utils';
@@ -24,6 +24,7 @@ import {AttributeValue, Span, SpansWithCredentials, StackdriverExporterOptions} 
 
 google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
 const cloudTrace = google.cloudtrace('v2');
+let auth = globalAuth;
 
 /** Format and sends span information to Stackdriver */
 export class StackdriverTraceExporter implements Exporter {
@@ -39,6 +40,9 @@ export class StackdriverTraceExporter implements Exporter {
     this.exporterBuffer = new ExporterBuffer(this, options);
     this.RESOURCE_LABELS =
         getResourceLabels(getDefaultResource(this.projectId));
+    if (options.credentials) {
+      auth = new GoogleAuth({credentials: options.credentials});
+    }
   }
 
   /**

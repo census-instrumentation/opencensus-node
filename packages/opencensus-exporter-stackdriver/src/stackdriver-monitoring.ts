@@ -15,7 +15,7 @@
  */
 
 import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, version, View} from '@opencensus/core';
-import {auth, JWT} from 'google-auth-library';
+import {auth as globalAuth, GoogleAuth, JWT} from 'google-auth-library';
 import {google} from 'googleapis';
 import {getDefaultResource} from './common-utils';
 import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-monitoring-utils';
@@ -31,6 +31,7 @@ const OC_HEADER = {
 
 google.options({headers: OC_HEADER});
 const monitoring = google.monitoring('v3');
+let auth = globalAuth;
 
 /** Format and sends Stats to Stackdriver */
 export class StackdriverStatsExporter implements StatsEventListener {
@@ -63,6 +64,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
       this.onMetricUploadError = options.onMetricUploadError;
     }
     this.DEFAULT_RESOURCE = getDefaultResource(this.projectId);
+    if (options.credentials) {
+      auth = new GoogleAuth({credentials: options.credentials});
+    }
   }
 
   /**
