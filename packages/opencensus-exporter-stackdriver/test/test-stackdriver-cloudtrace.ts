@@ -62,15 +62,13 @@ describe('Stackdriver Trace Exporter', function() {
         span.end();
         rootSpan.end();
 
-        assert.strictEqual(exporter.exporterBuffer.getQueue().length, 2);
+        assert.strictEqual(exporter.exporterBuffer.getQueue().length, 1);
         assert.strictEqual(
-            exporter.exporterBuffer.getQueue()[0].name, spanName);
+            exporter.exporterBuffer.getQueue()[0].name, rootSpanOptions.name);
         assert.strictEqual(
-            exporter.exporterBuffer.getQueue()[1].name, rootSpanOptions.name);
+            exporter.exporterBuffer.getQueue()[0].spans.length, 1);
         assert.strictEqual(
-            exporter.exporterBuffer.getQueue()[1].spans.length, 1);
-        assert.strictEqual(
-            exporter.exporterBuffer.getQueue()[1].spans[0].name, spanName);
+            exporter.exporterBuffer.getQueue()[0].spans[0].name, spanName);
       });
     });
   });
