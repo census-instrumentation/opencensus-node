@@ -287,15 +287,14 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
 };
 
 /**
- * Adapts a RootSpan and all its associated child spans into a flat list of
+ * Adapts a Span and all its associated child spans into a flat list of
  * adapted `opencensus.proto.trace.v1.Span` types.
- * @param rootSpan RootSpan
+ * @param span Span
  * @returns opencensus.proto.trace.v1.Span[]
  */
-export const adaptRootSpan =
-    (rootSpan: Span): opencensus.proto.trace.v1.Span[] => {
-      return [adaptSpan(rootSpan), ...rootSpan.spans.map(adaptSpan)];
-    };
+export const adaptRootSpan = (span: Span): opencensus.proto.trace.v1.Span[] => {
+  return [adaptSpan(span), ...span.spans.map(adaptSpan)];
+};
 
 /**
  * Options for creating a `opencensus.proto.agent.common.v1.Node` type.

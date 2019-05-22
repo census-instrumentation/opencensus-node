@@ -215,9 +215,9 @@ export class OCAgentExporter implements Exporter {
     this.buffer.addToBuffer(span);
   }
 
-  publish(rootSpans: Span[]): Promise<number|string|void> {
+  publish(spans: Span[]): Promise<number|string|void> {
     return new Promise((resolve, reject) => {
-      this.logger.info(`OCAgent: publish rootSpans=${rootSpans.length}`);
+      this.logger.info(`OCAgent: publish spans=${spans.length}`);
 
       if (!this.exportStream) {
         this.logger.warn(
@@ -235,12 +235,12 @@ export class OCAgentExporter implements Exporter {
         attributes: this.config.attributes
       });
 
-      // Adapt and write each RootSpan to the agent through the export stream.
+      // Adapt and write each Span to the agent through the export stream.
       // Any failed attempts will be caught by the connection, but the data
       // will be lost.
-      rootSpans.forEach(rootSpan => {
+      spans.forEach(span => {
         if (this.exportStream) {
-          this.exportStream.write({node, spans: adaptRootSpan(rootSpan)});
+          this.exportStream.write({node, spans: adaptRootSpan(span)});
         }
       });
 

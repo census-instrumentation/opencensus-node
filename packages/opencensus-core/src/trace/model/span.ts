@@ -330,6 +330,8 @@ export class Span implements types.Span {
     this.endedLocal = true;
     this.clock.end();
 
+    // TODO: Should ending a span force its children to end by default?
+    // Issue: https://github.com/open-telemetry/opentelemetry-node/issues/4
     for (const span of this.spansLocal) {
       if (!span.ended && span.started) {
         span.truncate();

@@ -15,7 +15,6 @@
  */
 
 import * as cls from '../../internal/cls';
-
 import {NoRecordSpan} from './no-record/no-record-span';
 import {CoreTracerBase} from './tracer-base';
 import * as types from './types';
@@ -73,32 +72,25 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
   }
 
   /** Notifies listeners of the span start. */
-  onStartSpan(root: types.Span): void {
+  onStartSpan(span: types.Span): void {
     if (!this.active) return;
-    if (!root) {
-      return this.logger.debug('cannot start trace - no active trace found');
-    }
     if (!this.currentRootSpan ||
-        this.currentRootSpan.traceId !== root.traceId) {
+        this.currentRootSpan.traceId !== span.traceId) {
       this.logger.debug(
           'currentRootSpan != root on notifyStart. Need more investigation.');
     }
-    return super.onStartSpan(root);
+    return super.onStartSpan(span);
   }
 
   /** Notifies listeners of the span end. */
-  onEndSpan(root: types.Span): void {
+  onEndSpan(span: types.Span): void {
     if (!this.active) return;
-    if (!root) {
-      this.logger.debug('cannot end trace - no active trace found');
-      return;
-    }
     if (!this.currentRootSpan ||
-        this.currentRootSpan.traceId !== root.traceId) {
+        this.currentRootSpan.traceId !== span.traceId) {
       this.logger.debug(
           'currentRootSpan != root on notifyEnd. Need more investigation.');
     }
-    super.onEndSpan(root);
+    super.onEndSpan(span);
   }
 
   /** Clears the current root span. */

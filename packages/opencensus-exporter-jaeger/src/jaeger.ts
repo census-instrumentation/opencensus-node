@@ -131,7 +131,7 @@ export class JaegerTraceExporter implements Exporter {
   }
 
   /** Not used for this exporter */
-  onStartSpan(root: Span) {}
+  onStartSpan(span: Span) {}
 
   // add span to local queue, which is limited by bufferSize
   private addToBuffer(span: Span, numSpans: number) {
@@ -170,14 +170,14 @@ export class JaegerTraceExporter implements Exporter {
   }
 
   /**
-   * Publishes a list of root spans to Jaeger.
-   * @param rootSpans
+   * Publishes a list of spans to Jaeger.
+   * @param spans The list of spans to transmit to Jaeger
    */
-  publish(rootSpans: Span[]) {
+  publish(spans: Span[]) {
     this.logger.debug('JaegerExport publishing');
-    for (const root of rootSpans) {
-      if (this.queue.indexOf(root) === -1) {
-        this.onEndSpan(root);
+    for (const span of spans) {
+      if (this.queue.indexOf(span) === -1) {
+        this.onEndSpan(span);
       }
     }
     return this.flush();
