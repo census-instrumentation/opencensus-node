@@ -94,6 +94,11 @@ export class Span implements types.Span {
     this.logger = (this.root && this.root.logger) || this.logger;
   }
 
+  /** Returns whether a span is root or not. */
+  isRootSpan(): boolean {
+    return false;
+  }
+
   /** Gets the trace ID. */
   get traceId(): string {
     return this.root.traceId;

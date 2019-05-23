@@ -80,6 +80,11 @@ export class NoRecordSpan implements types.Span {
     this.logger = (this.root && this.root.logger) || this.logger;
   }
 
+  /** Returns whether a span is root or not. */
+  isRootSpan(): boolean {
+    return false;
+  }
+
   /** Gets trace id of no-record span. */
   get traceId(): string {
     return '';

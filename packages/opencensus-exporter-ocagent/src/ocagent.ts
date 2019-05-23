@@ -209,9 +209,7 @@ export class OCAgentExporter implements Exporter {
   onEndSpan(span: Span) {
     // Add spans of a trace together when root is ended, skip non root spans.
     // adaptRootSpan() will extract child spans from root.
-    if (span.constructor.name !== 'RootSpan') {
-      return;
-    }
+    if (!span.isRootSpan()) return;
     this.buffer.addToBuffer(span);
   }
 

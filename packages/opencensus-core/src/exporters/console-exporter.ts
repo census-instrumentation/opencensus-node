@@ -57,9 +57,7 @@ export class ConsoleExporter implements Exporter {
   onEndSpan(span: modelTypes.Span) {
     // Add spans of a trace together when root is ended, skip non root spans.
     // publish function will extract child spans from root.
-    if (span.constructor.name !== 'RootSpan') {
-      return;
-    }
+    if (!span.isRootSpan()) return;
     this.buffer.addToBuffer(span);
   }
 

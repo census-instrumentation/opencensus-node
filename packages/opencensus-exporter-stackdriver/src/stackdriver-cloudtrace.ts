@@ -52,9 +52,7 @@ export class StackdriverTraceExporter implements Exporter {
   onEndSpan(span: OCSpan) {
     // Add spans of a trace together when root is ended, skip non root spans.
     // translateSpan function will extract child spans from root.
-    if (span.constructor.name !== 'RootSpan') {
-      return;
-    }
+    if (!span.isRootSpan()) return;
     this.exporterBuffer.addToBuffer(span);
   }
 

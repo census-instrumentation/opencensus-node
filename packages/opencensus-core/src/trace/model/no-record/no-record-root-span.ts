@@ -57,6 +57,11 @@ export class NoRecordRootSpan extends NoRecordSpan {
     this.logger = this.tracer.logger || logger.logger();
   }
 
+  /** Returns whether a span is root or not. */
+  isRootSpan(): boolean {
+    return true;
+  }
+
   /** No-op implementation of this method. */
   get traceId(): string {
     return this.traceIdLocal;

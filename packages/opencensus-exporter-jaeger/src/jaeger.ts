@@ -102,9 +102,7 @@ export class JaegerTraceExporter implements Exporter {
    */
   onEndSpan(span: Span) {
     // Add spans of a trace together when root is ended, skip non root spans.
-    if (span.constructor.name !== 'RootSpan') {
-      return;
-    }
+    if (!span.isRootSpan()) return;
 
     this.logger.debug('onEndSpan: adding rootSpan: %s', span.name);
 
