@@ -35,11 +35,9 @@ function traceParentToSpanContext(traceParent: string): SpanContext|null {
   const match = traceParent.match(TRACE_PARENT_REGEX);
   if (!match) return null;
   const parts = traceParent.split('-');
-  const version = parts[0];
-  const traceId = parts[1];
-  const spanId = parts[2];
+  const [version, traceId, spanId, option] = parts;
   // tslint:disable-next-line:ban Needed to parse hexadecimal.
-  const options = parseInt(parts[3], 16);
+  const options = parseInt(option, 16);
 
   if (!isValidVersion(version) || !isValidTraceId(traceId) ||
       !isValidSpanId(spanId)) {
@@ -50,10 +48,7 @@ function traceParentToSpanContext(traceParent: string): SpanContext|null {
 
 /** Converts a headers type to a string. */
 function parseHeader(str: string|string[]|undefined): string|undefined {
-  if (Array.isArray(str)) {
-    return str[0];
-  }
-  return str;
+  return Array.isArray(str) ? str[0] : str;
 }
 
 /**
