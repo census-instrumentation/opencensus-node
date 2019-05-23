@@ -63,6 +63,9 @@ export class InstanaTraceExporter implements Exporter {
   onStartSpan(span: Span) {}
 
   onEndSpan(span: Span) {
+    // Add spans of a trace together when root is ended, skip non root spans.
+    // translateRootSpans function will extract child spans from root.
+    if (!span.isRootSpan()) return;
     this.exporterBuffer.addToBuffer(span);
   }
 
@@ -76,13 +79,13 @@ export class InstanaTraceExporter implements Exporter {
    *
    * This Promise is meant as a problem indicator for tests only.
    *
-   * @param rootSpans The spans to transmit to Instana
+   * @param spans The list of spans to transmit to Instana
    * @returns An indicator whether publishing was successful.
    */
-  publish(rootSpans: Span[]): Promise<void> {
+  publish(spans: Span[]): Promise<void> {
     try {
       return this
-          .transmit(this.translateRootSpans(rootSpans))
+          .transmit(this.translateRootSpans(spans))
 
           .catch(e => e);
     } catch (e) {
@@ -92,11 +95,11 @@ export class InstanaTraceExporter implements Exporter {
     }
   }
 
-  private translateRootSpans(rootSpans: Span[]): InstanaSpan[] {
+  private translateRootSpans(spans: Span[]): InstanaSpan[] {
     const result: InstanaSpan[] = [];
-    return rootSpans.reduce((agg, rootSpan) => {
-      agg.push(this.translateSpan(rootSpan));
-      return agg.concat(rootSpan.spans.map(this.translateSpan));
+    return spans.reduce((agg, span) => {
+      agg.push(this.translateSpan(span));
+      return agg.concat(span.spans.map(this.translateSpan));
     }, result);
   }
 

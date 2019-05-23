@@ -22,10 +22,10 @@ import * as modelTypes from '../trace/model/types';
 /** Defines a trace exporter interface. */
 export interface Exporter extends modelTypes.SpanEventListener {
   /**
-   * Sends a list of root spans to the service.
-   * @param rootSpans A list of root spans to publish.
+   * Sends a list of spans to the service.
+   * @param spans A list of spans to publish.
    */
-  publish(rootSpans: modelTypes.Span[]): Promise<number|string|void>;
+  publish(spans: modelTypes.Span[]): Promise<number|string|void>;
 }
 
 /**

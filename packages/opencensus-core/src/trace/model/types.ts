@@ -460,6 +460,9 @@ export interface Span {
 
   /** Starts a new Span instance as a child of this instance */
   startChildSpan(options?: SpanOptions): Span;
+
+  /** Returns whether a span is root or not. */
+  isRootSpan(): boolean;
 }
 
 /** Interface for TracerBase */

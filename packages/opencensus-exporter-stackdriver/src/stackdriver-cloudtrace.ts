@@ -50,6 +50,9 @@ export class StackdriverTraceExporter implements Exporter {
    * @param span the ended span
    */
   onEndSpan(span: OCSpan) {
+    // Add spans of a trace together when root is ended, skip non root spans.
+    // translateSpan function will extract child spans from root.
+    if (!span.isRootSpan()) return;
     this.exporterBuffer.addToBuffer(span);
   }
 
@@ -57,34 +60,34 @@ export class StackdriverTraceExporter implements Exporter {
   onStartSpan(span: OCSpan) {}
 
   /**
-   * Publishes a list of root spans to Stackdriver.
-   * @param rootSpans
+   * Publishes a list of spans to Stackdriver.
+   * @param spans The list of spans to transmit to Stackdriver
    */
-  async publish(rootSpans: OCSpan[]) {
-    const spanList = await this.translateSpan(rootSpans);
+  async publish(spans: OCSpan[]) {
+    const spanList = await this.translateSpan(spans);
 
     return this.authorize(spanList)
         .then((spans: SpansWithCredentials) => {
           return this.batchWriteSpans(spans);
         })
         .catch(err => {
-          for (const root of rootSpans) {
-            this.failBuffer.push(root.spanContext);
+          for (const span of spans) {
+            this.failBuffer.push(span.spanContext);
           }
           return err;
         });
   }
 
-  async translateSpan(rootSpans: OCSpan[]) {
+  async translateSpan(spans: OCSpan[]) {
     const resourceLabel = await this.RESOURCE_LABELS;
     const spanList: Span[] = [];
-    rootSpans.forEach(rootSpan => {
+    spans.forEach(span => {
       // RootSpan data
       spanList.push(
-          this.createSpan(rootSpan, resourceLabel, rootSpan.numberOfChildren));
-      rootSpan.spans.forEach(span => {
+          this.createSpan(span, resourceLabel, span.numberOfChildren));
+      span.spans.forEach(child => {
         // Builds spans data
-        spanList.push(this.createSpan(span, resourceLabel));
+        spanList.push(this.createSpan(child, resourceLabel));
       });
     });
     return spanList;

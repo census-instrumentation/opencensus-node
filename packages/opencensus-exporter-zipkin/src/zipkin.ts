@@ -76,6 +76,9 @@ export class ZipkinTraceExporter implements Exporter {
    * @param span the ended span
    */
   onEndSpan(span: Span) {
+    // Add spans of a trace together when root is ended, skip non root spans.
+    // mountSpanList function will extract child spans from root.
+    if (!span.isRootSpan()) return;
     this.buffer.addToBuffer(span);
   }
 
@@ -121,7 +124,7 @@ export class ZipkinTraceExporter implements Exporter {
         /** Request body */
         const outputJson = JSON.stringify(zipkinTraces);
         this.logger.debug('Zipkins span list Json: %s', outputJson);
-        // Sendind the request
+        // Sending the request
         req.write(outputJson, 'utf8');
         req.end();
       } catch (e) {
@@ -132,18 +135,18 @@ export class ZipkinTraceExporter implements Exporter {
 
   /**
    * Mount a list (array) of spans translated to Zipkin format
-   * @param rootSpans Span array to be translated
+   * @param spans Span array to be translated
    */
-  private mountSpanList(rootSpans: Span[]): TranslatedSpan[] {
+  private mountSpanList(spans: Span[]): TranslatedSpan[] {
     const spanList: TranslatedSpan[] = [];
 
-    for (const root of rootSpans) {
+    for (const span of spans) {
       /** RootSpan data */
-      spanList.push(this.translateSpan(root));
+      spanList.push(this.translateSpan(span));
 
       // Builds spans data
-      for (const span of root.spans) {
-        spanList.push(this.translateSpan(span));
+      for (const child of span.spans) {
+        spanList.push(this.translateSpan(child));
       }
     }
 
@@ -219,11 +222,11 @@ export class ZipkinTraceExporter implements Exporter {
   // TODO: review return of method publish from exporter interface - today is
   // returning void
   /**
-   * Send the rootSpans to zipkin service
-   * @param rootSpans Span array
+   * Send the spans to zipkin service
+   * @param spans The list of spans to transmit to Zipkin.
    */
-  publish(rootSpans: Span[]) {
-    const spanList = this.mountSpanList(rootSpans);
+  publish(spans: Span[]) {
+    const spanList = this.mountSpanList(spans);
 
     return this.sendTraces(spanList).catch((err) => {
       return err;

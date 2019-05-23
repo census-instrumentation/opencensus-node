@@ -55,6 +55,11 @@ export class RootSpan extends Span {
     this.activeTraceParams = tracer.activeTraceParams;
   }
 
+  /** Returns whether a span is root or not. */
+  isRootSpan(): boolean {
+    return true;
+  }
+
   /** Gets trace id from rootspan instance. */
   get traceId(): string {
     return this.traceIdLocal;

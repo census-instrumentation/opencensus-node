@@ -24,9 +24,9 @@ import {Exporter, ExporterConfig, StatsEventListener} from './types';
 /** Do not send span data */
 export class NoopExporter implements Exporter {
   logger?: loggerTypes.Logger;
-  onStartSpan(root: modelTypes.Span) {}
-  onEndSpan(root: modelTypes.Span) {}
-  publish(rootSpans: modelTypes.Span[]) {
+  onStartSpan(span: modelTypes.Span) {}
+  onEndSpan(span: modelTypes.Span) {}
+  publish(spans: modelTypes.Span[]) {
     return Promise.resolve();
   }
 }
@@ -39,7 +39,7 @@ export class ConsoleExporter implements Exporter {
   private buffer: ExporterBuffer;
 
   /**
-   * Constructs a new ConsoleLogExporter instance.
+   * Constructs a new ConsoleExporter instance.
    * @param config Exporter configuration object to create a console log
    *     exporter.
    */
@@ -55,19 +55,22 @@ export class ConsoleExporter implements Exporter {
    * @param span Ended span.
    */
   onEndSpan(span: modelTypes.Span) {
+    // Add spans of a trace together when root is ended, skip non root spans.
+    // publish function will extract child spans from root.
+    if (!span.isRootSpan()) return;
     this.buffer.addToBuffer(span);
   }
 
   /**
    * Sends the spans information to the console.
-   * @param rootSpans A list of root spans to publish.
+   * @param spans A list of spans to publish.
    */
-  publish(rootSpans: modelTypes.Span[]) {
-    rootSpans.map((root) => {
-      const ROOT_STR = `RootSpan: {traceId: ${root.traceId}, spanId: ${
-          root.id}, name: ${root.name} }`;
-      const SPANS_STR: string[] = root.spans.map(
-          (span) => [`\t\t{spanId: ${span.id}, name: ${span.name}}`].join(
+  publish(spans: modelTypes.Span[]) {
+    spans.map((span) => {
+      const ROOT_STR = `RootSpan: {traceId: ${span.traceId}, spanId: ${
+          span.id}, name: ${span.name} }`;
+      const SPANS_STR: string[] = span.spans.map(
+          (child) => [`\t\t{spanId: ${child.id}, name: ${child.name}}`].join(
               '\n'));
 
       const result: string[] = [];
@@ -85,7 +88,6 @@ export class ConsoleStatsExporter implements StatsEventListener {
   /**
    * Event called when a view is registered
    * @param view registered view
-   * @param measure registered measure
    */
   onRegisterView(view: View) {
     console.log(`View registered: ${view.name}, Measure registered: ${

@@ -152,22 +152,15 @@ export class CoreTracerBase implements types.TracerBase {
   }
 
   /** Notifies listeners of the span start. */
-  onStartSpan(root: types.Span): void {
+  onStartSpan(span: types.Span): void {
     if (!this.active) return;
-    if (!root) {
-      return this.logger.debug('cannot start trace - no active trace found');
-    }
-    this.notifyStartSpan(root);
+    this.notifyStartSpan(span);
   }
 
   /** Notifies listeners of the span end. */
-  onEndSpan(root: types.Span): void {
+  onEndSpan(span: types.Span): void {
     if (!this.active) return;
-    if (!root) {
-      this.logger.debug('cannot end trace - no active trace found');
-      return;
-    }
-    this.notifyEndSpan(root);
+    this.notifyEndSpan(span);
   }
 
   /**
@@ -191,19 +184,15 @@ export class CoreTracerBase implements types.TracerBase {
 
   private notifyStartSpan(span: types.Span) {
     this.logger.debug('starting to notify listeners the start of spans');
-    if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
-      for (const listener of this.eventListenersLocal) {
-        listener.onStartSpan(span);
-      }
+    for (const listener of this.eventListenersLocal) {
+      listener.onStartSpan(span);
     }
   }
 
   private notifyEndSpan(span: types.Span) {
     this.logger.debug('starting to notify listeners the end of spans');
-    if (this.eventListenersLocal && this.eventListenersLocal.length > 0) {
-      for (const listener of this.eventListenersLocal) {
-        listener.onEndSpan(span);
-      }
+    for (const listener of this.eventListenersLocal) {
+      listener.onEndSpan(span);
     }
   }
 
