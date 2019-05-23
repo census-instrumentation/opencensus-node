@@ -16,18 +16,51 @@
 
 import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
 import * as crypto from 'crypto';
-import {isValidOption, isValidSpanId, isValidTraceId, isValidVersion} from './validators';
+import {isValidSpanId, isValidTraceId, isValidVersion} from './validators';
 
-// Header names
+/** The traceparent header key. */
 export const TRACE_PARENT = 'traceparent';
+/** The tracestate header key. */
 export const TRACE_STATE = 'tracestate';
+/** The default trace options. This defaults to unsampled. */
 export const DEFAULT_OPTIONS = 0x0;
+/** Regular expression that represents a valid traceparent header. */
+const TRACE_PARENT_REGEX = /^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$/;
+
+/**
+ * Parses a traceparent header value into a SpanContext object, or null if the
+ * traceparent value is invalid.
+ */
+function traceParentToSpanContext(traceParent: string): SpanContext|null {
+  const match = traceParent.match(TRACE_PARENT_REGEX);
+  if (!match) return null;
+  const parts = traceParent.split('-');
+  const version = parts[0];
+  const traceId = parts[1];
+  const spanId = parts[2];
+  // tslint:disable-next-line:ban Needed to parse hexadecimal.
+  const options = parseInt(parts[3], 16);
+
+  if (!isValidVersion(version) || !isValidTraceId(traceId) ||
+      !isValidSpanId(spanId)) {
+    return null;
+  }
+  return {traceId, spanId, options};
+}
+
+/** Converts a headers type to a string. */
+function parseHeader(str: string|string[]|undefined): string|undefined {
+  if (Array.isArray(str)) {
+    return str[0];
+  }
+  return str;
+}
 
 /**
  * Propagates span context through Trace Context format propagation.
  *
  * Based on the Trace Context specification:
- * https://w3c.github.io/distributed-tracing/report-trace-context.html
+ * https://www.w3.org/TR/trace-context/
  *
  * Known Limitations:
  * - Multiple `tracestate` headers are merged into a single `tracestate`
@@ -37,65 +70,28 @@ export const DEFAULT_OPTIONS = 0x0;
 export class TraceContextFormat implements Propagation {
   /**
    * Gets the trace context from a request headers. If there is no trace context
-   * in the headers, or if the parsed `traceId` or `spanId` is invalid, an empty
-   * context is returned.
+   * in the headers, or if the parsed `traceId` or `spanId` is invalid, null is
+   * returned.
    * @param getter
    */
   extract(getter: HeaderGetter): SpanContext|null {
-    if (getter) {
-      // Construct empty span context that we will fill
-      const spanContext: SpanContext = {
-        traceId: '',
-        spanId: '',
-        options: DEFAULT_OPTIONS,
-        traceState: undefined
-      };
+    const traceParentHeader = getter.getHeader(TRACE_PARENT);
+    if (!traceParentHeader) return null;
+    const traceParent = parseHeader(traceParentHeader);
+    if (!traceParent) return null;
 
-      let traceState = getter.getHeader(TRACE_STATE);
-      if (Array.isArray(traceState)) {
-        // If more than one `tracestate` header is found, we merge them into a
-        // single header.
-        traceState = traceState.join(',');
-      }
-      spanContext.traceState =
-          typeof traceState === 'string' ? traceState : undefined;
+    const spanContext = traceParentToSpanContext(traceParent);
+    if (!spanContext) return null;
 
-      // Read headers
-      let traceParent = getter.getHeader(TRACE_PARENT);
-      if (Array.isArray(traceParent)) {
-        traceParent = traceParent[0];
-      }
-
-      // Parse TraceParent into version, traceId, spanId, and option flags. All
-      // parts of the header should be present or it is considered invalid.
-      const parts = traceParent ? traceParent.split('-') : [];
-      if (parts.length === 4) {
-        // Both traceId and spanId must be of valid form for the traceparent
-        // header to be accepted. If either is not valid we simply return the
-        // empty spanContext.
-        const version = parts[0];
-        const traceId = parts[1];
-        const spanId = parts[2];
-        if (!isValidVersion(version) || !isValidTraceId(traceId) ||
-            !isValidSpanId(spanId)) {
-          return spanContext;
-        }
-        spanContext.traceId = traceId;
-        spanContext.spanId = spanId;
-
-        // Validate options. If the options are invalid we simply reset them to
-        // default.
-        let optionsHex = parts[3];
-        if (!isValidOption(optionsHex)) {
-          optionsHex = DEFAULT_OPTIONS.toString(16);
-        }
-        const options = Number('0x' + optionsHex);
-        spanContext.options = options;
-      }
-
-      return spanContext;
+    const traceStateHeader = getter.getHeader(TRACE_STATE);
+    if (traceStateHeader) {
+      // If more than one `tracestate` header is found, we merge them into a
+      // single header.
+      spanContext.traceState = Array.isArray(traceStateHeader) ?
+          traceStateHeader.join(',') :
+          traceStateHeader;
     }
-    return null;
+    return spanContext;
   }
 
   /**
@@ -104,19 +100,14 @@ export class TraceContextFormat implements Propagation {
    * @param spanContext
    */
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
-    if (setter && spanContext) {
-      // Construct traceparent from parts. Make sure the traceId and spanId
-      // contain the proper number of characters.
-      const optionsHex = Buffer.from([spanContext.options]).toString('hex');
-      const traceIdHex =
-          ('00000000000000000000000000000000' + spanContext.traceId).slice(-32);
-      const spanIdHex = ('0000000000000000' + spanContext.spanId).slice(-16);
-      const traceParent = `00-${traceIdHex}-${spanIdHex}-${optionsHex}`;
+    // Construct traceparent from parts. Make sure the traceId and spanId
+    // contain the proper number of characters.
+    const traceParent = `00-${spanContext.traceId}-${spanContext.spanId}-0${
+        (spanContext.options || DEFAULT_OPTIONS).toString(16)}`;
 
-      setter.setHeader(TRACE_PARENT, traceParent);
-      if (spanContext.traceState) {
-        setter.setHeader(TRACE_STATE, spanContext.traceState);
-      }
+    setter.setHeader(TRACE_PARENT, traceParent);
+    if (spanContext.traceState) {
+      setter.setHeader(TRACE_STATE, spanContext.traceState);
     }
   }
 
@@ -130,8 +121,7 @@ export class TraceContextFormat implements Propagation {
     return {
       traceId: buff.slice(0, 32),
       spanId: buff.slice(32, 48),
-      options: DEFAULT_OPTIONS,
-      traceState: undefined
+      options: DEFAULT_OPTIONS
     };
   }
 }
