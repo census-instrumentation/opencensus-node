@@ -82,7 +82,7 @@ export class JaegerTraceExporter implements Exporter {
                     .JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY] =
         `opencensus-exporter-jaeger-${pjsonVersion}`;
     defaultTags[JaegerTraceExporter.TRACER_HOSTNAME_TAG_KEY] = os.hostname();
-    defaultTags[JaegerTraceExporter.PROCESS_IP] = Utils.ipToInt(Utils.myIp());
+    defaultTags[JaegerTraceExporter.PROCESS_IP] = Utils.myIp();
 
     // Merge the user given tags and the default tags
     const _tags: Tag[] = [...tags, ...Utils.convertObjectToTags(defaultTags)];
