@@ -241,7 +241,7 @@ describe('HttpPlugin', () => {
         assertSpanAttributes(span, 200, 'GET', hostName, testPath);
         assert.strictEqual(span.messageEvents.length, 1);
         assert.strictEqual(span.messageEvents[0].type, MessageEventType.SENT);
-        assert.strictEqual(span.messageEvents[0].id, '1');
+        assert.strictEqual(span.messageEvents[0].id, 1);
         assertClientStats(testExporter, 200, 'GET');
       });
     });
@@ -284,7 +284,7 @@ describe('HttpPlugin', () => {
           assertSpanAttributes(span, 200, 'GET', hostName, testPath);
           assert.strictEqual(span.messageEvents.length, 1);
           assert.strictEqual(span.messageEvents[0].type, MessageEventType.SENT);
-          assert.strictEqual(span.messageEvents[0].id, '1');
+          assert.strictEqual(span.messageEvents[0].id, 1);
           assertClientStats(testExporter, 200, 'GET');
         });
       });

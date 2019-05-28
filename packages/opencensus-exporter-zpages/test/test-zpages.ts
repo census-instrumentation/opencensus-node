@@ -496,9 +496,9 @@ describe('Zpages Exporter', () => {
       rpczData = await zpagesClient.getRpcz();
       const measures = rpczData.measuresSent['ExampleMethod'];
       assert.strictEqual(measures.count.tot, 2);
-      assert.strictEqual(measures.avgLatency.tot.toFixed(3), 1.500);
-      assert.strictEqual(measures.input.tot.toFixed(3), 1.074);
-      assert.strictEqual(measures.output.tot.toFixed(3), 21.484);
+      assert.strictEqual(measures.avgLatency.tot.toFixed(3), '1.500');
+      assert.strictEqual(measures.input.tot.toFixed(3), '1.074');
+      assert.strictEqual(measures.output.tot.toFixed(3), '21.484');
       assert.strictEqual(measures.errors.tot, 2);
     });
 
@@ -578,9 +578,9 @@ describe('Zpages Exporter', () => {
       const measures = rpczData.measuresReceived['ExampleMethod'];
 
       assert.strictEqual(measures.count.tot, 2);
-      assert.strictEqual(measures.avgLatency.tot.toFixed(3), 1.500);
-      assert.strictEqual(measures.input.tot.toFixed(3), 2.148);
-      assert.strictEqual(measures.output.tot.toFixed(3), 1.074);
+      assert.strictEqual(measures.avgLatency.tot.toFixed(3), '1.500');
+      assert.strictEqual(measures.input.tot.toFixed(3), '2.148');
+      assert.strictEqual(measures.output.tot.toFixed(3), '1.074');
       assert.strictEqual(measures.errors.tot, 2);
     });
   });
