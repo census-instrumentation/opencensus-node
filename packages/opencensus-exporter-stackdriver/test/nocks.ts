@@ -100,53 +100,28 @@ export function hostname(status: number|(() => string), reply?: () => string) {
 }
 
 export function batchWrite<T extends {} = {}>(
-    project: string, validator?: (body: T) => boolean, reply?: () => string,
-    withError?: boolean) {
+    project: string, validator?: (body: T) => boolean, reply?: () => string) {
   validator = validator || accept;
   const interceptor =
       nock('https://cloudtrace.googleapis.com')
           .post('/v2/projects/' + project + '/traces:batchWrite', validator);
-  let scope: nock.Scope;
-  if (withError) {
-    scope = interceptor.replyWithError(reply);
-  } else if (reply) {
-    scope = interceptor.reply(reply);
-  } else {
-    scope = interceptor.reply(200);
-  }
-  return scope;
+  return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }
 
 export function timeSeries<T extends {} = {}>(
-    project: string, validator?: (body: T) => boolean, reply?: () => string,
-    withError?: boolean) {
+    project: string, validator?: (body: T) => boolean, reply?: () => string) {
   validator = validator || accept;
   const interceptor =
       nock('https://monitoring.googleapis.com')
           .post('/v3/projects/' + project + '/timeSeries', validator);
-  let scope: nock.Scope;
-  if (withError) {
-    scope = interceptor.replyWithError(reply);
-  } else if (reply) {
-    scope = interceptor.reply(reply);
-  } else {
-    scope = interceptor.reply(200, reply);
-  }
-  return scope;
+  return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }
 
 export function metricDescriptors<T extends {} = {}>(
-    project: string, validator?: (body: T) => boolean, reply?: () => string,
-    withError?: boolean) {
+    project: string, validator?: (body: T) => boolean, reply?: () => string) {
   validator = validator || accept;
   const interceptor =
       nock('https://monitoring.googleapis.com')
           .post('/v3/projects/' + project + '/metricDescriptors', validator);
-  let scope: nock.Scope;
-  if (withError) {
-    scope = interceptor.replyWithError(reply);
-  } else {
-    scope = interceptor.reply(200, reply);
-  }
-  return scope;
+  return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }
