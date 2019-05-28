@@ -73,7 +73,7 @@ describe('addInt64Gauge', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 100);
+    assert.strictEqual(point.value, 100);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -97,7 +97,7 @@ describe('addInt64Gauge', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 100);
+    assert.strictEqual(point.value, 100);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -157,7 +157,7 @@ describe('addDoubleGauge', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 0.7);
+    assert.strictEqual(point.value, 0.7);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -202,7 +202,7 @@ describe('addDoubleGauge', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 5.5);
+    assert.strictEqual(point.value, 5.5);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -252,7 +252,7 @@ describe('addDerivedInt64Gauge', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 2);
+    assert.strictEqual(point.value, 2);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -304,7 +304,7 @@ describe('addDerivedInt64Gauge', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 2);
+    assert.strictEqual(point.value, 2);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -356,7 +356,7 @@ describe('addDerivedDoubleGauge', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 0.7);
+    assert.strictEqual(point.value, 0.7);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -410,7 +410,7 @@ describe('addInt64Cumulative', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 1);
+    assert.strictEqual(point.value, 1);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -434,7 +434,7 @@ describe('addInt64Cumulative', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 100);
+    assert.strictEqual(point.value, 100);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -492,7 +492,7 @@ describe('addDoubleCumulative', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 1.1);
+    assert.strictEqual(point.value, 1.1);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -517,7 +517,7 @@ describe('addDoubleCumulative', () => {
     assert.strictEqual(timeseries.length, 1);
     const [{points}] = timeseries;
     const [point] = points;
-    assert.equal(point.value, 101.12);
+    assert.strictEqual(point.value, 101.12);
     assert.deepStrictEqual(
         point.timestamp,
         {seconds: mockedTime.seconds, nanos: mockedTime.nanos});
@@ -824,22 +824,23 @@ describe('Add multiple gauges', () => {
     });
     assert.strictEqual(timeseries1.length, 1);
     assert.strictEqual(timeseries1[0].points.length, 1);
-    assert.equal(timeseries1[0].points[0].value, 100);
-    assert.equal(
+    assert.strictEqual(timeseries1[0].points[0].value, 100);
+    assert.strictEqual(
         timeseries1[0].points[0].timestamp.seconds, mockedTime.seconds);
-    assert.equal(timeseries1[0].points[0].timestamp.nanos, mockedTime.nanos);
+    assert.strictEqual(
+        timeseries1[0].points[0].timestamp.nanos, mockedTime.nanos);
     assert.strictEqual(timeseries2.length, 1);
     assert.strictEqual(timeseries2[0].points.length, 1);
-    assert.equal(timeseries2[0].points[0].value, 5.5);
+    assert.strictEqual(timeseries2[0].points[0].value, 5.5);
     assert.strictEqual(timeseries3.length, 1);
     assert.strictEqual(timeseries3[0].points.length, 1);
-    assert.equal(timeseries3[0].points[0].value, 5);
+    assert.strictEqual(timeseries3[0].points[0].value, 5);
     assert.deepStrictEqual(
         timeseries1[0].points[0].timestamp, timeseries2[0].points[0].timestamp);
     assert.deepStrictEqual(
         timeseries2[0].points[0].timestamp, timeseries3[0].points[0].timestamp);
     assert.strictEqual(timeseries4.length, 1);
     assert.strictEqual(timeseries4[0].points.length, 1);
-    assert.equal(timeseries4[0].points[0].value, 1);
+    assert.strictEqual(timeseries4[0].points[0].value, 1);
   });
 });

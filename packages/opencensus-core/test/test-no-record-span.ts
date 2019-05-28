@@ -29,6 +29,6 @@ describe('NoRecordSpan()', () => {
     noRecordSpan.addMessageEvent(MessageEventType.RECEIVED, 1, 123456789);
     noRecordSpan.addAttribute('my_first_attribute', 'foo');
     noRecordSpan.setStatus(CanonicalCode.OK);
-    assert.equal(noRecordSpan.traceState, undefined);
+    assert.strictEqual(noRecordSpan.traceState, undefined);
   });
 });

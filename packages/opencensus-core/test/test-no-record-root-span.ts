@@ -33,6 +33,6 @@ describe('NoRecordRootSpan()', () => {
     noRecordRootSpan.addAttribute('my_first_attribute', 'foo');
     noRecordRootSpan.setStatus(CanonicalCode.OK);
     noRecordRootSpan.startChildSpan();
-    assert.equal(noRecordRootSpan.traceState, undefined);
+    assert.strictEqual(noRecordRootSpan.traceState, undefined);
   });
 });

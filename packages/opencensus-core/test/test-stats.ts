@@ -223,7 +223,7 @@ describe('Stats', () => {
          const measurments =
              [{measure, value: 1}, {measure, value: -1}, {measure, value: 1}];
          globalStats.record(measurments, tagMap);
-         assert.equal(testExporter.recordedMeasurements.length, 0);
+         assert.strictEqual(testExporter.recordedMeasurements.length, 0);
        });
 
     it('should record against implicit context when set', () => {

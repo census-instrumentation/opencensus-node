@@ -96,7 +96,7 @@ describe('Zipkin Exporter', function() {
             span.end();
             rootSpan.end();
             return exporter.publish([rootSpan, rootSpan]).then((result) => {
-              assert.equal(result.statusCode, 202);
+              assert.strictEqual(result.statusCode, 202);
             });
           });
     });
@@ -201,7 +201,7 @@ describe('Zipkin Exporter', function() {
                span.end();
                rootSpan.end();
                return exporter.publish([rootSpan]).then((result) => {
-                 assert.equal(result.statusCode, 404);
+                 assert.strictEqual(result.statusCode, 404);
                });
              });
        });

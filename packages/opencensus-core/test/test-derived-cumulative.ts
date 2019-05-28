@@ -81,7 +81,7 @@ describe('DerivedCumulative', () => {
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
                                labelValues: LABEL_VALUES_200,
                                points: [{value: 2, timestamp: mockedTime}],
@@ -99,7 +99,7 @@ describe('DerivedCumulative', () => {
 
       metric = instance.getMetric();
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 2);
+      assert.strictEqual(metric!.timeseries.length, 2);
       assert.deepStrictEqual(metric!.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
@@ -125,7 +125,7 @@ describe('DerivedCumulative', () => {
       const metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
                                labelValues: LABEL_VALUES_200,
                                points: [{value: 45, timestamp: mockedTime}],
@@ -152,7 +152,7 @@ describe('DerivedCumulative', () => {
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
                                labelValues: LABEL_VALUES_200,
                                points: [{value: 1, timestamp: mockedTime}],
@@ -163,7 +163,7 @@ describe('DerivedCumulative', () => {
       queue.addJob();
       queue.addJob();
       metric = instance.getMetric();
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries[0].points, [{value: 4, timestamp: mockedTime}]);
     });
@@ -188,7 +188,7 @@ describe('DerivedCumulative', () => {
         type: CUMULATIVE_DOUBLE,
         labelKeys: LABEL_KEYS
       });
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
                                labelValues: LABEL_VALUES_200,
                                points: [{value: 0.7, timestamp: mockedTime}],
@@ -203,7 +203,7 @@ describe('DerivedCumulative', () => {
       map.set('key1', 'value1');
       let metric = instance.getMetric();
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
                                labelValues: LABEL_VALUES_200,
                                points: [{value: 2, timestamp: mockedTime}],
@@ -212,7 +212,7 @@ describe('DerivedCumulative', () => {
 
       map.clear();
       metric = instance.getMetric();
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
                                labelValues: LABEL_VALUES_200,
                                points: [{value: 2, timestamp: mockedTime}],
@@ -227,7 +227,7 @@ describe('DerivedCumulative', () => {
       const metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
                                labelValues: LABEL_VALUES_200,
                                points: [{value: 1, timestamp: mockedTime}],
@@ -271,7 +271,7 @@ describe('DerivedCumulative', () => {
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 2);
+      assert.strictEqual(metric!.timeseries.length, 2);
       instance.clear();
       metric = instance.getMetric();
       assert.deepStrictEqual(metric, null);

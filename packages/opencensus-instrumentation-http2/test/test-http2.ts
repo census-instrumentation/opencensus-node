@@ -140,13 +140,13 @@ describe('Http2Plugin', () => {
 
         const span = spanVerifier.endedSpans[1];
         assertSpanAttributes(span, 200, 'GET', host, testPath);
-        assert.equal(span.messageEvents.length, 1);
-        assert.equal(span.messageEvents[0].type, MessageEventType.SENT);
-        assert.equal(span.messageEvents[0].id, '1');
+        assert.strictEqual(span.messageEvents.length, 1);
+        assert.strictEqual(span.messageEvents[0].type, MessageEventType.SENT);
+        assert.strictEqual(span.messageEvents[0].id, '1');
 
         const messageEvents = spanVerifier.endedSpans[0].messageEvents[0];
-        assert.equal(messageEvents.type, MessageEventType.RECEIVED);
-        assert.equal(messageEvents.id, '1');
+        assert.strictEqual(messageEvents.type, MessageEventType.RECEIVED);
+        assert.strictEqual(messageEvents.id, '1');
       });
     });
 

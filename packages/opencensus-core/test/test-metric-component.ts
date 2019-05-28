@@ -32,7 +32,8 @@ describe('MetricsComponent()', () => {
   });
 
   it('should register metricRegistry to MetricProducerManger', () => {
-    assert.equal(metricProducerManagerInstance.getAllMetricProducer().size, 1);
+    assert.strictEqual(
+        metricProducerManagerInstance.getAllMetricProducer().size, 1);
     assert.ok(metricProducerManagerInstance.getAllMetricProducer().has(
         metricsComponent.getMetricRegistry().getMetricProducer()));
   });

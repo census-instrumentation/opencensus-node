@@ -75,8 +75,8 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
     it('should return stackdriver links', () => {
       const stackdriverLinks = createLinks(links, 2);
 
-      assert.equal(stackdriverLinks.droppedLinksCount, 2);
-      assert.equal(stackdriverLinks.link!.length, 3);
+      assert.strictEqual(stackdriverLinks.droppedLinksCount, 2);
+      assert.strictEqual(stackdriverLinks.link!.length, 3);
       assert.deepEqual(stackdriverLinks.link, expectedLink);
     });
   });
@@ -176,9 +176,9 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const stackdriverTimeEvents =
           createTimeEvents(annotations, messageEvents, 2, 3);
 
-      assert.equal(stackdriverTimeEvents.droppedAnnotationsCount, 2);
-      assert.equal(stackdriverTimeEvents.droppedMessageEventsCount, 3);
-      assert.equal(stackdriverTimeEvents.timeEvent!.length, 6);
+      assert.strictEqual(stackdriverTimeEvents.droppedAnnotationsCount, 2);
+      assert.strictEqual(stackdriverTimeEvents.droppedMessageEventsCount, 3);
+      assert.strictEqual(stackdriverTimeEvents.timeEvent!.length, 6);
       assert.deepEqual(stackdriverTimeEvents.timeEvent, expectedTimeEvent);
     });
 
@@ -186,9 +186,9 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
        () => {
          const stackdriverTimeEvents = createTimeEvents([], [], 0, 0);
 
-         assert.equal(stackdriverTimeEvents.droppedAnnotationsCount, 0);
-         assert.equal(stackdriverTimeEvents.droppedMessageEventsCount, 0);
-         assert.equal(stackdriverTimeEvents.timeEvent!.length, 0);
+         assert.strictEqual(stackdriverTimeEvents.droppedAnnotationsCount, 0);
+         assert.strictEqual(stackdriverTimeEvents.droppedMessageEventsCount, 0);
+         assert.strictEqual(stackdriverTimeEvents.timeEvent!.length, 0);
        });
   });
 
@@ -203,8 +203,9 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
 
     it('should return stackdriver Attributes', () => {
       const stackdriverAttribute = createAttributes(attributes, {}, 0);
-      assert.equal(stackdriverAttribute.droppedAttributesCount, 0);
-      assert.equal(Object.keys(stackdriverAttribute.attributeMap!).length, 3);
+      assert.strictEqual(stackdriverAttribute.droppedAttributesCount, 0);
+      assert.strictEqual(
+          Object.keys(stackdriverAttribute.attributeMap!).length, 3);
       assert.deepEqual(stackdriverAttribute.attributeMap, expectedAttributeMap);
     });
 
@@ -219,8 +220,9 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
         'g.co/r/podId': {'intValue': '100'},
         'g.co/r/project_id': {'stringValue': {'value': 'project1'}}
       });
-      assert.equal(stackdriverAttribute.droppedAttributesCount, 2);
-      assert.equal(Object.keys(stackdriverAttribute.attributeMap!).length, 5);
+      assert.strictEqual(stackdriverAttribute.droppedAttributesCount, 2);
+      assert.strictEqual(
+          Object.keys(stackdriverAttribute.attributeMap!).length, 5);
       assert.deepEqual(stackdriverAttribute.attributeMap, expectedAttributeMap);
     });
   });
@@ -250,7 +252,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
 
       const resolvingPromise = Promise.resolve(resource);
       const resourceLabels = await getResourceLabels(resolvingPromise);
-      assert.equal(Object.keys(resourceLabels).length, 5);
+      assert.strictEqual(Object.keys(resourceLabels).length, 5);
       assert.deepEqual(resourceLabels, expectedLabels);
     });
 
@@ -272,7 +274,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       };
       const resolvingPromise = Promise.resolve(resource);
       const resourceLabels = await getResourceLabels(resolvingPromise);
-      assert.equal(Object.keys(resourceLabels).length, 3);
+      assert.strictEqual(Object.keys(resourceLabels).length, 3);
       assert.deepEqual(resourceLabels, expectedLabels);
     });
 
@@ -299,7 +301,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
 
       const resolvingPromise = Promise.resolve(resource);
       const resourceLabels = await getResourceLabels(resolvingPromise);
-      assert.equal(Object.keys(resourceLabels).length, 4);
+      assert.strictEqual(Object.keys(resourceLabels).length, 4);
       assert.deepEqual(resourceLabels, expectedLabels);
     });
   });

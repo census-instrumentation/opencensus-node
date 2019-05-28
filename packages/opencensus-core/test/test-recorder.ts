@@ -199,8 +199,8 @@ describe('Recorder', () => {
             Recorder.addMeasurement(
                 distributionData, measurement, attachments) as DistributionData;
 
-        assert.equal(aggregationData.sum, 5);
-        assert.equal(aggregationData.mean, 5);
+        assert.strictEqual(aggregationData.sum, 5);
+        assert.strictEqual(aggregationData.mean, 5);
         assert.deepStrictEqual(aggregationData.buckets, [2, 4, 6]);
         assert.deepStrictEqual(aggregationData.bucketCounts, [0, 0, 1, 0]);
         assert.deepStrictEqual(aggregationData.exemplars![0], undefined);
@@ -232,7 +232,7 @@ describe('Recorder', () => {
         tagMap.set(CALLER, CALLER_V);
         tagMap.set(METHOD, METHOD_V);
         const tagValues = Recorder.getTagValues(tagMap.tags, columns);
-        assert.equal(tagValues.length, 2);
+        assert.strictEqual(tagValues.length, 2);
         assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
       });
 
@@ -242,7 +242,7 @@ describe('Recorder', () => {
            tagMap.set(CALLER, CALLER_V, NO_PROPAGATION_MD);
            tagMap.set(METHOD, METHOD_V, UNLIMITED_PROPAGATION_MD);
            const tagValues = Recorder.getTagValues(tagMap.tags, columns);
-           assert.equal(tagValues.length, 2);
+           assert.strictEqual(tagValues.length, 2);
            assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
          });
 
@@ -252,7 +252,7 @@ describe('Recorder', () => {
            tagMap.set(CALLER, CALLER_V);
            tagMap.set(METHOD, METHOD_V);
            const tagValues = Recorder.getTagValues(tagMap.tags, columns);
-           assert.equal(tagValues.length, 3);
+           assert.strictEqual(tagValues.length, 3);
            assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V, null]);
          });
 
@@ -263,7 +263,7 @@ describe('Recorder', () => {
            tagMap.set(METHOD, METHOD_V);
            tagMap.set(ORIGINATOR, ORIGINATOR_V);
            const tagValues = Recorder.getTagValues(tagMap.tags, columns);
-           assert.equal(tagValues.length, 2);
+           assert.strictEqual(tagValues.length, 2);
            assert.deepStrictEqual(tagValues, [CALLER_V, METHOD_V]);
          });
     });

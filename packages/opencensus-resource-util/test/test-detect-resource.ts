@@ -73,7 +73,7 @@ describe('detectResource', () => {
        scope.done();
 
        assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
-       assert.equal(Object.keys(labels).length, 6);
+       assert.strictEqual(Object.keys(labels).length, 6);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
        assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'my-zone');
@@ -101,7 +101,7 @@ describe('detectResource', () => {
        scope.done();
 
        assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
-       assert.equal(Object.keys(labels).length, 6);
+       assert.strictEqual(Object.keys(labels).length, 6);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
        assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'my-zone');
@@ -139,7 +139,7 @@ describe('detectResource', () => {
        scope.done();
 
        assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
-       assert.equal(Object.keys(labels).length, 6);
+       assert.strictEqual(Object.keys(labels).length, 6);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
        assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'my-zone');
@@ -163,7 +163,7 @@ describe('detectResource', () => {
     scope.done();
 
     assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
-    assert.equal(Object.keys(labels).length, 3);
+    assert.strictEqual(Object.keys(labels).length, 3);
     assert.strictEqual(labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
     assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'my-zone');
     assert.strictEqual(labels[HOST_RESOURCE.ID_KEY], '4520031799277582000');
@@ -186,7 +186,7 @@ describe('detectResource', () => {
     scope.done();
 
     assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
-    assert.equal(Object.keys(labels).length, 3);
+    assert.strictEqual(Object.keys(labels).length, 3);
     assert.strictEqual(labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
     assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'my-zone');
     assert.strictEqual(labels[HOST_RESOURCE.ID_KEY], '4520031799277582000');
@@ -207,7 +207,7 @@ describe('detectResource', () => {
        scope.done();
 
        assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
-       assert.equal(Object.keys(labels).length, 3);
+       assert.strictEqual(Object.keys(labels).length, 3);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
        assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], '');
@@ -239,7 +239,7 @@ describe('detectResource', () => {
        scope.done();
 
        assert.deepEqual(type, 'global');
-       assert.equal(Object.keys(labels).length, 5);
+       assert.strictEqual(Object.keys(labels).length, 5);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
        assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'zone1');
@@ -260,7 +260,7 @@ describe('detectResource', () => {
     gcpScope.done();
 
     assert.deepEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
-    assert.equal(Object.keys(labels).length, 3);
+    assert.strictEqual(Object.keys(labels).length, 3);
     assert.strictEqual(labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-account-id');
     assert.strictEqual(labels[HOST_RESOURCE.ID_KEY], 'my-instance-id');
     assert.strictEqual(labels[CLOUD_RESOURCE.REGION_KEY], 'my-region');
@@ -288,7 +288,7 @@ describe('detectResource', () => {
        gcpScope.done();
 
        assert.deepEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
-       assert.equal(Object.keys(labels).length, 3);
+       assert.strictEqual(Object.keys(labels).length, 3);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-account-id');
        assert.strictEqual(labels[HOST_RESOURCE.ID_KEY], 'my-instance-id');
@@ -307,6 +307,6 @@ describe('detectResource', () => {
     gcpScope.done();
 
     assert.deepEqual(type, null);
-    assert.equal(Object.keys(labels).length, 0);
+    assert.strictEqual(Object.keys(labels).length, 0);
   });
 });

@@ -279,8 +279,8 @@ describe('BaseView', () => {
             } else {
               it('should have timeseries startTimestamp', () => {
                 assert.ok(startTimestamp);
-                assert.equal(typeof startTimestamp!.nanos, 'number');
-                assert.equal(typeof startTimestamp!.seconds, 'number');
+                assert.strictEqual(typeof startTimestamp!.nanos, 'number');
+                assert.strictEqual(typeof startTimestamp!.seconds, 'number');
                 assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
               });
             }
@@ -311,10 +311,10 @@ describe('BaseView', () => {
         const [point] = points;
         const {timestamp, value} = point;
         assert.ok(timestamp);
-        assert.equal(typeof timestamp.nanos, 'number');
-        assert.equal(typeof timestamp.seconds, 'number');
-        assert.equal(timestamp.seconds, mockedTime.seconds);
-        assert.equal(timestamp.nanos, mockedTime.nanos);
+        assert.strictEqual(typeof timestamp.nanos, 'number');
+        assert.strictEqual(typeof timestamp.seconds, 'number');
+        assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+        assert.strictEqual(timestamp.nanos, mockedTime.nanos);
         assert.notEqual(typeof value, 'number');
         assert.deepStrictEqual((value as DistributionValue), {
           bucketOptions: {explicit: {bounds: buckets}},
@@ -462,7 +462,7 @@ describe('BaseView', () => {
 
           it('should have points', () => {
             const {timeseries} = view.getMetric(mockStartTime);
-            assert.equal(timeseries.length, 2);
+            assert.strictEqual(timeseries.length, 2);
             const [{labelValues: labelValues1, points: points1}, {
               labelValues: labelValues2,
               points: points2
@@ -472,10 +472,10 @@ describe('BaseView', () => {
             let [point] = points1;
             let {timestamp, value} = point;
             assert.ok(timestamp);
-            assert.equal(typeof timestamp.nanos, 'number');
-            assert.equal(typeof timestamp.seconds, 'number');
-            assert.equal(timestamp.seconds, mockedTime.seconds);
-            assert.equal(timestamp.nanos, mockedTime.nanos);
+            assert.strictEqual(typeof timestamp.nanos, 'number');
+            assert.strictEqual(typeof timestamp.seconds, 'number');
+            assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+            assert.strictEqual(timestamp.nanos, mockedTime.nanos);
             assert.notEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
@@ -491,10 +491,10 @@ describe('BaseView', () => {
             [point] = points2;
             ({timestamp, value} = point);
             assert.ok(timestamp);
-            assert.equal(typeof timestamp.nanos, 'number');
-            assert.equal(typeof timestamp.seconds, 'number');
-            assert.equal(timestamp.seconds, mockedTime.seconds);
-            assert.equal(timestamp.nanos, mockedTime.nanos);
+            assert.strictEqual(typeof timestamp.nanos, 'number');
+            assert.strictEqual(typeof timestamp.seconds, 'number');
+            assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+            assert.strictEqual(timestamp.nanos, mockedTime.nanos);
             assert.notEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
@@ -525,11 +525,11 @@ describe('BaseView', () => {
         const [point] = points;
         const {timestamp, value} = point;
         assert.ok(timestamp);
-        assert.equal(typeof timestamp.nanos, 'number');
-        assert.equal(typeof timestamp.seconds, 'number');
-        assert.equal(timestamp.seconds, mockedTime.seconds);
-        assert.equal(timestamp.nanos, mockedTime.nanos);
-        assert.equal(typeof value, 'number');
+        assert.strictEqual(typeof timestamp.nanos, 'number');
+        assert.strictEqual(typeof timestamp.seconds, 'number');
+        assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+        assert.strictEqual(timestamp.nanos, mockedTime.nanos);
+        assert.strictEqual(typeof value, 'number');
         assert.strictEqual(value, 5);
         assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
       });
@@ -553,11 +553,11 @@ describe('BaseView', () => {
         const [point] = points;
         const {timestamp, value} = point;
         assert.ok(timestamp);
-        assert.equal(typeof timestamp.nanos, 'number');
-        assert.equal(typeof timestamp.seconds, 'number');
-        assert.equal(timestamp.seconds, mockedTime.seconds);
-        assert.equal(timestamp.nanos, mockedTime.nanos);
-        assert.equal(typeof value, 'number');
+        assert.strictEqual(typeof timestamp.nanos, 'number');
+        assert.strictEqual(typeof timestamp.seconds, 'number');
+        assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+        assert.strictEqual(timestamp.nanos, mockedTime.nanos);
+        assert.strictEqual(typeof value, 'number');
         assert.strictEqual(value, total);
         assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
       });
@@ -578,9 +578,9 @@ describe('BaseView', () => {
         assert.ok(points);
         const [point] = points;
         const {timestamp, value} = point;
-        assert.equal(timestamp.seconds, mockedTime.seconds);
-        assert.equal(timestamp.nanos, mockedTime.nanos);
-        assert.equal(typeof value, 'number');
+        assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+        assert.strictEqual(timestamp.nanos, mockedTime.nanos);
+        assert.strictEqual(typeof value, 'number');
         assert.strictEqual(
             value, measurementValues[measurementValues.length - 1]);
         assert.strictEqual(startTimestamp, undefined);

@@ -245,13 +245,14 @@ describe('Tracer Base', () => {
        () => {
          const tracer = new CoreTracerBase();
          tracer.start(defaultConfig);
-         assert.equal(
+         assert.strictEqual(
              tracer.activeTraceParams.numberOfAnnontationEventsPerSpan,
              undefined);
-         assert.equal(
+         assert.strictEqual(
              tracer.activeTraceParams.numberOfAttributesPerSpan, undefined);
-         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, undefined);
-         assert.equal(
+         assert.strictEqual(
+             tracer.activeTraceParams.numberOfLinksPerSpan, undefined);
+         assert.strictEqual(
              tracer.activeTraceParams.numberOfMessageEventsPerSpan, undefined);
        });
 
@@ -266,11 +267,12 @@ describe('Tracer Base', () => {
          defaultConfig.traceParams = traceParametersWithHigherThanMaximumValues;
          const tracer = new CoreTracerBase();
          tracer.start(defaultConfig);
-         assert.equal(
+         assert.strictEqual(
              tracer.activeTraceParams.numberOfAnnontationEventsPerSpan, 32);
-         assert.equal(tracer.activeTraceParams.numberOfAttributesPerSpan, 32);
-         assert.equal(tracer.activeTraceParams.numberOfLinksPerSpan, 32);
-         assert.equal(
+         assert.strictEqual(
+             tracer.activeTraceParams.numberOfAttributesPerSpan, 32);
+         assert.strictEqual(tracer.activeTraceParams.numberOfLinksPerSpan, 32);
+         assert.strictEqual(
              tracer.activeTraceParams.numberOfMessageEventsPerSpan, 128);
        });
   });
@@ -414,7 +416,8 @@ describe('Tracer Base', () => {
 
       tracer.startRootSpan(options, (rootSpan) => {
         rootSpan.end();
-        assert.equal(eventListener.testCount, tracer.eventListeners.length);
+        assert.strictEqual(
+            eventListener.testCount, tracer.eventListeners.length);
       });
     });
   });

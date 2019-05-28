@@ -239,9 +239,9 @@ describe('HttpPlugin', () => {
 
         const span = spanVerifier.endedSpans[0];
         assertSpanAttributes(span, 200, 'GET', hostName, testPath);
-        assert.equal(span.messageEvents.length, 1);
-        assert.equal(span.messageEvents[0].type, MessageEventType.SENT);
-        assert.equal(span.messageEvents[0].id, '1');
+        assert.strictEqual(span.messageEvents.length, 1);
+        assert.strictEqual(span.messageEvents[0].type, MessageEventType.SENT);
+        assert.strictEqual(span.messageEvents[0].id, '1');
         assertClientStats(testExporter, 200, 'GET');
       });
     });
@@ -282,9 +282,9 @@ describe('HttpPlugin', () => {
           assert.strictEqual(root.traceId, root.spans[0].traceId);
           const span = root.spans[0];
           assertSpanAttributes(span, 200, 'GET', hostName, testPath);
-          assert.equal(span.messageEvents.length, 1);
-          assert.equal(span.messageEvents[0].type, MessageEventType.SENT);
-          assert.equal(span.messageEvents[0].id, '1');
+          assert.strictEqual(span.messageEvents.length, 1);
+          assert.strictEqual(span.messageEvents[0].type, MessageEventType.SENT);
+          assert.strictEqual(span.messageEvents[0].id, '1');
           assertClientStats(testExporter, 200, 'GET');
         });
       });
@@ -327,8 +327,8 @@ describe('HttpPlugin', () => {
             assert.strictEqual(root.spans.length, i + 1);
             assert.ok(root.spans[i].name.indexOf(testPath) >= 0);
             assert.strictEqual(root.traceId, root.spans[i].traceId);
-            assert.equal(root.spans[i].messageEvents[0].id, 1);
-            assert.equal(
+            assert.strictEqual(root.spans[i].messageEvents[0].id, 1);
+            assert.strictEqual(
                 root.spans[i].messageEvents[0].type, MessageEventType.SENT);
           });
         }
@@ -353,7 +353,7 @@ describe('HttpPlugin', () => {
 
          assert.strictEqual(spanVerifier.endedSpans.length, 0);
          await httpRequest.get(options).then((result) => {
-           assert.equal(result, 'Ok');
+           assert.strictEqual(result, 'Ok');
            assert.strictEqual(spanVerifier.endedSpans.length, 0);
          });
        });

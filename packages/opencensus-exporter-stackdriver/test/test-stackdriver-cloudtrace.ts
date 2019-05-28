@@ -83,7 +83,7 @@ describe('Stackdriver Trace Exporter', function() {
             rootSpan.end();
 
             const spanList = await exporter.translateSpan([rootSpan]);
-            assert.equal(spanList.length, 2);
+            assert.strictEqual(spanList.length, 2);
             assert.deepEqual(spanList, [
               {
                 'attributes': {
@@ -168,7 +168,7 @@ describe('Stackdriver Trace Exporter', function() {
             rootSpan.end();
 
             return failExporter.publish([rootSpan]).then(result => {
-              assert.equal(result.code, 401);
+              assert.strictEqual(result.code, 401);
               assert.ok(result.message.indexOf('batchWriteSpans error') >= 0);
 
               assert.strictEqual(

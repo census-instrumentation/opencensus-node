@@ -58,11 +58,12 @@ describe('Prometheus Stats Exporter', () => {
             const body = chunk.toString();
             const lines = body.split('\n');
 
-            assert.equal(
+            assert.strictEqual(
                 lines[0],
                 '# HELP ocnodemetrics_countview A count aggregation example');
-            assert.equal(lines[1], '# TYPE ocnodemetrics_countview counter');
-            assert.equal(
+            assert.strictEqual(
+                lines[1], '# TYPE ocnodemetrics_countview counter');
+            assert.strictEqual(
                 lines[2], 'ocnodemetrics_countview{tagKey1="tagValue1"} 2');
             done();
           });
@@ -85,11 +86,11 @@ describe('Prometheus Stats Exporter', () => {
             const body = chunk.toString();
             const lines = body.split('\n');
 
-            assert.equal(
+            assert.strictEqual(
                 lines[0],
                 '# HELP ocnodemetrics_sumview A sum aggregation example');
-            assert.equal(lines[1], '# TYPE ocnodemetrics_sumview gauge');
-            assert.equal(
+            assert.strictEqual(lines[1], '# TYPE ocnodemetrics_sumview gauge');
+            assert.strictEqual(
                 lines[2], 'ocnodemetrics_sumview{tagKey1="tagValue1"} 5');
             done();
           });
@@ -112,11 +113,11 @@ describe('Prometheus Stats Exporter', () => {
             const body = chunk.toString();
             const lines = body.split('\n');
 
-            assert.equal(
+            assert.strictEqual(
                 lines[0],
                 '# HELP ocnodemetrics_sumview1 A sum aggregation example');
-            assert.equal(lines[1], '# TYPE ocnodemetrics_sumview1 gauge');
-            assert.equal(lines[2], 'ocnodemetrics_sumview1 5');
+            assert.strictEqual(lines[1], '# TYPE ocnodemetrics_sumview1 gauge');
+            assert.strictEqual(lines[2], 'ocnodemetrics_sumview1 5');
             done();
           });
         }).on('error', done);
@@ -138,11 +139,12 @@ describe('Prometheus Stats Exporter', () => {
             const body = chunk.toString();
             const lines = body.split('\n');
 
-            assert.equal(
+            assert.strictEqual(
                 lines[0],
                 '# HELP ocnodemetrics_lastvalueview A last value aggregation example');
-            assert.equal(lines[1], '# TYPE ocnodemetrics_lastvalueview gauge');
-            assert.equal(
+            assert.strictEqual(
+                lines[1], '# TYPE ocnodemetrics_lastvalueview gauge');
+            assert.strictEqual(
                 lines[2], 'ocnodemetrics_lastvalueview{tagKey1="tagValue1"} 3');
             done();
           });
@@ -165,30 +167,30 @@ describe('Prometheus Stats Exporter', () => {
           res.on('data', (chunk) => {
             const body = chunk.toString();
             const lines = body.split('\n');
-            assert.equal(
+            assert.strictEqual(
                 lines[0],
                 '# HELP ocnodemetrics_distributionview A distribution aggregation example');
-            assert.equal(
+            assert.strictEqual(
                 lines[1], '# TYPE ocnodemetrics_distributionview histogram');
-            assert.equal(
+            assert.strictEqual(
                 lines[2],
                 'ocnodemetrics_distributionview_bucket{le="10",tagKey1="tagValue1"} 0');
-            assert.equal(
+            assert.strictEqual(
                 lines[3],
                 'ocnodemetrics_distributionview_bucket{le="20",tagKey1="tagValue1"} 1');
-            assert.equal(
+            assert.strictEqual(
                 lines[4],
                 'ocnodemetrics_distributionview_bucket{le="30",tagKey1="tagValue1"} 1');
-            assert.equal(
+            assert.strictEqual(
                 lines[5],
                 'ocnodemetrics_distributionview_bucket{le="40",tagKey1="tagValue1"} 2');
-            assert.equal(
+            assert.strictEqual(
                 lines[6],
                 'ocnodemetrics_distributionview_bucket{le="+Inf",tagKey1="tagValue1"} 2');
-            assert.equal(
+            assert.strictEqual(
                 lines[7],
                 'ocnodemetrics_distributionview_sum{tagKey1="tagValue1"} 43');
-            assert.equal(
+            assert.strictEqual(
                 lines[8],
                 'ocnodemetrics_distributionview_count{tagKey1="tagValue1"} 2');
             done();
@@ -257,11 +259,13 @@ describe('Prometheus Stats Exporter with prefix option', () => {
             const body = chunk.toString();
             const lines = body.split('\n');
 
-            assert.equal(
+            assert.strictEqual(
                 lines[0],
                 '# HELP opencensus_test_key_1 A count aggregation example');
-            assert.equal(lines[1], '# TYPE opencensus_test_key_1 counter');
-            assert.equal(lines[2], 'opencensus_test_key_1{le="tagValue1"} 2');
+            assert.strictEqual(
+                lines[1], '# TYPE opencensus_test_key_1 counter');
+            assert.strictEqual(
+                lines[2], 'opencensus_test_key_1{le="tagValue1"} 2');
             done();
           });
         }).on('error', done);

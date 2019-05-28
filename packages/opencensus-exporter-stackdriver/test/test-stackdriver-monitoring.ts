@@ -76,7 +76,7 @@ describe('Stackdriver Stats Exporter', () => {
 
     it('should not export for empty data', () => {
       globalStats.registerExporter(exporter);
-      assert.equal(mockLogger.debugBuffer.length, 0);
+      assert.strictEqual(mockLogger.debugBuffer.length, 0);
     });
 
     it('should export the data', async () => {
@@ -98,7 +98,7 @@ describe('Stackdriver Stats Exporter', () => {
       nocks.timeSeries(PROJECT_ID);
 
       await exporter.export();
-      assert.equal(mockLogger.debugBuffer.length, 1);
+      assert.strictEqual(mockLogger.debugBuffer.length, 1);
       const [metricDescriptor] = mockLogger.debugBuffer;
       assert.strictEqual(
           metricDescriptor.type,

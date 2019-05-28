@@ -25,13 +25,13 @@ describe('isValidTagKey()', () => {
 
   it('should return false when tag key is 0 character long', () => {
     const tagKey = {name: ''};
-    assert.equal(isValidTagKey(tagKey), false);
+    assert.strictEqual(isValidTagKey(tagKey), false);
   });
 
   it('should return false when the tag key length is longer than 255 characters ',
      () => {
        const tagKey = {name: 'a'.repeat(256)};
-       assert.equal(isValidTagKey(tagKey), false);
+       assert.strictEqual(isValidTagKey(tagKey), false);
      });
 });
 
@@ -49,6 +49,6 @@ describe('isValidTagValue()', () => {
   it('should return false when the tag value length is longer than 255 characters ',
      () => {
        const tagValue = {value: 'a'.repeat(256)};
-       assert.equal(isValidTagValue(tagValue), false);
+       assert.strictEqual(isValidTagValue(tagValue), false);
      });
 });

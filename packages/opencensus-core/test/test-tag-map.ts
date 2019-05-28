@@ -47,7 +47,7 @@ describe('TagMap()', () => {
     it('should set tagkey and tagvalue with default TagMetadata', () => {
       tagMap.set(key1, value1);
       const tags = tagMap.tagsWithMetadata;
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
       assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata1);
     });
 
@@ -59,7 +59,7 @@ describe('TagMap()', () => {
 
       tagMap.set(key1, value1, NO_PROPAGATION_MD);
       const tags = tagMap.tagsWithMetadata;
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
       assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata);
     });
 
@@ -72,7 +72,7 @@ describe('TagMap()', () => {
 
          tagMap.set(key1, value1, UNLIMITED_PROPAGATION_MD);
          const tags = tagMap.tagsWithMetadata;
-         assert.equal(tags.size, 1);
+         assert.strictEqual(tags.size, 1);
          assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata);
        });
 
@@ -91,19 +91,19 @@ describe('TagMap()', () => {
     it('should not set duplicate tagkey and tagvalue', () => {
       tagMap.set(key1, value1);
       const tags = tagMap.tagsWithMetadata;
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
       assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata1);
       tagMap.set(key1, value1);
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
     });
 
     it('should update existing tagkey', () => {
       tagMap.set(key1, value1);
       const tags = tagMap.tagsWithMetadata;
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
       assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata1);
       tagMap.set(key1, value2);
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
       assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata2);
     });
   });
@@ -111,16 +111,16 @@ describe('TagMap()', () => {
     it('should delete tagkey', () => {
       tagMap.set(key1, value1);
       const tags = tagMap.tagsWithMetadata;
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
       tagMap.delete(key1);
-      assert.equal(tags.size, 0);
+      assert.strictEqual(tags.size, 0);
     });
     it('should delete missing tagkey1', () => {
       tagMap.set(key1, value1);
       const tags = tagMap.tagsWithMetadata;
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
       tagMap.delete(key2);
-      assert.equal(tags.size, 1);
+      assert.strictEqual(tags.size, 1);
     });
   });
 });

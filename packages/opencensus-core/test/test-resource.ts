@@ -42,7 +42,7 @@ describe('Resource()', () => {
     };
 
     assert.strictEqual(resource.type, 'k8s.io/container');
-    assert.equal(Object.keys(actualLabels).length, 3);
+    assert.strictEqual(Object.keys(actualLabels).length, 3);
     assert.deepEqual(actualLabels, expectedLabels);
   });
 });
@@ -59,8 +59,8 @@ describe('mergeResources()', () => {
     const resource = CoreResource.mergeResources(resources);
     const expectedLabels: Labels = {'a': '1', 'b': '2'};
 
-    assert.equal(resource.type, 't1');
-    assert.equal(Object.keys(resource.labels).length, 2);
+    assert.strictEqual(resource.type, 't1');
+    assert.strictEqual(Object.keys(resource.labels).length, 2);
     assert.deepEqual(resource.labels, expectedLabels);
   });
 
@@ -70,8 +70,8 @@ describe('mergeResources()', () => {
     const resource = CoreResource.mergeResources(resources);
     const expectedLabels: Labels = {'a': '1', 'b': '2'};
 
-    assert.equal(resource.type, 't1');
-    assert.equal(Object.keys(resource.labels).length, 2);
+    assert.strictEqual(resource.type, 't1');
+    assert.strictEqual(Object.keys(resource.labels).length, 2);
     assert.deepEqual(resource.labels, expectedLabels);
   });
 
@@ -81,8 +81,8 @@ describe('mergeResources()', () => {
     const resource = CoreResource.mergeResources(resources);
     const expectedLabels: Labels = {'a': '1', 'b': '3', 'c': '4'};
 
-    assert.equal(resource.type, 't2');
-    assert.equal(Object.keys(resource.labels).length, 3);
+    assert.strictEqual(resource.type, 't2');
+    assert.strictEqual(Object.keys(resource.labels).length, 3);
     assert.deepEqual(resource.labels, expectedLabels);
   });
 
@@ -91,8 +91,8 @@ describe('mergeResources()', () => {
     const resource = CoreResource.mergeResources(resources);
     const expectedLabels: Labels = {'a': '100', 'b': '2', 'c': '4'};
 
-    assert.equal(resource.type, 'default');
-    assert.equal(Object.keys(resource.labels).length, 3);
+    assert.strictEqual(resource.type, 'default');
+    assert.strictEqual(Object.keys(resource.labels).length, 3);
     assert.deepEqual(resource.labels, expectedLabels);
   });
 });

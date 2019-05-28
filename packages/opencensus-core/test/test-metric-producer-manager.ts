@@ -35,7 +35,7 @@ describe('MetricProducerManager()', () => {
           metricProducerManagerInstance.getAllMetricProducer();
 
       assert.notDeepEqual(metricProducerList, null);
-      assert.equal(metricProducerList.size, 1);
+      assert.strictEqual(metricProducerList.size, 1);
     });
 
     it('should not add same metricproducer metricProducerManagerInstance',
@@ -46,7 +46,7 @@ describe('MetricProducerManager()', () => {
          const metricProducerList =
              metricProducerManagerInstance.getAllMetricProducer();
 
-         assert.equal(metricProducerList.size, 1);
+         assert.strictEqual(metricProducerList.size, 1);
          assert.ok(metricProducerList.has(metricProducer));
        });
 
@@ -57,7 +57,7 @@ describe('MetricProducerManager()', () => {
          const metricProducerList =
              metricProducerManagerInstance.getAllMetricProducer();
 
-         assert.equal(metricProducerList.size, 2);
+         assert.strictEqual(metricProducerList.size, 2);
          assert.ok(metricProducerList.has(metricProducer));
          assert.ok(metricProducerList.has(metricProducerOther));
        });
@@ -69,11 +69,11 @@ describe('MetricProducerManager()', () => {
 
       const metricProducerList =
           metricProducerManagerInstance.getAllMetricProducer();
-      assert.equal(metricProducerList.size, 1);
+      assert.strictEqual(metricProducerList.size, 1);
       assert.ok(metricProducerList.has(metricProducer));
 
       metricProducerManagerInstance.remove(metricProducer);
-      assert.equal(metricProducerList.size, 0);
+      assert.strictEqual(metricProducerList.size, 0);
     });
   });
 });

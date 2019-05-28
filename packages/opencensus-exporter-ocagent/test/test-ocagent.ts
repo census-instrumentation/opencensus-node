@@ -293,7 +293,7 @@ describe('OpenCensus Agent Exporter', () => {
           MockAgentEvent.ExportStreamMessageReceived,
           (message:
                opencensus.proto.agent.trace.v1.ExportTraceServiceRequest) => {
-            assert.equal(message.spans.length, 1);
+            assert.strictEqual(message.spans.length, 1);
             const span = message.spans[0];
             if (!span) {
               assert.fail('span is null or undefined');
@@ -305,8 +305,8 @@ describe('OpenCensus Agent Exporter', () => {
               assert.fail('span.name is null or undefined');
               return;
             }
-            assert.equal(span.name.value, 'root');
-            assert.equal(span.kind, 'SERVER');
+            assert.strictEqual(span.name.value, 'root');
+            assert.strictEqual(span.kind, 'SERVER');
 
             if (!span.tracestate) {
               assert.fail('span.tracestate is null or undefined');
@@ -339,7 +339,7 @@ describe('OpenCensus Agent Exporter', () => {
               my_attribute_number: {value: 'intValue', intValue: '456'},
               my_attribute_boolean: {value: 'boolValue', boolValue: false}
             });
-            assert.equal(span.attributes.droppedAttributesCount, 1);
+            assert.strictEqual(span.attributes.droppedAttributesCount, 1);
 
             // Time Events
             assert.deepEqual(span.timeEvents, {
@@ -507,15 +507,15 @@ describe('OpenCensus Agent Exporter', () => {
              MockAgentEvent.ExportStreamMessageReceived,
              (message: opencensus.proto.agent.trace.v1
                   .ExportTraceServiceRequest) => {
-               assert.equal(message.spans.length, 1);
+               assert.strictEqual(message.spans.length, 1);
                const span = message.spans[0];
                // Name / Context
                if (!span.name) {
                  assert.fail('span.name is null or undefined');
                  return;
                }
-               assert.equal(span.name.value, 'root');
-               assert.equal(span.kind, 'SERVER');
+               assert.strictEqual(span.name.value, 'root');
+               assert.strictEqual(span.kind, 'SERVER');
 
                if (!span.tracestate) {
                  assert.fail('span.tracestate is null or undefined');
@@ -546,7 +546,7 @@ describe('OpenCensus Agent Exporter', () => {
                    stringValue: {value: 'foo2', truncatedByteCount: 0}
                  }
                });
-               assert.equal(span.attributes.droppedAttributesCount, 0);
+               assert.strictEqual(span.attributes.droppedAttributesCount, 0);
 
                // Time Events
                assert.deepEqual(span.timeEvents, {
