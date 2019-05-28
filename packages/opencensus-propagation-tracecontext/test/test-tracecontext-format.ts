@@ -16,7 +16,6 @@
 
 import {HeaderGetter, HeaderSetter, SpanContext} from '@opencensus/core';
 import * as assert from 'assert';
-
 import {DEFAULT_OPTIONS, TRACE_PARENT, TRACE_STATE, TraceContextFormat} from '../src/';
 
 const traceContextFormat = new TraceContextFormat();
@@ -24,17 +23,6 @@ const traceContextFormat = new TraceContextFormat();
 type Headers = Record<string, string|string[]>;
 
 describe('TraceContextPropagation', () => {
-  let emptySpanContext: SpanContext;
-
-  beforeEach(() => {
-    emptySpanContext = {
-      traceId: '',
-      spanId: '',
-      options: DEFAULT_OPTIONS,
-      traceState: undefined
-    };
-  });
-
   // Generates the appropriate `traceparent` header for the given SpanContext
   const traceParentHeaderFromSpanContext =
       (spanContext: SpanContext): string => {
@@ -69,7 +57,6 @@ describe('TraceContextPropagation', () => {
 
     it('should gracefully handle multiple traceparent headers', () => {
       const firstContext = traceContextFormat.generate();
-      firstContext.traceState = undefined;
 
       const headers: Headers = {};
       headers[TRACE_PARENT] = [
@@ -140,12 +127,8 @@ describe('TraceContextPropagation', () => {
           }
         };
 
-        const shouldReceiveSpanContext = {...emptySpanContext, traceState: ''};
-
         const extractedSpanContext = traceContextFormat.extract(getter);
-
-        assert.deepEqual(
-            extractedSpanContext, shouldReceiveSpanContext, testCase);
+        assert.deepEqual(extractedSpanContext, null, testCase);
       });
     });
 
@@ -206,7 +189,7 @@ describe('TraceContextPropagation', () => {
       };
 
       const extractedSpanContext = traceContextFormat.extract(getter);
-      assert.deepEqual(extractedSpanContext, emptySpanContext);
+      assert.deepEqual(extractedSpanContext, null);
     });
   });
 
@@ -230,8 +213,12 @@ describe('TraceContextPropagation', () => {
     });
 
     it('should inject a tracestate header', () => {
-      const spanContext:
-          SpanContext = {...emptySpanContext, traceState: 'foo=bar'};
+      const spanContext: SpanContext = {
+        traceId: '',
+        spanId: '',
+        options: DEFAULT_OPTIONS,
+        traceState: 'foo=bar'
+      };
       const headers: Headers = {};
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
