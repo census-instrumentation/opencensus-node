@@ -23,6 +23,7 @@ import {Labels, Resource} from '@opencensus/core';
 import * as gcpMetadata from 'gcp-metadata';
 import * as http from 'http';
 import * as os from 'os';
+import {CLOUD_RESOURCE, CONTAINER_RESOURCE, HOST_RESOURCE, K8S_RESOURCE} from './constants';
 import * as constants from './resource-labels';
 
 export const AWS_INSTANCE_IDENTITY_DOCUMENT_URI =
@@ -70,11 +71,10 @@ async function isRunningOnComputeEngine() {
 async function isRunningOnAwsEc2() {
   try {
     const awsIdentityDocument: Labels = await awsMetadataAccessor();
-    awsResourceLabels[constants.AWS_ACCOUNT_KEY] =
+    awsResourceLabels[CLOUD_RESOURCE.ACCOUNT_ID_KEY] =
         awsIdentityDocument.accountId;
-    awsResourceLabels[constants.AWS_REGION_KEY] = awsIdentityDocument.region;
-    awsResourceLabels[constants.AWS_INSTANCE_ID_KEY] =
-        awsIdentityDocument.instanceId;
+    awsResourceLabels[CLOUD_RESOURCE.REGION_KEY] = awsIdentityDocument.region;
+    awsResourceLabels[HOST_RESOURCE.ID_KEY] = awsIdentityDocument.instanceId;
     return true;
   } catch {
     return false;
@@ -86,9 +86,9 @@ export async function getComputerEngineResource(): Promise<Resource> {
   if (Object.keys(gceResourceLabels).length === 0) {
     const [projectId, instanceId, zoneId] =
         await Promise.all([getProjectId(), getInstanceId(), getZone()]);
-    gceResourceLabels[constants.GCP_ACCOUNT_ID_KEY] = projectId;
-    gceResourceLabels[constants.GCP_INSTANCE_ID_KEY] = instanceId;
-    gceResourceLabels[constants.GCP_ZONE_KEY] = zoneId;
+    gceResourceLabels[CLOUD_RESOURCE.ACCOUNT_ID_KEY] = projectId;
+    gceResourceLabels[HOST_RESOURCE.ID_KEY] = instanceId;
+    gceResourceLabels[CLOUD_RESOURCE.ZONE_KEY] = zoneId;
   }
   return {type: constants.GCP_GCE_INSTANCE_TYPE, labels: gceResourceLabels};
 }
@@ -98,13 +98,13 @@ export async function getKubernetesEngineResource(): Promise<Resource> {
   if (Object.keys(gkeResourceLabels).length === 0) {
     const [projectId, zoneId, clusterName, hostname] = await Promise.all(
         [getProjectId(), getZone(), getClusterName(), getHostname()]);
-    gkeResourceLabels[constants.GCP_ACCOUNT_ID_KEY] = projectId;
-    gkeResourceLabels[constants.GCP_ZONE_KEY] = zoneId;
-    gkeResourceLabels[constants.K8S_CLUSTER_NAME_KEY] = clusterName;
-    gkeResourceLabels[constants.K8S_NAMESPACE_NAME_KEY] =
+    gkeResourceLabels[CLOUD_RESOURCE.ACCOUNT_ID_KEY] = projectId;
+    gkeResourceLabels[CLOUD_RESOURCE.ZONE_KEY] = zoneId;
+    gkeResourceLabels[K8S_RESOURCE.CLUSTER_NAME_KEY] = clusterName;
+    gkeResourceLabels[K8S_RESOURCE.NAMESPACE_NAME_KEY] =
         process.env.NAMESPACE || '';
-    gkeResourceLabels[constants.K8S_POD_NAME_KEY] = hostname;
-    gkeResourceLabels[constants.K8S_CONTAINER_NAME_KEY] =
+    gkeResourceLabels[K8S_RESOURCE.POD_NAME_KEY] = hostname;
+    gkeResourceLabels[CONTAINER_RESOURCE.NAME_KEY] =
         process.env.CONTAINER_NAME || '';
   }
   return {type: constants.K8S_CONTAINER_TYPE, labels: gkeResourceLabels};

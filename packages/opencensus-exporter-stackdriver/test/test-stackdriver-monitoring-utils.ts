@@ -466,9 +466,9 @@ describe('Stackdriver Stats Exporter Utils', () => {
 
     it('should return a k8s MonitoredResource', async () => {
       process.env.OC_RESOURCE_TYPE = 'k8s.io/container';
-      process.env.OC_RESOURCE_LABELS = 'k8s.io/pod/name=pod-xyz-123,' +
-          'k8s.io/container/name=c1,k8s.io/namespace/name=default,' +
-          'cloud.google.com/gce/zone=zone1';
+      process.env.OC_RESOURCE_LABELS = 'k8s.pod.name=pod-xyz-123,' +
+          'container.name=c1,k8s.namespace.name=default,' +
+          'cloud.zone=zone1';
       CoreResource.setup();
       const monitoredResource = await getDefaultResource('my-project-id');
       const {type, labels} = monitoredResource;
@@ -486,8 +486,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
 
     it('should return a gce MonitoredResource', async () => {
       process.env.OC_RESOURCE_TYPE = 'cloud.google.com/gce/instance';
-      process.env.OC_RESOURCE_LABELS = 'cloud.google.com/gce/instance_id=id1,' +
-          'cloud.google.com/gce/zone=zone1';
+      process.env.OC_RESOURCE_LABELS = 'host.id=id1,cloud.zone=zone1';
       CoreResource.setup();
       const monitoredResource = await getDefaultResource('my-project-id');
       const {type, labels} = monitoredResource;
@@ -503,8 +502,8 @@ describe('Stackdriver Stats Exporter Utils', () => {
 
     it('should return a aws MonitoredResource', async () => {
       process.env.OC_RESOURCE_TYPE = 'aws.com/ec2/instance';
-      process.env.OC_RESOURCE_LABELS = 'aws.com/ec2/account_id=id1,' +
-          'aws.com/ec2/instance_id=instance1,aws.com/ec2/region=region1';
+      process.env.OC_RESOURCE_LABELS = 'cloud.account.id=id1,' +
+          'host.id=instance1,cloud.region=region1';
       CoreResource.setup();
       const monitoredResource = await getDefaultResource('my-project-id');
       const {type, labels} = monitoredResource;
