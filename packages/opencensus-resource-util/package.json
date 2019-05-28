@@ -63,6 +63,6 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.0.13",
-    "gcp-metadata": "^1.0.0"
+    "gcp-metadata": "^2.0.0"
   }
 }
