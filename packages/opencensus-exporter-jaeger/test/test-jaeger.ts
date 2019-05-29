@@ -93,7 +93,8 @@ describe('Jaeger Exporter', () => {
           testHostnameSeen = true;
           return;
         }
-        if (tag.key === JaegerTraceExporter.PROCESS_IP) {
+        if (tag.key === JaegerTraceExporter.PROCESS_IP &&
+            tag.vType === 'STRING') {
           testProcessIpSeen = true;
           return;
         }
