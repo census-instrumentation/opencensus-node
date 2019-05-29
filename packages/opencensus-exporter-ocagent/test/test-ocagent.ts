@@ -312,14 +312,14 @@ describe('OpenCensus Agent Exporter', () => {
               assert.fail('span.tracestate is null or undefined');
               return;
             }
-            assert.deepEqual(
+            assert.deepStrictEqual(
                 span.tracestate.entries,
                 [{key: 'foo', value: 'bar'}, {key: 'baz', value: 'buzz'}]);
 
             if (!span.status) {
               assert.fail('span.status is null or undefined');
             } else {
-              assert.deepEqual(span.status, {code: 0, message: ''});
+              assert.deepStrictEqual(span.status, {code: 0, message: ''});
             }
 
             // Attributes
@@ -327,7 +327,7 @@ describe('OpenCensus Agent Exporter', () => {
               assert.fail('span.attributes is null or undefined');
               return;
             }
-            assert.deepEqual(span.attributes.attributeMap, {
+            assert.deepStrictEqual(span.attributes.attributeMap, {
               my_first_attribute: {
                 value: 'stringValue',
                 stringValue: {value: 'foo1', truncatedByteCount: 0}
@@ -342,7 +342,7 @@ describe('OpenCensus Agent Exporter', () => {
             assert.strictEqual(span.attributes.droppedAttributesCount, 1);
 
             // Time Events
-            assert.deepEqual(span.timeEvents, {
+            assert.deepStrictEqual(span.timeEvents, {
               droppedAnnotationsCount: 2,
               droppedMessageEventsCount: 1,
               timeEvent: [
@@ -387,7 +387,7 @@ describe('OpenCensus Agent Exporter', () => {
                 {
                   messageEvent: {
                     compressedSize: '12',
-                    id: 2,
+                    id: '2',
                     type: 'SENT',
                     uncompressedSize: '100'
                   },
@@ -398,7 +398,7 @@ describe('OpenCensus Agent Exporter', () => {
                   value: 'messageEvent',
                   messageEvent: {
                     compressedSize: '0',
-                    id: 1,
+                    id: '1',
                     type: 'RECEIVED',
                     uncompressedSize: '0'
                   },
@@ -408,7 +408,7 @@ describe('OpenCensus Agent Exporter', () => {
                   value: 'messageEvent',
                   messageEvent: {
                     compressedSize: '0',
-                    id: 2,
+                    id: '2',
                     type: 'TYPE_UNSPECIFIED',
                     uncompressedSize: '0'
                   },
@@ -419,7 +419,7 @@ describe('OpenCensus Agent Exporter', () => {
 
             // Links
             const buff = Buffer.from([255, 255]);
-            assert.deepEqual(span.links, {
+            assert.deepStrictEqual(span.links, {
               droppedLinksCount: 2,
               link: [
                 {
@@ -521,14 +521,14 @@ describe('OpenCensus Agent Exporter', () => {
                  assert.fail('span.tracestate is null or undefined');
                  return;
                }
-               assert.deepEqual(
+               assert.deepStrictEqual(
                    span.tracestate.entries,
                    [{key: 'foo', value: 'bar'}, {key: 'baz', value: 'buzz'}]);
 
                if (!span.status) {
                  assert.fail('span.status is null or undefined');
                } else {
-                 assert.deepEqual(span.status, {code: 0, message: ''});
+                 assert.deepStrictEqual(span.status, {code: 0, message: ''});
                }
 
                // Attributes
@@ -536,7 +536,7 @@ describe('OpenCensus Agent Exporter', () => {
                  assert.fail('span.attributes is null or undefined');
                  return;
                }
-               assert.deepEqual(span.attributes.attributeMap, {
+               assert.deepStrictEqual(span.attributes.attributeMap, {
                  my_first_attribute: {
                    value: 'stringValue',
                    stringValue: {value: 'foo', truncatedByteCount: 0}
@@ -549,7 +549,7 @@ describe('OpenCensus Agent Exporter', () => {
                assert.strictEqual(span.attributes.droppedAttributesCount, 0);
 
                // Time Events
-               assert.deepEqual(span.timeEvents, {
+               assert.deepStrictEqual(span.timeEvents, {
                  droppedAnnotationsCount: 0,
                  droppedMessageEventsCount: 0,
                  timeEvent: [
@@ -576,7 +576,7 @@ describe('OpenCensus Agent Exporter', () => {
                    {
                      messageEvent: {
                        compressedSize: '0',
-                       id: 1,
+                       id: '1',
                        type: 'SENT',
                        uncompressedSize: '0'
                      },
@@ -587,7 +587,7 @@ describe('OpenCensus Agent Exporter', () => {
                      value: 'messageEvent',
                      messageEvent: {
                        compressedSize: '0',
-                       id: 1,
+                       id: '1',
                        type: 'RECEIVED',
                        uncompressedSize: '0'
                      },
@@ -598,7 +598,7 @@ describe('OpenCensus Agent Exporter', () => {
 
                // Links
                const buff = Buffer.from([255, 255]);
-               assert.deepEqual(span.links, {
+               assert.deepStrictEqual(span.links, {
                  droppedLinksCount: 0,
                  link: [
                    {

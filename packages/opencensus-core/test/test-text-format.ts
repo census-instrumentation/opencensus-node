@@ -54,17 +54,17 @@ describe('Text Format Serializer', () => {
 
     it('should serialize with one tag map', () => {
       const textFormat = serializeTextFormat(singleTagMap);
-      assert.deepEqual(textFormat, 'k1=v1');
+      assert.deepStrictEqual(textFormat, 'k1=v1');
     });
 
     it('should serialize with multiple tag', () => {
       const textFormat = serializeTextFormat(multipleTagMap);
-      assert.deepEqual(textFormat, 'k1=v1,k2=v2');
+      assert.deepStrictEqual(textFormat, 'k1=v1,k2=v2');
     });
 
     it('should skip non propagating tag', () => {
       const textFormat = serializeTextFormat(nonPropagatingTagMap);
-      assert.deepEqual(textFormat, '');
+      assert.deepStrictEqual(textFormat, '');
     });
 
     it('should throw an error when exceeds the max number of tags', () => {
@@ -82,19 +82,19 @@ describe('Text Format Serializer', () => {
   describe('deserializeTextFormat', () => {
     it('should deserialize empty string', () => {
       const deserializedTagMap = deserializeTextFormat('');
-      assert.deepEqual(deserializedTagMap.tags.size, 0);
+      assert.deepStrictEqual(deserializedTagMap.tags.size, 0);
     });
 
     it('should deserialize with one key value pair', () => {
       const deserializedTagMap = deserializeTextFormat('k1=v1');
-      assert.deepEqual(deserializedTagMap.tags.size, 1);
-      assert.deepEqual(deserializedTagMap, singleTagMap);
+      assert.deepStrictEqual(deserializedTagMap.tags.size, 1);
+      assert.deepStrictEqual(deserializedTagMap, singleTagMap);
     });
 
     it('should deserialize with multiple pairs', () => {
       const deserializedTagMap = deserializeTextFormat('k1=v1,k2=v2');
-      assert.deepEqual(deserializedTagMap.tags.size, 2);
-      assert.deepEqual(deserializedTagMap, multipleTagMap);
+      assert.deepStrictEqual(deserializedTagMap.tags.size, 2);
+      assert.deepStrictEqual(deserializedTagMap, multipleTagMap);
     });
 
     it('should deserialize with white spaces tag', () => {
@@ -103,8 +103,8 @@ describe('Text Format Serializer', () => {
       expectedTagMap.set({name: ' k2'}, {value: 'v 2'});
 
       const deserializedTagMap = deserializeTextFormat('k1= v1, k2=v 2');
-      assert.deepEqual(deserializedTagMap.tags.size, 2);
-      assert.deepEqual(deserializedTagMap, expectedTagMap);
+      assert.deepStrictEqual(deserializedTagMap.tags.size, 2);
+      assert.deepStrictEqual(deserializedTagMap, expectedTagMap);
     });
 
     it('should throw an error when tags are malformed', () => {

@@ -59,17 +59,17 @@ describe('Binary Format Serializer', () => {
   describe('serializeBinary', () => {
     it('should serialize empty tag map', () => {
       const binary = serializeBinary(emptyTagMap);
-      assert.deepEqual(deserializeBinary(binary), emptyTagMap);
+      assert.deepStrictEqual(deserializeBinary(binary), emptyTagMap);
     });
 
     it('should serialize with one tag map', () => {
       const binary = serializeBinary(singleTagMap);
-      assert.deepEqual(deserializeBinary(binary), singleTagMap);
+      assert.deepStrictEqual(deserializeBinary(binary), singleTagMap);
     });
 
     it('should serialize with multiple tag', () => {
       const binary = serializeBinary(multipleTagMap);
-      assert.deepEqual(deserializeBinary(binary), multipleTagMap);
+      assert.deepStrictEqual(deserializeBinary(binary), multipleTagMap);
     });
 
     it('should throw an error when exceeds the max serialized size', () => {

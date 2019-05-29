@@ -43,7 +43,7 @@ describe('Resource()', () => {
 
     assert.strictEqual(resource.type, 'k8s.io/container');
     assert.strictEqual(Object.keys(actualLabels).length, 3);
-    assert.deepEqual(actualLabels, expectedLabels);
+    assert.deepStrictEqual(actualLabels, expectedLabels);
   });
 });
 
@@ -61,7 +61,7 @@ describe('mergeResources()', () => {
 
     assert.strictEqual(resource.type, 't1');
     assert.strictEqual(Object.keys(resource.labels).length, 2);
-    assert.deepEqual(resource.labels, expectedLabels);
+    assert.deepStrictEqual(resource.labels, expectedLabels);
   });
 
   it('merge resources with default, resource1, resource2 = empty', () => {
@@ -72,7 +72,7 @@ describe('mergeResources()', () => {
 
     assert.strictEqual(resource.type, 't1');
     assert.strictEqual(Object.keys(resource.labels).length, 2);
-    assert.deepEqual(resource.labels, expectedLabels);
+    assert.deepStrictEqual(resource.labels, expectedLabels);
   });
 
   it('merge resources with default, resource1 = empty, resource2', () => {
@@ -83,7 +83,7 @@ describe('mergeResources()', () => {
 
     assert.strictEqual(resource.type, 't2');
     assert.strictEqual(Object.keys(resource.labels).length, 3);
-    assert.deepEqual(resource.labels, expectedLabels);
+    assert.deepStrictEqual(resource.labels, expectedLabels);
   });
 
   it('merge resources with default1, resource1, resource2', () => {
@@ -93,6 +93,6 @@ describe('mergeResources()', () => {
 
     assert.strictEqual(resource.type, 'default');
     assert.strictEqual(Object.keys(resource.labels).length, 3);
-    assert.deepEqual(resource.labels, expectedLabels);
+    assert.deepStrictEqual(resource.labels, expectedLabels);
   });
 });

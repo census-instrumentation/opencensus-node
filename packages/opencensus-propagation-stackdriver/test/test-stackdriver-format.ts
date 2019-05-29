@@ -35,7 +35,7 @@ describe('StackdriverPropagation', () => {
   describe('extract()', () => {
     it('should extract context of a sampled span from headers', () => {
       const getter = helperGetter('123456/667;o=1');
-      assert.deepEqual(
+      assert.deepStrictEqual(
           stackdriverFormat.extract(getter),
           {traceId: '123456', spanId: '000000000000029b', options: 1});
     });
@@ -44,7 +44,7 @@ describe('StackdriverPropagation', () => {
        () => {
          const getter =
              helperGetter('123456/123456123456123456123456123456123456;o=0');
-         assert.deepEqual(
+         assert.deepStrictEqual(
              stackdriverFormat.extract(getter),
              {traceId: '123456', spanId: 'a89bb45f10f2f240', options: 0});
        });
@@ -52,7 +52,7 @@ describe('StackdriverPropagation', () => {
     it('should extract context of a span from headers when option is undefined',
        () => {
          const getter = helperGetter('cafef00d/123');
-         assert.deepEqual(
+         assert.deepStrictEqual(
              stackdriverFormat.extract(getter),
              {traceId: 'cafef00d', spanId: '000000000000007b', options: 1});
        });
@@ -86,7 +86,7 @@ describe('StackdriverPropagation', () => {
       };
 
       stackdriverFormat.inject(setter, spanContext);
-      assert.deepEqual(stackdriverFormat.extract(getter), spanContext);
+      assert.deepStrictEqual(stackdriverFormat.extract(getter), spanContext);
     });
 
     it('should not inject empty spancontext', () => {
@@ -104,7 +104,7 @@ describe('StackdriverPropagation', () => {
       };
 
       stackdriverFormat.inject(setter, emptySpanContext);
-      assert.deepEqual(stackdriverFormat.extract(getter), null);
+      assert.deepStrictEqual(stackdriverFormat.extract(getter), null);
     });
   });
 

@@ -52,7 +52,7 @@ describe('TraceContextPropagation', () => {
       // the generated and extracted are deeply equal
       const extractedSpanContext = traceContextFormat.extract(getter);
 
-      assert.deepEqual(extractedSpanContext, spanContext);
+      assert.deepStrictEqual(extractedSpanContext, spanContext);
     });
 
     it('should gracefully handle multiple traceparent headers', () => {
@@ -74,7 +74,7 @@ describe('TraceContextPropagation', () => {
       // is found in the headers.
       const extractedSpanContext = traceContextFormat.extract(getter);
 
-      assert.deepEqual(extractedSpanContext, firstContext);
+      assert.deepStrictEqual(extractedSpanContext, firstContext);
     });
 
     it('should gracefully handle an invalid traceparent header', () => {
@@ -128,7 +128,7 @@ describe('TraceContextPropagation', () => {
         };
 
         const extractedSpanContext = traceContextFormat.extract(getter);
-        assert.deepEqual(extractedSpanContext, null, testCase);
+        assert.deepStrictEqual(extractedSpanContext, null, testCase);
       });
     });
 
@@ -178,7 +178,7 @@ describe('TraceContextPropagation', () => {
       };
 
       const extractedSpanContext = traceContextFormat.extract(getter);
-      assert.deepEqual(extractedSpanContext, spanContext);
+      assert.deepStrictEqual(extractedSpanContext, spanContext);
     });
 
     it('should gracefully handle an unset header', () => {
@@ -189,7 +189,7 @@ describe('TraceContextPropagation', () => {
       };
 
       const extractedSpanContext = traceContextFormat.extract(getter);
-      assert.deepEqual(extractedSpanContext, null);
+      assert.deepStrictEqual(extractedSpanContext, null);
     });
   });
 
@@ -209,7 +209,7 @@ describe('TraceContextPropagation', () => {
       };
 
       traceContextFormat.inject(setter, spanContext);
-      assert.deepEqual(traceContextFormat.extract(getter), spanContext);
+      assert.deepStrictEqual(traceContextFormat.extract(getter), spanContext);
     });
 
     it('should inject a tracestate header', () => {

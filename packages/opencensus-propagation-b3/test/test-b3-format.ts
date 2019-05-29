@@ -40,7 +40,7 @@ describe('B3Propagation', () => {
         }
       };
 
-      assert.deepEqual(b3Format.extract(getter), spanContext);
+      assert.deepStrictEqual(b3Format.extract(getter), spanContext);
     });
 
     it('should return null when options and spanId are undefined', () => {
@@ -56,7 +56,7 @@ describe('B3Propagation', () => {
         }
       };
 
-      assert.deepEqual(b3Format.extract(getter), null);
+      assert.deepStrictEqual(b3Format.extract(getter), null);
     });
 
     it('should return null when traceId is undefined', () => {
@@ -71,7 +71,7 @@ describe('B3Propagation', () => {
         }
       };
 
-      assert.deepEqual(b3Format.extract(getter), null);
+      assert.deepStrictEqual(b3Format.extract(getter), null);
     });
 
     it('should extract data from an array', () => {
@@ -89,7 +89,7 @@ describe('B3Propagation', () => {
         }
       };
 
-      assert.deepEqual(b3Format.extract(getter), spanContext);
+      assert.deepStrictEqual(b3Format.extract(getter), spanContext);
     });
   });
 
@@ -111,7 +111,7 @@ describe('B3Propagation', () => {
       };
 
       b3Format.inject(setter, spanContext);
-      assert.deepEqual(b3Format.extract(getter), spanContext);
+      assert.deepStrictEqual(b3Format.extract(getter), spanContext);
     });
 
     it('should not inject empty spancontext', () => {
@@ -135,7 +135,7 @@ describe('B3Propagation', () => {
       };
 
       b3Format.inject(setter, emptySpanContext);
-      assert.deepEqual(b3Format.extract(getter), null);
+      assert.deepStrictEqual(b3Format.extract(getter), null);
     });
   });
 

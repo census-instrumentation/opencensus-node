@@ -38,7 +38,7 @@ describe('JaegerPropagation', () => {
       const getter = helperGetter(`${spanContext.traceId}:${
           spanContext.spanId}::${spanContext.options}`);
 
-      assert.deepEqual(jaegerFormat.extract(getter), spanContext);
+      assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
     });
 
     it('should return null when header is undefined', () => {
@@ -51,14 +51,14 @@ describe('JaegerPropagation', () => {
         }
       };
 
-      assert.deepEqual(jaegerFormat.extract(getter), null);
+      assert.deepStrictEqual(jaegerFormat.extract(getter), null);
     });
 
     it('should extract data from an array', () => {
       const spanContext = jaegerFormat.generate();
       const getter = helperGetter(`${spanContext.traceId}:${
           spanContext.spanId}::${spanContext.options}`);
-      assert.deepEqual(jaegerFormat.extract(getter), spanContext);
+      assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
     });
   });
 
@@ -78,7 +78,7 @@ describe('JaegerPropagation', () => {
       };
 
       jaegerFormat.inject(setter, spanContext);
-      assert.deepEqual(jaegerFormat.extract(getter), spanContext);
+      assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
     });
 
     it('should not inject empty spancontext', () => {
@@ -100,7 +100,7 @@ describe('JaegerPropagation', () => {
       };
 
       jaegerFormat.inject(setter, emptySpanContext);
-      assert.deepEqual(jaegerFormat.extract(getter), null);
+      assert.deepStrictEqual(jaegerFormat.extract(getter), null);
     });
   });
 

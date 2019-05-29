@@ -315,7 +315,7 @@ describe('BaseView', () => {
         assert.strictEqual(typeof timestamp.seconds, 'number');
         assert.strictEqual(timestamp.seconds, mockedTime.seconds);
         assert.strictEqual(timestamp.nanos, mockedTime.nanos);
-        assert.notEqual(typeof value, 'number');
+        assert.notStrictEqual(typeof value, 'number');
         assert.deepStrictEqual((value as DistributionValue), {
           bucketOptions: {explicit: {bounds: buckets}},
           buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
@@ -476,7 +476,7 @@ describe('BaseView', () => {
             assert.strictEqual(typeof timestamp.seconds, 'number');
             assert.strictEqual(timestamp.seconds, mockedTime.seconds);
             assert.strictEqual(timestamp.nanos, mockedTime.nanos);
-            assert.notEqual(typeof value, 'number');
+            assert.notStrictEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
               buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
@@ -484,7 +484,7 @@ describe('BaseView', () => {
               sum: total,
               sumOfSquaredDeviation: 10.427999999999997
             });
-            assert.deepEqual(
+            assert.deepStrictEqual(
                 labelValues1,
                 [{'value': 'testValue1'}, {'value': 'testValue2'}]);
             assert.ok(points2);
@@ -495,7 +495,7 @@ describe('BaseView', () => {
             assert.strictEqual(typeof timestamp.seconds, 'number');
             assert.strictEqual(timestamp.seconds, mockedTime.seconds);
             assert.strictEqual(timestamp.nanos, mockedTime.nanos);
-            assert.notEqual(typeof value, 'number');
+            assert.notStrictEqual(typeof value, 'number');
             assert.deepStrictEqual((value as DistributionValue), {
               bucketOptions: {explicit: {bounds: buckets}},
               buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
@@ -503,7 +503,7 @@ describe('BaseView', () => {
               sum: total,
               sumOfSquaredDeviation: 10.427999999999997
             });
-            assert.deepEqual(
+            assert.deepStrictEqual(
                 labelValues2,
                 [{'value': 'testValue3'}, {'value': 'testValue4'}]);
           });

@@ -289,8 +289,8 @@ describe('Zpages Exporter', () => {
 
         const data = zpagesData.statsData[0];
         const snapshot = data.snapshot as CountData;
-        assert.deepEqual(data.tagKeys, tagKeys);
-        assert.deepEqual(data.tagValues, tagValues);
+        assert.deepStrictEqual(data.tagKeys, tagKeys);
+        assert.deepStrictEqual(data.tagValues, tagValues);
         assert.strictEqual(snapshot.value, 2);
       });
     });
@@ -324,8 +324,8 @@ describe('Zpages Exporter', () => {
 
         const data = zpagesData.statsData[0];
         const snapshot = data.snapshot as SumData;
-        assert.deepEqual(data.tagKeys, tagKeys);
-        assert.deepEqual(data.tagValues, tagValues);
+        assert.deepStrictEqual(data.tagKeys, tagKeys);
+        assert.deepStrictEqual(data.tagValues, tagValues);
         assert.strictEqual(snapshot.value, 33);
       });
     });
@@ -360,8 +360,8 @@ describe('Zpages Exporter', () => {
 
         const data = zpagesData.statsData[0];
         const snapshot = data.snapshot as SumData;
-        assert.deepEqual(data.tagKeys, tagKeys);
-        assert.deepEqual(data.tagValues, tagValues);
+        assert.deepStrictEqual(data.tagKeys, tagKeys);
+        assert.deepStrictEqual(data.tagValues, tagValues);
         assert.strictEqual(snapshot.value, 11);
       });
     });
@@ -400,8 +400,8 @@ describe('Zpages Exporter', () => {
 
         const data = zpagesData.statsData[0];
         const snapshot = data.snapshot as DistributionData;
-        assert.deepEqual(data.tagKeys, tagKeys);
-        assert.deepEqual(data.tagValues, tagValues);
+        assert.deepStrictEqual(data.tagKeys, tagKeys);
+        assert.deepStrictEqual(data.tagValues, tagValues);
         assert.strictEqual(snapshot.count, 2);
         assert.strictEqual(snapshot.mean, 16.5);
         assert.strictEqual(snapshot.sumOfSquaredDeviation, 60.5);

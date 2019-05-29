@@ -73,7 +73,7 @@ describe('TracingBase', () => {
             defaultConfig.samplingRate, tracing.config.samplingRate);
         assert.ok(tracing.config.plugins);
         if (tracing.config.plugins) {
-          assert.deepEqual(
+          assert.deepStrictEqual(
               tracing.config.plugins, {}, 'plugins are empty by default');
         }
         assert.strictEqual(
@@ -201,7 +201,7 @@ describe('TracingBase', () => {
       tracing.stop();
       assert.ok(!tracing.tracer.active);
       assert.ok(tracing.exporter instanceof core.NoopExporter);
-      assert.deepEqual(tracing.config, {});
+      assert.deepStrictEqual(tracing.config, {});
     });
   });
 

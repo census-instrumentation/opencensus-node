@@ -489,7 +489,7 @@ describe('GrpcPlugin() ', function() {
                              assertStats(testExporter, 170);
                            }
                            assertPropagation(clientRoot, serverRoot);
-                           assert.deepEqual(
+                           assert.deepStrictEqual(
                                globalStats.getCurrentTagContext(), tags);
                          });
                });
@@ -567,7 +567,8 @@ describe('GrpcPlugin() ', function() {
                        grpcModule.status.OK);
                    // propagation
                    assertPropagation(clientChild, serverRoot);
-                   assert.deepEqual(globalStats.getCurrentTagContext(), tags);
+                   assert.deepStrictEqual(
+                       globalStats.getCurrentTagContext(), tags);
                  });
                });
              });
@@ -660,7 +661,7 @@ describe('GrpcPlugin() ', function() {
     it('should set span context', () => {
       GrpcPlugin.setSpanContext(metadata, spanContext);
       const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
-      assert.deepEqual(actualSpanContext, spanContext);
+      assert.deepStrictEqual(actualSpanContext, spanContext);
     });
   });
 
@@ -684,7 +685,7 @@ describe('GrpcPlugin() ', function() {
       };
       metadata.set(GRPC_TRACE_KEY, buffer);
       const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
-      assert.deepEqual(actualSpanContext, expectedSpanContext);
+      assert.deepStrictEqual(actualSpanContext, expectedSpanContext);
     });
 
     it('should return null for unsupported version', () => {
@@ -695,7 +696,7 @@ describe('GrpcPlugin() ', function() {
       ]);
       metadata.set(GRPC_TRACE_KEY, buffer);
       const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
-      assert.deepEqual(actualSpanContext, null);
+      assert.deepStrictEqual(actualSpanContext, null);
     });
 
     it('should return null when unexpected trace ID offset', () => {
@@ -706,7 +707,7 @@ describe('GrpcPlugin() ', function() {
       ]);
       metadata.set(GRPC_TRACE_KEY, buffer);
       const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
-      assert.deepEqual(actualSpanContext, null);
+      assert.deepStrictEqual(actualSpanContext, null);
     });
 
     it('should return null when unexpected span ID offset', () => {
@@ -717,7 +718,7 @@ describe('GrpcPlugin() ', function() {
       ]);
       metadata.set(GRPC_TRACE_KEY, buffer);
       const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
-      assert.deepEqual(actualSpanContext, null);
+      assert.deepStrictEqual(actualSpanContext, null);
     });
 
     it('should return null when unexpected options offset', () => {
@@ -728,7 +729,7 @@ describe('GrpcPlugin() ', function() {
       ]);
       metadata.set(GRPC_TRACE_KEY, buffer);
       const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
-      assert.deepEqual(actualSpanContext, null);
+      assert.deepStrictEqual(actualSpanContext, null);
     });
 
     it('should return null when invalid input i.e. truncated', () => {
@@ -736,7 +737,7 @@ describe('GrpcPlugin() ', function() {
           Buffer.from([0x00, 0x00, 0xdf, 0x6a, 0x20, 0x38, 0xfa, 0x78, 0xc4]);
       metadata.set(GRPC_TRACE_KEY, buffer);
       const actualSpanContext = GrpcPlugin.getSpanContext(metadata);
-      assert.deepEqual(actualSpanContext, null);
+      assert.deepStrictEqual(actualSpanContext, null);
     });
   });
 
@@ -751,7 +752,7 @@ describe('GrpcPlugin() ', function() {
       GrpcPlugin.setTagContext(metadata, multipleTagMap);
       const actualTagMap = GrpcPlugin.getTagContext(metadata);
       assert.equal(actualTagMap!.tags.size, 2);
-      assert.deepEqual(actualTagMap!.tags, multipleTagMap.tags);
+      assert.deepStrictEqual(actualTagMap!.tags, multipleTagMap.tags);
     });
   });
 
@@ -773,7 +774,7 @@ describe('GrpcPlugin() ', function() {
       metadata.set(GRPC_TAGS_KEY, buffer);
       const actualTagMap = GrpcPlugin.getTagContext(metadata);
       assert.equal(actualTagMap!.tags.size, 2);
-      assert.deepEqual(actualTagMap!.tags, expectedTags.tags);
+      assert.deepStrictEqual(actualTagMap!.tags, expectedTags.tags);
     });
 
     it('should return null when unexpected tagKey', () => {
@@ -781,7 +782,7 @@ describe('GrpcPlugin() ', function() {
           Buffer.from([0x01, 0x00, 0x02, 0x6b, 0x31, 0x02, 0x76, 0x31]);
       metadata.set(GRPC_TAGS_KEY, buffer);
       const actualTagMap = GrpcPlugin.getTagContext(metadata);
-      assert.deepEqual(actualTagMap, null);
+      assert.deepStrictEqual(actualTagMap, null);
     });
   });
 });
