@@ -16,7 +16,6 @@
 
 import {CoreTracer, Span, SpanKind, TracerConfig} from '@opencensus/core';
 import * as assert from 'assert';
-
 import {ObjectTraceExporter} from '../src/object';
 
 /** Default config for traces tests */

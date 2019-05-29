@@ -2,8 +2,8 @@
 [![Gitter chat][gitter-image]][gitter-url]
 
 OpenCensus Object Trace Exporter allows the user to collect and
-programatically access traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node). This module is useful for when you need
-to access collected spans programatically, for example for testing purposes.
+programmatically access traces with [OpenCensus Node.js](https://github.com/census-instrumentation/opencensus-node). This module is useful for when you need
+to access collected spans programmatically, for example for testing purposes.
 
 ## Installation
 
