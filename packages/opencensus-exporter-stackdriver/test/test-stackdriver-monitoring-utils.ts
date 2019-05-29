@@ -384,7 +384,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
       const timeSeriesList =
           createTimeSeriesList(metric, defaultResource, metricPrefix);
 
-      assert.equal(timeSeriesList.length, 1);
+      assert.strictEqual(timeSeriesList.length, 1);
       const [timeseries] = timeSeriesList;
       assert.deepStrictEqual(
           timeseries.metric.type,
@@ -405,7 +405,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
          const timeSeriesList =
              createTimeSeriesList(metric, customResource, metricPrefix);
 
-         assert.equal(timeSeriesList.length, 1);
+         assert.strictEqual(timeSeriesList.length, 1);
          const [timeseries] = timeSeriesList;
          assert.deepStrictEqual(
              timeseries.metric.type,
@@ -427,7 +427,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
          const timeSeriesList =
              createTimeSeriesList(gaugeMetric, defaultResource, metricPrefix);
 
-         assert.equal(timeSeriesList.length, 2);
+         assert.strictEqual(timeSeriesList.length, 2);
          const [timeseries1, timeseries2] = timeSeriesList;
          assert.deepStrictEqual(
              timeseries1.metric.type,
@@ -460,7 +460,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
       const monitoredResource = await getDefaultResource('my-project-id');
       const {type, labels} = monitoredResource;
 
-      assert.equal(type, 'global');
+      assert.strictEqual(type, 'global');
       assert.deepEqual(labels, {project_id: 'my-project-id'});
     });
 
@@ -473,8 +473,8 @@ describe('Stackdriver Stats Exporter Utils', () => {
       const monitoredResource = await getDefaultResource('my-project-id');
       const {type, labels} = monitoredResource;
 
-      assert.equal(type, 'k8s_container');
-      assert.equal(Object.keys(labels).length, 5);
+      assert.strictEqual(type, 'k8s_container');
+      assert.strictEqual(Object.keys(labels).length, 5);
       assert.deepStrictEqual(labels, {
         'container_name': 'c1',
         'namespace_name': 'default',
@@ -491,8 +491,8 @@ describe('Stackdriver Stats Exporter Utils', () => {
       const monitoredResource = await getDefaultResource('my-project-id');
       const {type, labels} = monitoredResource;
 
-      assert.equal(type, 'gce_instance');
-      assert.equal(Object.keys(labels).length, 3);
+      assert.strictEqual(type, 'gce_instance');
+      assert.strictEqual(Object.keys(labels).length, 3);
       assert.deepStrictEqual(labels, {
         'instance_id': 'id1',
         'project_id': 'my-project-id',
@@ -508,8 +508,8 @@ describe('Stackdriver Stats Exporter Utils', () => {
       const monitoredResource = await getDefaultResource('my-project-id');
       const {type, labels} = monitoredResource;
 
-      assert.equal(type, 'aws_ec2_instance');
-      assert.equal(Object.keys(labels).length, 4);
+      assert.strictEqual(type, 'aws_ec2_instance');
+      assert.strictEqual(Object.keys(labels).length, 4);
       assert.deepStrictEqual(labels, {
         'instance_id': 'instance1',
         'region': 'aws:region1',

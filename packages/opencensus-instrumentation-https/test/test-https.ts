@@ -299,7 +299,7 @@ describe('HttpsPlugin', () => {
 
              assert.strictEqual(spanVerifier.endedSpans.length, 0);
              await requestMethod(options).then((result) => {
-               assert.equal(result, 'Ok');
+               assert.strictEqual(result, 'Ok');
                assert.strictEqual(spanVerifier.endedSpans.length, 0);
              });
            });

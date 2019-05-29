@@ -272,10 +272,10 @@ describe('Zpages Exporter', () => {
 
         zpagesData = await zpagesClient.getStatsz({path: 'test/CountView'});
 
-        assert.equal(zpagesData.view.name, 'test/CountView');
-        assert.equal(zpagesData.view.description, 'A count test');
-        assert.equal(zpagesData.view.measure.name, 'testMeasureDouble');
-        assert.equal(zpagesData.view.aggregation, AggregationType.COUNT);
+        assert.strictEqual(zpagesData.view.name, 'test/CountView');
+        assert.strictEqual(zpagesData.view.description, 'A count test');
+        assert.strictEqual(zpagesData.view.measure.name, 'testMeasureDouble');
+        assert.strictEqual(zpagesData.view.aggregation, AggregationType.COUNT);
       });
 
       it('should get stats for view', async () => {
@@ -291,7 +291,7 @@ describe('Zpages Exporter', () => {
         const snapshot = data.snapshot as CountData;
         assert.deepEqual(data.tagKeys, tagKeys);
         assert.deepEqual(data.tagValues, tagValues);
-        assert.equal(snapshot.value, 2);
+        assert.strictEqual(snapshot.value, 2);
       });
     });
 
@@ -306,10 +306,10 @@ describe('Zpages Exporter', () => {
 
         zpagesData = await zpagesClient.getStatsz({path: 'test/SumView'});
 
-        assert.equal(zpagesData.view.name, 'test/SumView');
-        assert.equal(zpagesData.view.description, 'A sum test');
-        assert.equal(zpagesData.view.measure.name, 'testMeasureDouble');
-        assert.equal(zpagesData.view.aggregation, AggregationType.SUM);
+        assert.strictEqual(zpagesData.view.name, 'test/SumView');
+        assert.strictEqual(zpagesData.view.description, 'A sum test');
+        assert.strictEqual(zpagesData.view.measure.name, 'testMeasureDouble');
+        assert.strictEqual(zpagesData.view.aggregation, AggregationType.SUM);
       });
 
       it('should get stats for view', async () => {
@@ -326,7 +326,7 @@ describe('Zpages Exporter', () => {
         const snapshot = data.snapshot as SumData;
         assert.deepEqual(data.tagKeys, tagKeys);
         assert.deepEqual(data.tagValues, tagValues);
-        assert.equal(snapshot.value, 33);
+        assert.strictEqual(snapshot.value, 33);
       });
     });
 
@@ -341,10 +341,11 @@ describe('Zpages Exporter', () => {
 
         zpagesData = await zpagesClient.getStatsz({path: 'test/LastValueView'});
 
-        assert.equal(zpagesData.view.name, 'test/LastValueView');
-        assert.equal(zpagesData.view.description, 'A last value test');
-        assert.equal(zpagesData.view.measure.name, 'testMeasureDouble');
-        assert.equal(zpagesData.view.aggregation, AggregationType.LAST_VALUE);
+        assert.strictEqual(zpagesData.view.name, 'test/LastValueView');
+        assert.strictEqual(zpagesData.view.description, 'A last value test');
+        assert.strictEqual(zpagesData.view.measure.name, 'testMeasureDouble');
+        assert.strictEqual(
+            zpagesData.view.aggregation, AggregationType.LAST_VALUE);
       });
 
       it('should get stats for view', async () => {
@@ -361,7 +362,7 @@ describe('Zpages Exporter', () => {
         const snapshot = data.snapshot as SumData;
         assert.deepEqual(data.tagKeys, tagKeys);
         assert.deepEqual(data.tagValues, tagValues);
-        assert.equal(snapshot.value, 11);
+        assert.strictEqual(snapshot.value, 11);
       });
     });
 
@@ -378,10 +379,11 @@ describe('Zpages Exporter', () => {
         zpagesData =
             await zpagesClient.getStatsz({path: 'test/DistributionView'});
 
-        assert.equal(zpagesData.view.name, 'test/DistributionView');
-        assert.equal(zpagesData.view.description, 'A distribution test');
-        assert.equal(zpagesData.view.measure.name, 'testMeasureDouble');
-        assert.equal(zpagesData.view.aggregation, AggregationType.DISTRIBUTION);
+        assert.strictEqual(zpagesData.view.name, 'test/DistributionView');
+        assert.strictEqual(zpagesData.view.description, 'A distribution test');
+        assert.strictEqual(zpagesData.view.measure.name, 'testMeasureDouble');
+        assert.strictEqual(
+            zpagesData.view.aggregation, AggregationType.DISTRIBUTION);
       });
 
       it('should get stats for view', async () => {
@@ -400,9 +402,9 @@ describe('Zpages Exporter', () => {
         const snapshot = data.snapshot as DistributionData;
         assert.deepEqual(data.tagKeys, tagKeys);
         assert.deepEqual(data.tagValues, tagValues);
-        assert.equal(snapshot.count, 2);
-        assert.equal(snapshot.mean, 16.5);
-        assert.equal(snapshot.sumOfSquaredDeviation, 60.5);
+        assert.strictEqual(snapshot.count, 2);
+        assert.strictEqual(snapshot.mean, 16.5);
+        assert.strictEqual(snapshot.sumOfSquaredDeviation, 60.5);
       });
     });
   });
@@ -493,11 +495,11 @@ describe('Zpages Exporter', () => {
 
       rpczData = await zpagesClient.getRpcz();
       const measures = rpczData.measuresSent['ExampleMethod'];
-      assert.equal(measures.count.tot, 2);
-      assert.equal(measures.avgLatency.tot.toFixed(3), 1.500);
-      assert.equal(measures.input.tot.toFixed(3), 1.074);
-      assert.equal(measures.output.tot.toFixed(3), 21.484);
-      assert.equal(measures.errors.tot, 2);
+      assert.strictEqual(measures.count.tot, 2);
+      assert.strictEqual(measures.avgLatency.tot.toFixed(3), '1.500');
+      assert.strictEqual(measures.input.tot.toFixed(3), '1.074');
+      assert.strictEqual(measures.output.tot.toFixed(3), '21.484');
+      assert.strictEqual(measures.errors.tot, 2);
     });
 
     it('should get the received stats', async () => {
@@ -575,11 +577,11 @@ describe('Zpages Exporter', () => {
       rpczData = await zpagesClient.getRpcz();
       const measures = rpczData.measuresReceived['ExampleMethod'];
 
-      assert.equal(measures.count.tot, 2);
-      assert.equal(measures.avgLatency.tot.toFixed(3), 1.500);
-      assert.equal(measures.input.tot.toFixed(3), 2.148);
-      assert.equal(measures.output.tot.toFixed(3), 1.074);
-      assert.equal(measures.errors.tot, 2);
+      assert.strictEqual(measures.count.tot, 2);
+      assert.strictEqual(measures.avgLatency.tot.toFixed(3), '1.500');
+      assert.strictEqual(measures.input.tot.toFixed(3), '2.148');
+      assert.strictEqual(measures.output.tot.toFixed(3), '1.074');
+      assert.strictEqual(measures.errors.tot, 2);
     });
   });
 });

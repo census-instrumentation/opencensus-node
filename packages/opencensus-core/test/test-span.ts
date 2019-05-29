@@ -57,7 +57,7 @@ describe('Span', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
       const span = new Span(tracer, rootSpan);
-      assert.equal(span.traceId, rootSpan.traceId);
+      assert.strictEqual(span.traceId, rootSpan.traceId);
     });
   });
 
@@ -72,9 +72,9 @@ describe('Span', () => {
       const span = new Span(tracer, rootSpan);
       const context = span.spanContext;
 
-      assert.equal(context.traceId, rootSpan.traceId);
-      assert.equal(context.spanId, span.id);
-      assert.equal(context.options, 1);
+      assert.strictEqual(context.traceId, rootSpan.traceId);
+      assert.strictEqual(context.spanId, span.id);
+      assert.strictEqual(context.options, 1);
     });
   });
 
@@ -127,7 +127,7 @@ describe('Span', () => {
       const initialStartTime = span.startTime;
       span.start();
 
-      assert.equal(span.startTime, initialStartTime);
+      assert.strictEqual(span.startTime, initialStartTime);
     });
   });
 
@@ -175,7 +175,7 @@ describe('Span', () => {
       const initialEndTime = span.endTime;
       span.end();
 
-      assert.equal(span.endTime!.getTime(), initialEndTime!.getTime());
+      assert.strictEqual(span.endTime!.getTime(), initialEndTime!.getTime());
     });
   });
 
@@ -192,13 +192,13 @@ describe('Span', () => {
 
       ['String', 'Number', 'Boolean'].map(attType => {
         span.addAttribute('testKey' + attType, 'testValue' + attType);
-        assert.equal(
+        assert.strictEqual(
             span.attributes['testKey' + attType], 'testValue' + attType);
       });
       span.addAttribute('object', {foo: 'bar'});
-      assert.equal(span.attributes['object'], '{"foo":"bar"}');
+      assert.strictEqual(span.attributes['object'], '{"foo":"bar"}');
       span.addAttribute('array', [1, 2, 3]);
-      assert.equal(span.attributes['array'], '[1,2,3]');
+      assert.strictEqual(span.attributes['array'], '[1,2,3]');
     });
 
     it('should drop extra attributes', () => {
@@ -211,8 +211,8 @@ describe('Span', () => {
         span.addAttribute('attr' + i, 100);
       }
 
-      assert.equal(Object.keys(span.attributes).length, 32);
-      assert.equal(span.droppedAttributesCount, 8);
+      assert.strictEqual(Object.keys(span.attributes).length, 32);
+      assert.strictEqual(span.droppedAttributesCount, 8);
     });
   });
 
@@ -236,7 +236,7 @@ describe('Span', () => {
       span.addAnnotation('description test', {}, Date.now());
 
       assert.ok(span.annotations.length > 0);
-      assert.equal(span.droppedAnnotationsCount, 0);
+      assert.strictEqual(span.droppedAnnotationsCount, 0);
       assert.ok(instanceOfAnnotation(span.annotations[0]));
     });
 
@@ -250,8 +250,8 @@ describe('Span', () => {
         span.addAnnotation('description test', {}, Date.now());
       }
 
-      assert.equal(span.annotations.length, 32);
-      assert.equal(span.droppedAnnotationsCount, 8);
+      assert.strictEqual(span.annotations.length, 32);
+      assert.strictEqual(span.droppedAnnotationsCount, 8);
     });
   });
 
@@ -275,7 +275,7 @@ describe('Span', () => {
           span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
 
       assert.ok(span.links.length > 0);
-      assert.equal(span.droppedLinksCount, 0);
+      assert.strictEqual(span.droppedLinksCount, 0);
       assert.ok(instanceOfLink(span.links[0]));
     });
 
@@ -290,8 +290,8 @@ describe('Span', () => {
             span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
       }
 
-      assert.equal(span.links.length, 32);
-      assert.equal(span.droppedLinksCount, 3);
+      assert.strictEqual(span.links.length, 32);
+      assert.strictEqual(span.droppedLinksCount, 3);
     });
   });
 
@@ -324,7 +324,7 @@ describe('Span', () => {
                          uncompressedSize: 55,
                          compressedSize: 40,
                        }]);
-      assert.equal(span.droppedMessageEventsCount, 0);
+      assert.strictEqual(span.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(span.messageEvents[0]));
     });
 
@@ -338,8 +338,8 @@ describe('Span', () => {
         span.addMessageEvent(types.MessageEventType.UNSPECIFIED, 1);
       }
 
-      assert.equal(span.messageEvents.length, 32);
-      assert.equal(span.droppedMessageEventsCount, 3);
+      assert.strictEqual(span.messageEvents.length, 32);
+      assert.strictEqual(span.droppedMessageEventsCount, 3);
     });
   });
 
@@ -351,10 +351,10 @@ describe('Span', () => {
       const span = new Span(tracer, rootSpan);
       span.start();
 
-      assert.equal(rootSpan.status.code, 0);
-      assert.equal(rootSpan.status.message, null);
-      assert.equal(span.status.code, 0);
-      assert.equal(span.status.message, null);
+      assert.strictEqual(rootSpan.status.code, 0);
+      assert.strictEqual(rootSpan.status.message, undefined);
+      assert.strictEqual(span.status.code, 0);
+      assert.strictEqual(span.status.message, undefined);
     });
 
     it('should set an error status', () => {
@@ -364,10 +364,10 @@ describe('Span', () => {
       span.start();
       span.setStatus(types.CanonicalCode.PERMISSION_DENIED, 'This is an error');
 
-      assert.equal(rootSpan.status.code, 0);
-      assert.equal(rootSpan.status.message, null);
-      assert.equal(span.status.code, 7);
-      assert.equal(span.status.message, 'This is an error');
+      assert.strictEqual(rootSpan.status.code, 0);
+      assert.strictEqual(rootSpan.status.message, undefined);
+      assert.strictEqual(span.status.code, 7);
+      assert.strictEqual(span.status.message, 'This is an error');
     });
   });
 
@@ -376,21 +376,21 @@ describe('Span', () => {
       const rootSpan =
           new RootSpan(tracer, name, kind, traceId, parentSpanId, 'traceState');
       rootSpan.start();
-      assert.equal(rootSpan.traceState, 'traceState');
+      assert.strictEqual(rootSpan.traceState, 'traceState');
 
       const span = new Span(tracer, rootSpan);
-      assert.equal(span.traceId, rootSpan.traceId);
-      assert.equal(span.traceState, 'traceState');
+      assert.strictEqual(span.traceId, rootSpan.traceId);
+      assert.strictEqual(span.traceState, 'traceState');
     });
 
     it('should handle optional / undefined traceState', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      assert.equal(rootSpan.traceState, undefined);
+      assert.strictEqual(rootSpan.traceState, undefined);
 
       const span = new Span(tracer, rootSpan);
-      assert.equal(span.traceId, rootSpan.traceId);
-      assert.equal(span.traceState, undefined);
+      assert.strictEqual(span.traceId, rootSpan.traceId);
+      assert.strictEqual(span.traceState, undefined);
     });
   });
 });

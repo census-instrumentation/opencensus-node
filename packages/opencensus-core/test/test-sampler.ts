@@ -111,7 +111,7 @@ describe('Sampler', () => {
   });
   describe('getNumberOfAnnotationEventsPerSpan', () => {
     it('should return  12', () => {
-      assert.equal(
+      assert.strictEqual(
           TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
               traceParameters),
           12);
@@ -119,20 +119,20 @@ describe('Sampler', () => {
   });
   describe('getNumberOfMessageEventsPerSpan', () => {
     it('should return 5', () => {
-      assert.equal(
+      assert.strictEqual(
           TraceParamsBuilder.getNumberOfMessageEventsPerSpan(traceParameters),
           5);
     });
   });
   describe('getNumberOfAttributesPerSpan', () => {
     it('should return 10', () => {
-      assert.equal(
+      assert.strictEqual(
           TraceParamsBuilder.getNumberOfAttributesPerSpan(traceParameters), 10);
     });
   });
   describe('getNumberOfLinksPerSpan', () => {
     it('should return 7', () => {
-      assert.equal(
+      assert.strictEqual(
           TraceParamsBuilder.getNumberOfLinksPerSpan(traceParameters), 7);
     });
   });

@@ -90,7 +90,7 @@ describe('Metric producer for stats', () => {
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
     assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
-    assert.equal(actualTimeSeries1[0].points[0].value, 25);
+    assert.strictEqual(actualTimeSeries1[0].points[0].value, 25);
   });
 
   it('should add count stats',
@@ -112,12 +112,12 @@ describe('Metric producer for stats', () => {
            actualMetricDescriptor1, expectedMetricDescriptor1);
        assert.strictEqual(actualTimeSeries1.length, 1);
        assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
-       assert.equal(actualTimeSeries1[0].points[0].value, 25);
+       assert.strictEqual(actualTimeSeries1[0].points[0].value, 25);
        assert.deepStrictEqual(
            actualMetricDescriptor2, expectedMetricDescriptor2);
        assert.strictEqual(actualTimeSeries2.length, 1);
        assert.deepStrictEqual(actualTimeSeries2[0].labelValues, labelValues);
-       assert.equal(actualTimeSeries2[0].points[0].value, 1);
+       assert.strictEqual(actualTimeSeries2[0].points[0].value, 1);
 
        // update count view
        view.recordMeasurement(measurement2, tagMap);
@@ -145,13 +145,13 @@ describe('Metric producer for stats', () => {
     assert.strictEqual(actualTimeSeries1.length, 1);
     assert.strictEqual(actualTimeSeries1.length, 1);
     assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
-    assert.equal(actualTimeSeries1[0].points[0].value, 25);
+    assert.strictEqual(actualTimeSeries1[0].points[0].value, 25);
     assert.deepStrictEqual(actualMetricDescriptor2, expectedMetricDescriptor2);
     assert.strictEqual(actualTimeSeries2.length, 1);
     assert.deepStrictEqual(actualMetricDescriptor3, expectedMetricDescriptor3);
     assert.strictEqual(actualTimeSeries3.length, 1);
     assert.deepStrictEqual(actualTimeSeries3[0].labelValues, labelValues);
-    assert.equal(actualTimeSeries3[0].points[0].value, 300);
+    assert.strictEqual(actualTimeSeries3[0].points[0].value, 300);
   });
 
   it('should add distribution stats', () => {
@@ -178,13 +178,13 @@ describe('Metric producer for stats', () => {
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
     assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
-    assert.equal(actualTimeSeries1[0].points[0].value, 25);
+    assert.strictEqual(actualTimeSeries1[0].points[0].value, 25);
     assert.deepStrictEqual(actualMetricDescriptor2, expectedMetricDescriptor2);
     assert.strictEqual(actualTimeSeries2.length, 1);
     assert.deepStrictEqual(actualMetricDescriptor3, expectedMetricDescriptor3);
     assert.strictEqual(actualTimeSeries3.length, 1);
     assert.deepStrictEqual(actualTimeSeries3[0].labelValues, labelValues);
-    assert.equal(actualTimeSeries3[0].points[0].value, 300);
+    assert.strictEqual(actualTimeSeries3[0].points[0].value, 300);
     assert.deepStrictEqual(actualMetricDescriptor4, expectedMetricDescriptor4);
     assert.strictEqual(actualTimeSeries4.length, 1);
     assert.deepStrictEqual(actualTimeSeries4[0].labelValues, labelValues);

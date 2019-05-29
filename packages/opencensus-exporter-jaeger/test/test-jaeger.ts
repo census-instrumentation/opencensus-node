@@ -153,7 +153,7 @@ describe('Jaeger Exporter', () => {
 
         assert.ok(testBoolSeen && testStringSeen && testNumSeen);
 
-        assert.equal(thriftSpan.references.length, 2);
+        assert.strictEqual(thriftSpan.references.length, 2);
         assert.deepEqual(thriftSpan.references, [
           {
             refType: ThriftReferenceType.CHILD_OF,

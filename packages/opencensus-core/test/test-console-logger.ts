@@ -36,7 +36,7 @@ describe('ConsoleLogger', () => {
   describe('new ConsoleLogger()', () => {
     it('should log with default levels', () => {
       logger.logger();
-      assert.equal(LEVELS.length, ConsoleLogger.LEVELS.length);
+      assert.strictEqual(LEVELS.length, ConsoleLogger.LEVELS.length);
     });
 
     it('should log with error', () => {
@@ -65,7 +65,7 @@ describe('ConsoleLogger', () => {
 
       const validateString = consoleTxt.indexOf('warn');
 
-      assert.equal(validateString, -1);
+      assert.strictEqual(validateString, -1);
     });
 
     it('should not log info', () => {
@@ -75,7 +75,7 @@ describe('ConsoleLogger', () => {
 
       const validateString = consoleTxt.indexOf('info');
 
-      assert.equal(validateString, -1);
+      assert.strictEqual(validateString, -1);
     });
 
     it('should not log debug', () => {
@@ -84,7 +84,7 @@ describe('ConsoleLogger', () => {
       unhookIntercept();
       const validateString = consoleTxt.indexOf('debug');
 
-      assert.equal(validateString, -1);
+      assert.strictEqual(validateString, -1);
     });
   });
 
@@ -98,7 +98,7 @@ describe('ConsoleLogger', () => {
       unhookIntercept();
       const validateString = consoleTxt.indexOf('error');
 
-      assert.equal(validateString, -1);
+      assert.strictEqual(validateString, -1);
     });
 
     it('should not log warn', () => {
@@ -108,7 +108,7 @@ describe('ConsoleLogger', () => {
 
       const validateString = consoleTxt.indexOf('warn');
 
-      assert.equal(validateString, -1);
+      assert.strictEqual(validateString, -1);
     });
 
     it('should not log info', () => {
@@ -118,7 +118,7 @@ describe('ConsoleLogger', () => {
 
       const validateString = consoleTxt.indexOf('info');
 
-      assert.equal(validateString, -1);
+      assert.strictEqual(validateString, -1);
     });
 
     it('should not log debug', () => {
@@ -127,7 +127,7 @@ describe('ConsoleLogger', () => {
       unhookIntercept();
       const validateString = consoleTxt.indexOf('debug');
 
-      assert.equal(validateString, -1);
+      assert.strictEqual(validateString, -1);
     });
   });
 });

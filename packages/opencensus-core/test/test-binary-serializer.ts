@@ -109,7 +109,7 @@ describe('Binary Format Serializer', () => {
         0x02, 0x76, 0x32
       ]);
       const tags = deserializeBinary(buff);
-      assert.equal(tags.tags.size, 1);
+      assert.strictEqual(tags.tags.size, 1);
       assert.deepStrictEqual(tags, expectedTags);
     });
   });

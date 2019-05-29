@@ -79,7 +79,7 @@ describe('DerivedGauge', () => {
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
@@ -101,7 +101,7 @@ describe('DerivedGauge', () => {
 
       metric = instance.getMetric();
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 2);
+      assert.strictEqual(metric!.timeseries.length, 2);
       assert.deepStrictEqual(metric!.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
@@ -132,7 +132,7 @@ describe('DerivedGauge', () => {
       const metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
@@ -163,7 +163,7 @@ describe('DerivedGauge', () => {
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
@@ -178,7 +178,7 @@ describe('DerivedGauge', () => {
       queue.addJob();
       queue.addJob();
       metric = instance.getMetric();
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries[0].points, [{
             value: 4,
@@ -207,7 +207,7 @@ describe('DerivedGauge', () => {
         type: GAUGE_DOUBLE,
         labelKeys: LABEL_KEYS
       });
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
@@ -239,7 +239,7 @@ describe('DerivedGauge', () => {
         type: GAUGE_DOUBLE,
         labelKeys: [...LABEL_KEYS, ...Array.from(CONSTANT_LABELS.keys())]
       });
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries, [{
             labelValues:
@@ -259,7 +259,7 @@ describe('DerivedGauge', () => {
       const metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 1);
+      assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
           metric!.timeseries, [{
             labelValues: LABEL_VALUES_200,
@@ -305,7 +305,7 @@ describe('DerivedGauge', () => {
       let metric = instance.getMetric();
       assert.notEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
-      assert.equal(metric!.timeseries.length, 2);
+      assert.strictEqual(metric!.timeseries.length, 2);
       instance.clear();
       metric = instance.getMetric();
       assert.deepStrictEqual(metric, null);

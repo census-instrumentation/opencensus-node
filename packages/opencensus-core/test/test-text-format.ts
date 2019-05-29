@@ -49,7 +49,7 @@ describe('Text Format Serializer', () => {
   describe('serializeTextFormat', () => {
     it('should serialize empty tag map', () => {
       const textFormat = serializeTextFormat(emptyTagMap);
-      assert.equal(textFormat, '');
+      assert.strictEqual(textFormat, '');
     });
 
     it('should serialize with one tag map', () => {

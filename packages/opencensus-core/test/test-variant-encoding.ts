@@ -37,14 +37,14 @@ describe('variant encoding', () => {
     const variant = EncodeVarint(num);
     assert.deepEqual(variant, expectedBytes);
     const buff = Buffer.from(variant);
-    assert.equal(DecodeVarint(buff, 0), num);
+    assert.strictEqual(DecodeVarint(buff, 0), num);
   });
 
   for (const testCase of testCases) {
     it(`should encode and decode ${testCase} correctly`, () => {
       const variant = EncodeVarint(testCase);
       const buff = Buffer.from(variant);
-      assert.equal(DecodeVarint(buff, 0), testCase);
+      assert.strictEqual(DecodeVarint(buff, 0), testCase);
     });
   }
 });
