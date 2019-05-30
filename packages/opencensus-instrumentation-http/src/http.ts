@@ -26,9 +26,12 @@ import {
   TagMap,
   TagTtl,
   TraceOptions,
+  serializeTextFormat,
+  deserializeTextFormat
 } from '@opencensus/core';
 import {
   ClientRequest,
+  IncomingHttpHeaders,
   IncomingMessage,
   request,
   RequestOptions,
@@ -37,6 +40,7 @@ import {
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
+
 import * as stats from './http-stats';
 import { HttpPluginConfig, IgnoreMatcher } from './types';
 
@@ -56,6 +60,8 @@ const UNLIMITED_PROPAGATION_MD = {
 };
 
 const TAG_VALUE_MAX_LENGTH = 255;
+/** A correlation context header under which TagMap is stored as a text value */
+export const CORRELATION_CONTEXT = 'Correlation-Context';
 
 /** Http instrumentation plugin for Opencensus */
 export class HttpPlugin extends BasePlugin {
@@ -261,7 +267,7 @@ export class HttpPlugin extends BasePlugin {
             const host = headers.host || 'localhost';
             const userAgent = (headers['user-agent'] ||
               headers['User-Agent']) as string;
-            const tags = new TagMap();
+            const tags = HttpPlugin.getTagContext(headers) || new TagMap();
 
             rootSpan.addAttribute(
               HttpPlugin.ATTRIBUTE_HTTP_HOST,
@@ -483,8 +489,19 @@ export class HttpPlugin extends BasePlugin {
             ? headers['user-agent'] || headers['User-Agent']
             : null;
 
-          const tags = new TagMap();
-          tags.set(stats.HTTP_CLIENT_METHOD, { value: method });
+          // record stats: new RPCs on client-side inherit the tag context from
+          // the current Context.
+          const tags =
+              plugin.stats ? plugin.stats.getCurrentTagContext() : new TagMap();
+          if (tags.tags.size > 0) {
+            if (plugin.hasExpectHeader(options) && options.headers) {
+              options.headers[CORRELATION_CONTEXT] = serializeTextFormat(tags);
+            } else {
+              request.setHeader(CORRELATION_CONTEXT, serializeTextFormat(tags));
+            }
+          }
+
+          tags.set(stats.HTTP_CLIENT_METHOD, {value: method});
 
           const host = options.hostname || options.host || 'localhost';
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, host);
@@ -600,6 +617,20 @@ export class HttpPlugin extends BasePlugin {
       }
       plugin.stats.record(measureList, tags);
     } catch (ignore) {}
+  }
+
+  /**
+   * Returns a TagMap on incoming HTTP header if it exists and is well-formed,
+   * or null otherwise.
+   * @param headers The incoming HTTP header object from which TagMap should be
+   *     retrieved.
+   */
+  static getTagContext(headers: IncomingHttpHeaders): TagMap|null {
+    const contextValue = (headers[CORRELATION_CONTEXT.toLocaleLowerCase()] ||
+                          headers[CORRELATION_CONTEXT]) as string;
+    // Entry doesn't exist.
+    if (!contextValue) return null;
+    return deserializeTextFormat(contextValue);
   }
 
   /**
