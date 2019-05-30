@@ -19,9 +19,8 @@ import {logger, Logger} from '@opencensus/core';
 
 /** Object Exporter manager class */
 export class ObjectTraceExporter implements Exporter {
-  public buffer: ExporterBuffer;
+  buffer: ExporterBuffer;
   logger: Logger;
-
   startedSpans: Span[] = [];
   endedSpans: Span[] = [];
   publishedSpans: Span[] = [];
