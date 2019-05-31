@@ -265,9 +265,9 @@ export class HttpPlugin extends BasePlugin {
 
             const requestUrl = request.url ? url.parse(request.url) : null;
             const host = headers.host || 'localhost';
-            const userAgent = (headers['user-agent'] ||
-              headers['User-Agent']) as string;
-            const tags = HttpPlugin.getTagContext(headers) || new TagMap();
+            const userAgent =
+                (headers['user-agent'] || headers['User-Agent']) as string;
+            const tags = HttpPlugin.getTagMap(headers) || new TagMap();
 
             rootSpan.addAttribute(
               HttpPlugin.ATTRIBUTE_HTTP_HOST,
@@ -625,7 +625,7 @@ export class HttpPlugin extends BasePlugin {
    * @param headers The incoming HTTP header object from which TagMap should be
    *     retrieved.
    */
-  static getTagContext(headers: IncomingHttpHeaders): TagMap|null {
+  static getTagMap(headers: IncomingHttpHeaders): TagMap|null {
     const contextValue = (headers[CORRELATION_CONTEXT.toLocaleLowerCase()] ||
                           headers[CORRELATION_CONTEXT]) as string;
     // Entry doesn't exist.
