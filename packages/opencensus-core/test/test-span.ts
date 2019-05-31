@@ -113,6 +113,34 @@ describe('Span', () => {
 
       assert.ok(span.started);
     });
+
+
+    it('should start a RootSpan and set CurrentRootSpan when parentSpanId is empty',
+       () => {
+         const rootSpan = new RootSpan(tracer, name, kind, traceId, '');
+         rootSpan.start();
+         assert.strictEqual(tracer.currentRootSpan, rootSpan);
+
+         const span = new Span(tracer, rootSpan);
+         span.start();
+         assert.strictEqual(tracer.currentRootSpan, rootSpan);
+
+         assert.ok(span.started);
+       });
+
+    it('should start a RootSpan and set CurrentRootSpan when parentSpanId is not empty',
+       () => {
+         const rootSpan =
+             new RootSpan(tracer, name, kind, traceId, 'd5955a12632d46a1');
+         rootSpan.start();
+         assert.strictEqual(tracer.currentRootSpan, rootSpan);
+
+         const span = new Span(tracer, rootSpan);
+         span.start();
+         assert.strictEqual(tracer.currentRootSpan, rootSpan);
+
+         assert.ok(span.started);
+       });
   });
 
   /**
