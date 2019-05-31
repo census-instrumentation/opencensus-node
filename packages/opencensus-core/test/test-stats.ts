@@ -108,7 +108,7 @@ describe('Stats', () => {
         assert.strictEqual(view.name, viewName);
         assert.strictEqual(view.measure, measure);
         assert.strictEqual(view.description, description);
-        assert.deepEqual(view.measure, measure);
+        assert.deepStrictEqual(view.measure, measure);
         assert.strictEqual(view.aggregation, aggregationType);
         assert.ok(view.registered);
       });
@@ -141,7 +141,7 @@ describe('Stats', () => {
 
       assert.ok(view.registered);
       assert.strictEqual(testExporter.registeredViews.length, 1);
-      assert.deepEqual(testExporter.registeredViews[0], view);
+      assert.deepStrictEqual(testExporter.registeredViews[0], view);
     });
   });
 
@@ -185,7 +185,7 @@ describe('Stats', () => {
       assert.strictEqual(testExporter.recordedMeasurements.length, 0);
       globalStats.record([measurement], tagMap);
       assert.strictEqual(testExporter.recordedMeasurements.length, 1);
-      assert.deepEqual(testExporter.recordedMeasurements[0], measurement);
+      assert.deepStrictEqual(testExporter.recordedMeasurements[0], measurement);
       aggregationData = testExporter.registeredViews[0].getSnapshot(
                             tagValues) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement.value);
@@ -211,8 +211,10 @@ describe('Stats', () => {
       assert.strictEqual(testExporter.recordedMeasurements.length, 0);
       globalStats.record([measurement1, measurement2], tagMap);
       assert.strictEqual(testExporter.recordedMeasurements.length, 2);
-      assert.deepEqual(testExporter.recordedMeasurements[0], measurement1);
-      assert.deepEqual(testExporter.recordedMeasurements[1], measurement2);
+      assert.deepStrictEqual(
+          testExporter.recordedMeasurements[0], measurement1);
+      assert.deepStrictEqual(
+          testExporter.recordedMeasurements[1], measurement2);
       aggregationData = testExporter.registeredViews[0].getSnapshot(
                             tagValues) as LastValueData;
       assert.strictEqual(aggregationData.value, measurement2.value);
@@ -236,7 +238,7 @@ describe('Stats', () => {
       });
 
       assert.strictEqual(testExporter.recordedMeasurements.length, 1);
-      assert.deepEqual(testExporter.recordedMeasurements[0], measurement);
+      assert.deepStrictEqual(testExporter.recordedMeasurements[0], measurement);
       aggregationData =
           testExporter.registeredViews[0].getSnapshot(
               [{value: 'value1'}, {value: 'value2'}]) as LastValueData;

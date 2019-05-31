@@ -79,7 +79,7 @@ describe('DerivedCumulative', () => {
       map.set('key1', 'value1');
 
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
@@ -123,7 +123,7 @@ describe('DerivedCumulative', () => {
       const queue = new QueueManager();
       instance.createTimeSeries(LABEL_VALUES_200, queue);
       const metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
@@ -150,7 +150,7 @@ describe('DerivedCumulative', () => {
       });
 
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
@@ -180,7 +180,7 @@ describe('DerivedCumulative', () => {
           EMPTY_CONSTANT_LABELS, startime);
       doubleInstance.createTimeSeries(LABEL_VALUES_200, queue);
       const metric = doubleInstance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, {
         name: METRIC_NAME,
         description: METRIC_DESCRIPTION,
@@ -225,7 +225,7 @@ describe('DerivedCumulative', () => {
       instance.createTimeSeries(LABEL_VALUES_200, map);
       map.set('key', 'value');
       const metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [{
@@ -247,7 +247,7 @@ describe('DerivedCumulative', () => {
       instance.createTimeSeries(LABEL_VALUES_200, arr);
       arr.push('test');
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       instance.removeTimeSeries(LABEL_VALUES_200);
       metric = instance.getMetric();
@@ -269,7 +269,7 @@ describe('DerivedCumulative', () => {
       });
       arr.push('test');
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 2);
       instance.clear();

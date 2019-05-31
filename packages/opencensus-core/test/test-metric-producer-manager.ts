@@ -34,7 +34,7 @@ describe('MetricProducerManager()', () => {
       const metricProducerList =
           metricProducerManagerInstance.getAllMetricProducer();
 
-      assert.notDeepEqual(metricProducerList, null);
+      assert.notStrictEqual(metricProducerList, null);
       assert.strictEqual(metricProducerList.size, 1);
     });
 

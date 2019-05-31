@@ -89,7 +89,7 @@ describe('serializeSpanContext', () => {
   testData.forEach(({input, output}) => {
     it(`returns well-formatted trace context for ${inspect(input)}`, () => {
       const header = serializeSpanContext(input);
-      assert.deepEqual(header, output);
+      assert.deepStrictEqual(header, output);
     });
   });
 });
@@ -102,7 +102,7 @@ describe('extract', () => {
         return HEADER;
       }
     };
-    assert.deepEqual(extract(getter), parseContextFromHeader(HEADER));
+    assert.deepStrictEqual(extract(getter), parseContextFromHeader(HEADER));
   });
 });
 
@@ -111,7 +111,7 @@ describe('inject', () => {
     const spanContext = generate();
     const setter = {
       setHeader(name: string, value: string) {
-        assert.deepEqual(value, serializeSpanContext(spanContext));
+        assert.deepStrictEqual(value, serializeSpanContext(spanContext));
         done();
       }
     };

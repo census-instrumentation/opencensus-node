@@ -72,7 +72,7 @@ describe('detectResource', () => {
        const {type, labels} = await resource.detectResource();
        scope.done();
 
-       assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
+       assert.deepStrictEqual(type, resource.K8S_CONTAINER_TYPE);
        assert.strictEqual(Object.keys(labels).length, 6);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
@@ -100,7 +100,7 @@ describe('detectResource', () => {
        const {type, labels} = await resource.detectResource();
        scope.done();
 
-       assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
+       assert.deepStrictEqual(type, resource.K8S_CONTAINER_TYPE);
        assert.strictEqual(Object.keys(labels).length, 6);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
@@ -138,7 +138,7 @@ describe('detectResource', () => {
        const {type, labels} = await resource.detectResource();
        scope.done();
 
-       assert.deepEqual(type, resource.K8S_CONTAINER_TYPE);
+       assert.deepStrictEqual(type, resource.K8S_CONTAINER_TYPE);
        assert.strictEqual(Object.keys(labels).length, 6);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
@@ -162,7 +162,7 @@ describe('detectResource', () => {
     const {type, labels} = await resource.detectResource();
     scope.done();
 
-    assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
+    assert.deepStrictEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
     assert.strictEqual(Object.keys(labels).length, 3);
     assert.strictEqual(labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
     assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'my-zone');
@@ -185,7 +185,7 @@ describe('detectResource', () => {
     const {type, labels} = await resource.detectResource();
     scope.done();
 
-    assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
+    assert.deepStrictEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
     assert.strictEqual(Object.keys(labels).length, 3);
     assert.strictEqual(labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
     assert.strictEqual(labels[CLOUD_RESOURCE.ZONE_KEY], 'my-zone');
@@ -206,7 +206,7 @@ describe('detectResource', () => {
        const {type, labels} = await resource.detectResource();
        scope.done();
 
-       assert.deepEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
+       assert.deepStrictEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
        assert.strictEqual(Object.keys(labels).length, 3);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
@@ -238,7 +238,7 @@ describe('detectResource', () => {
        const {type, labels} = await resource.detectResource();
        scope.done();
 
-       assert.deepEqual(type, 'global');
+       assert.deepStrictEqual(type, 'global');
        assert.strictEqual(Object.keys(labels).length, 5);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-project-id');
@@ -259,7 +259,7 @@ describe('detectResource', () => {
     awsScope.done();
     gcpScope.done();
 
-    assert.deepEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
+    assert.deepStrictEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
     assert.strictEqual(Object.keys(labels).length, 3);
     assert.strictEqual(labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-account-id');
     assert.strictEqual(labels[HOST_RESOURCE.ID_KEY], 'my-instance-id');
@@ -287,7 +287,7 @@ describe('detectResource', () => {
        awsScope.done();
        gcpScope.done();
 
-       assert.deepEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
+       assert.deepStrictEqual(type, resource.AWS_EC2_INSTANCE_TYPE);
        assert.strictEqual(Object.keys(labels).length, 3);
        assert.strictEqual(
            labels[CLOUD_RESOURCE.ACCOUNT_ID_KEY], 'my-account-id');
@@ -306,7 +306,7 @@ describe('detectResource', () => {
     awsScope.done();
     gcpScope.done();
 
-    assert.deepEqual(type, null);
+    assert.deepStrictEqual(type, null);
     assert.strictEqual(Object.keys(labels).length, 0);
   });
 });

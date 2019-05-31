@@ -79,7 +79,7 @@ describe('GAUGE_INT64', () => {
       point.add(10);
 
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
@@ -122,7 +122,7 @@ describe('GAUGE_INT64', () => {
       const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       point.add(10);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
@@ -156,7 +156,7 @@ describe('GAUGE_INT64', () => {
       const point = instance.getDefaultTimeSeries();
       point.add(10);
       const metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
@@ -220,7 +220,7 @@ describe('GAUGE_INT64', () => {
       const point = instance.getDefaultTimeSeries();
       point.add(200);
       const metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor.labelKeys.length, 3);
       assert.deepStrictEqual(metric!.descriptor.type, 1);
       assert.strictEqual(metric!.timeseries.length, 1);
@@ -239,7 +239,7 @@ describe('GAUGE_INT64', () => {
       const point = instance.getDefaultTimeSeries();
       point.add(300);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
@@ -255,7 +255,7 @@ describe('GAUGE_INT64', () => {
       const point1 = instance.getDefaultTimeSeries();
       point1.add(400);
       metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(
@@ -274,7 +274,7 @@ describe('GAUGE_INT64', () => {
       const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       point.add(10);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       instance.removeTimeSeries(LABEL_VALUES_200);
       metric = instance.getMetric();
@@ -288,7 +288,7 @@ describe('GAUGE_INT64', () => {
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_400);
       point1.add(10);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 2);
       instance.clear();
@@ -341,7 +341,7 @@ describe('GAUGE_DOUBLE', () => {
       point.add(10.34);
 
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [
@@ -382,7 +382,7 @@ describe('GAUGE_DOUBLE', () => {
       const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       point.add(12.1);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [
@@ -416,7 +416,7 @@ describe('GAUGE_DOUBLE', () => {
       const point = instance.getDefaultTimeSeries();
       point.add(10.1);
       const metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [
@@ -433,7 +433,7 @@ describe('GAUGE_DOUBLE', () => {
       const point = instance.getDefaultTimeSeries();
       point.add(300.1);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [
@@ -449,7 +449,7 @@ describe('GAUGE_DOUBLE', () => {
       const point1 = instance.getDefaultTimeSeries();
       point1.add(400.1);
       metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
       assert.deepStrictEqual(metric!.timeseries, [
@@ -473,7 +473,7 @@ describe('GAUGE_DOUBLE', () => {
       const point = instance.getDefaultTimeSeries();
       point.add(10.1);
       const metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor.labelKeys.length, 3);
       assert.deepStrictEqual(metric!.descriptor.type, 2);
       assert.strictEqual(metric!.timeseries.length, 1);
@@ -494,7 +494,7 @@ describe('GAUGE_DOUBLE', () => {
       const point = instance.getOrCreateTimeSeries(LABEL_VALUES_200);
       point.add(10.23);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       instance.removeTimeSeries(LABEL_VALUES_200);
       metric = instance.getMetric();
@@ -508,7 +508,7 @@ describe('GAUGE_DOUBLE', () => {
       const point1 = instance.getOrCreateTimeSeries(LABEL_VALUES_400);
       point1.add(15.2);
       let metric = instance.getMetric();
-      assert.notEqual(metric, null);
+      assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 2);
       instance.clear();

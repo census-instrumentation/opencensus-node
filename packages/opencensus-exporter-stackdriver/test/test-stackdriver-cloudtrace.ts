@@ -84,7 +84,7 @@ describe('Stackdriver Trace Exporter', function() {
 
             const spanList = await exporter.translateSpan([rootSpan]);
             assert.strictEqual(spanList.length, 2);
-            assert.deepEqual(spanList, [
+            assert.deepStrictEqual(spanList, [
               {
                 'attributes': {
                   'attributeMap': {
@@ -103,7 +103,7 @@ describe('Stackdriver Trace Exporter', function() {
                     rootSpan.traceId}/spans/${rootSpan.id}`,
                 'sameProcessAsParentSpan': true,
                 'spanId': rootSpan.id,
-                'stackTrace': null,
+                'stackTrace': undefined,
                 'startTime': rootSpan.startTime.toISOString(),
                 'status': {'code': 0},
                 'timeEvents': {
@@ -131,7 +131,7 @@ describe('Stackdriver Trace Exporter', function() {
                 'parentSpanId': rootSpan.id,
                 'sameProcessAsParentSpan': true,
                 'spanId': span.id,
-                'stackTrace': null,
+                'stackTrace': undefined,
                 'startTime': span.startTime.toISOString(),
                 'status': {'code': 0},
                 'timeEvents': {

@@ -276,7 +276,7 @@ describe('RootSpan', () => {
       assert.strictEqual(rootSpan.droppedAnnotationsCount, 0);
       assert.strictEqual(
           rootSpan.annotations[0].description, 'description test');
-      assert.deepEqual(rootSpan.annotations[0].attributes, {});
+      assert.deepStrictEqual(rootSpan.annotations[0].attributes, {});
       assert.ok(rootSpan.annotations[0].timestamp > 0);
     });
   });

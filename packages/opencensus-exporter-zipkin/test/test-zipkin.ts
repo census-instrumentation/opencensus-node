@@ -134,7 +134,7 @@ describe('Zipkin Exporter', function() {
     it('should translate root span to Zipkin format', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
       const rootSpanTranslated = exporter.translateSpan(rootSpan);
-      assert.deepEqual(rootSpanTranslated, {
+      assert.deepStrictEqual(rootSpanTranslated, {
         'annotations': [],
         'debug': true,
         'duration': Math.round(rootSpan.duration * MICROS_PER_MILLI),
@@ -152,7 +152,7 @@ describe('Zipkin Exporter', function() {
     it('should translate child span to Zipkin format', () => {
       const exporter = new ZipkinTraceExporter(zipkinOptions);
       const chilsSpanTranslated = exporter.translateSpan(span);
-      assert.deepEqual(chilsSpanTranslated, {
+      assert.deepStrictEqual(chilsSpanTranslated, {
         'annotations': [
           {'timestamp': 1550213104708000, 'value': 'processing'},
           {'timestamp': 1550213104708000, 'value': 'done'},

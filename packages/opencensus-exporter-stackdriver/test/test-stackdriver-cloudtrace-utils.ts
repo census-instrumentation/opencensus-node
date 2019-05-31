@@ -77,7 +77,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
 
       assert.strictEqual(stackdriverLinks.droppedLinksCount, 2);
       assert.strictEqual(stackdriverLinks.link!.length, 3);
-      assert.deepEqual(stackdriverLinks.link, expectedLink);
+      assert.deepStrictEqual(stackdriverLinks.link, expectedLink);
     });
   });
 
@@ -179,7 +179,8 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       assert.strictEqual(stackdriverTimeEvents.droppedAnnotationsCount, 2);
       assert.strictEqual(stackdriverTimeEvents.droppedMessageEventsCount, 3);
       assert.strictEqual(stackdriverTimeEvents.timeEvent!.length, 6);
-      assert.deepEqual(stackdriverTimeEvents.timeEvent, expectedTimeEvent);
+      assert.deepStrictEqual(
+          stackdriverTimeEvents.timeEvent, expectedTimeEvent);
     });
 
     it('should return stackdriver TimeEvents when empty annotations and messageEvents',
@@ -206,7 +207,8 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       assert.strictEqual(stackdriverAttribute.droppedAttributesCount, 0);
       assert.strictEqual(
           Object.keys(stackdriverAttribute.attributeMap!).length, 3);
-      assert.deepEqual(stackdriverAttribute.attributeMap, expectedAttributeMap);
+      assert.deepStrictEqual(
+          stackdriverAttribute.attributeMap, expectedAttributeMap);
     });
 
     it('should return stackdriver Attributes with labels', () => {
@@ -223,7 +225,8 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       assert.strictEqual(stackdriverAttribute.droppedAttributesCount, 2);
       assert.strictEqual(
           Object.keys(stackdriverAttribute.attributeMap!).length, 5);
-      assert.deepEqual(stackdriverAttribute.attributeMap, expectedAttributeMap);
+      assert.deepStrictEqual(
+          stackdriverAttribute.attributeMap, expectedAttributeMap);
     });
   });
 
@@ -253,7 +256,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const resolvingPromise = Promise.resolve(resource);
       const resourceLabels = await getResourceLabels(resolvingPromise);
       assert.strictEqual(Object.keys(resourceLabels).length, 5);
-      assert.deepEqual(resourceLabels, expectedLabels);
+      assert.deepStrictEqual(resourceLabels, expectedLabels);
     });
 
     it('should return gce instance labels', async () => {
@@ -275,7 +278,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const resolvingPromise = Promise.resolve(resource);
       const resourceLabels = await getResourceLabels(resolvingPromise);
       assert.strictEqual(Object.keys(resourceLabels).length, 3);
-      assert.deepEqual(resourceLabels, expectedLabels);
+      assert.deepStrictEqual(resourceLabels, expectedLabels);
     });
 
     it('should return aws ec2 instance labels', async () => {
@@ -302,7 +305,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const resolvingPromise = Promise.resolve(resource);
       const resourceLabels = await getResourceLabels(resolvingPromise);
       assert.strictEqual(Object.keys(resourceLabels).length, 4);
-      assert.deepEqual(resourceLabels, expectedLabels);
+      assert.deepStrictEqual(resourceLabels, expectedLabels);
     });
   });
 });

@@ -27,7 +27,7 @@ function randint(range: number) {
 describe('variant encoding', () => {
   it('should encode single byte', () => {
     const expected = randint(127);
-    assert.deepEqual(EncodeVarint(expected), [expected]);
+    assert.deepStrictEqual(EncodeVarint(expected), [expected]);
   });
 
   it('should encode/decode multiple bytes', () => {
@@ -35,7 +35,7 @@ describe('variant encoding', () => {
     const expectedBytes = [0xAC, 0x02];  // [172, 2]
 
     const variant = EncodeVarint(num);
-    assert.deepEqual(variant, expectedBytes);
+    assert.deepStrictEqual(variant, expectedBytes);
     const buff = Buffer.from(variant);
     assert.strictEqual(DecodeVarint(buff, 0), num);
   });

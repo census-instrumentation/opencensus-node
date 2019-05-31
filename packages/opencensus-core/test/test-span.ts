@@ -317,13 +317,13 @@ describe('Span', () => {
           /** compressedSize */ 40);
 
       assert.ok(span.messageEvents.length > 0);
-      assert.deepEqual(span.messageEvents, [{
-                         type: types.MessageEventType.UNSPECIFIED,
-                         id: 1,
-                         timestamp: 1550000000000,
-                         uncompressedSize: 55,
-                         compressedSize: 40,
-                       }]);
+      assert.deepStrictEqual(span.messageEvents, [{
+                               type: types.MessageEventType.UNSPECIFIED,
+                               id: 1,
+                               timestamp: 1550000000000,
+                               uncompressedSize: 55,
+                               compressedSize: 40,
+                             }]);
       assert.strictEqual(span.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(span.messageEvents[0]));
     });

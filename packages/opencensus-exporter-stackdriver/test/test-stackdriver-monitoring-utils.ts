@@ -461,7 +461,7 @@ describe('Stackdriver Stats Exporter Utils', () => {
       const {type, labels} = monitoredResource;
 
       assert.strictEqual(type, 'global');
-      assert.deepEqual(labels, {project_id: 'my-project-id'});
+      assert.deepStrictEqual(labels, {project_id: 'my-project-id'});
     });
 
     it('should return a k8s MonitoredResource', async () => {
