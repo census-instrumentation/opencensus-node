@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-import {AggregationData, Exporter, ExporterConfig, Measure, Measurement, Span, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import {
+  AggregationData,
+  Exporter,
+  ExporterConfig,
+  Measure,
+  Measurement,
+  Span,
+  StatsEventListener,
+  TagKey,
+  TagValue,
+  View,
+} from '@opencensus/core';
+import { logger, Logger } from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
-import {createRoutes} from './zpages-frontend/routes';
+import { createRoutes } from './zpages-frontend/routes';
 
 /** Interface to Zpages options */
 export interface ZpagesExporterOptions extends ExporterConfig {
@@ -33,13 +44,13 @@ export interface ZpagesExporterOptions extends ExporterConfig {
 export interface StatsParams {
   registeredViews: View[];
   registeredMeasures: Measure[];
-  recordedData: {[key: string]: AggregationData[]};
+  recordedData: { [key: string]: AggregationData[] };
 }
 
 /** Class to ZpagesExporter */
 export class ZpagesExporter implements Exporter, StatsEventListener {
   /** ZpagesExporter default options */
-  static readonly defaultOptions = {port: 8080, startServer: true};
+  static readonly defaultOptions = { port: 8080, startServer: true };
 
   private app: express.Application;
   private server?: http.Server;
@@ -49,7 +60,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
   private statsParams: StatsParams = {
     registeredViews: [],
     registeredMeasures: [],
-    recordedData: {}
+    recordedData: {},
   };
 
   constructor(options: ZpagesExporterOptions) {
@@ -57,9 +68,10 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
     this.app = express();
     this.port = options.port || ZpagesExporter.defaultOptions.port;
     this.logger = options.logger || logger.logger();
-    const startServer = options.startServer != null ?
-        options.startServer :
-        ZpagesExporter.defaultOptions.startServer;
+    const startServer =
+      options.startServer != null
+        ? options.startServer
+        : ZpagesExporter.defaultOptions.startServer;
 
     /** register predefined span names, if any */
     if (options.spanNames) {
@@ -101,8 +113,11 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
       this.statsParams.registeredViews.push(view);
     }
     // Adds the measure to registeredMeasures array if it doesn't contain yet
-    if (!this.statsParams.registeredMeasures.find(
-            m => m.name === view.measure.name)) {
+    if (
+      !this.statsParams.registeredMeasures.find(
+        m => m.name === view.measure.name
+      )
+    ) {
       this.statsParams.registeredMeasures.push(view.measure);
     }
   }
@@ -114,16 +129,19 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    * @param tags The tags to which the value is applied
    */
   onRecord(
-      views: View[], measurement: Measurement,
-      tags: Map<TagKey, TagValue>): void {
+    views: View[],
+    measurement: Measurement,
+    tags: Map<TagKey, TagValue>
+  ): void {
     const tagValues = [...tags.values()];
     views.map(view => {
       const snapshot = view.getSnapshot(tagValues);
       // Check if there is no data for the current view
       if (!this.statsParams.recordedData[view.name]) {
         this.statsParams.recordedData[view.name] = [snapshot];
-      } else if (!this.statsParams.recordedData[view.name].find(
-                     s => s === snapshot)) {
+      } else if (
+        !this.statsParams.recordedData[view.name].find(s => s === snapshot)
+      ) {
         // Push the snapshot if it hasn't recoreded before
         this.statsParams.recordedData[view.name].push(snapshot);
       }
@@ -176,7 +194,7 @@ export class ZpagesExporter implements Exporter, StatsEventListener {
    */
   private registerSpanNames(spanNames: string[]) {
     for (const name of spanNames) {
-      const span = {name} as Span;
+      const span = { name } as Span;
       this.traces.set(name, [span]);
     }
   }

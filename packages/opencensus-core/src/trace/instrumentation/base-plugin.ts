@@ -16,19 +16,19 @@
 
 import * as path from 'path';
 import * as semver from 'semver';
-import {noopLogger} from '../../common/noop-logger';
-import {Logger} from '../../common/types';
-import {Stats} from '../../stats/types';
+import { noopLogger } from '../../common/noop-logger';
+import { Logger } from '../../common/types';
+import { Stats } from '../../stats/types';
 import * as modelTypes from '../model/types';
 import * as types from './types';
 
 /**
  * Maps a name (key) representing a internal file module and its exports
  */
-export type ModuleExportsMapping = {
+export interface ModuleExportsMapping {
   // tslint:disable-next-line:no-any
   [key: string]: any;
-};
+}
 
 /** This class represent the base to patch plugin. */
 export abstract class BasePlugin implements types.Plugin {
@@ -72,9 +72,14 @@ export abstract class BasePlugin implements types.Plugin {
    * @param stats a stats instance
    */
   private setPluginContext(
-      // tslint:disable-next-line:no-any
-      moduleExports: any, tracer: modelTypes.Tracer, version: string,
-      options: types.PluginConfig, basedir?: string, stats?: Stats) {
+    // tslint:disable-next-line:no-any
+    moduleExports: any,
+    tracer: modelTypes.Tracer,
+    version: string,
+    options: types.PluginConfig,
+    basedir?: string,
+    stats?: Stats
+  ) {
     this.moduleExports = moduleExports;
     this.tracer = tracer;
     this.version = version;
@@ -100,10 +105,21 @@ export abstract class BasePlugin implements types.Plugin {
    * @param stats an optional stats instance
    */
   enable<T>(
-      moduleExports: T, tracer: modelTypes.Tracer, version: string,
-      options: types.PluginConfig, basedir?: string, stats?: Stats) {
+    moduleExports: T,
+    tracer: modelTypes.Tracer,
+    version: string,
+    options: types.PluginConfig,
+    basedir?: string,
+    stats?: Stats
+  ) {
     this.setPluginContext(
-        moduleExports, tracer, version, options, basedir, stats);
+      moduleExports,
+      tracer,
+      version,
+      options,
+      basedir,
+      stats
+    );
     return this.applyPatch();
   }
 
@@ -123,7 +139,6 @@ export abstract class BasePlugin implements types.Plugin {
   protected abstract applyPatch(): any;
   protected abstract applyUnpatch(): void;
 
-
   /**
    * Load internal files according to version range
    */
@@ -135,43 +150,54 @@ export abstract class BasePlugin implements types.Plugin {
         if (semver.satisfies(this.version, versionRange)) {
           if (result) {
             this.logger.warn(
-                'Plugin for %s@%s, has overlap version range (%s) for internal files: %o',
-                this.moduleName, this.version, versionRange,
-                this.internalFileList);
+              'Plugin for %s@%s, has overlap version range (%s) for internal files: %o',
+              this.moduleName,
+              this.version,
+              versionRange,
+              this.internalFileList
+            );
           }
           result = this.loadInternalModuleFiles(
-              this.internalFileList[versionRange], this.basedir);
+            this.internalFileList[versionRange],
+            this.basedir
+          );
         }
       });
       if (Object.keys(result).length === 0) {
         this.logger.debug(
-            'No internal file could be loaded for %s@%s', this.moduleName,
-            this.version);
+          'No internal file could be loaded for %s@%s',
+          this.moduleName,
+          this.version
+        );
       }
     }
 
     return result;
   }
 
-
   /**
    * Load internal files from a module and  set internalFilesExports
    */
   private loadInternalModuleFiles(
-      extraModulesList: types.PluginInternalFilesVersion,
-      basedir: string): ModuleExportsMapping {
+    extraModulesList: types.PluginInternalFilesVersion,
+    basedir: string
+  ): ModuleExportsMapping {
     const extraModules: ModuleExportsMapping = {};
     if (extraModulesList) {
       Object.keys(extraModulesList).forEach(moduleName => {
         try {
           this.logger.debug('loading File %s', extraModulesList[moduleName]);
-          extraModules[moduleName] =
-              require(path.join(basedir, extraModulesList[moduleName]));
+          extraModules[moduleName] = require(path.join(
+            basedir,
+            extraModulesList[moduleName]
+          ));
         } catch (e) {
           this.logger.error(
-              'Could not load internal file %s of module %s. Error: %s',
-              path.join(basedir, extraModulesList[moduleName]), this.moduleName,
-              e.message);
+            'Could not load internal file %s of module %s. Error: %s',
+            path.join(basedir, extraModulesList[moduleName]),
+            this.moduleName,
+            e.message
+          );
         }
       });
     }

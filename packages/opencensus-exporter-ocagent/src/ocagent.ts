@@ -15,11 +15,23 @@
  */
 
 import * as protoLoader from '@grpc/proto-loader';
-import {Exporter, ExporterBuffer, ExporterConfig, logger, Logger, Span, version as coreVersion} from '@opencensus/core';
+import {
+  Exporter,
+  ExporterBuffer,
+  ExporterConfig,
+  logger,
+  Logger,
+  Span,
+  version as coreVersion,
+} from '@opencensus/core';
 import * as grpc from 'grpc';
 import * as os from 'os';
-import {adaptRootSpan, createNode} from './adapters';
-import {opencensus, TraceServiceClient, TraceServiceExportStream} from './types';
+import { adaptRootSpan, createNode } from './adapters';
+import {
+  opencensus,
+  TraceServiceClient,
+  TraceServiceExportStream,
+} from './types';
 
 /**
  * Options for OpenCensus Agent Exporter configuration.
@@ -37,7 +49,7 @@ const DEFAULT_OPTIONS: OCAgentExporterOptions = {
   host: 'localhost',
   port: 55678,
   credentials: grpc.credentials.createInsecure(),
-  logger: logger.logger()
+  logger: logger.logger(),
 };
 
 /**
@@ -47,7 +59,7 @@ enum StreamEvent {
   Data = 'data',
   Status = 'status',
   Error = 'error',
-  Metadata = 'metadata'
+  Metadata = 'metadata',
 }
 
 /**
@@ -63,7 +75,7 @@ export class OCAgentExporter implements Exporter {
 
   // Connection objects
   private traceServiceClient: TraceServiceClient;
-  private exportStream: TraceServiceExportStream|undefined;
+  private exportStream: TraceServiceExportStream | undefined;
 
   // Resolved configuration options
   private config: OCAgentExporterOptions;
@@ -90,35 +102,35 @@ export class OCAgentExporter implements Exporter {
     this.exporterVersion = require('../../package.json').version;
     this.coreVersion = coreVersion;
     this.hostName = os.hostname();
-    this.processStartTimeMillis = Date.now() - (process.uptime() * 1000);
+    this.processStartTimeMillis = Date.now() - process.uptime() * 1000;
 
     /**
      * Generate grpc services from the proto files.
      */
     const traceServiceProtoPath =
-        'opencensus/proto/agent/trace/v1/trace_service.proto';
-    const includeDirs = [
-      __dirname + '/protos',
-    ];
+      'opencensus/proto/agent/trace/v1/trace_service.proto';
+    const includeDirs = [__dirname + '/protos'];
     // tslint:disable-next-line:no-any
-    const proto: any =
-        grpc.loadPackageDefinition(protoLoader.loadSync(traceServiceProtoPath, {
-          keepCase: false,
-          longs: String,
-          enums: String,
-          defaults: true,
-          oneofs: true,
-          includeDirs
-        }));
+    const proto: any = grpc.loadPackageDefinition(
+      protoLoader.loadSync(traceServiceProtoPath, {
+        keepCase: false,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true,
+        includeDirs,
+      })
+    );
 
     /**
      * Connect to the trace service and connect to the config and export
      * streams.
      */
     const serverAddress = `${this.config.host}:${this.config.port}`;
-    this.traceServiceClient =
-        new proto.opencensus.proto.agent.trace.v1.TraceService(
-            serverAddress, this.config.credentials);
+    this.traceServiceClient = new proto.opencensus.proto.agent.trace.v1.TraceService(
+      serverAddress,
+      this.config.credentials
+    );
     this.start();
   }
 
@@ -167,22 +179,23 @@ export class OCAgentExporter implements Exporter {
       this.logger.info('OCAgent: export stream connected');
     });
     this.exportStream.on(
-        StreamEvent.Data,
-        (message:
-             opencensus.proto.agent.trace.v1.ExportTraceServiceResponse) => {
-            // no-op: We must listen on the "data" event otherwise we won't
-            // receive status events.
-        });
+      StreamEvent.Data,
+      (message: opencensus.proto.agent.trace.v1.ExportTraceServiceResponse) => {
+        // no-op: We must listen on the "data" event otherwise we won't
+        // receive status events.
+      }
+    );
     this.exportStream.on(StreamEvent.Status, (status: grpc.StatusObject) => {
       // Attempt reconnect if appropriate. The grpc client will perform a
       // backoff internally.
       if (this.shouldAttemptReconnect(status)) {
         this.logger.error(
-            `OCAgent: export stream disconnected; attempting reconnect`);
+          `OCAgent: export stream disconnected; attempting reconnect`
+        );
         setTimeout(() => this.connectToExportStream(), 250);
       }
     });
-    this.exportStream.on(StreamEvent.Error, (err) => {
+    this.exportStream.on(StreamEvent.Error, err => {
       // no-op: Swallow errors to keep the process alive. Not listening
       // to this event will exit the process on an error.
       this.logger.error('OCAgent: export stream error', err);
@@ -196,8 +209,8 @@ export class OCAgentExporter implements Exporter {
    */
   private shouldAttemptReconnect(status: grpc.StatusObject): boolean {
     switch (status.code) {
-      case grpc.status.UNKNOWN:      // stream disconnected
-      case grpc.status.UNAVAILABLE:  // stream could not be established
+      case grpc.status.UNKNOWN: // stream disconnected
+      case grpc.status.UNAVAILABLE: // stream could not be established
         return true;
       default:
         return false;
@@ -213,13 +226,14 @@ export class OCAgentExporter implements Exporter {
     this.buffer.addToBuffer(span);
   }
 
-  publish(spans: Span[]): Promise<number|string|void> {
+  publish(spans: Span[]): Promise<number | string | void> {
     return new Promise((resolve, reject) => {
       this.logger.info(`OCAgent: publish spans=${spans.length}`);
 
       if (!this.exportStream) {
         this.logger.warn(
-            'OCAgent: Export stream not connected. Could not publish spans.');
+          'OCAgent: Export stream not connected. Could not publish spans.'
+        );
         return reject();
       }
 
@@ -230,7 +244,7 @@ export class OCAgentExporter implements Exporter {
         coreVersion: this.coreVersion,
         hostName: this.hostName,
         processStartTimeMillis: this.processStartTimeMillis,
-        attributes: this.config.attributes
+        attributes: this.config.attributes,
       });
 
       // Adapt and write each Span to the agent through the export stream.
@@ -238,7 +252,7 @@ export class OCAgentExporter implements Exporter {
       // will be lost.
       spans.forEach(span => {
         if (this.exportStream) {
-          this.exportStream.write({node, spans: adaptRootSpan(span)});
+          this.exportStream.write({ node, spans: adaptRootSpan(span) });
         }
       });
 

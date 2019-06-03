@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
+import {
+  HeaderGetter,
+  HeaderSetter,
+  Propagation,
+  SpanContext,
+} from '@opencensus/core';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
-import {isValidSpanId, isValidTraceId} from './validators';
+import { isValidSpanId, isValidTraceId } from './validators';
 
 export const X_B3_TRACE_ID = 'x-b3-traceid';
 export const X_B3_SPAN_ID = 'x-b3-spanid';
@@ -33,7 +38,7 @@ export class B3Format implements Propagation {
    * in the headers, null is returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext|null {
+  extract(getter: HeaderGetter): SpanContext | null {
     const traceId = this.parseHeader(getter.getHeader(X_B3_TRACE_ID));
     const spanId = this.parseHeader(getter.getHeader(X_B3_SPAN_ID));
     const opt = this.parseHeader(getter.getHeader(X_B3_SAMPLED));
@@ -42,7 +47,7 @@ export class B3Format implements Propagation {
       return {
         traceId,
         spanId,
-        options: isNaN(Number(opt)) ? NOT_SAMPLED_VALUE : Number(opt)
+        options: isNaN(Number(opt)) ? NOT_SAMPLED_VALUE : Number(opt),
       };
     }
     return null;
@@ -54,8 +59,11 @@ export class B3Format implements Propagation {
    * @param spanContext
    */
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
-    if (!spanContext || !isValidTraceId(spanContext.traceId) ||
-        !isValidSpanId(spanContext.spanId)) {
+    if (
+      !spanContext ||
+      !isValidTraceId(spanContext.traceId) ||
+      !isValidSpanId(spanContext.spanId)
+    ) {
       return;
     }
 
@@ -73,14 +81,17 @@ export class B3Format implements Propagation {
    */
   generate(): SpanContext {
     return {
-      traceId: uuid.v4().split('-').join(''),
+      traceId: uuid
+        .v4()
+        .split('-')
+        .join(''),
       spanId: crypto.randomBytes(8).toString('hex'),
-      options: SAMPLED_VALUE
+      options: SAMPLED_VALUE,
     };
   }
 
   /** Converts a headers type to a string. */
-  private parseHeader(str: string|string[]|undefined): string|undefined {
+  private parseHeader(str: string | string[] | undefined): string | undefined {
     if (Array.isArray(str)) {
       return str[0];
     }

@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-import {CoreTracer, Span, SpanKind, TracerConfig} from '@opencensus/core';
+import { CoreTracer, Span, SpanKind, TracerConfig } from '@opencensus/core';
 import * as assert from 'assert';
 import * as nock from 'nock';
-import {InstanaTraceExporter} from '../src/instana';
+import { InstanaTraceExporter } from '../src/instana';
 
 /** Default config for traces tests */
 const defaultConfig: TracerConfig = {
-  samplingRate: 1
+  samplingRate: 1,
 };
 
 /** Run a nock server to replace the Instana agent */
 const runNockServer = () => {
   nock('http://127.0.0.1:42699')
-      .persist()
-      .post('/com.instana.plugin.generic.trace')
-      .reply(200);
+    .persist()
+    .post('/com.instana.plugin.generic.trace')
+    .reply(200);
 };
 
 /** Checking if tests will use a real network, otherwise run a nock server */
@@ -48,16 +48,16 @@ describe('Instana Exporter', function() {
       tracer.start(defaultConfig);
 
       return tracer
-          .startRootSpan(
-              {name: 'root-test'},
-              async (rootSpan: Span) => {
-                const span = rootSpan.startChildSpan(
-                    {name: 'spanTest', kind: SpanKind.CLIENT});
-                span.end();
-                rootSpan.end();
-                return exporter.publish([rootSpan, rootSpan]);
-              })
-          .then(error => assert.ifError(error));
+        .startRootSpan({ name: 'root-test' }, async (rootSpan: Span) => {
+          const span = rootSpan.startChildSpan({
+            name: 'spanTest',
+            kind: SpanKind.CLIENT,
+          });
+          span.end();
+          rootSpan.end();
+          return exporter.publish([rootSpan, rootSpan]);
+        })
+        .then(error => assert.ifError(error));
     });
   });
 });

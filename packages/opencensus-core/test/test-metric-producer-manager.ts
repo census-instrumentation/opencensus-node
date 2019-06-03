@@ -15,8 +15,8 @@
  */
 
 import * as assert from 'assert';
-import {metricProducerManagerInstance} from '../src/metrics/export/metric-producer-manager';
-import {MetricRegistry} from '../src/metrics/metric-registry';
+import { metricProducerManagerInstance } from '../src/metrics/export/metric-producer-manager';
+import { MetricRegistry } from '../src/metrics/metric-registry';
 
 describe('MetricProducerManager()', () => {
   const registry: MetricRegistry = new MetricRegistry();
@@ -31,44 +31,38 @@ describe('MetricProducerManager()', () => {
   describe('add()', () => {
     it('add metricproducer', () => {
       metricProducerManagerInstance.add(metricProducer);
-      const metricProducerList =
-          metricProducerManagerInstance.getAllMetricProducer();
+      const metricProducerList = metricProducerManagerInstance.getAllMetricProducer();
 
       assert.notStrictEqual(metricProducerList, null);
       assert.strictEqual(metricProducerList.size, 1);
     });
 
-    it('should not add same metricproducer metricProducerManagerInstance',
-       () => {
-         metricProducerManagerInstance.add(metricProducer);
-         metricProducerManagerInstance.add(metricProducer);
-         metricProducerManagerInstance.add(metricProducer);
-         const metricProducerList =
-             metricProducerManagerInstance.getAllMetricProducer();
+    it('should not add same metricproducer metricProducerManagerInstance', () => {
+      metricProducerManagerInstance.add(metricProducer);
+      metricProducerManagerInstance.add(metricProducer);
+      metricProducerManagerInstance.add(metricProducer);
+      const metricProducerList = metricProducerManagerInstance.getAllMetricProducer();
 
-         assert.strictEqual(metricProducerList.size, 1);
-         assert.ok(metricProducerList.has(metricProducer));
-       });
+      assert.strictEqual(metricProducerList.size, 1);
+      assert.ok(metricProducerList.has(metricProducer));
+    });
 
-    it('should add different metricproducer metricProducerManagerInstance',
-       () => {
-         metricProducerManagerInstance.add(metricProducer);
-         metricProducerManagerInstance.add(metricProducerOther);
-         const metricProducerList =
-             metricProducerManagerInstance.getAllMetricProducer();
+    it('should add different metricproducer metricProducerManagerInstance', () => {
+      metricProducerManagerInstance.add(metricProducer);
+      metricProducerManagerInstance.add(metricProducerOther);
+      const metricProducerList = metricProducerManagerInstance.getAllMetricProducer();
 
-         assert.strictEqual(metricProducerList.size, 2);
-         assert.ok(metricProducerList.has(metricProducer));
-         assert.ok(metricProducerList.has(metricProducerOther));
-       });
+      assert.strictEqual(metricProducerList.size, 2);
+      assert.ok(metricProducerList.has(metricProducer));
+      assert.ok(metricProducerList.has(metricProducerOther));
+    });
   });
 
   describe('remove()', () => {
     it('remove metricproducer', () => {
       metricProducerManagerInstance.add(metricProducer);
 
-      const metricProducerList =
-          metricProducerManagerInstance.getAllMetricProducer();
+      const metricProducerList = metricProducerManagerInstance.getAllMetricProducer();
       assert.strictEqual(metricProducerList.size, 1);
       assert.ok(metricProducerList.has(metricProducer));
 

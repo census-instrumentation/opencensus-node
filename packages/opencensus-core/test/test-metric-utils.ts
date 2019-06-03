@@ -16,10 +16,14 @@
 
 import * as assert from 'assert';
 
-import {BaseView, MetricUtils} from '../src';
-import {MetricDescriptorType} from '../src/metrics/export/types';
-import {AggregationType, Measure, MeasureType, MeasureUnit} from '../src/stats/types';
-
+import { BaseView, MetricUtils } from '../src';
+import { MetricDescriptorType } from '../src/metrics/export/types';
+import {
+  AggregationType,
+  Measure,
+  MeasureType,
+  MeasureUnit,
+} from '../src/stats/types';
 
 describe('MetricUtil', () => {
   it('should convert view to MetricDescriptor', () => {
@@ -27,36 +31,54 @@ describe('MetricUtil', () => {
     const measure: Measure = {
       name: 'Test Measure',
       type: MeasureType.DOUBLE,
-      unit: MeasureUnit.UNIT
+      unit: MeasureUnit.UNIT,
     };
-    const tagKeys = [{name: 'testKey1'}, {name: 'testKey2'}];
+    const tagKeys = [{ name: 'testKey1' }, { name: 'testKey2' }];
     const view = new BaseView(
-        'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-        VIEW_DESCRIPTION);
+      'test/view/name',
+      measure,
+      AggregationType.LAST_VALUE,
+      tagKeys,
+      VIEW_DESCRIPTION
+    );
     const metricDescriptor = MetricUtils.viewToMetricDescriptor(view);
 
     assert.ok(metricDescriptor);
     assert.strictEqual(metricDescriptor.name, view.name);
     assert.strictEqual(metricDescriptor.unit, MeasureUnit.UNIT);
     assert.strictEqual(
-        metricDescriptor.type, MetricDescriptorType.GAUGE_DOUBLE);
+      metricDescriptor.type,
+      MetricDescriptorType.GAUGE_DOUBLE
+    );
     assert.strictEqual(metricDescriptor.description, VIEW_DESCRIPTION);
     assert.deepStrictEqual(metricDescriptor.labelKeys, [
-      {key: 'testKey1', description: ''}, {key: 'testKey2', description: ''}
+      { key: 'testKey1', description: '' },
+      { key: 'testKey2', description: '' },
     ]);
   });
 
   it('should convert tag values to label values', () => {
-    const tags = [{value: 'value1'}, {value: 'value2'}, {value: ''}, null];
-    assert.deepStrictEqual(
-        MetricUtils.tagValuesToLabelValues(tags),
-        [{value: 'value1'}, {value: 'value2'}, {value: ''}, {value: null}]);
+    const tags = [
+      { value: 'value1' },
+      { value: 'value2' },
+      { value: '' },
+      null,
+    ];
+    assert.deepStrictEqual(MetricUtils.tagValuesToLabelValues(tags), [
+      { value: 'value1' },
+      { value: 'value2' },
+      { value: '' },
+      { value: null },
+    ]);
   });
 
   it('should convert tag values to label values with null tag value', () => {
-    const tags = [{value: 'value1'}, null, null, null];
-    assert.deepStrictEqual(
-        MetricUtils.tagValuesToLabelValues(tags),
-        [{value: 'value1'}, {value: null}, {value: null}, {value: null}]);
+    const tags = [{ value: 'value1' }, null, null, null];
+    assert.deepStrictEqual(MetricUtils.tagValuesToLabelValues(tags), [
+      { value: 'value1' },
+      { value: null },
+      { value: null },
+      { value: null },
+    ]);
   });
 });

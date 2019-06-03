@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, Span, SpanKind} from '@opencensus/core';
+import { BasePlugin, CanonicalCode, Span, SpanKind } from '@opencensus/core';
 import * as ioredis from 'ioredis';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
 
-export type IORedisCommand = {
-  reject: (err: Error) => void; resolve: (result: {}) => void;
+export interface IORedisCommand {
+  reject: (err: Error) => void;
+  resolve: (result: {}) => void;
   promise: Promise<{}>;
-  args: Array<string|Buffer|number>;
+  args: Array<string | Buffer | number>;
   callback: Function | undefined;
   name: string;
-};
+}
 
 /** IORedis instrumentation plugin for Opencensus */
 export class IORedisPlugin extends BasePlugin {
@@ -42,15 +43,18 @@ export class IORedisPlugin extends BasePlugin {
 
     if (!semver.satisfies(this.version, '>=2.0.0')) {
       this.logger.info(
-          'disabling ioredis plugin because version isnt supported');
+        'disabling ioredis plugin because version isnt supported'
+      );
       return this.moduleExports;
     }
 
     if (this.moduleExports) {
       this.logger.debug('patching ioredis.prototype.sendCommand');
       shimmer.wrap(
-          this.moduleExports.prototype, 'sendCommand',
-          this.getPatchSendCommand());
+        this.moduleExports.prototype,
+        'sendCommand',
+        this.getPatchSendCommand()
+      );
     }
 
     return this.moduleExports;
@@ -66,18 +70,23 @@ export class IORedisPlugin extends BasePlugin {
   /** Patch send command internal to trace requests */
   private getPatchSendCommand() {
     const plugin = this;
-    const addArguments = typeof this.options === 'object' &&
-        this.options.detailedCommands === true;
+    const addArguments =
+      typeof this.options === 'object' &&
+      this.options.detailedCommands === true;
 
     return function internalSendCommandWrap(original: Function) {
       return function internal_send_command_trace(
-          this: ioredis.Redis, command: IORedisCommand) {
+        this: ioredis.Redis,
+        command: IORedisCommand
+      ) {
         if (!plugin.tracer.currentRootSpan) {
           return original.apply(this, arguments);
         }
 
-        const span = plugin.tracer.startChildSpan(
-            {name: `redis-${command.name}`, kind: SpanKind.CLIENT});
+        const span = plugin.tracer.startChildSpan({
+          name: `redis-${command.name}`,
+          kind: SpanKind.CLIENT,
+        });
         if (span === null) return original.apply(this, arguments);
 
         span.addAttribute('command', command.name);
@@ -99,8 +108,9 @@ export class IORedisPlugin extends BasePlugin {
           if (typeof command.promise.finally === 'function') {
             command.promise.finally(plugin.patchEnd(span));
           } else if (typeof command.promise.then === 'function') {
-            command.promise.then(plugin.patchEnd(span))
-                .catch(plugin.patchEnd(span));
+            command.promise
+              .then(plugin.patchEnd(span))
+              .catch(plugin.patchEnd(span));
           }
         }
         return original.apply(this, arguments);
@@ -128,4 +138,4 @@ export class IORedisPlugin extends BasePlugin {
 }
 
 const plugin = new IORedisPlugin('ioredis');
-export {plugin};
+export { plugin };

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Metric, MetricProducer} from './types';
+import { Metric, MetricProducer } from './types';
 
 /**
  * A MetricProducer producer that can be registered for exporting using

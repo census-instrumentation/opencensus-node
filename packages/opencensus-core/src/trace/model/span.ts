@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {noopLogger} from '../../common/noop-logger';
-import {Logger} from '../../common/types';
-import {Clock} from '../../internal/clock';
-import {randomSpanId} from '../../internal/util';
+import { noopLogger } from '../../common/noop-logger';
+import { Logger } from '../../common/types';
+import { Clock } from '../../internal/clock';
+import { randomSpanId } from '../../internal/util';
 import * as configTypes from '../config/types';
 
-import {NoRecordSpan} from './no-record/no-record-span';
+import { NoRecordSpan } from './no-record/no-record-span';
 import * as types from './types';
 
 const STATUS_OK = {
-  code: types.CanonicalCode.OK
+  code: types.CanonicalCode.OK,
 };
 
 /** Defines a base model for spans. */
@@ -37,9 +37,6 @@ export class Span implements types.Span {
   private startedLocal = false;
   /** Indicates if this span was ended */
   private endedLocal = false;
-  /** Indicates if this span was forced to end */
-  // @ts-ignore
-  private truncated = false;
   /** A list of child spans which are immediate, local children of this span */
   private spansLocal: types.Span[];
   /** The Span ID of this span */
@@ -105,7 +102,7 @@ export class Span implements types.Span {
   }
 
   /** Gets the trace state */
-  get traceState(): types.TraceState|undefined {
+  get traceState(): types.TraceState | undefined {
     return this.root.traceState;
   }
 
@@ -193,8 +190,8 @@ export class Span implements types.Span {
     return {
       traceId: this.traceId,
       spanId: this.id,
-      options: 0x1,  // always traced
-      traceState: this.traceState
+      options: 0x1, // always traced
+      traceState: this.traceState,
     };
   }
 
@@ -204,13 +201,15 @@ export class Span implements types.Span {
    * @param value The result of an operation. If the value is a typeof object
    *     it has to be JSON.stringify-able, cannot contain circular dependencies.
    */
-  addAttribute(key: string, value: string|number|boolean|object) {
+  addAttribute(key: string, value: string | number | boolean | object) {
     if (this.attributes[key]) {
       delete this.attributes[key];
     }
 
-    if (Object.keys(this.attributes).length >=
-        this.activeTraceParams.numberOfAttributesPerSpan!) {
+    if (
+      Object.keys(this.attributes).length >=
+      this.activeTraceParams.numberOfAttributesPerSpan!
+    ) {
       this.droppedAttributesCount++;
       const attributeKeyToDelete = Object.keys(this.attributes).shift();
       if (attributeKeyToDelete) {
@@ -218,7 +217,7 @@ export class Span implements types.Span {
       }
     }
     const serializedValue =
-        typeof value === 'object' ? JSON.stringify(value) : value;
+      typeof value === 'object' ? JSON.stringify(value) : value;
     this.attributes[key] = serializedValue;
   }
 
@@ -229,14 +228,18 @@ export class Span implements types.Span {
    * @param timestamp A time, in milliseconds. Defaults to Date.now()
    */
   addAnnotation(
-      description: string, attributes: types.Attributes = {},
-      timestamp = Date.now()) {
-    if (this.annotations.length >=
-        this.activeTraceParams.numberOfAnnontationEventsPerSpan!) {
+    description: string,
+    attributes: types.Attributes = {},
+    timestamp = Date.now()
+  ) {
+    if (
+      this.annotations.length >=
+      this.activeTraceParams.numberOfAnnontationEventsPerSpan!
+    ) {
       this.annotations.shift();
       this.droppedAnnotationsCount++;
     }
-    this.annotations.push({description, attributes, timestamp});
+    this.annotations.push({ description, attributes, timestamp });
   }
 
   /**
@@ -247,14 +250,17 @@ export class Span implements types.Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: types.LinkType,
-      attributes: types.Attributes = {}) {
+    traceId: string,
+    spanId: string,
+    type: types.LinkType,
+    attributes: types.Attributes = {}
+  ) {
     if (this.links.length >= this.activeTraceParams.numberOfLinksPerSpan!) {
       this.links.shift();
       this.droppedLinksCount++;
     }
 
-    this.links.push({traceId, spanId, type, attributes});
+    this.links.push({ traceId, spanId, type, attributes });
   }
 
   /**
@@ -267,10 +273,16 @@ export class Span implements types.Span {
    *     zero or undefined, assumed to be the same size as uncompressed.
    */
   addMessageEvent(
-      type: types.MessageEventType, id: number, timestamp = Date.now(),
-      uncompressedSize?: number, compressedSize?: number) {
-    if (this.messageEvents.length >=
-        this.activeTraceParams.numberOfMessageEventsPerSpan!) {
+    type: types.MessageEventType,
+    id: number,
+    timestamp = Date.now(),
+    uncompressedSize?: number,
+    compressedSize?: number
+  ) {
+    if (
+      this.messageEvents.length >=
+      this.activeTraceParams.numberOfMessageEventsPerSpan!
+    ) {
       this.messageEvents.shift();
       this.droppedMessageEventsCount++;
     }
@@ -290,15 +302,18 @@ export class Span implements types.Span {
    * @param message optional A developer-facing error message.
    */
   setStatus(code: types.CanonicalCode, message?: string) {
-    this.status = {code, message};
+    this.status = { code, message };
   }
 
   /** Starts the span. */
   start() {
     if (this.started) {
       this.logger.debug(
-          'calling %s.start() on already started %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.kind});
+        'calling %s.start() on already started %s %o',
+        this.className,
+        this.className,
+        { id: this.id, name: this.name, type: this.kind }
+      );
       return;
     }
     this.clock = new Clock();
@@ -308,7 +323,7 @@ export class Span implements types.Span {
       id: this.id,
       name: this.name,
       parentSpanId: this.parentSpanId,
-      traceState: this.traceState
+      traceState: this.traceState,
     });
 
     if (this.isRootSpan()) this.tracer.setCurrentRootSpan(this);
@@ -319,14 +334,20 @@ export class Span implements types.Span {
   end(): void {
     if (this.ended) {
       this.logger.debug(
-          'calling %s.end() on already ended %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.kind});
+        'calling %s.end() on already ended %s %o',
+        this.className,
+        this.className,
+        { id: this.id, name: this.name, type: this.kind }
+      );
       return;
     }
     if (!this.started) {
       this.logger.error(
-          'calling %s.end() on un-started %s %o', this.className,
-          this.className, {id: this.id, name: this.name, type: this.kind});
+        'calling %s.end() on un-started %s %o',
+        this.className,
+        this.className,
+        { id: this.id, name: this.name, type: this.kind }
+      );
       return;
     }
     this.startedLocal = false;
@@ -346,10 +367,11 @@ export class Span implements types.Span {
 
   /** Forces the span to end. */
   truncate() {
-    this.truncated = true;
     this.end();
-    this.logger.debug(
-        'truncating %s  %o', this.className, {id: this.id, name: this.name});
+    this.logger.debug('truncating %s  %o', this.className, {
+      id: this.id,
+      name: this.name,
+    });
   }
 
   /**
@@ -359,14 +381,20 @@ export class Span implements types.Span {
   startChildSpan(options?: types.SpanOptions): types.Span {
     if (this.ended) {
       this.logger.debug(
-          'calling %s.startSpan() on ended %s %o', this.className,
-          this.className, {id: this.id, name: this.name, kind: this.kind});
+        'calling %s.startSpan() on ended %s %o',
+        this.className,
+        this.className,
+        { id: this.id, name: this.name, kind: this.kind }
+      );
       return new NoRecordSpan();
     }
     if (!this.started) {
       this.logger.debug(
-          'calling %s.startSpan() on un-started %s %o', this.className,
-          this.className, {id: this.id, name: this.name, kind: this.kind});
+        'calling %s.startSpan() on un-started %s %o',
+        this.className,
+        this.className,
+        { id: this.id, name: this.name, kind: this.kind }
+      );
       return new NoRecordSpan();
     }
 

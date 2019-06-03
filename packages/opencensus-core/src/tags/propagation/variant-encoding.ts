@@ -19,7 +19,7 @@
 const MSB = 0x80;
 
 // The REST indicates the lower 7 bits of each byte.
-const REST = 0x7F;
+const REST = 0x7f;
 
 /**
  * Encodes a number in a variable-length encoding, 7 bits per byte.
@@ -30,7 +30,7 @@ export function EncodeVarint(value: number) {
   do {
     const bits = value & REST;
     value >>>= 7;
-    const b = bits + ((value !== 0) ? MSB : 0);
+    const b = bits + (value !== 0 ? MSB : 0);
     ret.push(b);
   } while (value !== 0);
   return ret;

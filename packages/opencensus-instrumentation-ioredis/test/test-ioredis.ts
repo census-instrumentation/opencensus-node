@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger, Span, SpanEventListener, SpanKind} from '@opencensus/core';
+import {
+  CoreTracer,
+  logger,
+  Span,
+  SpanEventListener,
+  SpanKind,
+} from '@opencensus/core';
 import * as assert from 'assert';
 import * as ioredis from 'ioredis';
 
-import {plugin} from '../src';
+import { plugin } from '../src';
 
 /** Collects ended root spans to allow for later analysis. */
 class RootSpanVerifier implements SpanEventListener {
@@ -43,14 +49,21 @@ class RootSpanVerifier implements SpanEventListener {
  * @param expectedKind The expected kind of the first root span.
  */
 function assertSpan(
-    rootSpanVerifier: RootSpanVerifier, expectedName: string,
-    expectedKind: SpanKind, verifyAttribute?: (span: Span) => boolean) {
+  rootSpanVerifier: RootSpanVerifier,
+  expectedName: string,
+  expectedKind: SpanKind,
+  verifyAttribute?: (span: Span) => boolean
+) {
   assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
   assert.strictEqual(rootSpanVerifier.endedRootSpans[0].spans.length, 1);
   assert.strictEqual(
-      rootSpanVerifier.endedRootSpans[0].spans[0].name, expectedName);
+    rootSpanVerifier.endedRootSpans[0].spans[0].name,
+    expectedName
+  );
   assert.strictEqual(
-      rootSpanVerifier.endedRootSpans[0].spans[0].kind, expectedKind);
+    rootSpanVerifier.endedRootSpans[0].spans[0].kind,
+    expectedKind
+  );
   if (typeof verifyAttribute === 'function') {
     for (const span of rootSpanVerifier.endedRootSpans[0].spans) {
       assert(verifyAttribute(span), 'failed to verify attribute');
@@ -59,7 +72,7 @@ function assertSpan(
 }
 
 describe('IORedisPlugin', () => {
-  // For these tests, mongo must be runing. Add OPENCENSUS_REDIS_TESTS to run
+  // For these tests, mongo must be running. Add OPENCENSUS_REDIS_TESTS to run
   // these tests.
   const OPENCENSUS_REDIS_TESTS = process.env.OPENCENSUS_REDIS_TESTS;
   const OPENCENSUS_REDIS_HOST = process.env.OPENCENSUS_REDIS_HOST;
@@ -75,8 +88,8 @@ describe('IORedisPlugin', () => {
   const rootSpanVerifier = new RootSpanVerifier();
   let client: ioredis.Redis;
 
-  before((done) => {
-    tracer.start({samplingRate: 1, logger: logger.logger(1)});
+  before(done => {
+    tracer.start({ samplingRate: 1, logger: logger.logger(1) });
     tracer.registerSpanEventListener(rootSpanVerifier);
     plugin.enable(ioredis, tracer, VERSION, {}, '');
     client = new ioredis(URL);
@@ -109,29 +122,13 @@ describe('IORedisPlugin', () => {
   });
 
   describe('Instrumenting query operations', () => {
-    it('should create a child span for hset', (done) => {
-      tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
+    it('should create a child span for hset', done => {
+      tracer.startRootSpan({ name: 'insertRootSpan' }, (rootSpan: Span) => {
         client.hset('hash', 'random', 'random', (err, result) => {
           assert.ifError(err);
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
-          assertSpan(
-              rootSpanVerifier, `redis-hset`, SpanKind.CLIENT, (span) => {
-                return span.attributes.arguments === undefined;
-              });
-          done();
-        });
-      });
-    });
-
-    it('should create a child span for get', (done) => {
-      tracer.startRootSpan({name: 'getRootSpan'}, (rootSpan: Span) => {
-        client.get('test', (err, result) => {
-          assert.ifError(err);
-          assert.strictEqual(result, 'data');
-          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-          rootSpan.end();
-          assertSpan(rootSpanVerifier, `redis-get`, SpanKind.CLIENT, (span) => {
+          assertSpan(rootSpanVerifier, `redis-hset`, SpanKind.CLIENT, span => {
             return span.attributes.arguments === undefined;
           });
           done();
@@ -139,16 +136,34 @@ describe('IORedisPlugin', () => {
       });
     });
 
-    it('should create a child span for del', (done) => {
-      tracer.startRootSpan({name: 'removeRootSpan'}, async (rootSpan: Span) => {
-        await client.del('test');
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-        rootSpan.end();
-        assertSpan(rootSpanVerifier, `redis-del`, SpanKind.CLIENT, (span) => {
-          return span.attributes.arguments === undefined;
+    it('should create a child span for get', done => {
+      tracer.startRootSpan({ name: 'getRootSpan' }, (rootSpan: Span) => {
+        client.get('test', (err, result) => {
+          assert.ifError(err);
+          assert.strictEqual(result, 'data');
+          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          rootSpan.end();
+          assertSpan(rootSpanVerifier, `redis-get`, SpanKind.CLIENT, span => {
+            return span.attributes.arguments === undefined;
+          });
+          done();
         });
-        done();
       });
+    });
+
+    it('should create a child span for del', done => {
+      tracer.startRootSpan(
+        { name: 'removeRootSpan' },
+        async (rootSpan: Span) => {
+          await client.del('test');
+          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          rootSpan.end();
+          assertSpan(rootSpanVerifier, `redis-del`, SpanKind.CLIENT, span => {
+            return span.attributes.arguments === undefined;
+          });
+          done();
+        }
+      );
     });
   });
 
@@ -157,43 +172,53 @@ describe('IORedisPlugin', () => {
       plugin.applyUnpatch();
     });
 
-    it('should not create a child span for insert', (done) => {
-      tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
+    it('should not create a child span for insert', done => {
+      tracer.startRootSpan({ name: 'insertRootSpan' }, (rootSpan: Span) => {
         client.hset('hash', 'random', 'random', (err, result) => {
           assert.ifError(err);
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
           rootSpan.end();
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
           assert.strictEqual(
-              rootSpanVerifier.endedRootSpans[0].spans.length, 0);
+            rootSpanVerifier.endedRootSpans[0].spans.length,
+            0
+          );
           done();
         });
       });
     });
 
-    it('should not create a child span for get', (done) => {
-      tracer.startRootSpan({name: 'getRootSpan'}, (rootSpan: Span) => {
+    it('should not create a child span for get', done => {
+      tracer.startRootSpan({ name: 'getRootSpan' }, (rootSpan: Span) => {
         client.get('test', (err, result) => {
           assert.ifError(err);
           assert.strictEqual(result, 'data');
           rootSpan.end();
           assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
           assert.strictEqual(
-              rootSpanVerifier.endedRootSpans[0].spans.length, 0);
+            rootSpanVerifier.endedRootSpans[0].spans.length,
+            0
+          );
           done();
         });
       });
     });
 
-    it('should not create a child span for del', (done) => {
-      tracer.startRootSpan({name: 'removeRootSpan'}, async (rootSpan: Span) => {
-        await client.del('test');
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
-        rootSpan.end();
-        assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
-        assert.strictEqual(rootSpanVerifier.endedRootSpans[0].spans.length, 0);
-        done();
-      });
+    it('should not create a child span for del', done => {
+      tracer.startRootSpan(
+        { name: 'removeRootSpan' },
+        async (rootSpan: Span) => {
+          await client.del('test');
+          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
+          rootSpan.end();
+          assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 1);
+          assert.strictEqual(
+            rootSpanVerifier.endedRootSpans[0].spans.length,
+            0
+          );
+          done();
+        }
+      );
     });
   });
 });

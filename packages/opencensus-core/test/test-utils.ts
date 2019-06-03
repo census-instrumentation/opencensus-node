@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 import * as assert from 'assert';
-import {LabelValue} from '../src/metrics/export/types';
-import {hashLabelValues, initializeDefaultLabels} from '../src/metrics/utils';
+import { LabelValue } from '../src/metrics/export/types';
+import { hashLabelValues, initializeDefaultLabels } from '../src/metrics/utils';
 
 describe('hashLabelValues', () => {
-  const LABEL_VALUES: LabelValue[] = [{value: '200'}];
-  const LABEL_VALUES_WITH_NULL: LabelValue[] = [{value: '200'}, {value: null}];
-  const LABEL_VALUES_1: LabelValue[] = [{value: '200'}, {value: '400'}];
-  const LABEL_VALUES_2: LabelValue[] = [{value: '400'}, {value: '200'}];
+  const LABEL_VALUES: LabelValue[] = [{ value: '200' }];
+  const LABEL_VALUES_WITH_NULL: LabelValue[] = [
+    { value: '200' },
+    { value: null },
+  ];
+  const LABEL_VALUES_1: LabelValue[] = [{ value: '200' }, { value: '400' }];
+  const LABEL_VALUES_2: LabelValue[] = [{ value: '400' }, { value: '200' }];
   it('should return hash for single Value', () => {
     const hash = hashLabelValues(LABEL_VALUES);
     assert.deepStrictEqual(hash, '200');
@@ -32,21 +35,26 @@ describe('hashLabelValues', () => {
   });
   it('should return same hash for interchanged labels', () => {
     assert.deepStrictEqual(
-        hashLabelValues(LABEL_VALUES_1), hashLabelValues(LABEL_VALUES_2));
+      hashLabelValues(LABEL_VALUES_1),
+      hashLabelValues(LABEL_VALUES_2)
+    );
   });
   it('should return empty string for empty array', () => {
     assert.deepStrictEqual(hashLabelValues([]), '');
   });
 });
 describe('initializeDefaultLabels', () => {
-  const UNSET_VALUE: LabelValue = {value: null};
+  const UNSET_VALUE: LabelValue = { value: null };
   it('should return single default labels', () => {
     const labelValues = initializeDefaultLabels(1);
     assert.deepStrictEqual(labelValues, [UNSET_VALUE]);
   });
   it('should return multiple default labels', () => {
     const labelValues = initializeDefaultLabels(3);
-    assert.deepStrictEqual(
-        labelValues, [UNSET_VALUE, UNSET_VALUE, UNSET_VALUE]);
+    assert.deepStrictEqual(labelValues, [
+      UNSET_VALUE,
+      UNSET_VALUE,
+      UNSET_VALUE,
+    ]);
   });
 });

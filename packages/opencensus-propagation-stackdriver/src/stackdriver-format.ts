@@ -31,9 +31,9 @@
  */
 
 import * as crypto from 'crypto';
-import {decToHex, hexToDec} from 'hex2dec';
+import { decToHex, hexToDec } from 'hex2dec';
 import * as uuid from 'uuid';
-import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from './index';
+import { HeaderGetter, HeaderSetter, Propagation, SpanContext } from './index';
 
 /** Header that carries span context across Google infrastructure. */
 export const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';
@@ -47,15 +47,20 @@ export class StackdriverFormat implements Propagation {
    * in the headers, null is returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext|null {
+  extract(getter: HeaderGetter): SpanContext | null {
     const traceContextHeader = getter.getHeader(TRACE_CONTEXT_HEADER_NAME);
     if (typeof traceContextHeader !== 'string') {
       return null;
     }
-    const matches =
-        traceContextHeader.match(/^([0-9a-fA-F]+)(?:\/([0-9]+))(?:;o=(.*))?/);
-    if (!matches || matches.length !== 4 || matches[0] !== traceContextHeader ||
-        (matches[2] && isNaN(Number(matches[2])))) {
+    const matches = traceContextHeader.match(
+      /^([0-9a-fA-F]+)(?:\/([0-9]+))(?:;o=(.*))?/
+    );
+    if (
+      !matches ||
+      matches.length !== 4 ||
+      matches[0] !== traceContextHeader ||
+      (matches[2] && isNaN(Number(matches[2])))
+    ) {
       return null;
     }
     return {
@@ -63,7 +68,7 @@ export class StackdriverFormat implements Propagation {
       // strip 0x prefix from hex output from decToHex, and and pad so it's
       // always a length-16 hex string
       spanId: `0000000000000000${decToHex(matches[2]).slice(2)}`.slice(-16),
-      options: isNaN(Number(matches[3])) ? TRACE_TRUE : Number(matches[3])
+      options: isNaN(Number(matches[3])) ? TRACE_TRUE : Number(matches[3]),
     };
   }
 
@@ -86,7 +91,7 @@ export class StackdriverFormat implements Propagation {
     return {
       traceId: uuid.v4().replace(/-/g, ''),
       spanId: spanRandomBuffer().toString('hex'),
-      options: TRACE_TRUE
+      options: TRACE_TRUE,
     };
   }
 }
@@ -98,6 +103,6 @@ export class StackdriverFormat implements Propagation {
 const spanIdBuffer = Buffer.alloc(SPAN_ID_RANDOM_BYTES);
 const randomFillSync = crypto.randomFillSync;
 const randomBytes = crypto.randomBytes;
-const spanRandomBuffer = randomFillSync ?
-    () => randomFillSync(spanIdBuffer) :
-    () => randomBytes(SPAN_ID_RANDOM_BYTES);
+const spanRandomBuffer = randomFillSync
+  ? () => randomFillSync(spanIdBuffer)
+  : () => randomBytes(SPAN_ID_RANDOM_BYTES);

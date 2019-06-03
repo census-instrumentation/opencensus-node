@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-import {CoreTracer, LinkType, logger} from '@opencensus/core';
+import { CoreTracer, LinkType, logger } from '@opencensus/core';
 import * as assert from 'assert';
 
-import {JaegerTraceExporter, JaegerTraceExporterOptions,} from '../src/';
-import {spanToThrift, ThriftReferenceType, ThriftUtils, UDPSender} from '../src/jaeger-driver';
-import {ThriftProcess} from '../src/jaeger-driver';
-import {SenderCallback} from '../src/jaeger-driver';
+import { JaegerTraceExporter, JaegerTraceExporterOptions } from '../src/';
+import {
+  spanToThrift,
+  ThriftReferenceType,
+  ThriftUtils,
+  UDPSender,
+} from '../src/jaeger-driver';
+import { ThriftProcess } from '../src/jaeger-driver';
+import { SenderCallback } from '../src/jaeger-driver';
 
-const DEFAULT_BUFFER_TIMEOUT = 10;  // time in milliseconds
+const DEFAULT_BUFFER_TIMEOUT = 10; // time in milliseconds
 
 /**
  * Controls if the tests will use a real network or not
@@ -38,17 +43,16 @@ describe('Jaeger Exporter', () => {
   let exporter: JaegerTraceExporter;
   let tracer: CoreTracer;
 
-
   before(() => {
     testLogger.debug('dryrun=%s', dryrun);
     exporterOptions = {
       serviceName: 'opencensus-exporter-jaeger',
       host: 'localhost',
       port: 6832,
-      tags: [{key: 'opencensus-exporter-jaeger', value: '0.0.1'}],
+      tags: [{ key: 'opencensus-exporter-jaeger', value: '0.0.1' }],
       bufferTimeout: DEFAULT_BUFFER_TIMEOUT,
       logger: testLogger,
-      maxPacketSize: 1000
+      maxPacketSize: 1000,
     };
   });
 
@@ -58,7 +62,7 @@ describe('Jaeger Exporter', () => {
       mockUDPSender(exporter);
     }
     tracer = new CoreTracer();
-    tracer.start({samplingRate: 1});
+    tracer.start({ samplingRate: 1 });
     tracer.registerSpanEventListener(exporter);
   });
 
@@ -78,14 +82,19 @@ describe('Jaeger Exporter', () => {
       let testExporterVersionSeen = false;
       let testHostnameSeen = false;
       let testProcessIpSeen = false;
-      process.tags.forEach((tag) => {
-        if (tag.key === 'opencensus-exporter-jaeger' &&
-            tag.vType === 'STRING' && tag.vStr === '0.0.1') {
+      process.tags.forEach(tag => {
+        if (
+          tag.key === 'opencensus-exporter-jaeger' &&
+          tag.vType === 'STRING' &&
+          tag.vStr === '0.0.1'
+        ) {
           testVersionSeen = true;
           return;
         }
-        if (tag.key ===
-            JaegerTraceExporter.JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY) {
+        if (
+          tag.key ===
+          JaegerTraceExporter.JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY
+        ) {
           testExporterVersionSeen = true;
           return;
         }
@@ -93,28 +102,33 @@ describe('Jaeger Exporter', () => {
           testHostnameSeen = true;
           return;
         }
-        if (tag.key === JaegerTraceExporter.PROCESS_IP &&
-            tag.vType === 'STRING') {
+        if (
+          tag.key === JaegerTraceExporter.PROCESS_IP &&
+          tag.vType === 'STRING'
+        ) {
           testProcessIpSeen = true;
           return;
         }
       });
       assert.ok(
-          testVersionSeen && testExporterVersionSeen && testHostnameSeen &&
-          testProcessIpSeen);
+        testVersionSeen &&
+          testExporterVersionSeen &&
+          testHostnameSeen &&
+          testProcessIpSeen
+      );
     });
   });
 
   /* Should export spans to Jaeger */
   describe('test spans are valid', () => {
     it('should encode as thrift', () => {
-      return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
-        const span = tracer.startChildSpan({name: 'child-s01'});
+      return tracer.startRootSpan({ name: 'root-s01' }, rootSpan => {
+        const span = tracer.startChildSpan({ name: 'child-s01' });
         span.addAttribute('testBool', true);
         span.addAttribute('testString', 'here');
         span.addAttribute('testNum', 3.142);
         span.addAnnotation('something happened', {
-          'error': true,
+          error: true,
         });
         const traceIdHigh = '6e0c63257de34c92';
         const traceIdLow = 'bf9efcd03927272e';
@@ -133,19 +147,28 @@ describe('Jaeger Exporter', () => {
         let testBoolSeen = false;
         let testStringSeen = false;
         let testNumSeen = false;
-        thriftSpan.tags.forEach((tag) => {
-          if (tag.key === 'testBool' && tag.vType === 'BOOL' &&
-              tag.vBool === true) {
+        thriftSpan.tags.forEach(tag => {
+          if (
+            tag.key === 'testBool' &&
+            tag.vType === 'BOOL' &&
+            tag.vBool === true
+          ) {
             testBoolSeen = true;
             return;
           }
-          if (tag.key === 'testString' && tag.vType === 'STRING' &&
-              tag.vStr === 'here') {
+          if (
+            tag.key === 'testString' &&
+            tag.vType === 'STRING' &&
+            tag.vStr === 'here'
+          ) {
             testStringSeen = true;
             return;
           }
-          if (tag.key === 'testNum' && tag.vType === 'DOUBLE' &&
-              tag.vDouble === 3.142) {
+          if (
+            tag.key === 'testNum' &&
+            tag.vType === 'DOUBLE' &&
+            tag.vDouble === 3.142
+          ) {
             testNumSeen = true;
             return;
           }
@@ -159,28 +182,34 @@ describe('Jaeger Exporter', () => {
             refType: ThriftReferenceType.CHILD_OF,
             traceIdHigh: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146]),
             traceIdLow: Buffer.from([191, 158, 252, 208, 57, 39, 39, 46]),
-            spanId: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146])
+            spanId: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146]),
           },
           {
             refType: ThriftReferenceType.FOLLOWS_FROM,
             traceIdHigh: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146]),
             traceIdLow: Buffer.from([191, 158, 252, 208, 57, 39, 39, 46]),
-            spanId: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146])
-          }
+            spanId: Buffer.from([110, 12, 99, 37, 125, 227, 76, 146]),
+          },
         ]);
 
         assert.strictEqual(thriftSpan.logs.length, 1);
-        thriftSpan.logs.forEach((log) => {
+        thriftSpan.logs.forEach(log => {
           let descriptionSeen = false;
           let errorSeen = false;
-          log.fields.forEach((field) => {
-            if (field.key === 'description' && field.vType === 'STRING' &&
-                field.vStr === 'something happened') {
+          log.fields.forEach(field => {
+            if (
+              field.key === 'description' &&
+              field.vType === 'STRING' &&
+              field.vStr === 'something happened'
+            ) {
               descriptionSeen = true;
               return;
             }
-            if (field.key === 'error' && field.vType === 'BOOL' &&
-                field.vBool === true) {
+            if (
+              field.key === 'error' &&
+              field.vType === 'BOOL' &&
+              field.vBool === true
+            ) {
               errorSeen = true;
               return;
             }
@@ -194,24 +223,23 @@ describe('Jaeger Exporter', () => {
   /* Should export spans to Jaeger */
   describe('publish()', () => {
     it('should export spans to Jaeger', () => {
-      return tracer.startRootSpan({name: 'root-s01'}, (rootSpan) => {
-        const span = tracer.startChildSpan({name: 'child-s01'});
+      return tracer.startRootSpan({ name: 'root-s01' }, rootSpan => {
+        const span = tracer.startChildSpan({ name: 'child-s01' });
         span.end();
         rootSpan.end();
 
-        return exporter.publish([rootSpan]).then((result) => {
+        return exporter.publish([rootSpan]).then(result => {
           assert.strictEqual(result, 2);
         });
       });
     });
   });
 
-
   describe('addToBuffer force flush by timeout ', () => {
-    it('should flush by timeout', (done) => {
+    it('should flush by timeout', done => {
       assert.strictEqual(exporter.queue.length, 0);
-      tracer.startRootSpan({name: 'root-s02'}, (rootSpan) => {
-        const span = tracer.startChildSpan({name: 'child-s02'});
+      tracer.startRootSpan({ name: 'root-s02' }, rootSpan => {
+        const span = tracer.startChildSpan({ name: 'child-s02' });
         span.end();
         rootSpan.end();
 
@@ -225,7 +253,6 @@ describe('Jaeger Exporter', () => {
   });
 });
 
-
 function mockUDPSender(exporter: JaegerTraceExporter) {
   // Get the process of the current sender and pass to the mock sender. The
   // process is constructed and attached to the sender at exporter construction
@@ -236,15 +263,16 @@ function mockUDPSender(exporter: JaegerTraceExporter) {
   exporter.sender.setProcess(process);
 }
 
-
 class MockedUDPSender extends UDPSender {
   // tslint:disable-next-line:no-any
   queue: any = [];
 
   // Holds the initialized process information. Name matches the associated
   // UDPSender property.
-  _process:
-      ThriftProcess = {serviceName: 'opencensus-exporter-jaeger', tags: []};
+  _process: ThriftProcess = {
+    serviceName: 'opencensus-exporter-jaeger',
+    tags: [],
+  };
 
   setProcess(process: ThriftProcess): void {
     this._process = process;

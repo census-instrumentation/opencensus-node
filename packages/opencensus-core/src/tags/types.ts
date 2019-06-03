@@ -58,5 +58,5 @@ export enum TagTtl {
   NO_PROPAGATION = 0,
 
   /** UNLIMITED_PROPAGATION can propagate unlimited hops. */
-  UNLIMITED_PROPAGATION = -1
+  UNLIMITED_PROPAGATION = -1,
 }

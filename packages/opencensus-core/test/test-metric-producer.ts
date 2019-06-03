@@ -16,9 +16,20 @@
 
 import * as assert from 'assert';
 
-import {AggregationType, globalStats, Measurement, MeasureUnit, TagMap, View} from '../src';
-import {LabelKey, LabelValue, MetricDescriptorType} from '../src/metrics/export/types';
-import {MetricProducerForStats} from '../src/stats/metric-producer';
+import {
+  AggregationType,
+  globalStats,
+  Measurement,
+  MeasureUnit,
+  TagMap,
+  View,
+} from '../src';
+import {
+  LabelKey,
+  LabelValue,
+  MetricDescriptorType,
+} from '../src/metrics/export/types';
+import { MetricProducerForStats } from '../src/stats/metric-producer';
 
 describe('Metric producer for stats', () => {
   const metricProducerForStats = new MetricProducerForStats(globalStats);
@@ -30,19 +41,24 @@ describe('Metric producer for stats', () => {
   const description = 'test description';
 
   const measureDouble = globalStats.createMeasureDouble(
-      'opencensus.io/test/double', MeasureUnit.UNIT, 'Measure Double');
-  const tagKeys = [{name: 'testKey1'}, {name: 'testKey2'}];
+    'opencensus.io/test/double',
+    MeasureUnit.UNIT,
+    'Measure Double'
+  );
+  const tagKeys = [{ name: 'testKey1' }, { name: 'testKey2' }];
   const tagMap = new TagMap();
-  tagMap.set(tagKeys[0], {value: 'testValue1'});
-  tagMap.set(tagKeys[1], {value: 'testValue2'});
+  tagMap.set(tagKeys[0], { value: 'testValue1' });
+  tagMap.set(tagKeys[1], { value: 'testValue2' });
   const labelKeys: LabelKey[] = [
-    {'key': 'testKey1', 'description': ''},
-    {'key': 'testKey2', 'description': ''}
+    { key: 'testKey1', description: '' },
+    { key: 'testKey2', description: '' },
   ];
-  const labelValues: LabelValue[] =
-      [{'value': 'testValue1'}, {'value': 'testValue2'}];
-  const measurement1: Measurement = {measure: measureDouble, value: 25};
-  const measurement2: Measurement = {measure: measureDouble, value: 300};
+  const labelValues: LabelValue[] = [
+    { value: 'testValue1' },
+    { value: 'testValue2' },
+  ];
+  const measurement1: Measurement = { measure: measureDouble, value: 25 };
+  const measurement2: Measurement = { measure: measureDouble, value: 300 };
 
   // expected constants
   const expectedMetricDescriptor1 = {
@@ -76,59 +92,68 @@ describe('Metric producer for stats', () => {
 
   it('should add sum stats', () => {
     const view: View = globalStats.createView(
-        viewName1, measureDouble, AggregationType.SUM, tagKeys, description);
+      viewName1,
+      measureDouble,
+      AggregationType.SUM,
+      tagKeys,
+      description
+    );
     globalStats.registerView(view);
     view.recordMeasurement(measurement1, tagMap);
 
     const metrics = metricProducerForStats.getMetrics();
 
     assert.strictEqual(metrics.length, 1);
-    const [{
-      descriptor: actualMetricDescriptor1,
-      timeseries: actualTimeSeries1
-    }] = metrics;
+    const [
+      { descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1 },
+    ] = metrics;
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
     assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
     assert.strictEqual(actualTimeSeries1[0].points[0].value, 25);
   });
 
-  it('should add count stats',
-     () => {
-       const view: View = globalStats.createView(
-           viewName2, measureDouble, AggregationType.COUNT, tagKeys,
-           description);
-       globalStats.registerView(view);
-       view.recordMeasurement(measurement1, tagMap);
+  it('should add count stats', () => {
+    const view: View = globalStats.createView(
+      viewName2,
+      measureDouble,
+      AggregationType.COUNT,
+      tagKeys,
+      description
+    );
+    globalStats.registerView(view);
+    view.recordMeasurement(measurement1, tagMap);
 
-       let metrics = metricProducerForStats.getMetrics();
+    let metrics = metricProducerForStats.getMetrics();
 
-       assert.strictEqual(metrics.length, 2);
-       const
-        [{descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1},
-         {descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2}] =
-            metrics;
-       assert.deepStrictEqual(
-           actualMetricDescriptor1, expectedMetricDescriptor1);
-       assert.strictEqual(actualTimeSeries1.length, 1);
-       assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
-       assert.strictEqual(actualTimeSeries1[0].points[0].value, 25);
-       assert.deepStrictEqual(
-           actualMetricDescriptor2, expectedMetricDescriptor2);
-       assert.strictEqual(actualTimeSeries2.length, 1);
-       assert.deepStrictEqual(actualTimeSeries2[0].labelValues, labelValues);
-       assert.strictEqual(actualTimeSeries2[0].points[0].value, 1);
+    assert.strictEqual(metrics.length, 2);
+    const [
+      { descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1 },
+      { descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2 },
+    ] = metrics;
+    assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
+    assert.strictEqual(actualTimeSeries1.length, 1);
+    assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
+    assert.strictEqual(actualTimeSeries1[0].points[0].value, 25);
+    assert.deepStrictEqual(actualMetricDescriptor2, expectedMetricDescriptor2);
+    assert.strictEqual(actualTimeSeries2.length, 1);
+    assert.deepStrictEqual(actualTimeSeries2[0].labelValues, labelValues);
+    assert.strictEqual(actualTimeSeries2[0].points[0].value, 1);
 
-       // update count view
-       view.recordMeasurement(measurement2, tagMap);
-       metrics = metricProducerForStats.getMetrics();
-       assert.deepStrictEqual(metrics[1].timeseries[0].points[0].value, 2);
-     });
+    // update count view
+    view.recordMeasurement(measurement2, tagMap);
+    metrics = metricProducerForStats.getMetrics();
+    assert.deepStrictEqual(metrics[1].timeseries[0].points[0].value, 2);
+  });
 
   it('should add lastValue stats', () => {
     const view: View = globalStats.createView(
-        viewName3, measureDouble, AggregationType.LAST_VALUE, tagKeys,
-        description);
+      viewName3,
+      measureDouble,
+      AggregationType.LAST_VALUE,
+      tagKeys,
+      description
+    );
     globalStats.registerView(view);
     view.recordMeasurement(measurement1, tagMap);
     view.recordMeasurement(measurement2, tagMap);
@@ -136,11 +161,11 @@ describe('Metric producer for stats', () => {
     const metrics = metricProducerForStats.getMetrics();
 
     assert.strictEqual(metrics.length, 3);
-    const
-        [{descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1},
-         {descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2},
-         {descriptor: actualMetricDescriptor3, timeseries: actualTimeSeries3}] =
-            metrics;
+    const [
+      { descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1 },
+      { descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2 },
+      { descriptor: actualMetricDescriptor3, timeseries: actualTimeSeries3 },
+    ] = metrics;
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
     assert.strictEqual(actualTimeSeries1.length, 1);
@@ -158,23 +183,28 @@ describe('Metric producer for stats', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
     const view: View = globalStats.createView(
-        viewName3, measureDouble, AggregationType.DISTRIBUTION, tagKeys,
-        description, buckets);
+      viewName3,
+      measureDouble,
+      AggregationType.DISTRIBUTION,
+      tagKeys,
+      description,
+      buckets
+    );
     globalStats.registerView(view);
     for (const value of measurementValues) {
-      const measurement: Measurement = {measure: measureDouble, value};
+      const measurement: Measurement = { measure: measureDouble, value };
       view.recordMeasurement(measurement, tagMap);
     }
 
     const metrics = metricProducerForStats.getMetrics();
 
     assert.strictEqual(metrics.length, 4);
-    const
-        [{descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1},
-         {descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2},
-         {descriptor: actualMetricDescriptor3, timeseries: actualTimeSeries3},
-         {descriptor: actualMetricDescriptor4, timeseries: actualTimeSeries4}] =
-            metrics;
+    const [
+      { descriptor: actualMetricDescriptor1, timeseries: actualTimeSeries1 },
+      { descriptor: actualMetricDescriptor2, timeseries: actualTimeSeries2 },
+      { descriptor: actualMetricDescriptor3, timeseries: actualTimeSeries3 },
+      { descriptor: actualMetricDescriptor4, timeseries: actualTimeSeries4 },
+    ] = metrics;
     assert.deepStrictEqual(actualMetricDescriptor1, expectedMetricDescriptor1);
     assert.strictEqual(actualTimeSeries1.length, 1);
     assert.deepStrictEqual(actualTimeSeries1[0].labelValues, labelValues);
@@ -189,11 +219,11 @@ describe('Metric producer for stats', () => {
     assert.strictEqual(actualTimeSeries4.length, 1);
     assert.deepStrictEqual(actualTimeSeries4[0].labelValues, labelValues);
     assert.deepStrictEqual(actualTimeSeries4[0].points[0].value, {
-      'bucketOptions': {'explicit': {'bounds': [2, 4, 6]}},
-      'buckets': [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
-      'count': 5,
-      'sum': 16.099999999999998,
-      'sumOfSquaredDeviation': 10.427999999999997
+      bucketOptions: { explicit: { bounds: [2, 4, 6] } },
+      buckets: [{ count: 1 }, { count: 2 }, { count: 2 }, { count: 0 }],
+      count: 5,
+      sum: 16.099999999999998,
+      sumOfSquaredDeviation: 10.427999999999997,
     });
   });
 });

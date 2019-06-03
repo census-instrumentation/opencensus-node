@@ -14,27 +14,32 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, Span} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
-import {request} from 'http';
+import {
+  Exporter,
+  ExporterBuffer,
+  ExporterConfig,
+  Span,
+} from '@opencensus/core';
+import { logger, Logger } from '@opencensus/core';
+import { request } from 'http';
 
-const spanKindTranslation: {[k: string]: string} = {
+const spanKindTranslation: { [k: string]: string } = {
   CLIENT: 'EXIT',
   SERVER: 'ENTRY',
   UNSPECIFIED: 'INTERMEDIATE',
 };
 
-type InstanaSpan = {
-  spanId: string,
-  parentId: string|undefined,
-  traceId: string,
-  timestamp: number,
-  duration: number,
-  name: string,
-  type: string,
-  error: boolean,
-  data: {[s: string]: string;}
-};
+interface InstanaSpan {
+  spanId: string;
+  parentId: string | undefined;
+  traceId: string;
+  timestamp: number;
+  duration: number;
+  name: string;
+  type: string;
+  error: boolean;
+  data: { [s: string]: string };
+}
 
 export interface InstanaExporterOptions extends ExporterConfig {
   agentHost?: string;
@@ -52,9 +57,9 @@ export class InstanaTraceExporter implements Exporter {
 
   constructor(options: InstanaExporterOptions = {}) {
     this.agentHost =
-        options.agentHost || process.env.INSTANA_AGENT_HOST || '127.0.0.1';
+      options.agentHost || process.env.INSTANA_AGENT_HOST || '127.0.0.1';
     this.agentPort =
-        options.agentPort || Number(process.env.INSTANA_AGENT_PORT) || 42699;
+      options.agentPort || Number(process.env.INSTANA_AGENT_PORT) || 42699;
     this.transmissionTimeout = options.transmissionTimeout || 10000;
     this.logger = options.logger || logger.logger();
     this.exporterBuffer = new ExporterBuffer(this, options);
@@ -84,13 +89,12 @@ export class InstanaTraceExporter implements Exporter {
    */
   publish(spans: Span[]): Promise<void> {
     try {
-      return this
-          .transmit(this.translateRootSpans(spans))
-
-          .catch(e => e);
+      return this.transmit(this.translateRootSpans(spans)).catch(e => e);
     } catch (e) {
       this.logger.error(
-          'Unexpected error in Instana exporter during publish attempt', e);
+        'Unexpected error in Instana exporter during publish attempt',
+        e
+      );
       return Promise.resolve(e);
     }
   }
@@ -114,13 +118,13 @@ export class InstanaTraceExporter implements Exporter {
       name: span.name,
       type: spanKindTranslation[span.kind],
       error: span.status != null && span.status.code !== 0,
-      data: Object.keys(span.attributes)
-                .reduce(
-                    (agg: {[k: string]: string}, key) => {
-                      agg[String(key)] = String(span.attributes[key]);
-                      return agg;
-                    },
-                    {})
+      data: Object.keys(span.attributes).reduce(
+        (agg: { [k: string]: string }, key) => {
+          agg[String(key)] = String(span.attributes[key]);
+          return agg;
+        },
+        {}
+      ),
     };
   }
 
@@ -128,8 +132,10 @@ export class InstanaTraceExporter implements Exporter {
     return new Promise((resolve, reject) => {
       const json = JSON.stringify(spans);
       this.logger.debug(
-          'Transmitting the following spans (%s) to Instana agent',
-          spans.length, json);
+        'Transmitting the following spans (%s) to Instana agent',
+        spans.length,
+        json
+      );
       const payload = Buffer.from(json, 'utf8');
       const options = {
         hostname: this.agentHost,
@@ -138,27 +144,35 @@ export class InstanaTraceExporter implements Exporter {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          'Content-Length': payload.length
-        }
+          'Content-Length': payload.length,
+        },
       };
 
-      const req = request(options, (res) => {
+      const req = request(options, res => {
         res.setEncoding('utf8');
         let responseBody = '';
-        res.on('data', (chunk) => {
+        res.on('data', chunk => {
           responseBody += chunk;
         });
         res.on('end', () => {
-          if (res.statusCode != null && 200 <= res.statusCode &&
-              res.statusCode <= 299) {
+          if (
+            res.statusCode != null &&
+            200 <= res.statusCode &&
+            res.statusCode <= 299
+          ) {
             this.logger.debug(
-                'Successfully delivered %s spans to Instana agent',
-                spans.length);
+              'Successfully delivered %s spans to Instana agent',
+              spans.length
+            );
             resolve();
           } else {
             this.logger.error(
-                'Delivery of %s spans to Instana agent failed. %s %s: %s',
-                spans.length, res.statusCode, res.statusMessage, responseBody);
+              'Delivery of %s spans to Instana agent failed. %s %s: %s',
+              spans.length,
+              res.statusCode,
+              res.statusMessage,
+              responseBody
+            );
             reject();
           }
         });
@@ -166,9 +180,12 @@ export class InstanaTraceExporter implements Exporter {
 
       req.setTimeout(this.transmissionTimeout, () => req.abort());
 
-      req.on('error', (e) => {
+      req.on('error', e => {
         this.logger.error(
-            'Failed to deliver %s spans to Instana agent', spans.length, e);
+          'Failed to deliver %s spans to Instana agent',
+          spans.length,
+          e
+        );
         reject();
       });
 

@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-import {TagKey, TagMetadata, TagTtl, TagValue, TagValueWithMetadata} from './types';
-import {isValidTagKey, isValidTagValue} from './validation';
+import {
+  TagKey,
+  TagMetadata,
+  TagTtl,
+  TagValue,
+  TagValueWithMetadata,
+} from './types';
+import { isValidTagKey, isValidTagValue } from './validation';
 
 const UNLIMITED_PROPAGATION_MD = {
-  tagTtl: TagTtl.UNLIMITED_PROPAGATION
+  tagTtl: TagTtl.UNLIMITED_PROPAGATION,
 };
 
 /** TagMap is maps of TagKey -> TagValueWithMetadata */
 export class TagMap {
   // A map mapping TagKey to to its respective TagValueWithMetadata.
-  private readonly registeredTags: Map<TagKey, TagValueWithMetadata> =
-      new Map();
+  private readonly registeredTags: Map<
+    TagKey,
+    TagValueWithMetadata
+  > = new Map();
 
   /**
    * Adds the key/value pair regardless of whether the key is present.
@@ -79,11 +87,13 @@ export class TagMap {
    * For backwards-compatibility this method still produces propagating Tags
    * (UNLIMITED_PROPAGATION) if tagMetadata is not provided or missing.
    */
-  private getValueWithMetadata(tagValue: TagValue, tagMetadata?: TagMetadata):
-      TagValueWithMetadata {
+  private getValueWithMetadata(
+    tagValue: TagValue,
+    tagMetadata?: TagMetadata
+  ): TagValueWithMetadata {
     if (tagMetadata) {
-      return {tagValue, tagMetadata};
+      return { tagValue, tagMetadata };
     }
-    return {tagValue, tagMetadata: UNLIMITED_PROPAGATION_MD};
+    return { tagValue, tagMetadata: UNLIMITED_PROPAGATION_MD };
   }
 }

@@ -14,9 +14,25 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, deserializeBinary, MessageEventType, PluginInternalFiles, serializeBinary, Span, SpanContext, SpanKind, TagMap, TagTtl, TraceOptions} from '@opencensus/core';
-import {deserializeSpanContext, serializeSpanContext} from '@opencensus/propagation-binaryformat';
-import {EventEmitter} from 'events';
+import {
+  BasePlugin,
+  CanonicalCode,
+  deserializeBinary,
+  MessageEventType,
+  PluginInternalFiles,
+  serializeBinary,
+  Span,
+  SpanContext,
+  SpanKind,
+  TagMap,
+  TagTtl,
+  TraceOptions,
+} from '@opencensus/core';
+import {
+  deserializeSpanContext,
+  serializeSpanContext,
+} from '@opencensus/propagation-binaryformat';
+import { EventEmitter } from 'events';
 import * as grpcTypes from 'grpc';
 import * as lodash from 'lodash';
 import * as shimmer from 'shimmer';
@@ -40,30 +56,34 @@ export type GrpcModule = typeof grpcTypes;
 type MakeClientConstructor = typeof grpcTypes.makeGenericClientConstructor;
 type RegisterMethod = typeof grpcTypes.Server.prototype.register;
 
-type Status = {
-  code: number, details: string; metadata: grpcTypes.Metadata;
-};
+interface Status {
+  code: number;
+  details: string;
+  metadata: grpcTypes.Metadata;
+}
 
-type ServerCall = typeof grpcTypes.ServerUnaryCall|
-                  typeof grpcTypes.ServerReadableStream|
-                  typeof grpcTypes.ServerWriteableStream|
-                  typeof grpcTypes.ServerDuplexStream;
+type ServerCall =
+  | typeof grpcTypes.ServerUnaryCall
+  | typeof grpcTypes.ServerReadableStream
+  | typeof grpcTypes.ServerWriteableStream
+  | typeof grpcTypes.ServerDuplexStream;
 
-type ServerCallWithMeta = ServerCall&{
+type ServerCallWithMeta = ServerCall & {
   metadata: grpcTypes.Metadata;
   status: Status;
   // tslint:disable-next-line:no-any
-  request?: any
-}
-&EventEmitter;
+  request?: any;
+} & EventEmitter;
 
-export type SendUnaryDataCallback =
-    (error: grpcTypes.ServiceError|null,
-     // tslint:disable-next-line:no-any
-     value?: any, trailer?: grpcTypes.Metadata, flags?: grpcTypes.writeFlags) =>
-        void;
+export type SendUnaryDataCallback = (
+  error: grpcTypes.ServiceError | null,
+  // tslint:disable-next-line:no-any
+  value?: any,
+  trailer?: grpcTypes.Metadata,
+  flags?: grpcTypes.writeFlags
+) => void;
 
-type GrpcClientFunc = typeof Function&{
+type GrpcClientFunc = typeof Function & {
   path: string;
   requestStream: boolean;
   responseStream: boolean;
@@ -77,13 +97,13 @@ let Metadata: any;
 let GrpcClientModule: any;
 
 const UNLIMITED_PROPAGATION_MD = {
-  tagTtl: TagTtl.UNLIMITED_PROPAGATION
+  tagTtl: TagTtl.UNLIMITED_PROPAGATION,
 };
 
 /** gRPC instrumentation plugin for Opencensus */
 export class GrpcPlugin extends BasePlugin {
   /** Span grpc attributes */
-  static readonly ATTRIBUTE_GRPC_KIND = 'grpc.kind';  // SERVER or CLIENT
+  static readonly ATTRIBUTE_GRPC_KIND = 'grpc.kind'; // SERVER or CLIENT
   static readonly ATTRIBUTE_GRPC_METHOD = 'grpc.method';
   static readonly ATTRIBUTE_GRPC_STATUS_CODE = 'grpc.status_code';
   static readonly ATTRIBUTE_GRPC_ERROR_NAME = 'grpc.error_name';
@@ -91,10 +111,10 @@ export class GrpcPlugin extends BasePlugin {
 
   protected readonly internalFileList: PluginInternalFiles = {
     '0.13 - 1.6': {
-      'client': 'src/node/src/client.js',
-      'metadata': 'src/node/src/metadata.js'
+      client: 'src/node/src/client.js',
+      metadata: 'src/node/src/metadata.js',
     },
-    '^1.7': {'client': 'src/client.js', 'metadata': 'src/metadata.js'}
+    '^1.7': { client: 'src/client.js', metadata: 'src/metadata.js' },
   };
 
   /** Constructs a new GrpcPlugin instance. */
@@ -107,15 +127,20 @@ export class GrpcPlugin extends BasePlugin {
     this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
     shimmer.wrap(
-        this.moduleExports.Server.prototype, 'register' as never,
-        this.getPatchServer());
+      this.moduleExports.Server.prototype,
+      'register' as never,
+      this.getPatchServer()
+    );
 
     if (this.internalFilesExports) {
       GrpcClientModule = this.internalFilesExports['client'];
       Metadata = this.internalFilesExports['metadata'];
 
       shimmer.wrap(
-          GrpcClientModule, 'makeClientConstructor', this.getPatchClient());
+        GrpcClientModule,
+        'makeClientConstructor',
+        this.getPatchClient()
+      );
     }
 
     return this.moduleExports;
@@ -140,62 +165,84 @@ export class GrpcPlugin extends BasePlugin {
       const plugin = this;
       plugin.logger.debug('patched server');
       return function register<RequestType, ResponseType>(
-          // tslint:disable-next-line:no-any
-          this: grpcTypes.Server&{handlers: any}, name: string,
-          handler: grpcTypes.handleCall<RequestType, ResponseType>,
-          serialize: grpcTypes.serialize<RequestType>,
-          deserialize: grpcTypes.deserialize<RequestType>, type: string) {
+        // tslint:disable-next-line:no-any
+        this: grpcTypes.Server & { handlers: any },
+        name: string,
+        handler: grpcTypes.handleCall<RequestType, ResponseType>,
+        serialize: grpcTypes.serialize<RequestType>,
+        deserialize: grpcTypes.deserialize<RequestType>,
+        type: string
+      ) {
         const result = originalRegister.apply(this, arguments);
         const handlerSet = this.handlers[name];
 
         // Patch the methods that are invoked when a gRPC service call is
         // made. The function 'func' is the user-implemented handling function.
         shimmer.wrap(
-            handlerSet, 'func',
-            (originalFunc: grpcTypes.handleCall<RequestType, ResponseType>) => {
-              return function func(
-                  this: typeof handlerSet, call: ServerCallWithMeta,
-                  callback: SendUnaryDataCallback) {
-                const self = this;
+          handlerSet,
+          'func',
+          (originalFunc: grpcTypes.handleCall<RequestType, ResponseType>) => {
+            return function func(
+              this: typeof handlerSet,
+              call: ServerCallWithMeta,
+              callback: SendUnaryDataCallback
+            ) {
+              const self = this;
 
-                const traceOptions: TraceOptions = {
-                  name: `grpc.${name.replace('/', '')}`,
-                  kind: SpanKind.SERVER
-                };
-
-                const spanContext = GrpcPlugin.getSpanContext(call.metadata);
-                if (spanContext) {
-                  traceOptions.spanContext = spanContext;
-                }
-                plugin.logger.debug(
-                    'path func: %s', JSON.stringify(traceOptions));
-
-                return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
-                  if (!rootSpan) {
-                    return originalFunc.call(self, call, callback);
-                  }
-
-                  rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, name);
-                  if (traceOptions.kind) {
-                    rootSpan.addAttribute(
-                        GrpcPlugin.ATTRIBUTE_GRPC_KIND, traceOptions.kind);
-                  }
-
-                  switch (type) {
-                    case 'unary':
-                    case 'client_stream':
-                      return plugin.clientStreamAndUnaryHandler(
-                          plugin, rootSpan, call, callback, originalFunc, self);
-                    case 'server_stream':
-                    case 'bidi':
-                      return plugin.serverStreamAndBidiHandler(
-                          plugin, rootSpan, call, originalFunc, self);
-                    default:
-                      break;
-                  }
-                });
+              const traceOptions: TraceOptions = {
+                name: `grpc.${name.replace('/', '')}`,
+                kind: SpanKind.SERVER,
               };
-            });
+
+              const spanContext = GrpcPlugin.getSpanContext(call.metadata);
+              if (spanContext) {
+                traceOptions.spanContext = spanContext;
+              }
+              plugin.logger.debug(
+                'path func: %s',
+                JSON.stringify(traceOptions)
+              );
+
+              return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
+                if (!rootSpan) {
+                  return originalFunc.call(self, call, callback);
+                }
+
+                rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_METHOD, name);
+                if (traceOptions.kind) {
+                  rootSpan.addAttribute(
+                    GrpcPlugin.ATTRIBUTE_GRPC_KIND,
+                    traceOptions.kind
+                  );
+                }
+
+                switch (type) {
+                  case 'unary':
+                  case 'client_stream':
+                    return plugin.clientStreamAndUnaryHandler(
+                      plugin,
+                      rootSpan,
+                      call,
+                      callback,
+                      originalFunc,
+                      self
+                    );
+                  case 'server_stream':
+                  case 'bidi':
+                    return plugin.serverStreamAndBidiHandler(
+                      plugin,
+                      rootSpan,
+                      call,
+                      originalFunc,
+                      self
+                    );
+                  default:
+                    break;
+                }
+              });
+            };
+          }
+        );
         return result;
       };
     };
@@ -205,41 +252,62 @@ export class GrpcPlugin extends BasePlugin {
    * Handler Unary and Client Stream Calls
    */
   private clientStreamAndUnaryHandler<RequestType, ResponseType>(
-      plugin: GrpcPlugin, rootSpan: Span, call: ServerCallWithMeta,
-      callback: SendUnaryDataCallback,
-      original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
+    plugin: GrpcPlugin,
+    rootSpan: Span,
+    call: ServerCallWithMeta,
+    callback: SendUnaryDataCallback,
+    original: grpcTypes.handleCall<RequestType, ResponseType>,
+    self: {}
+  ) {
     const startTime = Date.now();
     function patchedCallback(
-        err: grpcTypes.ServiceError,
-        // tslint:disable-next-line:no-any
-        value: any, trailer: grpcTypes.Metadata, flags: grpcTypes.writeFlags) {
+      err: grpcTypes.ServiceError,
+      // tslint:disable-next-line:no-any
+      value: any,
+      trailer: grpcTypes.Metadata,
+      flags: grpcTypes.writeFlags
+    ) {
       if (err) {
         if (err.code) {
           rootSpan.setStatus(
-              GrpcPlugin.convertGrpcStatusToSpanStatus(err.code), err.message);
+            GrpcPlugin.convertGrpcStatusToSpanStatus(err.code),
+            err.message
+          );
           rootSpan.addAttribute(
-              GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
+            GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
+            err.code.toString()
+          );
         }
         rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
         rootSpan.addAttribute(
-            GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
+          GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE,
+          err.message
+        );
       } else {
         rootSpan.setStatus(CanonicalCode.OK);
         rootSpan.addAttribute(
-            GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
-            grpcTypes.status.OK.toString());
+          GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
+          grpcTypes.status.OK.toString()
+        );
       }
       rootSpan.addMessageEvent(MessageEventType.RECEIVED, 1);
 
       // record stats
       const parentTagCtx =
-          GrpcPlugin.getTagContext(call.metadata) || new TagMap();
+        GrpcPlugin.getTagContext(call.metadata) || new TagMap();
       parentTagCtx.set(
-          serverStats.GRPC_SERVER_METHOD, {value: rootSpan.name},
-          UNLIMITED_PROPAGATION_MD);
+        serverStats.GRPC_SERVER_METHOD,
+        { value: rootSpan.name },
+        UNLIMITED_PROPAGATION_MD
+      );
       const req = call.hasOwnProperty('request') ? call.request : {};
       GrpcPlugin.recordStats(
-          rootSpan.kind, parentTagCtx, value, req, Date.now() - startTime);
+        rootSpan.kind,
+        parentTagCtx,
+        value,
+        req,
+        Date.now() - startTime
+      );
 
       rootSpan.end();
       return callback(err, value, trailer, flags);
@@ -253,8 +321,12 @@ export class GrpcPlugin extends BasePlugin {
    * Handler Server Stream and Bidirectional Stream Calls
    */
   private serverStreamAndBidiHandler<RequestType, ResponseType>(
-      plugin: GrpcPlugin, rootSpan: Span, call: ServerCallWithMeta,
-      original: grpcTypes.handleCall<RequestType, ResponseType>, self: {}) {
+    plugin: GrpcPlugin,
+    rootSpan: Span,
+    call: ServerCallWithMeta,
+    original: grpcTypes.handleCall<RequestType, ResponseType>,
+    self: {}
+  ) {
     let spanEnded = false;
     const endSpan = () => {
       if (!spanEnded) {
@@ -266,9 +338,12 @@ export class GrpcPlugin extends BasePlugin {
     plugin.tracer.wrapEmitter(call);
     call.on('finish', () => {
       rootSpan.setStatus(
-          GrpcPlugin.convertGrpcStatusToSpanStatus(call.status.code));
+        GrpcPlugin.convertGrpcStatusToSpanStatus(call.status.code)
+      );
       rootSpan.addAttribute(
-          GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, call.status.code.toString());
+        GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
+        call.status.code.toString()
+      );
       // if there is an error, span is ended on error event, otherwise here
       if (call.status.code === 0) {
         endSpan();
@@ -278,7 +353,9 @@ export class GrpcPlugin extends BasePlugin {
     call.on('error', (err: grpcTypes.ServiceError) => {
       rootSpan.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
       rootSpan.addAttribute(
-          GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
+        GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE,
+        err.message
+      );
       endSpan();
     });
 
@@ -295,18 +372,21 @@ export class GrpcPlugin extends BasePlugin {
     return (original: MakeClientConstructor) => {
       plugin.logger.debug('patchClient');
       return function makeClientConstructor<ImplementationType>(
-          this: typeof grpcTypes.Client,
-          methods: grpcTypes.ServiceDefinition<ImplementationType>,
-          serviceName: string, options: grpcTypes.GenericClientOptions) {
+        this: typeof grpcTypes.Client,
+        methods: grpcTypes.ServiceDefinition<ImplementationType>,
+        serviceName: string,
+        options: grpcTypes.GenericClientOptions
+      ) {
         const client = original.apply(this, arguments);
         shimmer.massWrap(
-            client.prototype, Object.keys(methods) as never[],
-            plugin.getPatchedClientMethods());
+          client.prototype,
+          Object.keys(methods) as never[],
+          plugin.getPatchedClientMethods()
+        );
         return client;
       };
     };
   }
-
 
   /**
    * This function starts a span (child or root) immediately before the
@@ -318,9 +398,7 @@ export class GrpcPlugin extends BasePlugin {
     // tslint:disable-next-line:no-any
     return (original: GrpcClientFunc) => {
       plugin.logger.debug('patchAllClientsMethods');
-      return function clientMethodTrace(
-          this: grpcTypes.Client,
-      ) {
+      return function clientMethodTrace(this: grpcTypes.Client) {
         const traceOptions = {
           name: `grpc.${original.path.replace('/', '')}`,
           kind: SpanKind.CLIENT,
@@ -333,13 +411,17 @@ export class GrpcPlugin extends BasePlugin {
         // span.
         if (!plugin.tracer.currentRootSpan) {
           return plugin.tracer.startRootSpan(
-              traceOptions,
-              plugin.makeGrpcClientRemoteCall(original, args, this, plugin));
+            traceOptions,
+            plugin.makeGrpcClientRemoteCall(original, args, this, plugin)
+          );
         } else {
-          const span = plugin.tracer.startChildSpan(
-              {name: traceOptions.name, kind: traceOptions.kind});
-          return (plugin.makeGrpcClientRemoteCall(
-              original, args, this, plugin))(span);
+          const span = plugin.tracer.startChildSpan({
+            name: traceOptions.name,
+            kind: traceOptions.kind,
+          });
+          return plugin.makeGrpcClientRemoteCall(original, args, this, plugin)(
+            span
+          );
         }
       };
     };
@@ -349,9 +431,12 @@ export class GrpcPlugin extends BasePlugin {
    * This method handels the client remote call
    */
   private makeGrpcClientRemoteCall(
-      // tslint:disable-next-line:no-any
-      original: GrpcClientFunc, args: any[], self: grpcTypes.Client,
-      plugin: GrpcPlugin) {
+    original: GrpcClientFunc,
+    // tslint:disable-next-line:no-any
+    args: any[],
+    self: grpcTypes.Client,
+    plugin: GrpcPlugin
+  ) {
     const startTime = Date.now();
     const originalArgs = args;
     /**
@@ -359,41 +444,57 @@ export class GrpcPlugin extends BasePlugin {
      * when the callback is invoked.
      */
     function patchedCallback(
-        span: Span, callback: SendUnaryDataCallback,
-        metadata: grpcTypes.Metadata) {
+      span: Span,
+      callback: SendUnaryDataCallback,
+      metadata: grpcTypes.Metadata
+    ) {
       // tslint:disable-next-line:no-any
       const wrappedFn = (err: grpcTypes.ServiceError, res: any) => {
         if (err) {
           if (err.code) {
             span.setStatus(
-                GrpcPlugin.convertGrpcStatusToSpanStatus(err.code),
-                err.message);
+              GrpcPlugin.convertGrpcStatusToSpanStatus(err.code),
+              err.message
+            );
             span.addAttribute(
-                GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, err.code.toString());
+              GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
+              err.code.toString()
+            );
           }
           span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
           span.addAttribute(
-              GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
+            GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE,
+            err.message
+          );
         } else {
           span.setStatus(CanonicalCode.OK);
           span.addAttribute(
-              GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
-              grpcTypes.status.OK.toString());
+            GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
+            grpcTypes.status.OK.toString()
+          );
         }
         span.addMessageEvent(MessageEventType.SENT, 1);
 
         // record stats: new RPCs on client-side inherit the tag context from
         // the current Context.
-        const parentTagCtx =
-            plugin.stats ? plugin.stats.getCurrentTagContext() : new TagMap();
+        const parentTagCtx = plugin.stats
+          ? plugin.stats.getCurrentTagContext()
+          : new TagMap();
         if (parentTagCtx.tags.size > 0) {
           GrpcPlugin.setTagContext(metadata, parentTagCtx);
         }
         parentTagCtx.set(
-            clientStats.GRPC_CLIENT_METHOD, {value: span.name},
-            UNLIMITED_PROPAGATION_MD);
+          clientStats.GRPC_CLIENT_METHOD,
+          { value: span.name },
+          UNLIMITED_PROPAGATION_MD
+        );
         GrpcPlugin.recordStats(
-            span.kind, parentTagCtx, originalArgs, res, Date.now() - startTime);
+          span.kind,
+          parentTagCtx,
+          originalArgs,
+          res,
+          Date.now() - startTime
+        );
 
         span.end();
         callback(err, res);
@@ -409,12 +510,15 @@ export class GrpcPlugin extends BasePlugin {
       const metadata = this.getMetadata(original, args);
       // if unary or clientStream
       if (!original.responseStream) {
-        const callbackFuncIndex = findIndex(args, (arg) => {
+        const callbackFuncIndex = findIndex(args, arg => {
           return typeof arg === 'function';
         });
         if (callbackFuncIndex !== -1) {
-          args[callbackFuncIndex] =
-              patchedCallback(span, args[callbackFuncIndex], metadata);
+          args[callbackFuncIndex] = patchedCallback(
+            span,
+            args[callbackFuncIndex],
+            metadata
+          );
         }
       }
 
@@ -435,7 +539,9 @@ export class GrpcPlugin extends BasePlugin {
           // span.status = plugin.traceStatus(err.code);
           span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
           span.addAttribute(
-              GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE, err.message);
+            GrpcPlugin.ATTRIBUTE_GRPC_ERROR_MESSAGE,
+            err.message
+          );
           if (!spanEnded) {
             span.end();
             spanEnded = true;
@@ -445,7 +551,9 @@ export class GrpcPlugin extends BasePlugin {
         call.on('status', (status: Status) => {
           span.setStatus(GrpcPlugin.convertGrpcStatusToSpanStatus(status.code));
           span.addAttribute(
-              GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE, status.code.toString());
+            GrpcPlugin.ATTRIBUTE_GRPC_STATUS_CODE,
+            status.code.toString()
+          );
 
           if (!spanEnded) {
             span.end();
@@ -463,9 +571,12 @@ export class GrpcPlugin extends BasePlugin {
    *  Code snippet inspired by:
    *  https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/src/plugins/plugin-grpc.ts#L96)
    */
-  // tslint:disable-next-line:no-any
-  private getMetadata(original: GrpcClientFunc, args: any[]):
-      grpcTypes.Metadata {
+
+  private getMetadata(
+    original: GrpcClientFunc,
+    // tslint:disable-next-line:no-any
+    args: any[]
+  ): grpcTypes.Metadata {
     let metadata: grpcTypes.Metadata;
 
     // This finds an instance of Metadata among the arguments.
@@ -474,8 +585,12 @@ export class GrpcPlugin extends BasePlugin {
     // but this is an extremely rare case.
     // tslint:disable-next-line:no-any
     let metadataIndex = findIndex(args, (arg: any) => {
-      return arg && typeof arg === 'object' && arg._internal_repr &&
-          typeof arg.getMap === 'function';
+      return (
+        arg &&
+        typeof arg === 'object' &&
+        arg._internal_repr &&
+        typeof arg.getMap === 'function'
+      );
     });
     if (metadataIndex === -1) {
       metadata = new Metadata();
@@ -517,7 +632,7 @@ export class GrpcPlugin extends BasePlugin {
    * @param metadata The Metadata object from which span context should be
    *     retrieved.
    */
-  static getSpanContext(metadata: grpcTypes.Metadata): SpanContext|null {
+  static getSpanContext(metadata: grpcTypes.Metadata): SpanContext | null {
     const metadataValue = metadata.getMap()[GRPC_TRACE_KEY] as Buffer;
     // Entry doesn't exist.
     if (!metadataValue) {
@@ -537,8 +652,10 @@ export class GrpcPlugin extends BasePlugin {
    *     added.
    * @param spanContext The span context.
    */
-  static setSpanContext(metadata: grpcTypes.Metadata, spanContext: SpanContext):
-      void {
+  static setSpanContext(
+    metadata: grpcTypes.Metadata,
+    spanContext: SpanContext
+  ): void {
     const serializedSpanContext = serializeSpanContext(spanContext);
     if (serializedSpanContext) {
       metadata.set(GRPC_TRACE_KEY, serializedSpanContext);
@@ -550,7 +667,7 @@ export class GrpcPlugin extends BasePlugin {
    * null otherwise.
    * @param metadata The Metadata object from which TagMap should be retrieved.
    */
-  static getTagContext(metadata: grpcTypes.Metadata): TagMap|null {
+  static getTagContext(metadata: grpcTypes.Metadata): TagMap | null {
     const metadataValue = metadata.getMap()[GRPC_TAGS_KEY] as Buffer;
     // Entry doesn't exist.
     if (!metadataValue) return null;
@@ -578,7 +695,12 @@ export class GrpcPlugin extends BasePlugin {
 
   /** Method to record stats for client and server. */
   static recordStats(
-      kind: SpanKind, tags: TagMap, argsOrValue: {}, reqOrRes: {}, ms: number) {
+    kind: SpanKind,
+    tags: TagMap,
+    argsOrValue: {},
+    reqOrRes: {},
+    ms: number
+  ) {
     if (!plugin.stats) {
       return;
     }
@@ -589,51 +711,54 @@ export class GrpcPlugin extends BasePlugin {
         case SpanKind.CLIENT:
           measureList.push({
             measure: clientStats.GRPC_CLIENT_SENT_BYTES_PER_RPC,
-            value: sizeof(argsOrValue)
+            value: sizeof(argsOrValue),
           });
           measureList.push({
             measure: clientStats.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC,
-            value: sizeof(reqOrRes)
+            value: sizeof(reqOrRes),
           });
           measureList.push({
             measure: clientStats.GRPC_CLIENT_RECEIVED_MESSAGES_PER_RPC,
-            value: 1
+            value: 1,
           });
           measureList.push({
             measure: clientStats.GRPC_CLIENT_SENT_MESSAGES_PER_RPC,
-            value: 1
+            value: 1,
           });
-          measureList.push(
-              {measure: clientStats.GRPC_CLIENT_ROUNDTRIP_LATENCY, value: ms});
+          measureList.push({
+            measure: clientStats.GRPC_CLIENT_ROUNDTRIP_LATENCY,
+            value: ms,
+          });
           break;
         case SpanKind.SERVER:
           measureList.push({
             measure: serverStats.GRPC_SERVER_RECEIVED_BYTES_PER_RPC,
-            value: sizeof(reqOrRes)
+            value: sizeof(reqOrRes),
           });
           measureList.push({
             measure: serverStats.GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC,
-            value: 1
+            value: 1,
           });
           measureList.push({
             measure: serverStats.GRPC_SERVER_SENT_BYTES_PER_RPC,
-            value: sizeof(argsOrValue)
+            value: sizeof(argsOrValue),
           });
           measureList.push({
             measure: serverStats.GRPC_SERVER_SENT_MESSAGES_PER_RPC,
-            value: 1
+            value: 1,
           });
-          measureList.push(
-              {measure: serverStats.GRPC_SERVER_SERVER_LATENCY, value: ms});
+          measureList.push({
+            measure: serverStats.GRPC_SERVER_SERVER_LATENCY,
+            value: ms,
+          });
           break;
         default:
           break;
       }
       plugin.stats.record(measureList, tags);
-    } catch (ignore) {
-    }
+    } catch (ignore) {}
   }
 }
 
 const plugin = new GrpcPlugin();
-export {plugin};
+export { plugin };

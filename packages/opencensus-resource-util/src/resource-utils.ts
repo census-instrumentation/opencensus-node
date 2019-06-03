@@ -19,16 +19,21 @@
  * where the application is running.
  */
 
-import {Labels, Resource} from '@opencensus/core';
+import { Labels, Resource } from '@opencensus/core';
 import * as gcpMetadata from 'gcp-metadata';
 import * as http from 'http';
 import * as os from 'os';
-import {CLOUD_RESOURCE, CONTAINER_RESOURCE, HOST_RESOURCE, K8S_RESOURCE} from './constants';
+import {
+  CLOUD_RESOURCE,
+  CONTAINER_RESOURCE,
+  HOST_RESOURCE,
+  K8S_RESOURCE,
+} from './constants';
 import * as constants from './resource-labels';
 
 export const AWS_INSTANCE_IDENTITY_DOCUMENT_URI =
-    'http://169.254.169.254/latest/dynamic/instance-identity/document';
-let resourceType: ResourceType|undefined;
+  'http://169.254.169.254/latest/dynamic/instance-identity/document';
+let resourceType: ResourceType | undefined;
 let gkeResourceLabels: Labels = {};
 let gceResourceLabels: Labels = {};
 let awsResourceLabels: Labels = {};
@@ -38,7 +43,7 @@ export enum ResourceType {
   GCP_GKE_CONTAINER = 'k8s_container',
   GCP_GCE_INSTANCE = 'gce_instance',
   AWS_EC2_INSTANCE = 'aws_ec2_instance',
-  NONE = 'NONE'
+  NONE = 'NONE',
 }
 
 /** Determine the compute environment in which the code is running. */
@@ -72,7 +77,7 @@ async function isRunningOnAwsEc2() {
   try {
     const awsIdentityDocument: Labels = await awsMetadataAccessor();
     awsResourceLabels[CLOUD_RESOURCE.ACCOUNT_ID_KEY] =
-        awsIdentityDocument.accountId;
+      awsIdentityDocument.accountId;
     awsResourceLabels[CLOUD_RESOURCE.REGION_KEY] = awsIdentityDocument.region;
     awsResourceLabels[HOST_RESOURCE.ID_KEY] = awsIdentityDocument.instanceId;
     return true;
@@ -84,35 +89,42 @@ async function isRunningOnAwsEc2() {
 /** Returns Resource for GCP GCE instance. */
 export async function getComputerEngineResource(): Promise<Resource> {
   if (Object.keys(gceResourceLabels).length === 0) {
-    const [projectId, instanceId, zoneId] =
-        await Promise.all([getProjectId(), getInstanceId(), getZone()]);
+    const [projectId, instanceId, zoneId] = await Promise.all([
+      getProjectId(),
+      getInstanceId(),
+      getZone(),
+    ]);
     gceResourceLabels[CLOUD_RESOURCE.ACCOUNT_ID_KEY] = projectId;
     gceResourceLabels[HOST_RESOURCE.ID_KEY] = instanceId;
     gceResourceLabels[CLOUD_RESOURCE.ZONE_KEY] = zoneId;
   }
-  return {type: constants.GCP_GCE_INSTANCE_TYPE, labels: gceResourceLabels};
+  return { type: constants.GCP_GCE_INSTANCE_TYPE, labels: gceResourceLabels };
 }
 
 /** Returns Resource for GCP GKE container. */
 export async function getKubernetesEngineResource(): Promise<Resource> {
   if (Object.keys(gkeResourceLabels).length === 0) {
-    const [projectId, zoneId, clusterName, hostname] = await Promise.all(
-        [getProjectId(), getZone(), getClusterName(), getHostname()]);
+    const [projectId, zoneId, clusterName, hostname] = await Promise.all([
+      getProjectId(),
+      getZone(),
+      getClusterName(),
+      getHostname(),
+    ]);
     gkeResourceLabels[CLOUD_RESOURCE.ACCOUNT_ID_KEY] = projectId;
     gkeResourceLabels[CLOUD_RESOURCE.ZONE_KEY] = zoneId;
     gkeResourceLabels[K8S_RESOURCE.CLUSTER_NAME_KEY] = clusterName;
     gkeResourceLabels[K8S_RESOURCE.NAMESPACE_NAME_KEY] =
-        process.env.NAMESPACE || '';
+      process.env.NAMESPACE || '';
     gkeResourceLabels[K8S_RESOURCE.POD_NAME_KEY] = hostname;
     gkeResourceLabels[CONTAINER_RESOURCE.NAME_KEY] =
-        process.env.CONTAINER_NAME || '';
+      process.env.CONTAINER_NAME || '';
   }
-  return {type: constants.K8S_CONTAINER_TYPE, labels: gkeResourceLabels};
+  return { type: constants.K8S_CONTAINER_TYPE, labels: gkeResourceLabels };
 }
 
 /** Returns Resource for AWS EC2 instance. */
 export async function getAwsEC2Resource(): Promise<Resource> {
-  return {type: constants.AWS_EC2_INSTANCE_TYPE, labels: awsResourceLabels};
+  return { type: constants.AWS_EC2_INSTANCE_TYPE, labels: awsResourceLabels };
 }
 
 /**
@@ -127,27 +139,27 @@ async function awsMetadataAccessor<T>(): Promise<T> {
       reject(new Error('EC2 metadata api request timed out.'));
     }, 2000);
 
-    const req = http.get(AWS_INSTANCE_IDENTITY_DOCUMENT_URI, (res) => {
+    const req = http.get(AWS_INSTANCE_IDENTITY_DOCUMENT_URI, res => {
       clearTimeout(timeoutId);
-      const {statusCode} = res;
+      const { statusCode } = res;
       res.setEncoding('utf8');
       let rawData = '';
-      res.on('data', (chunk) => rawData += chunk);
+      res.on('data', chunk => (rawData += chunk));
       res.on('end', () => {
         if (statusCode && statusCode >= 200 && statusCode < 300) {
           try {
             resolve(JSON.parse(rawData));
           } catch (e) {
-            res.resume();  // consume response data to free up memory
+            res.resume(); // consume response data to free up memory
             reject(e);
           }
         } else {
-          res.resume();  // consume response data to free up memory
+          res.resume(); // consume response data to free up memory
           reject(new Error('Failed to load page, status code: ' + statusCode));
         }
       });
     });
-    req.on('error', (err) => {
+    req.on('error', err => {
       clearTimeout(timeoutId);
       reject(err);
     });

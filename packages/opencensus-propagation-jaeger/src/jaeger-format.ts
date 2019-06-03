@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
+import {
+  HeaderGetter,
+  HeaderSetter,
+  Propagation,
+  SpanContext,
+} from '@opencensus/core';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
-import {isValidSpanId, isValidTraceId} from './validators';
+import { isValidSpanId, isValidTraceId } from './validators';
 
 // TRACER_STATE_HEADER_NAME is the header key used for a span's serialized
 // context.
@@ -42,10 +47,11 @@ export class JaegerFormat implements Propagation {
    * in the headers, null is returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext|null {
+  extract(getter: HeaderGetter): SpanContext | null {
     const debugId = this.parseHeader(getter.getHeader(JAEGER_DEBUG_HEADER));
-    const tracerStateHeader =
-        this.parseHeader(getter.getHeader(TRACER_STATE_HEADER_NAME));
+    const tracerStateHeader = this.parseHeader(
+      getter.getHeader(TRACER_STATE_HEADER_NAME)
+    );
 
     if (!tracerStateHeader) return null;
     const tracerStateHeaderParts = tracerStateHeader.split(':');
@@ -54,15 +60,16 @@ export class JaegerFormat implements Propagation {
     const traceId = tracerStateHeaderParts[0];
     const spanId = tracerStateHeaderParts[1];
     const jflags = Number(
-        '0x' +
-        (isNaN(Number(tracerStateHeaderParts[3])) ?
-             SAMPLED_VALUE :
-             Number(tracerStateHeaderParts[3])));
+      '0x' +
+        (isNaN(Number(tracerStateHeaderParts[3]))
+          ? SAMPLED_VALUE
+          : Number(tracerStateHeaderParts[3]))
+    );
     const sampled = jflags & SAMPLED_VALUE;
-    const debug = (jflags & DEBUG_VALUE) || (debugId ? SAMPLED_VALUE : 0);
-    const options = (sampled || debug) ? SAMPLED_VALUE : 0;
+    const debug = jflags & DEBUG_VALUE || (debugId ? SAMPLED_VALUE : 0);
+    const options = sampled || debug ? SAMPLED_VALUE : 0;
 
-    return {traceId, spanId, options};
+    return { traceId, spanId, options };
   }
 
   /**
@@ -71,21 +78,29 @@ export class JaegerFormat implements Propagation {
    * @param spanContext
    */
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
-    if (!spanContext || !isValidTraceId(spanContext.traceId) ||
-        !isValidSpanId(spanContext.spanId)) {
+    if (
+      !spanContext ||
+      !isValidTraceId(spanContext.traceId) ||
+      !isValidSpanId(spanContext.spanId)
+    ) {
       return;
     }
 
     let flags = '0';
     if (spanContext.options) {
-      flags = ((spanContext.options & SAMPLED_VALUE) ? SAMPLED_VALUE : 0)
-                  .toString(16);
+      flags = (spanContext.options & SAMPLED_VALUE
+        ? SAMPLED_VALUE
+        : 0
+      ).toString(16);
     }
 
     // {parent-span-id} Deprecated, most Jaeger clients ignore on the receiving
     // side, but still include it on the sending side.
     const header = [
-      spanContext.traceId, spanContext.spanId, /** parent-span-id */ '', flags
+      spanContext.traceId,
+      spanContext.spanId,
+      /** parent-span-id */ '',
+      flags,
     ].join(':');
     setter.setHeader(TRACER_STATE_HEADER_NAME, header);
   }
@@ -95,14 +110,17 @@ export class JaegerFormat implements Propagation {
    */
   generate(): SpanContext {
     return {
-      traceId: uuid.v4().split('-').join(''),
+      traceId: uuid
+        .v4()
+        .split('-')
+        .join(''),
       spanId: crypto.randomBytes(8).toString('hex'),
-      options: SAMPLED_VALUE
+      options: SAMPLED_VALUE,
     };
   }
 
   /** Converts a headers type to a string. */
-  private parseHeader(str: string|string[]|undefined): string|undefined {
+  private parseHeader(str: string | string[] | undefined): string | undefined {
     if (Array.isArray(str)) {
       return str[0];
     }

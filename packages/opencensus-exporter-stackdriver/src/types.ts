@@ -14,64 +14,64 @@
  * limitations under the License.
  */
 
-import {Bucket, ExporterConfig} from '@opencensus/core';
-import {JWT, JWTInput} from 'google-auth-library';
+import { Bucket, ExporterConfig } from '@opencensus/core';
+import { JWT, JWTInput } from 'google-auth-library';
 
-export type Span = {
-  name?: string,
-  spanId?: string,
-  parentSpanId?: string,
-  displayName?: TruncatableString,
-  startTime?: string,
-  endTime?: string,
-  attributes?: Attributes,
-  stackTrace?: StackTrace,
-  timeEvents?: TimeEvents,
-  links?: Links,
-  status?: Status,
-  sameProcessAsParentSpan?: boolean,
-  childSpanCount?: number
-};
+export interface Span {
+  name?: string;
+  spanId?: string;
+  parentSpanId?: string;
+  displayName?: TruncatableString;
+  startTime?: string;
+  endTime?: string;
+  attributes?: Attributes;
+  stackTrace?: StackTrace;
+  timeEvents?: TimeEvents;
+  links?: Links;
+  status?: Status;
+  sameProcessAsParentSpan?: boolean;
+  childSpanCount?: number;
+}
 
-export type Attributes = {
-  attributeMap?: {[key: string]: AttributeValue;};
+export interface Attributes {
+  attributeMap?: { [key: string]: AttributeValue };
   droppedAttributesCount?: number;
-};
+}
 
-export type AttributeValue = {
+export interface AttributeValue {
   boolValue?: boolean;
   intValue?: string;
   stringValue?: TruncatableString;
-};
+}
 
-export type TruncatableString = {
+export interface TruncatableString {
   value?: string;
   truncatedByteCount?: number;
-};
+}
 
-export type Links = {
+export interface Links {
   droppedLinksCount?: number;
   link?: Link[];
-};
+}
 
-export type Link = {
+export interface Link {
   attributes?: Attributes;
   spanId?: string;
   traceId?: string;
   type?: LinkType;
-};
+}
 
-export type StackTrace = {
+export interface StackTrace {
   stackFrames?: StackFrames;
   stackTraceHashId?: string;
-};
+}
 
-export type StackFrames = {
+export interface StackFrames {
   droppedFramesCount?: number;
   frame?: StackFrame[];
-};
+}
 
-export type StackFrame = {
+export interface StackFrame {
   columnNumber?: string;
   fileName?: TruncatableString;
   functionName?: TruncatableString;
@@ -79,57 +79,57 @@ export type StackFrame = {
   loadModule?: Module;
   originalFunctionName?: TruncatableString;
   sourceVersion?: TruncatableString;
-};
+}
 
-export type Module = {
+export interface Module {
   buildId?: TruncatableString;
   module?: TruncatableString;
-};
+}
 
-export type Status = {
+export interface Status {
   code?: number;
   message?: string;
-};
+}
 
-export type TimeEvents = {
+export interface TimeEvents {
   droppedAnnotationsCount?: number;
   droppedMessageEventsCount?: number;
   timeEvent?: TimeEvent[];
-};
+}
 
-export type TimeEvent = {
+export interface TimeEvent {
   annotation?: Annotation;
   messageEvent?: MessageEvent;
   time?: string;
-};
+}
 
-export type Annotation = {
+export interface Annotation {
   attributes?: Attributes;
   description?: TruncatableString;
-};
+}
 
-export type MessageEvent = {
+export interface MessageEvent {
   id?: string;
   type?: Type;
   compressedSizeBytes?: string;
   uncompressedSizeBytes?: string;
-};
+}
 
 export enum Type {
   TYPE_UNSPECIFIED = 0,
   SENT = 1,
-  RECEIVED = 2
+  RECEIVED = 2,
 }
 
 export enum LinkType {
   UNSPECIFIED = 0,
   CHILD_LINKED_SPAN = 1,
-  PARENT_LINKED_SPAN = 2
+  PARENT_LINKED_SPAN = 2,
 }
 
 export interface SpansWithCredentials {
   name: string;
-  resource: {spans: {}};
+  resource: { spans: {} };
   auth: JWT;
 }
 
@@ -168,14 +168,14 @@ export enum MetricKind {
   UNSPECIFIED = 'METRIC_KIND_UNSPECIFIED',
   GAUGE = 'GAUGE',
   DELTA = 'DELTA',
-  CUMULATIVE = 'CUMULATIVE'
+  CUMULATIVE = 'CUMULATIVE',
 }
 
 export enum ValueType {
   VALUE_TYPE_UNSPECIFIED = 'VALUE_TYPE_UNSPECIFIED',
   INT64 = 'INT64',
   DOUBLE = 'DOUBLE',
-  DISTRIBUTION = 'DISTRIBUTION'
+  DISTRIBUTION = 'DISTRIBUTION',
 }
 
 export interface LabelDescriptor {
@@ -198,13 +198,13 @@ export interface Distribution {
   count: number;
   mean: number;
   sumOfSquaredDeviation: number;
-  bucketOptions: {explicitBuckets: {bounds: Bucket[];}};
+  bucketOptions: { explicitBuckets: { bounds: Bucket[] } };
   bucketCounts: number[];
   exemplars?: Exemplar[];
 }
 
 export interface Point {
-  interval: {endTime: string, startTime?: string};
+  interval: { endTime: string; startTime?: string };
   value: {
     boolValue?: boolean;
     int64Value?: number;
@@ -215,7 +215,7 @@ export interface Point {
 }
 
 export interface TimeSeries {
-  metric: {type: string; labels: {[key: string]: string};};
+  metric: { type: string; labels: { [key: string]: string } };
   resource: MonitoredResource;
   metricKind: MetricKind;
   valueType: ValueType;
@@ -228,7 +228,7 @@ export interface MonitoredResource {
   type: string;
 
   /** Set of labels that describe the resource. */
-  labels: {[key: string]: string};
+  labels: { [key: string]: string };
 }
 
 /**

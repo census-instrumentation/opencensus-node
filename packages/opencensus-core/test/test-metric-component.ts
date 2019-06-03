@@ -15,9 +15,9 @@
  */
 
 import * as assert from 'assert';
-import {metricProducerManagerInstance} from '../src/metrics/export/metric-producer-manager';
-import {MetricsComponent} from '../src/metrics/metric-component';
-import {MetricRegistry} from '../src/metrics/metric-registry';
+import { metricProducerManagerInstance } from '../src/metrics/export/metric-producer-manager';
+import { MetricsComponent } from '../src/metrics/metric-component';
+import { MetricRegistry } from '../src/metrics/metric-registry';
 
 describe('MetricsComponent()', () => {
   let metricsComponent: MetricsComponent;
@@ -33,8 +33,13 @@ describe('MetricsComponent()', () => {
 
   it('should register metricRegistry to MetricProducerManger', () => {
     assert.strictEqual(
-        metricProducerManagerInstance.getAllMetricProducer().size, 1);
-    assert.ok(metricProducerManagerInstance.getAllMetricProducer().has(
-        metricsComponent.getMetricRegistry().getMetricProducer()));
+      metricProducerManagerInstance.getAllMetricProducer().size,
+      1
+    );
+    assert.ok(
+      metricProducerManagerInstance
+        .getAllMetricProducer()
+        .has(metricsComponent.getMetricRegistry().getMetricProducer())
+    );
   });
 });

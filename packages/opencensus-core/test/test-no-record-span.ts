@@ -15,16 +15,19 @@
  */
 
 import * as assert from 'assert';
-import {CanonicalCode, LinkType, MessageEventType} from '../src';
-import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
+import { CanonicalCode, LinkType, MessageEventType } from '../src';
+import { NoRecordSpan } from '../src/trace/model/no-record/no-record-span';
 
 describe('NoRecordSpan()', () => {
   it('do not crash', () => {
     const noRecordSpan = new NoRecordSpan();
     noRecordSpan.addAnnotation('MyAnnotation');
-    noRecordSpan.addAnnotation('MyAnnotation', {myString: 'bar'});
-    noRecordSpan.addAnnotation(
-        'MyAnnotation', {myString: 'bar', myNumber: 123, myBoolean: true});
+    noRecordSpan.addAnnotation('MyAnnotation', { myString: 'bar' });
+    noRecordSpan.addAnnotation('MyAnnotation', {
+      myString: 'bar',
+      myNumber: 123,
+      myBoolean: true,
+    });
     noRecordSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
     noRecordSpan.addMessageEvent(MessageEventType.RECEIVED, 1, 123456789);
     noRecordSpan.addAttribute('my_first_attribute', 'foo');

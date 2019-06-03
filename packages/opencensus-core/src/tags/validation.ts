@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {TagKey, TagValue} from './types';
+import { TagKey, TagValue } from './types';
 
 const nonPrintableCharsRegex = /[^\u0020-\u007e]/;
 const TAG_KEY_MAX_LENGTH = 255;
@@ -24,8 +24,11 @@ export function isValidTagKey(tagKey: TagKey): boolean {
   if (!tagKey || !tagKey.name) {
     return false;
   }
-  return isPrintableString(tagKey.name) && tagKey.name.length > 0 &&
-      tagKey.name.length <= TAG_KEY_MAX_LENGTH;
+  return (
+    isPrintableString(tagKey.name) &&
+    tagKey.name.length > 0 &&
+    tagKey.name.length <= TAG_KEY_MAX_LENGTH
+  );
 }
 
 /** Determines whether the given String is a valid tag value. */
@@ -33,8 +36,10 @@ export function isValidTagValue(tagValue: TagValue): boolean {
   if (!tagValue || tagValue.value === null || tagValue.value === undefined) {
     return false;
   }
-  return isPrintableString(tagValue.value) &&
-      tagValue.value.length <= TAG_KEY_MAX_LENGTH;
+  return (
+    isPrintableString(tagValue.value) &&
+    tagValue.value.length <= TAG_KEY_MAX_LENGTH
+  );
 }
 
 function isPrintableString(name: string): boolean {

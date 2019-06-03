@@ -17,7 +17,7 @@
 import * as path from 'path';
 
 /** The directory to search for templates. */
-export const templatesDir = function getTemplatesDir() {
+export const templatesDir = (function getTemplatesDir() {
   // When this file is compiled to JS, it will live in the 'build' dir which
   // is a peer of 'templates'.  Tests don't compile, so the relative path is
   // different.
@@ -25,4 +25,4 @@ export const templatesDir = function getTemplatesDir() {
     return path.join(__dirname, '../../../../templates');
   }
   return path.join(__dirname, '../../../templates');
-}();
+})();

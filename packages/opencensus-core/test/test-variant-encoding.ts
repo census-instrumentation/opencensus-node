@@ -15,10 +15,23 @@
  */
 
 import * as assert from 'assert';
-import {DecodeVarint, EncodeVarint} from '../src/tags/propagation/variant-encoding';
+import {
+  DecodeVarint,
+  EncodeVarint,
+} from '../src/tags/propagation/variant-encoding';
 
-const testCases =
-    [0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000];
+const testCases = [
+  0,
+  1,
+  10,
+  100,
+  1000,
+  10000,
+  100000,
+  1000000,
+  10000000,
+  100000000,
+];
 
 function randint(range: number) {
   return Math.floor(Math.random() * range);
@@ -32,7 +45,7 @@ describe('variant encoding', () => {
 
   it('should encode/decode multiple bytes', () => {
     const num = 300;
-    const expectedBytes = [0xAC, 0x02];  // [172, 2]
+    const expectedBytes = [0xac, 0x02]; // [172, 2]
 
     const variant = EncodeVarint(num);
     assert.deepStrictEqual(variant, expectedBytes);

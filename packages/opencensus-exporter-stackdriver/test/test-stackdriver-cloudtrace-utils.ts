@@ -15,7 +15,12 @@
  */
 import * as coreTypes from '@opencensus/core';
 import * as assert from 'assert';
-import {createAttributes, createLinks, createTimeEvents, getResourceLabels} from '../src/stackdriver-cloudtrace-utils';
+import {
+  createAttributes,
+  createLinks,
+  createTimeEvents,
+  getResourceLabels,
+} from '../src/stackdriver-cloudtrace-utils';
 
 describe('Stackdriver CloudTrace Exporter Utils', () => {
   describe('createLinks()', () => {
@@ -25,23 +30,23 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
         spanId: 'spanId1',
         type: coreTypes.LinkType.PARENT_LINKED_SPAN,
         attributes: {
-          'child_link_attribute_string': 'foo1',
-          'child_link_attribute_number': 123,
-          'child_link_attribute_boolean': true,
-        }
+          child_link_attribute_string: 'foo1',
+          child_link_attribute_number: 123,
+          child_link_attribute_boolean: true,
+        },
       },
       {
         traceId: 'traceId2',
         spanId: 'spanId2',
         type: coreTypes.LinkType.CHILD_LINKED_SPAN,
-        attributes: {}
+        attributes: {},
       },
       {
         traceId: 'traceId3',
         spanId: 'spanId3',
         type: coreTypes.LinkType.UNSPECIFIED,
-        attributes: {}
-      }
+        attributes: {},
+      },
     ];
 
     const expectedLink = [
@@ -52,24 +57,24 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
         attributes: {
           droppedAttributesCount: 0,
           attributeMap: {
-            child_link_attribute_string: {stringValue: {value: 'foo1'}},
-            child_link_attribute_number: {intValue: '123'},
-            child_link_attribute_boolean: {boolValue: true}
-          }
-        }
+            child_link_attribute_string: { stringValue: { value: 'foo1' } },
+            child_link_attribute_number: { intValue: '123' },
+            child_link_attribute_boolean: { boolValue: true },
+          },
+        },
       },
       {
         type: 1,
         traceId: 'traceId2',
         spanId: 'spanId2',
-        attributes: {'attributeMap': {}, 'droppedAttributesCount': 0}
+        attributes: { attributeMap: {}, droppedAttributesCount: 0 },
       },
       {
         type: 0,
         traceId: 'traceId3',
         spanId: 'spanId3',
-        attributes: {'attributeMap': {}, 'droppedAttributesCount': 0}
-      }
+        attributes: { attributeMap: {}, droppedAttributesCount: 0 },
+      },
     ];
 
     it('should return stackdriver links', () => {
@@ -87,14 +92,14 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       {
         description: 'my_annotation',
         timestamp: ts,
-        attributes: {myString: 'bar', myNumber: 123, myBoolean: true}
+        attributes: { myString: 'bar', myNumber: 123, myBoolean: true },
       },
       {
         description: 'my_annotation1',
         timestamp: ts,
-        attributes: {myString: 'bar1', myNumber: 456}
+        attributes: { myString: 'bar1', myNumber: 456 },
       },
-      {description: 'my_annotation2', timestamp: ts, attributes: {}}
+      { description: 'my_annotation2', timestamp: ts, attributes: {} },
     ];
     const messageEvents: coreTypes.MessageEvent[] = [
       {
@@ -102,53 +107,53 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
         timestamp: ts,
         type: coreTypes.MessageEventType.SENT,
         compressedSize: 100,
-        uncompressedSize: 12
+        uncompressedSize: 12,
       },
-      {id: 1, timestamp: ts, type: coreTypes.MessageEventType.RECEIVED},
-      {id: 1, timestamp: ts, type: coreTypes.MessageEventType.UNSPECIFIED}
+      { id: 1, timestamp: ts, type: coreTypes.MessageEventType.RECEIVED },
+      { id: 1, timestamp: ts, type: coreTypes.MessageEventType.UNSPECIFIED },
     ];
 
     const expectedTimeEvent = [
       {
         time: '1970-01-02T10:17:36.789Z',
         annotation: {
-          description: {value: 'my_annotation'},
+          description: { value: 'my_annotation' },
           attributes: {
             attributeMap: {
-              myString: {stringValue: {value: 'bar'}},
-              myNumber: {intValue: '123'},
-              myBoolean: {boolValue: true}
+              myString: { stringValue: { value: 'bar' } },
+              myNumber: { intValue: '123' },
+              myBoolean: { boolValue: true },
             },
-            droppedAttributesCount: 0
-          }
-        }
+            droppedAttributesCount: 0,
+          },
+        },
       },
       {
         time: '1970-01-02T10:17:36.789Z',
         annotation: {
-          description: {value: 'my_annotation1'},
+          description: { value: 'my_annotation1' },
           attributes: {
             attributeMap: {
-              myString: {stringValue: {value: 'bar1'}},
-              myNumber: {intValue: '456'}
+              myString: { stringValue: { value: 'bar1' } },
+              myNumber: { intValue: '456' },
             },
-            droppedAttributesCount: 0
-          }
-        }
+            droppedAttributesCount: 0,
+          },
+        },
       },
       {
         time: '1970-01-02T10:17:36.789Z',
         annotation: {
-          description: {value: 'my_annotation2'},
-          attributes: {attributeMap: {}, droppedAttributesCount: 0}
-        }
+          description: { value: 'my_annotation2' },
+          attributes: { attributeMap: {}, droppedAttributesCount: 0 },
+        },
       },
       {
         messageEvent: {
           compressedSizeBytes: '100',
           id: '1',
           type: 1,
-          uncompressedSizeBytes: '12'
+          uncompressedSizeBytes: '12',
         },
         time: '1970-01-02T10:17:36.789Z',
       },
@@ -157,7 +162,7 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
           compressedSizeBytes: '0',
           id: '1',
           type: 2,
-          uncompressedSizeBytes: '0'
+          uncompressedSizeBytes: '0',
         },
         time: '1970-01-02T10:17:36.789Z',
       },
@@ -166,67 +171,83 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
           compressedSizeBytes: '0',
           id: '1',
           type: 0,
-          uncompressedSizeBytes: '0'
+          uncompressedSizeBytes: '0',
         },
         time: '1970-01-02T10:17:36.789Z',
-      }
+      },
     ];
 
     it('should return stackdriver TimeEvents', () => {
-      const stackdriverTimeEvents =
-          createTimeEvents(annotations, messageEvents, 2, 3);
+      const stackdriverTimeEvents = createTimeEvents(
+        annotations,
+        messageEvents,
+        2,
+        3
+      );
 
       assert.strictEqual(stackdriverTimeEvents.droppedAnnotationsCount, 2);
       assert.strictEqual(stackdriverTimeEvents.droppedMessageEventsCount, 3);
       assert.strictEqual(stackdriverTimeEvents.timeEvent!.length, 6);
       assert.deepStrictEqual(
-          stackdriverTimeEvents.timeEvent, expectedTimeEvent);
+        stackdriverTimeEvents.timeEvent,
+        expectedTimeEvent
+      );
     });
 
-    it('should return stackdriver TimeEvents when empty annotations and messageEvents',
-       () => {
-         const stackdriverTimeEvents = createTimeEvents([], [], 0, 0);
+    it('should return stackdriver TimeEvents when empty annotations and messageEvents', () => {
+      const stackdriverTimeEvents = createTimeEvents([], [], 0, 0);
 
-         assert.strictEqual(stackdriverTimeEvents.droppedAnnotationsCount, 0);
-         assert.strictEqual(stackdriverTimeEvents.droppedMessageEventsCount, 0);
-         assert.strictEqual(stackdriverTimeEvents.timeEvent!.length, 0);
-       });
+      assert.strictEqual(stackdriverTimeEvents.droppedAnnotationsCount, 0);
+      assert.strictEqual(stackdriverTimeEvents.droppedMessageEventsCount, 0);
+      assert.strictEqual(stackdriverTimeEvents.timeEvent!.length, 0);
+    });
   });
 
   describe('createAttributes()', () => {
-    const attributes = {'my-attribute': 100, 'my-attribute1': 'test'};
+    const attributes = { 'my-attribute': 100, 'my-attribute1': 'test' };
     let expectedAttributeMap = {
-      'g.co/agent':
-          {'stringValue': {'value': `opencensus-node [${coreTypes.version}]`}},
-      'my-attribute': {'intValue': '100'},
-      'my-attribute1': {'stringValue': {'value': 'test'}}
+      'g.co/agent': {
+        stringValue: { value: `opencensus-node [${coreTypes.version}]` },
+      },
+      'my-attribute': { intValue: '100' },
+      'my-attribute1': { stringValue: { value: 'test' } },
     };
 
     it('should return stackdriver Attributes', () => {
       const stackdriverAttribute = createAttributes(attributes, {}, 0);
       assert.strictEqual(stackdriverAttribute.droppedAttributesCount, 0);
       assert.strictEqual(
-          Object.keys(stackdriverAttribute.attributeMap!).length, 3);
+        Object.keys(stackdriverAttribute.attributeMap!).length,
+        3
+      );
       assert.deepStrictEqual(
-          stackdriverAttribute.attributeMap, expectedAttributeMap);
+        stackdriverAttribute.attributeMap,
+        expectedAttributeMap
+      );
     });
 
     it('should return stackdriver Attributes with labels', () => {
       const stackdriverAttribute = createAttributes(
-          attributes, {
-            'g.co/r/podId': {'intValue': '100'},
-            'g.co/r/project_id': {'stringValue': {'value': 'project1'}}
-          },
-          2);
+        attributes,
+        {
+          'g.co/r/podId': { intValue: '100' },
+          'g.co/r/project_id': { stringValue: { value: 'project1' } },
+        },
+        2
+      );
       expectedAttributeMap = Object.assign({}, expectedAttributeMap, {
-        'g.co/r/podId': {'intValue': '100'},
-        'g.co/r/project_id': {'stringValue': {'value': 'project1'}}
+        'g.co/r/podId': { intValue: '100' },
+        'g.co/r/project_id': { stringValue: { value: 'project1' } },
       });
       assert.strictEqual(stackdriverAttribute.droppedAttributesCount, 2);
       assert.strictEqual(
-          Object.keys(stackdriverAttribute.attributeMap!).length, 5);
+        Object.keys(stackdriverAttribute.attributeMap!).length,
+        5
+      );
       assert.deepStrictEqual(
-          stackdriverAttribute.attributeMap, expectedAttributeMap);
+        stackdriverAttribute.attributeMap,
+        expectedAttributeMap
+      );
     });
   });
 
@@ -235,22 +256,25 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const resource = {
         type: 'k8s_container',
         labels: {
-          'container_name': 'c1',
-          'namespace_name': 'default',
-          'pod_name': 'pod-xyz-123',
-          'project_id': 'my-project-id',
-          'location': 'zone1'
-        }
+          container_name: 'c1',
+          namespace_name: 'default',
+          pod_name: 'pod-xyz-123',
+          project_id: 'my-project-id',
+          location: 'zone1',
+        },
       };
       const expectedLabels = {
-        'g.co/r/k8s_container/container_name': {'stringValue': {'value': 'c1'}},
-        'g.co/r/k8s_container/location': {'stringValue': {'value': 'zone1'}},
-        'g.co/r/k8s_container/namespace_name':
-            {'stringValue': {'value': 'default'}},
-        'g.co/r/k8s_container/pod_name':
-            {'stringValue': {'value': 'pod-xyz-123'}},
-        'g.co/r/k8s_container/project_id':
-            {'stringValue': {'value': 'my-project-id'}}
+        'g.co/r/k8s_container/container_name': { stringValue: { value: 'c1' } },
+        'g.co/r/k8s_container/location': { stringValue: { value: 'zone1' } },
+        'g.co/r/k8s_container/namespace_name': {
+          stringValue: { value: 'default' },
+        },
+        'g.co/r/k8s_container/pod_name': {
+          stringValue: { value: 'pod-xyz-123' },
+        },
+        'g.co/r/k8s_container/project_id': {
+          stringValue: { value: 'my-project-id' },
+        },
       };
 
       const resolvingPromise = Promise.resolve(resource);
@@ -263,17 +287,19 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const resource = {
         type: 'gce_instance',
         labels: {
-          'instance_id': 'instance1',
-          'zone': 'zone1',
-          'project_id': 'my-project-id',
-        }
+          instance_id: 'instance1',
+          zone: 'zone1',
+          project_id: 'my-project-id',
+        },
       };
       const expectedLabels = {
-        'g.co/r/gce_instance/instance_id':
-            {'stringValue': {'value': 'instance1'}},
-        'g.co/r/gce_instance/project_id':
-            {'stringValue': {'value': 'my-project-id'}},
-        'g.co/r/gce_instance/zone': {'stringValue': {'value': 'zone1'}}
+        'g.co/r/gce_instance/instance_id': {
+          stringValue: { value: 'instance1' },
+        },
+        'g.co/r/gce_instance/project_id': {
+          stringValue: { value: 'my-project-id' },
+        },
+        'g.co/r/gce_instance/zone': { stringValue: { value: 'zone1' } },
       };
       const resolvingPromise = Promise.resolve(resource);
       const resourceLabels = await getResourceLabels(resolvingPromise);
@@ -285,21 +311,23 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
       const resource = {
         type: 'aws_ec2_instance',
         labels: {
-          'instance_id': 'instance1',
-          'region': 'region1',
-          'project_id': 'my-project-id',
-          'aws_account': 'my-account-id',
-        }
+          instance_id: 'instance1',
+          region: 'region1',
+          project_id: 'my-project-id',
+          aws_account: 'my-account-id',
+        },
       };
       const expectedLabels = {
-        'g.co/r/aws_ec2_instance/aws_account':
-            {'stringValue': {'value': 'my-account-id'}},
-        'g.co/r/aws_ec2_instance/instance_id':
-            {'stringValue': {'value': 'instance1'}},
-        'g.co/r/aws_ec2_instance/project_id':
-            {'stringValue': {'value': 'my-project-id'}},
-        'g.co/r/aws_ec2_instance/region':
-            {'stringValue': {'value': 'region1'}}
+        'g.co/r/aws_ec2_instance/aws_account': {
+          stringValue: { value: 'my-account-id' },
+        },
+        'g.co/r/aws_ec2_instance/instance_id': {
+          stringValue: { value: 'instance1' },
+        },
+        'g.co/r/aws_ec2_instance/project_id': {
+          stringValue: { value: 'my-project-id' },
+        },
+        'g.co/r/aws_ec2_instance/region': { stringValue: { value: 'region1' } },
       };
 
       const resolvingPromise = Promise.resolve(resource);

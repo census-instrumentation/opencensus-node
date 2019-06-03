@@ -31,7 +31,7 @@ export class ConsoleLogger implements types.Logger {
    * Constructs a new ConsoleLogger instance
    * @param options A logger configuration object.
    */
-  constructor(options?: types.LoggerOptions|string|number) {
+  constructor(options?: types.LoggerOptions | string | number) {
     let opt: types.LoggerOptions = {};
     if (typeof options === 'number') {
       if (options < 0) {
@@ -39,15 +39,17 @@ export class ConsoleLogger implements types.Logger {
       } else if (options > ConsoleLogger.LEVELS.length) {
         options = ConsoleLogger.LEVELS.length - 1;
       }
-      opt = {level: ConsoleLogger.LEVELS[options]};
+      opt = { level: ConsoleLogger.LEVELS[options] };
     } else if (typeof options === 'string') {
-      opt = {level: options};
+      opt = { level: options };
     } else {
       opt = options || {};
     }
     if (opt.level) this.level = opt.level;
-    this.logger =
-        logDriver({levels: ConsoleLogger.LEVELS, level: opt.level || 'silent'});
+    this.logger = logDriver({
+      levels: ConsoleLogger.LEVELS,
+      level: opt.level || 'silent',
+    });
   }
 
   /**
@@ -96,8 +98,10 @@ export class ConsoleLogger implements types.Logger {
  * https://github.com/cainus/logdriver/blob/bba1761737ca72f04d6b445629848538d038484a/index.js#L50
  * @param options A logger options or strig to logger in console
  */
-const logger = (options?: types.LoggerOptions|string|number): types.Logger => {
+const logger = (
+  options?: types.LoggerOptions | string | number
+): types.Logger => {
   return new ConsoleLogger(options);
 };
 
-export {logger};
+export { logger };

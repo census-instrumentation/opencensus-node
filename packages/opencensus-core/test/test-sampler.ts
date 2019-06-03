@@ -15,11 +15,14 @@
  */
 
 import * as assert from 'assert';
-import {SpanKind} from '../src';
-import {TraceParams} from '../src/trace/config/types';
-import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracer} from '../src/trace/model/tracer';
-import {SamplerBuilder, TraceParamsBuilder} from '../src/trace/sampler/sampler';
+import { SpanKind } from '../src';
+import { TraceParams } from '../src/trace/config/types';
+import { RootSpan } from '../src/trace/model/root-span';
+import { CoreTracer } from '../src/trace/model/tracer';
+import {
+  SamplerBuilder,
+  TraceParamsBuilder,
+} from '../src/trace/sampler/sampler';
 
 const tracer = new CoreTracer();
 
@@ -27,7 +30,7 @@ const traceParameters: TraceParams = {
   numberOfAnnontationEventsPerSpan: 12,
   numberOfAttributesPerSpan: 10,
   numberOfLinksPerSpan: 7,
-  numberOfMessageEventsPerSpan: 5
+  numberOfMessageEventsPerSpan: 5,
 };
 
 describe('Sampler', () => {
@@ -80,60 +83,66 @@ describe('Sampler', () => {
       const sampler = SamplerBuilder.getSampler(0.7);
       assert.ok(sampler.description.indexOf('probability') >= 0);
     });
-    it('should accept and reject traces based on last 26 bytes of traceId',
-       () => {
-         const sampler = SamplerBuilder.getSampler(0.5);
+    it('should accept and reject traces based on last 26 bytes of traceId', () => {
+      const sampler = SamplerBuilder.getSampler(0.5);
 
-         const shouldSample = [
-           '11111111111111111110000000000000',
-           '1111111111111111111000ffffffffff',
-           '11111111111111111117ffffffffffff',
-         ];
-         shouldSample.forEach(traceId => {
-           const samplerShouldSample = sampler.shouldSample(traceId);
-           assert.ok(
-               samplerShouldSample,
-               `should have sampled but didn't: ${traceId}`);
-         });
+      const shouldSample = [
+        '11111111111111111110000000000000',
+        '1111111111111111111000ffffffffff',
+        '11111111111111111117ffffffffffff',
+      ];
+      shouldSample.forEach(traceId => {
+        const samplerShouldSample = sampler.shouldSample(traceId);
+        assert.ok(
+          samplerShouldSample,
+          `should have sampled but didn't: ${traceId}`
+        );
+      });
 
-         const shouldNotSample = [
-           '11111111111111111118000000000000',
-           '11111111111111111118000fffffffff',
-           '1111111111111111111fffffffffffff',
-         ];
-         shouldNotSample.forEach(traceId => {
-           const samplerShouldSample = sampler.shouldSample(traceId);
-           assert.ok(
-               !samplerShouldSample,
-               `should not have sampled but did: ${traceId}`);
-         });
-       });
+      const shouldNotSample = [
+        '11111111111111111118000000000000',
+        '11111111111111111118000fffffffff',
+        '1111111111111111111fffffffffffff',
+      ];
+      shouldNotSample.forEach(traceId => {
+        const samplerShouldSample = sampler.shouldSample(traceId);
+        assert.ok(
+          !samplerShouldSample,
+          `should not have sampled but did: ${traceId}`
+        );
+      });
+    });
   });
   describe('getNumberOfAnnotationEventsPerSpan', () => {
     it('should return  12', () => {
       assert.strictEqual(
-          TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
-              traceParameters),
-          12);
+        TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(traceParameters),
+        12
+      );
     });
   });
   describe('getNumberOfMessageEventsPerSpan', () => {
     it('should return 5', () => {
       assert.strictEqual(
-          TraceParamsBuilder.getNumberOfMessageEventsPerSpan(traceParameters),
-          5);
+        TraceParamsBuilder.getNumberOfMessageEventsPerSpan(traceParameters),
+        5
+      );
     });
   });
   describe('getNumberOfAttributesPerSpan', () => {
     it('should return 10', () => {
       assert.strictEqual(
-          TraceParamsBuilder.getNumberOfAttributesPerSpan(traceParameters), 10);
+        TraceParamsBuilder.getNumberOfAttributesPerSpan(traceParameters),
+        10
+      );
     });
   });
   describe('getNumberOfLinksPerSpan', () => {
     it('should return 7', () => {
       assert.strictEqual(
-          TraceParamsBuilder.getNumberOfLinksPerSpan(traceParameters), 7);
+        TraceParamsBuilder.getNumberOfLinksPerSpan(traceParameters),
+        7
+      );
     });
   });
 });

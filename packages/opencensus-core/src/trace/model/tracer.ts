@@ -15,8 +15,8 @@
  */
 
 import * as cls from '../../internal/cls';
-import {NoRecordSpan} from './no-record/no-record-span';
-import {CoreTracerBase} from './tracer-base';
+import { NoRecordSpan } from './no-record/no-record-span';
+import { CoreTracerBase } from './tracer-base';
 import * as types from './types';
 
 /**
@@ -61,11 +61,13 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
    * @param options A TraceOptions object to start a root span.
    * @param fn A callback function to run after starting a root span.
    */
-  startRootSpan<T>(options: types.TraceOptions, fn: (root: types.Span) => T):
-      T {
+  startRootSpan<T>(
+    options: types.TraceOptions,
+    fn: (root: types.Span) => T
+  ): T {
     const self = this;
     return self.contextManager.runAndReturn(() => {
-      return super.startRootSpan(options, (root) => {
+      return super.startRootSpan(options, root => {
         return fn(root);
       });
     });
@@ -74,10 +76,13 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
   /** Notifies listeners of the span start. */
   onStartSpan(span: types.Span): void {
     if (!this.active) return;
-    if (!this.currentRootSpan ||
-        this.currentRootSpan.traceId !== span.traceId) {
+    if (
+      !this.currentRootSpan ||
+      this.currentRootSpan.traceId !== span.traceId
+    ) {
       this.logger.debug(
-          'currentRootSpan != root on notifyStart. Need more investigation.');
+        'currentRootSpan != root on notifyStart. Need more investigation.'
+      );
     }
     return super.onStartSpan(span);
   }
@@ -85,19 +90,22 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
   /** Notifies listeners of the span end. */
   onEndSpan(span: types.Span): void {
     if (!this.active) return;
-    if (!this.currentRootSpan ||
-        this.currentRootSpan.traceId !== span.traceId) {
+    if (
+      !this.currentRootSpan ||
+      this.currentRootSpan.traceId !== span.traceId
+    ) {
       this.logger.debug(
-          'currentRootSpan != root on notifyEnd. Need more investigation.');
+        'currentRootSpan != root on notifyEnd. Need more investigation.'
+      );
     }
     super.onEndSpan(span);
   }
 
   /** Clears the current root span. */
   clearCurrentTrace() {
-    // TODO: Remove null reference and ts-ignore check.
-    //@ts-ignore
-    this.currentRootSpan = null;
+    if (this.contextManager.active) {
+      this.contextManager.set('rootspan', null);
+    }
   }
 
   /**
@@ -107,11 +115,16 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
   startChildSpan(options?: types.SpanOptions): types.Span {
     if (!this.currentRootSpan) {
       this.logger.debug(
-          'no current trace found - must start a new root span first');
+        'no current trace found - must start a new root span first'
+      );
     }
 
-    return super.startChildSpan(Object.assign(
-        {childOf: this.currentRootSpan || new NoRecordSpan()}, options));
+    return super.startChildSpan(
+      Object.assign(
+        { childOf: this.currentRootSpan || new NoRecordSpan() },
+        options
+      )
+    );
   }
 
   /**

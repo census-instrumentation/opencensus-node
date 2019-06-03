@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import * as core from '@opencensus/core';
-import {DEFAULT_INSTRUMENTATION_MODULES} from '@opencensus/instrumentation-all';
+import { DEFAULT_INSTRUMENTATION_MODULES } from '@opencensus/instrumentation-all';
 import * as assert from 'assert';
-import {Tracing} from '../src/trace/tracing';
+import { Tracing } from '../src/trace/tracing';
 
 describe('Tracing', () => {
   /** Should create a Tracing instance */
@@ -62,35 +62,40 @@ describe('Tracing', () => {
         tracing.start();
         assert.ok(tracing.config.plugins);
 
-        DEFAULT_INSTRUMENTATION_MODULES.forEach((pluginName) => {
+        DEFAULT_INSTRUMENTATION_MODULES.forEach(pluginName => {
           if (tracing.config.plugins) {
             assert.ok(tracing.config.plugins[pluginName]);
             assert.strictEqual(
-                tracing.config.plugins[pluginName],
-                `@opencensus/instrumentation-${pluginName}`);
+              tracing.config.plugins[pluginName],
+              `@opencensus/instrumentation-${pluginName}`
+            );
           }
         });
       });
 
       it('should start with an user-provided plugin list', () => {
         const endUserPlugins = {
-          'http': 'enduser-http-pluging',
-          'simple-module': 'enduser-simple-module-pluging'
+          http: 'enduser-http-pluging',
+          'simple-module': 'enduser-simple-module-pluging',
         };
-        tracing.start({plugins: endUserPlugins});
+        tracing.start({ plugins: endUserPlugins });
         assert.ok(tracing.config.plugins);
         if (tracing.config.plugins) {
           // should overwrite default http plugin
           assert.strictEqual(
-              tracing.config.plugins['http'], endUserPlugins['http']);
+            tracing.config.plugins['http'],
+            endUserPlugins['http']
+          );
           // should add a new plugin
           assert.strictEqual(
-              tracing.config.plugins['simple-module'],
-              endUserPlugins['simple-module']);
+            tracing.config.plugins['simple-module'],
+            endUserPlugins['simple-module']
+          );
           // should keep plugins default value
           assert.strictEqual(
-              tracing.config.plugins['https'],
-              '@opencensus/instrumentation-https');
+            tracing.config.plugins['https'],
+            '@opencensus/instrumentation-https'
+          );
         }
       });
     });

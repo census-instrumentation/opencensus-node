@@ -15,8 +15,8 @@
  */
 
 import * as express from 'express';
-import {StatsParams} from '../../zpages';
-import {StatszPageHandler} from './../page-handlers/statsz.page-handler';
+import { StatsParams } from '../../zpages';
+import { StatszPageHandler } from './../page-handlers/statsz.page-handler';
 
 /**
  * An Express middleware that renders the Statsz view.

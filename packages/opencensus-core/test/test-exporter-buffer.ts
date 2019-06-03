@@ -15,22 +15,22 @@
  */
 
 import * as assert from 'assert';
-import {SpanKind} from '../src';
+import { SpanKind } from '../src';
 import * as logger from '../src/common/console-logger';
-import {NoopExporter} from '../src/exporters/console-exporter';
-import {ExporterBuffer} from '../src/exporters/exporter-buffer';
-import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import { NoopExporter } from '../src/exporters/console-exporter';
+import { ExporterBuffer } from '../src/exporters/exporter-buffer';
+import { RootSpan } from '../src/trace/model/root-span';
+import { CoreTracer } from '../src/trace/model/tracer';
 
 const exporter = new NoopExporter();
 const DEFAULT_BUFFER_SIZE = 3;
-const DEFAULT_BUFFER_TIMEOUT = 2000;  // time in milliseconds
+const DEFAULT_BUFFER_TIMEOUT = 2000; // time in milliseconds
 const tracer = new CoreTracer().start({});
 
 const defaultBufferConfig = {
   bufferSize: DEFAULT_BUFFER_SIZE,
   bufferTimeout: DEFAULT_BUFFER_TIMEOUT,
-  logger: logger.logger()
+  logger: logger.logger(),
 };
 
 const name = 'MySpanName';
@@ -41,12 +41,19 @@ const parentSpanId = '';
 const createRootSpans = (num: number): RootSpan[] => {
   const rootSpans = [];
   for (let i = 0; i < num; i++) {
-    const rootSpan =
-        new RootSpan(tracer, `rootSpan.${i}`, kind, traceId, parentSpanId);
+    const rootSpan = new RootSpan(
+      tracer,
+      `rootSpan.${i}`,
+      kind,
+      traceId,
+      parentSpanId
+    );
     rootSpan.start();
     for (let j = 0; j < 10; j++) {
-      rootSpan.startChildSpan(
-          {name: `childSpan.${i}.${j}`, kind: SpanKind.CLIENT});
+      rootSpan.startChildSpan({
+        name: `childSpan.${i}.${j}`,
+        kind: SpanKind.CLIENT,
+      });
     }
     rootSpans.push(rootSpan);
   }
@@ -85,7 +92,8 @@ describe('ExporterBuffer', () => {
     it('should add one item to the Buffer', () => {
       const buffer = new ExporterBuffer(exporter, defaultBufferConfig);
       buffer.addToBuffer(
-          new RootSpan(tracer, name, kind, traceId, parentSpanId));
+        new RootSpan(tracer, name, kind, traceId, parentSpanId)
+      );
       assert.strictEqual(buffer.getQueue().length, 1);
     });
   });
@@ -102,7 +110,8 @@ describe('ExporterBuffer', () => {
       }
       assert.strictEqual(buffer.getQueue().length, buffer.getBufferSize());
       buffer.addToBuffer(
-          new RootSpan(tracer, name, kind, traceId, parentSpanId));
+        new RootSpan(tracer, name, kind, traceId, parentSpanId)
+      );
       assert.strictEqual(buffer.getQueue().length, 0);
     });
   });
@@ -111,10 +120,11 @@ describe('ExporterBuffer', () => {
    * Should flush by timeout
    */
   describe('addToBuffer force flush by timeout ', () => {
-    it('should flush by timeout', (done) => {
+    it('should flush by timeout', done => {
       const buffer = new ExporterBuffer(exporter, defaultBufferConfig);
       buffer.addToBuffer(
-          new RootSpan(tracer, name, kind, traceId, parentSpanId));
+        new RootSpan(tracer, name, kind, traceId, parentSpanId)
+      );
       assert.strictEqual(buffer.getQueue().length, 1);
       setTimeout(() => {
         assert.strictEqual(buffer.getQueue().length, 0);

@@ -15,8 +15,8 @@
  */
 
 import * as express from 'express';
-import {StatsParams} from '../../zpages';
-import {RpczPageHandler} from './../page-handlers/rpcz.page-handler';
+import { StatsParams } from '../../zpages';
+import { RpczPageHandler } from './../page-handlers/rpcz.page-handler';
 
 /**
  * An Express middleware that renders the RPCz view.

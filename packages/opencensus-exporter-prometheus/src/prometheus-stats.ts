@@ -14,10 +14,28 @@
  * limitations under the License.
  */
 
-import {AggregationType, DistributionData, ExporterConfig, logger, Logger, Measurement, StatsEventListener, TagKey, TagValue, View} from '@opencensus/core';
+import {
+  AggregationType,
+  DistributionData,
+  ExporterConfig,
+  logger,
+  Logger,
+  Measurement,
+  StatsEventListener,
+  TagKey,
+  TagValue,
+  View,
+} from '@opencensus/core';
 import * as express from 'express';
 import * as http from 'http';
-import {Counter, Gauge, Histogram, labelValues, Metric, Registry} from 'prom-client';
+import {
+  Counter,
+  Gauge,
+  Histogram,
+  labelValues,
+  Metric,
+  Registry,
+} from 'prom-client';
 
 export interface PrometheusExporterOptions extends ExporterConfig {
   /** App prefix for metrics, if needed - default opencensus */
@@ -40,7 +58,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
     port: 9464,
     startServer: false,
     contentType: 'text/plain; text/plain; version=0.0.13; charset=utf-8',
-    prefix: ''
+    prefix: '',
   };
 
   private logger: Logger;
@@ -58,7 +76,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
     this.logger = options.logger || logger.logger();
     this.port = options.port || PrometheusStatsExporter.DEFAULT_OPTIONS.port;
     this.prefix =
-        options.prefix || PrometheusStatsExporter.DEFAULT_OPTIONS.prefix;
+      options.prefix || PrometheusStatsExporter.DEFAULT_OPTIONS.prefix;
 
     /** Start the server if the startServer option is true */
     if (options.startServer) {
@@ -80,7 +98,10 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param tags The tags to which the value is applied
    */
   onRecord(
-      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {
+    views: View[],
+    measurement: Measurement,
+    tags: Map<TagKey, TagValue>
+  ) {
     for (const view of views) {
       this.updateMetric(view, measurement, tags);
     }
@@ -100,17 +121,19 @@ export class PrometheusStatsExporter implements StatsEventListener {
     this.stopServer();
   }
 
-  private getLabelValues(columns: TagKey[], tags: Map<TagKey, TagValue>):
-      labelValues {
+  private getLabelValues(
+    columns: TagKey[],
+    tags: Map<TagKey, TagValue>
+  ): labelValues {
     const labels: labelValues = {};
 
     // TODO: Consider make original tags map with string:TagValue type.
-    const tagsWithStringKey: Map<string, TagValue|undefined> = new Map();
+    const tagsWithStringKey: Map<string, TagValue | undefined> = new Map();
     for (const key of tags.keys()) {
       tagsWithStringKey.set(key.name, tags.get(key));
     }
 
-    columns.forEach((tagKey) => {
+    columns.forEach(tagKey => {
       if (tagsWithStringKey.has(tagKey.name)) {
         const tagValue = tagsWithStringKey.get(tagKey.name);
         if (tagValue) {
@@ -135,9 +158,9 @@ export class PrometheusStatsExporter implements StatsEventListener {
       return metric;
     }
 
-    const labelNames = view.getColumns().map((tagKey) => tagKey.name);
+    const labelNames = view.getColumns().map(tagKey => tagKey.name);
     // Create a new metric if there is no one
-    const metricObj = {name: metricName, help: view.description, labelNames};
+    const metricObj = { name: metricName, help: view.description, labelNames };
 
     // Creating the metric based on aggregation type
     switch (view.aggregation) {
@@ -154,7 +177,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
           name: metricName,
           help: view.description,
           labelNames,
-          buckets: this.getBoundaries(view, tags)
+          buckets: this.getBoundaries(view, tags),
         };
         metric = new Histogram(distribution);
         break;
@@ -172,18 +195,24 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param measurement Measurement with the new value to update the metric
    */
   private updateMetric(
-      view: View, measurement: Measurement, tags: Map<TagKey, TagValue>) {
+    view: View,
+    measurement: Measurement,
+    tags: Map<TagKey, TagValue>
+  ) {
     const metric = this.registerMetric(view, tags);
     // Updating the metric based on metric instance type and aggregation type
     const labelValues = this.getLabelValues(view.getColumns(), tags);
     if (metric instanceof Counter) {
       metric.inc(labelValues);
     } else if (
-        view.aggregation === AggregationType.SUM && metric instanceof Gauge) {
+      view.aggregation === AggregationType.SUM &&
+      metric instanceof Gauge
+    ) {
       metric.inc(labelValues, measurement.value);
     } else if (
-        view.aggregation === AggregationType.LAST_VALUE &&
-        metric instanceof Gauge) {
+      view.aggregation === AggregationType.LAST_VALUE &&
+      metric instanceof Gauge
+    ) {
       metric.set(labelValues, measurement.value);
     } else if (metric instanceof Histogram) {
       metric.observe(labelValues, measurement.value);
@@ -221,9 +250,11 @@ export class PrometheusStatsExporter implements StatsEventListener {
   private validateDisallowedLeLabelForHistogram(labels: string[]): void {
     labels.forEach(label => {
       if (label === PrometheusStatsExporter.RESERVED_HISTOGRAM_LABEL) {
-        throw new Error(`${
-            PrometheusStatsExporter
-                .RESERVED_HISTOGRAM_LABEL} is a reserved label keyword`);
+        throw new Error(
+          `${
+            PrometheusStatsExporter.RESERVED_HISTOGRAM_LABEL
+          } is a reserved label keyword`
+        );
       }
     });
   }
@@ -234,8 +265,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
    * @param tags Tags used to get the DistributionData
    */
   private getBoundaries(view: View, tags: Map<TagKey, TagValue>): number[] {
-    const tagValues =
-        view.getColumns().map((tagKey) => (tags.get(tagKey) || null));
+    const tagValues = view.getColumns().map(tagKey => tags.get(tagKey) || null);
     const data = view.getSnapshot(tagValues) as DistributionData;
     return data.buckets;
   }
@@ -247,7 +277,9 @@ export class PrometheusStatsExporter implements StatsEventListener {
     const self = this;
     this.app.get('/metrics', (req, res) => {
       res.set(
-          'Content-Type', PrometheusStatsExporter.DEFAULT_OPTIONS.contentType);
+        'Content-Type',
+        PrometheusStatsExporter.DEFAULT_OPTIONS.contentType
+      );
       res.end(this.registry.metrics());
     });
 

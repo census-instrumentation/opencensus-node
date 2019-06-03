@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {metricProducerManagerInstance} from './export/metric-producer-manager';
-import {MetricProducerManager} from './export/types';
-import {MetricsComponent} from './metric-component';
-import {MetricRegistry} from './metric-registry';
+import { metricProducerManagerInstance } from './export/metric-producer-manager';
+import { MetricProducerManager } from './export/types';
+import { MetricsComponent } from './metric-component';
+import { MetricRegistry } from './metric-registry';
 
 /**
  * Class for accessing the default MetricsComponent.

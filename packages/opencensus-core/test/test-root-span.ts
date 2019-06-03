@@ -15,12 +15,12 @@
  */
 
 import * as assert from 'assert';
-import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
-import {RootSpan} from '../src/trace/model/root-span';
-import {Span} from '../src/trace/model/span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import { NoRecordSpan } from '../src/trace/model/no-record/no-record-span';
+import { RootSpan } from '../src/trace/model/root-span';
+import { Span } from '../src/trace/model/span';
+import { CoreTracer } from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
-import {Annotation, Link} from '../src/trace/model/types';
+import { Annotation, Link } from '../src/trace/model/types';
 
 const tracer = new CoreTracer();
 
@@ -47,8 +47,10 @@ describe('RootSpan', () => {
     it('should get span list from rootspan instance', () => {
       const root = new RootSpan(tracer, name, kind, traceId, '');
       root.start();
-      const span =
-          root.startChildSpan({name: 'spanName', kind: types.SpanKind.CLIENT});
+      const span = root.startChildSpan({
+        name: 'spanName',
+        kind: types.SpanKind.CLIENT,
+      });
 
       assert.strictEqual(root.spans.length, 1);
       assert.strictEqual(span, root.spans[0]);
@@ -66,12 +68,17 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
       assert.strictEqual(root.numberOfChildren, 0);
-      root.startChildSpan({name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
+      root.startChildSpan({
+        name: 'spanName',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       assert.strictEqual(root.numberOfChildren, 1);
 
       for (let i = 0; i < 10; i++) {
-        root.startChildSpan(
-            {name: 'spanName' + i, kind: types.SpanKind.UNSPECIFIED});
+        root.startChildSpan({
+          name: 'spanName' + i,
+          kind: types.SpanKind.UNSPECIFIED,
+        });
       }
       assert.strictEqual(root.numberOfChildren, 11);
     });
@@ -82,12 +89,16 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
       assert.strictEqual(root.numberOfChildren, 0);
-      const child1 = root.startChildSpan(
-          {name: 'child1', kind: types.SpanKind.UNSPECIFIED});
+      const child1 = root.startChildSpan({
+        name: 'child1',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       assert.strictEqual(root.numberOfChildren, 1);
       assert.strictEqual(child1.numberOfChildren, 0);
-      const child2 = root.startChildSpan(
-          {name: 'child2', kind: types.SpanKind.UNSPECIFIED});
+      const child2 = root.startChildSpan({
+        name: 'child2',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       assert.strictEqual(root.numberOfChildren, 2);
       const grandchild1 = child1.startChildSpan({
         name: 'grandchild1',
@@ -122,8 +133,10 @@ describe('RootSpan', () => {
       root.start();
       assert.strictEqual(root.traceId, root.spanContext.traceId);
 
-      const child = root.startChildSpan(
-          {name: 'child', kind: types.SpanKind.UNSPECIFIED});
+      const child = root.startChildSpan({
+        name: 'child',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       assert.strictEqual(root.traceId, child.traceId);
     });
   });
@@ -148,8 +161,10 @@ describe('RootSpan', () => {
     before(() => {
       root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
-      span = root.startChildSpan(
-          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
+      span = root.startChildSpan({
+        name: 'spanName',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
     });
 
     it('should create span instance', () => {
@@ -167,8 +182,10 @@ describe('RootSpan', () => {
   describe('startSpan() before start rootspan', () => {
     it('should create NoRecordSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
-      const span = root.startChildSpan(
-          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
+      const span = root.startChildSpan({
+        name: 'spanName',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       assert.ok(span instanceof NoRecordSpan);
     });
   });
@@ -181,8 +198,10 @@ describe('RootSpan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
       root.end();
-      const span = root.startChildSpan(
-          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
+      const span = root.startChildSpan({
+        name: 'spanName',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       assert.ok(span instanceof NoRecordSpan);
     });
   });
@@ -217,10 +236,14 @@ describe('RootSpan', () => {
     it('should end all spans inside rootspan', () => {
       const root = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       root.start();
-      const child = root.startChildSpan(
-          {name: 'child', kind: types.SpanKind.UNSPECIFIED});
-      child.startChildSpan(
-          {name: 'grandchild', kind: types.SpanKind.UNSPECIFIED});
+      const child = root.startChildSpan({
+        name: 'child',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
+      child.startChildSpan({
+        name: 'grandchild',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       root.end();
 
       for (const span of root.allDescendants()) {
@@ -228,7 +251,6 @@ describe('RootSpan', () => {
       }
     });
   });
-
 
   /**
    * Should add an attrinbutes
@@ -241,7 +263,9 @@ describe('RootSpan', () => {
       ['String', 'Number', 'Boolean'].map(attType => {
         rootSpan.addAttribute('testKey' + attType, 'testValue' + attType);
         assert.strictEqual(
-            rootSpan.attributes['testKey' + attType], 'testValue' + attType);
+          rootSpan.attributes['testKey' + attType],
+          'testValue' + attType
+        );
       });
     });
   });
@@ -253,8 +277,11 @@ describe('RootSpan', () => {
     it('should add an annotation', () => {
       // tslint:disable:no-any
       function instanceOfAnnotation(object: any): object is Annotation {
-        return 'description' in object && 'timestamp' in object &&
-            'attributes' in object;
+        return (
+          'description' in object &&
+          'timestamp' in object &&
+          'attributes' in object
+        );
       }
 
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
@@ -275,7 +302,9 @@ describe('RootSpan', () => {
       assert.ok(rootSpan.annotations.length > 0);
       assert.strictEqual(rootSpan.droppedAnnotationsCount, 0);
       assert.strictEqual(
-          rootSpan.annotations[0].description, 'description test');
+        rootSpan.annotations[0].description,
+        'description test'
+      );
       assert.deepStrictEqual(rootSpan.annotations[0].attributes, {});
       assert.ok(rootSpan.annotations[0].timestamp > 0);
     });
@@ -298,7 +327,10 @@ describe('RootSpan', () => {
       span.start();
 
       rootSpan.addLink(
-          rootSpan.traceId, span.id, types.LinkType.CHILD_LINKED_SPAN);
+        rootSpan.traceId,
+        span.id,
+        types.LinkType.CHILD_LINKED_SPAN
+      );
 
       assert.ok(rootSpan.links.length > 0);
       assert.strictEqual(rootSpan.droppedLinksCount, 0);
@@ -334,8 +366,14 @@ describe('RootSpan', () => {
     });
 
     it('should create a RootSpan instance with traceState', () => {
-      const root =
-          new RootSpan(tracer, name, kind, traceId, parentSpanId, 'traceState');
+      const root = new RootSpan(
+        tracer,
+        name,
+        kind,
+        traceId,
+        parentSpanId,
+        'traceState'
+      );
       assert.ok(root instanceof RootSpan);
       assert.strictEqual(root.traceState, 'traceState');
     });

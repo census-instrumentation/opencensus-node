@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-import {AggregationData, AggregationType, TagKey, TagValue, View} from '@opencensus/core';
-import {StatsParams} from '../../zpages';
-import {templatesDir} from './templates-dir';
+import {
+  AggregationData,
+  AggregationType,
+  TagKey,
+  TagValue,
+  View,
+} from '@opencensus/core';
+import { StatsParams } from '../../zpages';
+import { templatesDir } from './templates-dir';
 const ejs = require('ejs');
 import * as path from 'path';
 
@@ -24,16 +30,16 @@ export interface StatszParams {
   path: string;
 }
 
-type FolderType = {
-  [key: string]: {path: string, isLastFolder: boolean, viewsCount: number}
-};
+interface FolderType {
+  [key: string]: { path: string; isLastFolder: boolean; viewsCount: number };
+}
 
 // AggregationData in zPages format
-export type ZPagesStatsData = {
-  tagKeys: TagKey[],
-  tagValues?: Array<TagValue|null>,
-  snapshot?: AggregationData
-};
+export interface ZPagesStatsData {
+  tagKeys: TagKey[];
+  tagValues?: Array<TagValue | null>;
+  snapshot?: AggregationData;
+}
 
 /**
  * Information used to render the Statsz UI.
@@ -59,7 +65,7 @@ export class StatszPageHandler {
     /** CSS styles file */
     const stylesFile = this.loaderFile('styles.min.css');
     /** EJS render options */
-    const options = {delimiter: '?'};
+    const options = { delimiter: '?' };
     /** current path, empty is root folder */
     let path: string[] = [];
     /** current folder level */
@@ -67,11 +73,11 @@ export class StatszPageHandler {
     /** keeps the folders that belong to the current folder  */
     const folders: FolderType = {};
     /** selected view to show */
-    let selectedView: View|undefined;
+    let selectedView: View | undefined;
     /** keeps HTML table content */
     let tableContent: string;
     /** keeps the stats and view data to load UI */
-    let statsViewData: StatsViewData|undefined;
+    let statsViewData: StatsViewData | undefined;
 
     // gets the path from user
     if (params.path) {
@@ -120,7 +126,7 @@ export class StatszPageHandler {
         folders[folderName] = {
           path: currentViewPath,
           viewsCount: 1,
-          isLastFolder
+          isLastFolder,
         };
       }
     }
@@ -128,7 +134,7 @@ export class StatszPageHandler {
     if (selectedView) {
       const statsData = this.getStatsData(selectedView);
       const viewFile = this.loaderFile('statsz-view.ejs');
-      let viewContentFile: string|undefined;
+      let viewContentFile: string | undefined;
       let statsContent: string;
 
       switch (selectedView.aggregation) {
@@ -155,25 +161,30 @@ export class StatszPageHandler {
           break;
       }
 
-      statsViewData = {view: selectedView, statsData};
+      statsViewData = { view: selectedView, statsData };
       statsContent = ejs.render(viewContentFile, statsViewData, options);
       tableContent = ejs.render(
-          viewFile, {view: selectedView, stats_content: statsContent}, options);
+        viewFile,
+        { view: selectedView, stats_content: statsContent },
+        options
+      );
     } else {
-      tableContent = ejs.render(directoriesFile, {folders}, options);
+      tableContent = ejs.render(directoriesFile, { folders }, options);
     }
 
     if (json) {
       return JSON.stringify(statsViewData, null, 2);
     } else {
       return ejs.render(
-          statszFile, {
-            styles: stylesFile,
-            registeredMeasures: this.statsParams.registeredMeasures,
-            table_content: tableContent,
-            path
-          },
-          options);
+        statszFile,
+        {
+          styles: stylesFile,
+          registeredMeasures: this.statsParams.registeredMeasures,
+          table_content: tableContent,
+          path,
+        },
+        options
+      );
     }
   }
 
@@ -184,13 +195,13 @@ export class StatszPageHandler {
   private getStatsData(selectedView: View): ZPagesStatsData[] {
     const recordedData = this.statsParams.recordedData[selectedView.name];
     if (!recordedData) {
-      return [{tagKeys: selectedView.getColumns()}];
+      return [{ tagKeys: selectedView.getColumns() }];
     }
     return recordedData.map(snapshot => {
       return {
         tagKeys: selectedView.getColumns(),
         tagValues: snapshot.tagValues,
-        snapshot
+        snapshot,
       };
     });
   }

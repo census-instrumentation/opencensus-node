@@ -15,15 +15,18 @@
  */
 
 import * as assert from 'assert';
-import {SpanKind} from '../src';
-import {ConsoleExporter, NoopExporter} from '../src/exporters/console-exporter';
-import {RootSpan} from '../src/trace/model/root-span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import { SpanKind } from '../src';
+import {
+  ConsoleExporter,
+  NoopExporter,
+} from '../src/exporters/console-exporter';
+import { RootSpan } from '../src/trace/model/root-span';
+import { CoreTracer } from '../src/trace/model/tracer';
 
-const tracer = new CoreTracer().start({samplingRate: 1.0});
+const tracer = new CoreTracer().start({ samplingRate: 1.0 });
 const defaultBufferConfig = {
   bufferSize: 1,
-  bufferTimeout: 20000  // time in milliseconds
+  bufferTimeout: 20000, // time in milliseconds
 };
 const name = 'MySpanName';
 const kind = SpanKind.SERVER;
@@ -91,7 +94,7 @@ describe('ConsoleLogExporter', () => {
       const exporter = new ConsoleExporter(defaultBufferConfig);
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      rootSpan.startChildSpan({name: 'name', kind: SpanKind.UNSPECIFIED});
+      rootSpan.startChildSpan({ name: 'name', kind: SpanKind.UNSPECIFIED });
       const queue: RootSpan[] = [rootSpan];
 
       return exporter.publish(queue).then(() => {

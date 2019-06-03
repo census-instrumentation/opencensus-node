@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {Measurement, View} from '../stats/types';
-import {TagKey, TagValue} from '../tags/types';
+import { Measurement, View } from '../stats/types';
+import { TagKey, TagValue } from '../tags/types';
 import * as configTypes from '../trace/config/types';
 import * as modelTypes from '../trace/model/types';
 
@@ -25,7 +25,7 @@ export interface Exporter extends modelTypes.SpanEventListener {
    * Sends a list of spans to the service.
    * @param spans A list of spans to publish.
    */
-  publish(spans: modelTypes.Span[]): Promise<number|string|void>;
+  publish(spans: modelTypes.Span[]): Promise<number | string | void>;
 }
 
 /**
@@ -48,8 +48,10 @@ export interface StatsEventListener {
    * @param tags The tags to which the value is applied
    */
   onRecord(
-      views: View[], measurement: Measurement,
-      tags: Map<TagKey, TagValue>): void;
+    views: View[],
+    measurement: Measurement,
+    tags: Map<TagKey, TagValue>
+  ): void;
 
   /**
    * Starts the exporter that polls Metric from Metrics library and send

@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-import {Logger, Plugin, PluginConfig, PluginNames, Stats, TracerBase} from '@opencensus/core';
+import {
+  Logger,
+  Plugin,
+  PluginConfig,
+  PluginNames,
+  Stats,
+  TracerBase,
+} from '@opencensus/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as hook from 'require-in-the-middle';
-import {Constants} from '../constants';
+import { Constants } from '../constants';
 
 enum HookState {
   UNINITIALIZED,
   ENABLED,
-  DISABLED
+  DISABLED,
 }
 
 /**
@@ -64,7 +71,8 @@ export class PluginLoader {
    */
   private static defaultPackageName(moduleName: string): string {
     return `${Constants.OPENCENSUS_SCOPE}/${
-        Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-${moduleName}`;
+      Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
+    }-${moduleName}`;
   }
 
   /**
@@ -74,14 +82,15 @@ export class PluginLoader {
    * @returns Plugin names.
    */
   static defaultPluginsFromArray(modulesToPatch: string[]): PluginNames {
-    const plugins =
-        modulesToPatch.reduce((plugins: PluginNames, moduleName: string) => {
-          plugins[moduleName] = PluginLoader.defaultPackageName(moduleName);
-          return plugins;
-        }, {} as PluginNames);
+    const plugins = modulesToPatch.reduce(
+      (plugins: PluginNames, moduleName: string) => {
+        plugins[moduleName] = PluginLoader.defaultPackageName(moduleName);
+        return plugins;
+      },
+      {} as PluginNames
+    );
     return plugins;
   }
-
 
   /**
    * Gets the package version.
@@ -96,14 +105,16 @@ export class PluginLoader {
         version = JSON.parse(fs.readFileSync(pkgJson).toString()).version;
       } catch (e) {
         this.logger.error(
-            'could not get version of %s module: %s', name, e.message);
+          'could not get version of %s module: %s',
+          name,
+          e.message
+        );
       }
     } else {
       version = process.versions.node;
     }
     return version;
   }
-
 
   /**
    * Loads a list of plugins (using a map of the target module name
@@ -142,11 +153,20 @@ export class PluginLoader {
           const plugin: Plugin = require(moduleName as string).plugin;
           this.plugins.push(plugin);
           return plugin.enable(
-              exports, this.tracer, version, moduleConfig, basedir, this.stats);
+            exports,
+            this.tracer,
+            version,
+            moduleConfig,
+            basedir,
+            this.stats
+          );
         } catch (e) {
           this.logger.error(
-              'could not load plugin %s of module %s. Error: %s', moduleName,
-              name, e.message);
+            'could not load plugin %s of module %s. Error: %s',
+            moduleName,
+            name,
+            e.message
+          );
           return exports;
         }
       });

@@ -15,41 +15,55 @@
  */
 
 import * as assert from 'assert';
-import {TEST_ONLY} from '../src/common/time-util';
-import {DerivedCumulative} from '../src/metrics/cumulative/derived-cumulative';
-import {LabelKey, LabelValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
+import { TEST_ONLY } from '../src/common/time-util';
+import { DerivedCumulative } from '../src/metrics/cumulative/derived-cumulative';
+import {
+  LabelKey,
+  LabelValue,
+  MetricDescriptorType,
+  Timestamp,
+} from '../src/metrics/export/types';
 
 const METRIC_NAME = 'metric-name';
 const METRIC_DESCRIPTION = 'metric-description';
 const UNIT = '1';
 const CUMULATIVE_INT64 = MetricDescriptorType.CUMULATIVE_INT64;
 const CUMULATIVE_DOUBLE = MetricDescriptorType.CUMULATIVE_DOUBLE;
-const LABEL_KEYS: LabelKey[] = [{key: 'code', description: 'desc'}];
-const LABEL_VALUES_200: LabelValue[] = [{value: '200'}];
-const LABEL_VALUES_400: LabelValue[] = [{value: '400'}];
-const LABEL_VALUES_EXRTA: LabelValue[] = [{value: '200'}, {value: '400'}];
+const LABEL_KEYS: LabelKey[] = [{ key: 'code', description: 'desc' }];
+const LABEL_VALUES_200: LabelValue[] = [{ value: '200' }];
+const LABEL_VALUES_400: LabelValue[] = [{ value: '400' }];
+const LABEL_VALUES_EXRTA: LabelValue[] = [{ value: '200' }, { value: '400' }];
 const EMPTY_CONSTANT_LABELS = new Map();
 const CONSTANT_LABELS = new Map();
-CONSTANT_LABELS.set({key: 'host', description: 'host'}, {value: 'localhost'});
+CONSTANT_LABELS.set(
+  { key: 'host', description: 'host' },
+  { value: 'localhost' }
+);
 
 describe('DerivedCumulative', () => {
   let instance: DerivedCumulative;
   const realHrtimeFn = process.hrtime;
   const realNowFn = Date.now;
-  const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
+  const mockedTime: Timestamp = { seconds: 1450000100, nanos: 1e7 };
   const expectedMetricDescriptor = {
     name: METRIC_NAME,
     description: METRIC_DESCRIPTION,
     unit: UNIT,
     type: CUMULATIVE_INT64,
-    labelKeys: LABEL_KEYS
+    labelKeys: LABEL_KEYS,
   };
-  const startime: Timestamp = {seconds: 1400000100, nanos: 1e7};
+  const startime: Timestamp = { seconds: 1400000100, nanos: 1e7 };
 
   beforeEach(() => {
     instance = new DerivedCumulative(
-        METRIC_NAME, METRIC_DESCRIPTION, UNIT, CUMULATIVE_INT64, LABEL_KEYS,
-        EMPTY_CONSTANT_LABELS, startime);
+      METRIC_NAME,
+      METRIC_DESCRIPTION,
+      UNIT,
+      CUMULATIVE_INT64,
+      LABEL_KEYS,
+      EMPTY_CONSTANT_LABELS,
+      startime
+    );
 
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
@@ -65,12 +79,11 @@ describe('DerivedCumulative', () => {
   });
 
   describe('createTimeSeries()', () => {
-    it('should throw an error when the keys and values dont have same size',
-       () => {
-         assert.throws(() => {
-           instance.createTimeSeries(LABEL_VALUES_EXRTA, new Map());
-         }, /^Error: Label Keys and Label Values don't have same size$/);
-       });
+    it('should throw an error when the keys and values dont have same size', () => {
+      assert.throws(() => {
+        instance.createTimeSeries(LABEL_VALUES_EXRTA, new Map());
+      }, /^Error: Label Keys and Label Values don't have same size$/);
+    });
 
     it('should return a Metric', () => {
       const map = new Map();
@@ -82,11 +95,13 @@ describe('DerivedCumulative', () => {
       assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(metric!.timeseries, [{
-                               labelValues: LABEL_VALUES_200,
-                               points: [{value: 2, timestamp: mockedTime}],
-                               startTimestamp: startime
-                             }]);
+      assert.deepStrictEqual(metric!.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{ value: 2, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
+      ]);
       // add data in collection
       map.set('key2', 'value2');
       map.set('key3', 'value3');
@@ -103,14 +118,14 @@ describe('DerivedCumulative', () => {
       assert.deepStrictEqual(metric!.timeseries, [
         {
           labelValues: LABEL_VALUES_200,
-          points: [{value: 4, timestamp: mockedTime}],
-          startTimestamp: startime
+          points: [{ value: 4, timestamp: mockedTime }],
+          startTimestamp: startime,
         },
         {
           labelValues: LABEL_VALUES_400,
-          points: [{value: 5, timestamp: mockedTime}],
-          startTimestamp: startime
-        }
+          points: [{ value: 5, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
       ]);
     });
 
@@ -126,11 +141,13 @@ describe('DerivedCumulative', () => {
       assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(metric!.timeseries, [{
-                               labelValues: LABEL_VALUES_200,
-                               points: [{value: 45, timestamp: mockedTime}],
-                               startTimestamp: startime
-                             }]);
+      assert.deepStrictEqual(metric!.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{ value: 45, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
+      ]);
     });
 
     it('should return a Metric value from a function', () => {
@@ -153,19 +170,22 @@ describe('DerivedCumulative', () => {
       assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(metric!.timeseries, [{
-                               labelValues: LABEL_VALUES_200,
-                               points: [{value: 1, timestamp: mockedTime}],
-                               startTimestamp: startime
-                             }]);
+      assert.deepStrictEqual(metric!.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{ value: 1, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
+      ]);
       // Simulate a adding multiple jobs in queue
       queue.addJob();
       queue.addJob();
       queue.addJob();
       metric = instance.getMetric();
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(
-          metric!.timeseries[0].points, [{value: 4, timestamp: mockedTime}]);
+      assert.deepStrictEqual(metric!.timeseries[0].points, [
+        { value: 4, timestamp: mockedTime },
+      ]);
     });
 
     it('should return a Metric (Double) - custom object', () => {
@@ -176,8 +196,14 @@ describe('DerivedCumulative', () => {
       }
       const queue = new QueueManager();
       const doubleInstance = new DerivedCumulative(
-          METRIC_NAME, METRIC_DESCRIPTION, UNIT, CUMULATIVE_DOUBLE, LABEL_KEYS,
-          EMPTY_CONSTANT_LABELS, startime);
+        METRIC_NAME,
+        METRIC_DESCRIPTION,
+        UNIT,
+        CUMULATIVE_DOUBLE,
+        LABEL_KEYS,
+        EMPTY_CONSTANT_LABELS,
+        startime
+      );
       doubleInstance.createTimeSeries(LABEL_VALUES_200, queue);
       const metric = doubleInstance.getMetric();
       assert.notStrictEqual(metric, null);
@@ -186,14 +212,16 @@ describe('DerivedCumulative', () => {
         description: METRIC_DESCRIPTION,
         unit: UNIT,
         type: CUMULATIVE_DOUBLE,
-        labelKeys: LABEL_KEYS
+        labelKeys: LABEL_KEYS,
       });
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(metric!.timeseries, [{
-                               labelValues: LABEL_VALUES_200,
-                               points: [{value: 0.7, timestamp: mockedTime}],
-                               startTimestamp: startime
-                             }]);
+      assert.deepStrictEqual(metric!.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{ value: 0.7, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
+      ]);
     });
 
     it('should ignore dropping (decreasing) value', () => {
@@ -204,20 +232,24 @@ describe('DerivedCumulative', () => {
       let metric = instance.getMetric();
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(metric!.timeseries, [{
-                               labelValues: LABEL_VALUES_200,
-                               points: [{value: 2, timestamp: mockedTime}],
-                               startTimestamp: startime
-                             }]);
+      assert.deepStrictEqual(metric!.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{ value: 2, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
+      ]);
 
       map.clear();
       metric = instance.getMetric();
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(metric!.timeseries, [{
-                               labelValues: LABEL_VALUES_200,
-                               points: [{value: 2, timestamp: mockedTime}],
-                               startTimestamp: startime
-                             }]);
+      assert.deepStrictEqual(metric!.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{ value: 2, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
+      ]);
     });
 
     it('should not create same timeseries again', () => {
@@ -228,11 +260,13 @@ describe('DerivedCumulative', () => {
       assert.notStrictEqual(metric, null);
       assert.deepStrictEqual(metric!.descriptor, expectedMetricDescriptor);
       assert.strictEqual(metric!.timeseries.length, 1);
-      assert.deepStrictEqual(metric!.timeseries, [{
-                               labelValues: LABEL_VALUES_200,
-                               points: [{value: 1, timestamp: mockedTime}],
-                               startTimestamp: startime
-                             }]);
+      assert.deepStrictEqual(metric!.timeseries, [
+        {
+          labelValues: LABEL_VALUES_200,
+          points: [{ value: 1, timestamp: mockedTime }],
+          startTimestamp: startime,
+        },
+      ]);
 
       // create timeseries with same labels.
       assert.throws(() => {

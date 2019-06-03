@@ -15,11 +15,17 @@
  */
 
 import * as assert from 'assert';
-import {inspect} from 'util';
-import {SpanContext} from '../src/index';
-import {extract, generate, inject, parseContextFromHeader, serializeSpanContext} from '../src/v1';
+import { inspect } from 'util';
+import { SpanContext } from '../src/index';
+import {
+  extract,
+  generate,
+  inject,
+  parseContextFromHeader,
+  serializeSpanContext,
+} from '../src/v1';
 
-const notNull = <T>(x: T|null|undefined): T => {
+const notNull = <T>(x: T | null | undefined): T => {
   assert.notStrictEqual(x, null);
   assert.notStrictEqual(x, undefined);
   return x as T;
@@ -35,15 +41,17 @@ describe('parseContextFromHeader', () => {
       assert.strictEqual(result.options, 1);
     });
 
-    it('should return expected values:' +
-           '123456/123456123456123456123456123456123456;o=1',
-       () => {
-         const header = '123456/123456123456123456123456123456123456;o=1';
-         const result = notNull(parseContextFromHeader(header));
-         assert.strictEqual(result.traceId, '123456');
-         assert.strictEqual(result.spanId, 'a89bb45f10f2f240');
-         assert.strictEqual(result.options, 1);
-       });
+    it(
+      'should return expected values:' +
+        '123456/123456123456123456123456123456123456;o=1',
+      () => {
+        const header = '123456/123456123456123456123456123456123456;o=1';
+        const result = notNull(parseContextFromHeader(header));
+        assert.strictEqual(result.traceId, '123456');
+        assert.strictEqual(result.spanId, 'a89bb45f10f2f240');
+        assert.strictEqual(result.options, 1);
+      }
+    );
 
     it('should return expected values: 123456/667', () => {
       const header = '123456/667';
@@ -56,8 +64,16 @@ describe('parseContextFromHeader', () => {
 
   describe('invalid inputs', () => {
     const inputs = [
-      '', null, undefined, '123456', '123456;o=1', 'o=1;123456', '123;456;o=1',
-      '123/o=1;456', '123/abc/o=1', 'cafefood/667;o=1'
+      '',
+      null,
+      undefined,
+      '123456',
+      '123456;o=1',
+      'o=1;123456',
+      '123;456;o=1',
+      '123/o=1;456',
+      '123/abc/o=1',
+      'cafefood/667;o=1',
     ];
     inputs.forEach(s => {
       it(`should reject ${s}`, () => {
@@ -76,17 +92,17 @@ describe('serializeSpanContext', () => {
   }
   const testData: TestData[] = [
     {
-      input: {traceId: '123456', spanId: '29b', options: 1},
-      output: '123456/667;o=1'
+      input: { traceId: '123456', spanId: '29b', options: 1 },
+      output: '123456/667;o=1',
     },
     {
-      input: {traceId: '123456', spanId: '29b', options: undefined},
-      output: '123456/667'
+      input: { traceId: '123456', spanId: '29b', options: undefined },
+      output: '123456/667',
     },
-    {input: {traceId: '123456', spanId: '29b'}, output: '123456/667'}
+    { input: { traceId: '123456', spanId: '29b' }, output: '123456/667' },
   ];
 
-  testData.forEach(({input, output}) => {
+  testData.forEach(({ input, output }) => {
     it(`returns well-formatted trace context for ${inspect(input)}`, () => {
       const header = serializeSpanContext(input);
       assert.deepStrictEqual(header, output);
@@ -100,20 +116,20 @@ describe('extract', () => {
     const getter = {
       getHeader(name: string) {
         return HEADER;
-      }
+      },
     };
     assert.deepStrictEqual(extract(getter), parseContextFromHeader(HEADER));
   });
 });
 
 describe('inject', () => {
-  it('should call setter.setHeader with serialized header', (done) => {
+  it('should call setter.setHeader with serialized header', done => {
     const spanContext = generate();
     const setter = {
       setHeader(name: string, value: string) {
         assert.deepStrictEqual(value, serializeSpanContext(spanContext));
         done();
-      }
+      },
     };
     inject(setter, spanContext);
   });
@@ -123,7 +139,9 @@ describe('generate', () => {
   const TIMES = 20;
 
   // Generate some span contexts.
-  const GENERATED = Array.from({length: TIMES}).fill(0).map(_ => generate());
+  const GENERATED = Array.from({ length: TIMES })
+    .fill(0)
+    .map(_ => generate());
 
   it('should generate a valid span context', () => {
     const ok = GENERATED.every(c => {
@@ -136,11 +154,11 @@ describe('generate', () => {
 
   it('should generate unique traceIds', () => {
     const traceIds = GENERATED.map(c => c.traceId);
-    assert.strictEqual((new Set(traceIds)).size, TIMES);
+    assert.strictEqual(new Set(traceIds).size, TIMES);
   });
 
   it('should generate unique spanIds', () => {
     const spanIds = GENERATED.map(c => c.spanId);
-    assert.strictEqual((new Set(spanIds)).size, TIMES);
+    assert.strictEqual(new Set(spanIds).size, TIMES);
   });
 });

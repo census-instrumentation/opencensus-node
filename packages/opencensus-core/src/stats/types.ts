@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {StatsEventListener} from '../exporters/types';
-import {Metric} from '../metrics/export/types';
-import {TagMap} from '../tags/tag-map';
-import {TagKey, TagValue} from '../tags/types';
+import { StatsEventListener } from '../exporters/types';
+import { Metric } from '../metrics/export/types';
+import { TagMap } from '../tags/tag-map';
+import { TagKey, TagValue } from '../tags/types';
 
 /** Default type for functions */
 // tslint:disable:no-any
@@ -36,9 +36,13 @@ export interface Stats {
    *     aggregation type
    */
   createView(
-      name: string, measure: Measure, aggregation: AggregationType,
-      tagKeys: TagKey[], description: string,
-      bucketBoundaries?: number[]): View;
+    name: string,
+    measure: Measure,
+    aggregation: AggregationType,
+    tagKeys: TagKey[],
+    description: string,
+    bucketBoundaries?: number[]
+  ): View;
 
   /**
    * Registers a view to listen to new measurements in its measure.
@@ -52,8 +56,11 @@ export interface Stats {
    * @param unit The measure unit
    * @param description The measure description
    */
-  createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
-      Measure;
+  createMeasureDouble(
+    name: string,
+    unit: MeasureUnit,
+    description?: string
+  ): Measure;
 
   /**
    * Creates a measure of type Int64. Values must be integers up to
@@ -62,8 +69,11 @@ export interface Stats {
    * @param unit The measure unit
    * @param description The measure description
    */
-  createMeasureInt64(name: string, unit: MeasureUnit, description?: string):
-      Measure;
+  createMeasureInt64(
+    name: string,
+    unit: MeasureUnit,
+    description?: string
+  ): Measure;
 
   /**
    * Updates all views with the new measurements.
@@ -76,8 +86,10 @@ export interface Stats {
    *     string pairs.
    */
   record(
-      measurements: Measurement[], tags?: TagMap,
-      attachments?: {[key: string]: string}): void;
+    measurements: Measurement[],
+    tags?: TagMap,
+    attachments?: { [key: string]: string }
+  ): void;
 
   /**
    * Remove all registered Views and exporters from the stats.
@@ -144,18 +156,18 @@ export interface Measure {
  * by http://unitsofmeasure.org/ucum.html.
  */
 export enum MeasureUnit {
-  UNIT = '1',    // for general counts
-  BYTE = 'by',   // bytes
-  KBYTE = 'kb',  // Kbytes
-  SEC = 's',     // seconds
-  MS = 'ms',     // millisecond
-  NS = 'ns'      // nanosecond
+  UNIT = '1', // for general counts
+  BYTE = 'by', // bytes
+  KBYTE = 'kb', // Kbytes
+  SEC = 's', // seconds
+  MS = 'ms', // millisecond
+  NS = 'ns', // nanosecond
 }
 
 /** Describes the types of a Measure. It can be Int64 or a Double type. */
 export enum MeasureType {
   INT64 = 'INT64',
-  DOUBLE = 'DOUBLE'
+  DOUBLE = 'DOUBLE',
 }
 
 /** Describes a data point to be collected for a Measure. */
@@ -207,13 +219,15 @@ export interface View {
    *     string pairs.
    */
   recordMeasurement(
-      measurement: Measurement, tags: TagMap,
-      attachments?: {[key: string]: string}): void;
+    measurement: Measurement,
+    tags: TagMap,
+    attachments?: { [key: string]: string }
+  ): void;
   /**
    * Returns a snapshot of an AggregationData for that tags/labels values.
    * @param tagValues The desired data's tag values.
    */
-  getSnapshot(tagValues: Array<TagValue|null>): AggregationData;
+  getSnapshot(tagValues: Array<TagValue | null>): AggregationData;
   /** Gets the view's tag keys */
   getColumns(): TagKey[];
   /** Gets view`s metric */
@@ -228,7 +242,7 @@ export enum AggregationType {
   COUNT = 0,
   SUM = 1,
   LAST_VALUE = 2,
-  DISTRIBUTION = 3
+  DISTRIBUTION = 3,
 }
 
 /** Defines how data is collected and aggregated */
@@ -236,7 +250,7 @@ export interface AggregationMetadata {
   /** The aggregation type of the aggregation data */
   readonly type: AggregationType;
   /** The tagValues that this AggregationData collects and aggregates */
-  readonly tagValues: Array<TagValue|null>;
+  readonly tagValues: Array<TagValue | null>;
   /** The latest timestamp a new data point was recorded */
   timestamp: number;
 }
@@ -313,8 +327,12 @@ export interface StatsExemplar {
   /** The observation (sampling) time of the above value. */
   readonly timestamp: number;
   /** Contextual information about the example value. */
-  readonly attachments: {[key: string]: string};
+  readonly attachments: { [key: string]: string };
 }
 
 export type Bucket = number;
-export type AggregationData = SumData|CountData|LastValueData|DistributionData;
+export type AggregationData =
+  | SumData
+  | CountData
+  | LastValueData
+  | DistributionData;

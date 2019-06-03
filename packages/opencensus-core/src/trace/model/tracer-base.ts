@@ -18,14 +18,18 @@ import * as uuid from 'uuid';
 import * as logger from '../../common/console-logger';
 import * as loggerTypes from '../../common/types';
 import * as configTypes from '../config/types';
-import {TraceParams} from '../config/types';
-import {noopPropagation} from '../propagation/noop-propagation';
-import {Propagation} from '../propagation/types';
-import {DEFAULT_SAMPLING_RATE, SamplerBuilder, TraceParamsBuilder} from '../sampler/sampler';
+import { TraceParams } from '../config/types';
+import { noopPropagation } from '../propagation/noop-propagation';
+import { Propagation } from '../propagation/types';
+import {
+  DEFAULT_SAMPLING_RATE,
+  SamplerBuilder,
+  TraceParamsBuilder,
+} from '../sampler/sampler';
 import * as samplerTypes from '../sampler/types';
-import {NoRecordRootSpan} from './no-record/no-record-root-span';
-import {NoRecordSpan} from './no-record/no-record-span';
-import {RootSpan} from './root-span';
+import { NoRecordRootSpan } from './no-record/no-record-root-span';
+import { NoRecordSpan } from './no-record/no-record-span';
+import { RootSpan } from './root-span';
 import * as types from './types';
 
 /**
@@ -74,19 +78,22 @@ export class CoreTracerBase implements types.TracerBase {
     this.activeLocal = true;
     this.config = config;
     this.logger = this.config.logger || logger.logger();
-    this.sampler =
-        SamplerBuilder.getSampler(config.samplingRate || DEFAULT_SAMPLING_RATE);
+    this.sampler = SamplerBuilder.getSampler(
+      config.samplingRate || DEFAULT_SAMPLING_RATE
+    );
     if (config.traceParams) {
-      this.activeTraceParams.numberOfAnnontationEventsPerSpan =
-          TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
-              config.traceParams);
-      this.activeTraceParams.numberOfAttributesPerSpan =
-          TraceParamsBuilder.getNumberOfAttributesPerSpan(config.traceParams);
-      this.activeTraceParams.numberOfMessageEventsPerSpan =
-          TraceParamsBuilder.getNumberOfMessageEventsPerSpan(
-              config.traceParams);
-      this.activeTraceParams.numberOfLinksPerSpan =
-          TraceParamsBuilder.getNumberOfLinksPerSpan(config.traceParams);
+      this.activeTraceParams.numberOfAnnontationEventsPerSpan = TraceParamsBuilder.getNumberOfAnnotationEventsPerSpan(
+        config.traceParams
+      );
+      this.activeTraceParams.numberOfAttributesPerSpan = TraceParamsBuilder.getNumberOfAttributesPerSpan(
+        config.traceParams
+      );
+      this.activeTraceParams.numberOfMessageEventsPerSpan = TraceParamsBuilder.getNumberOfMessageEventsPerSpan(
+        config.traceParams
+      );
+      this.activeTraceParams.numberOfLinksPerSpan = TraceParamsBuilder.getNumberOfLinksPerSpan(
+        config.traceParams
+      );
     }
     return this;
   }
@@ -112,10 +119,17 @@ export class CoreTracerBase implements types.TracerBase {
    * @param options A TraceOptions object to start a root span.
    * @param fn A callback function to run after starting a root span.
    */
-  startRootSpan<T>(options: types.TraceOptions, fn: (root: types.Span) => T):
-      T {
-    const spanContext: types.SpanContext = options.spanContext ||
-        {spanId: '', traceId: uuid.v4().split('-').join('')};
+  startRootSpan<T>(
+    options: types.TraceOptions,
+    fn: (root: types.Span) => T
+  ): T {
+    const spanContext: types.SpanContext = options.spanContext || {
+      spanId: '',
+      traceId: uuid
+        .v4()
+        .split('-')
+        .join(''),
+    };
     const parentSpanId = spanContext.spanId;
     const traceId = spanContext.traceId;
     const name = options.name || 'span';
@@ -127,12 +141,18 @@ export class CoreTracerBase implements types.TracerBase {
       const sampleDecision = this.makeSamplingDecision(options, traceId);
       // Sampling is on
       if (sampleDecision) {
-        const rootSpan =
-            new RootSpan(this, name, kind, traceId, parentSpanId, traceState);
+        const rootSpan = new RootSpan(
+          this,
+          name,
+          kind,
+          traceId,
+          parentSpanId,
+          traceState
+        );
         // Add default attributes
         const defaultAttributes = this.config && this.config.defaultAttributes;
         if (defaultAttributes) {
-          Object.keys(defaultAttributes).forEach((key) => {
+          Object.keys(defaultAttributes).forEach(key => {
             rootSpan.addAttribute(key, defaultAttributes[key]);
           });
         }
@@ -147,7 +167,13 @@ export class CoreTracerBase implements types.TracerBase {
     }
 
     const noRecordRootSpan = new NoRecordRootSpan(
-        this, name, kind, traceId, parentSpanId, traceState);
+      this,
+      name,
+      kind,
+      traceId,
+      parentSpanId,
+      traceState
+    );
     return fn(noRecordRootSpan);
   }
 
@@ -203,7 +229,8 @@ export class CoreTracerBase implements types.TracerBase {
   startChildSpan(options?: types.SpanOptions): types.Span {
     if (!options || !options.childOf) {
       this.logger.debug(
-          'no current trace found - must start a new root span first');
+        'no current trace found - must start a new root span first'
+      );
       return new NoRecordSpan();
     }
     const span = options.childOf.startChildSpan(options);
@@ -211,7 +238,7 @@ export class CoreTracerBase implements types.TracerBase {
     // Add default attributes
     const defaultAttributes = this.config && this.config.defaultAttributes;
     if (defaultAttributes) {
-      Object.keys(defaultAttributes).forEach((key) => {
+      Object.keys(defaultAttributes).forEach(key => {
         span.addAttribute(key, defaultAttributes[key]);
       });
     }
@@ -219,13 +246,19 @@ export class CoreTracerBase implements types.TracerBase {
   }
 
   /** Determine whether to sample request or not. */
-  private makeSamplingDecision(options: types.TraceOptions, traceId: string):
-      boolean {
+  private makeSamplingDecision(
+    options: types.TraceOptions,
+    traceId: string
+  ): boolean {
     // If users set a specific sampler in the TraceOptions, use it.
-    if (options && options.samplingRate !== undefined &&
-        options.samplingRate !== null) {
-      return SamplerBuilder.getSampler(options.samplingRate)
-          .shouldSample(traceId);
+    if (
+      options &&
+      options.samplingRate !== undefined &&
+      options.samplingRate !== null
+    ) {
+      return SamplerBuilder.getSampler(options.samplingRate).shouldSample(
+        traceId
+      );
     }
     let propagatedSample = null;
     // if there is a context propagation, keep the decision

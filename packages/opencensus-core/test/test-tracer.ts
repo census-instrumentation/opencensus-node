@@ -16,18 +16,18 @@
 
 import * as assert from 'assert';
 
-import {TracerConfig} from '../src/trace/config/types';
-import {NoRecordSpan} from '../src/trace/model/no-record/no-record-span';
-import {Span} from '../src/trace/model/span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import { TracerConfig } from '../src/trace/config/types';
+import { NoRecordSpan } from '../src/trace/model/no-record/no-record-span';
+import { Span } from '../src/trace/model/span';
+import { CoreTracer } from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
 
 const defaultConfig: TracerConfig = {
-  samplingRate: 1.0  // always sampler
+  samplingRate: 1.0, // always sampler
 };
 
 describe('Tracer', () => {
-  const options = {name: 'test'};
+  const options = { name: 'test' };
 
   /** Should create a Tracer instance */
   describe('new Tracer()', () => {
@@ -41,7 +41,7 @@ describe('Tracer', () => {
   describe('get/set currentRootSpan()', () => {
     const tracer = new CoreTracer().start(defaultConfig);
     it('should get the current RootSpan from tracer instance', () => {
-      tracer.startRootSpan(options, (root) => {
+      tracer.startRootSpan(options, root => {
         assert.ok(root);
         assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, root);
@@ -56,7 +56,7 @@ describe('Tracer', () => {
     before(() => {
       tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startRootSpan(options, rootSpan => {
         rootSpanLocal = rootSpan;
       });
     });
@@ -64,7 +64,7 @@ describe('Tracer', () => {
       assert.ok(rootSpanLocal instanceof Span);
     });
     it('should set current root span', () => {
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startRootSpan(options, rootSpan => {
         assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, rootSpan);
       });
@@ -76,7 +76,7 @@ describe('Tracer', () => {
     it('should set the current root span to null', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startRootSpan(options, rootSpan => {
         assert.ok(tracer.currentRootSpan instanceof Span);
         assert.strictEqual(tracer.currentRootSpan, rootSpan);
         tracer.clearCurrentTrace();
@@ -93,10 +93,12 @@ describe('Tracer', () => {
     before(() => {
       tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      tracer.startRootSpan(options, (rootSpan) => {
+      tracer.startRootSpan(options, rootSpan => {
         rootSpanLocal = rootSpan;
-        span = tracer.startChildSpan(
-            {name: 'spanName', kind: types.SpanKind.CLIENT});
+        span = tracer.startChildSpan({
+          name: 'spanName',
+          kind: types.SpanKind.CLIENT,
+        });
       });
     });
     it('should create a Span instance', () => {
@@ -115,8 +117,10 @@ describe('Tracer', () => {
     it('should create a NoRecordSpan instance, without a rootspan', () => {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
-      const span = tracer.startChildSpan(
-          {name: 'spanName', kind: types.SpanKind.UNSPECIFIED});
+      const span = tracer.startChildSpan({
+        name: 'spanName',
+        kind: types.SpanKind.UNSPECIFIED,
+      });
       assert.ok(span instanceof NoRecordSpan);
     });
   });

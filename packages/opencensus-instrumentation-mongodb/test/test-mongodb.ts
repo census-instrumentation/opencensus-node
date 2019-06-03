@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-import {CoreTracer, Span, SpanEventListener, SpanKind} from '@opencensus/core';
+import {
+  CoreTracer,
+  Span,
+  SpanEventListener,
+  SpanKind,
+} from '@opencensus/core';
 import * as assert from 'assert';
 import * as mongodb from 'mongodb';
-import {plugin} from '../src/';
+import { plugin } from '../src/';
 
-export type MongoDBAccess = {
-  client: mongodb.MongoClient,
-  collection: mongodb.Collection
-};
+export interface MongoDBAccess {
+  client: mongodb.MongoClient;
+  collection: mongodb.Collection;
+}
 
 /** Collects ended root spans to allow for later analysis. */
 class SpanVerifier implements SpanEventListener {
@@ -40,8 +45,11 @@ class SpanVerifier implements SpanEventListener {
  * @param dbName The mongodb database name.
  * @param collectionName The mongodb collection name.
  */
-function accessCollection(url: string, dbName: string, collectionName: string):
-    Promise<MongoDBAccess> {
+function accessCollection(
+  url: string,
+  dbName: string,
+  collectionName: string
+): Promise<MongoDBAccess> {
   return new Promise((resolve, reject) => {
     mongodb.MongoClient.connect(url, function connectedClient(err, client) {
       if (err) {
@@ -50,7 +58,7 @@ function accessCollection(url: string, dbName: string, collectionName: string):
       }
       const db = client.db(dbName);
       const collection = db.collection(collectionName);
-      resolve({'client': client, 'collection': collection});
+      resolve({ client, collection });
     });
   });
 }
@@ -63,27 +71,27 @@ function accessCollection(url: string, dbName: string, collectionName: string):
  * @param expectedKind The expected kind of the first root span.
  */
 function assertSpan(
-    rootSpanVerifier: SpanVerifier, expectedName: string,
-    expectedKind: SpanKind) {
+  rootSpanVerifier: SpanVerifier,
+  expectedName: string,
+  expectedKind: SpanKind
+) {
   assert.strictEqual(rootSpanVerifier.endedSpans.length, 2);
   assert.strictEqual(rootSpanVerifier.endedSpans[1].spans.length, 1);
-  // we are forced to ignore the error because 'truncated' is a private
-  // field but needed to verify that the span are correctly ended.
-  // @ts-ignore
-  const isTruncated = rootSpanVerifier.endedSpans[1].spans[0].truncated;
   assert.strictEqual(
-      isTruncated, false, 'the span should not have been truncated');
+    rootSpanVerifier.endedSpans[1].spans[0].name,
+    expectedName
+  );
   assert.strictEqual(
-      rootSpanVerifier.endedSpans[1].spans[0].name, expectedName);
-  assert.strictEqual(
-      rootSpanVerifier.endedSpans[1].spans[0].kind, expectedKind);
+    rootSpanVerifier.endedSpans[1].spans[0].kind,
+    expectedKind
+  );
 }
 
 describe('MongoDBPlugin', () => {
-  // For these tests, mongo must be runing. Add OPENCENSUS_MONGODB_TESTS to run
+  // For these tests, mongo must be running. Add OPENCENSUS_MONGODB_TESTS to run
   // these tests.
-  const OPENCENSUS_MONGODB_TESTS =
-      process.env.OPENCENSUS_MONGODB_TESTS as string;
+  const OPENCENSUS_MONGODB_TESTS = process.env
+    .OPENCENSUS_MONGODB_TESTS as string;
   let shouldTest = true;
   if (!OPENCENSUS_MONGODB_TESTS) {
     console.log('Skipping test-mongodb. Run MongoDB to test');
@@ -100,22 +108,23 @@ describe('MongoDBPlugin', () => {
   let client: mongodb.MongoClient;
   let collection: mongodb.Collection;
 
-  before((done) => {
-    tracer.start({samplingRate: 1});
+  before(done => {
+    tracer.start({ samplingRate: 1 });
     tracer.registerSpanEventListener(rootSpanVerifier);
     plugin.enable(mongodb, tracer, VERSION, {}, '');
     accessCollection(URL, DB_NAME, COLLECTION_NAME)
-        .then(result => {
-          client = result.client;
-          collection = result.collection;
-          done();
-        })
-        .catch((err: Error) => {
-          console.log(
-              'Skipping test-mongodb. Could not connect. Run MongoDB to test');
-          shouldTest = false;
-          done();
-        });
+      .then(result => {
+        client = result.client;
+        collection = result.collection;
+        done();
+      })
+      .catch((err: Error) => {
+        console.log(
+          'Skipping test-mongodb. Could not connect. Run MongoDB to test'
+        );
+        shouldTest = false;
+        done();
+      });
   });
 
   beforeEach(function mongoBeforeEach(done) {
@@ -127,14 +136,14 @@ describe('MongoDBPlugin', () => {
     }
     rootSpanVerifier.endedSpans = [];
     // Non traced insertion of basic data to perform tests
-    const insertData = [{a: 1}, {a: 2}, {a: 3}];
+    const insertData = [{ a: 1 }, { a: 2 }, { a: 3 }];
     collection.insertMany(insertData, (err, result) => {
       done();
     });
   });
 
-  afterEach((done) => {
-    collection.remove({}, done);
+  afterEach(done => {
+    collection.deleteOne({}, done);
   });
 
   after(() => {
@@ -145,45 +154,51 @@ describe('MongoDBPlugin', () => {
 
   /** Should intercept query */
   describe('Instrumenting query operations', () => {
-    it('should create a child span for insert', (done) => {
-      const insertData = [{a: 1}, {a: 2}, {a: 3}];
+    it('should create a child span for insert', done => {
+      const insertData = [{ a: 1 }, { a: 2 }, { a: 3 }];
 
-      tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
+      tracer.startRootSpan({ name: 'insertRootSpan' }, (rootSpan: Span) => {
         collection.insertMany(insertData, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
-              SpanKind.SERVER);
+            rootSpanVerifier,
+            `${DB_NAME}.${COLLECTION_NAME}.query`,
+            SpanKind.SERVER
+          );
           done();
         });
       });
     });
 
-    it('should create a child span for update', (done) => {
-      tracer.startRootSpan({name: 'updateRootSpan'}, (rootSpan: Span) => {
-        collection.updateOne({a: 2}, {$set: {b: 1}}, (err, result) => {
+    it('should create a child span for update', done => {
+      tracer.startRootSpan({ name: 'updateRootSpan' }, (rootSpan: Span) => {
+        collection.updateOne({ a: 2 }, { $set: { b: 1 } }, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
-              SpanKind.SERVER);
+            rootSpanVerifier,
+            `${DB_NAME}.${COLLECTION_NAME}.query`,
+            SpanKind.SERVER
+          );
           done();
         });
       });
     });
 
-    it('should create a child span for remove', (done) => {
-      tracer.startRootSpan({name: 'removeRootSpan'}, (rootSpan: Span) => {
-        collection.deleteOne({a: 3}, (err, result) => {
+    it('should create a child span for remove', done => {
+      tracer.startRootSpan({ name: 'removeRootSpan' }, (rootSpan: Span) => {
+        collection.deleteOne({ a: 3 }, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.query`,
-              SpanKind.SERVER);
+            rootSpanVerifier,
+            `${DB_NAME}.${COLLECTION_NAME}.query`,
+            SpanKind.SERVER
+          );
           done();
         });
       });
@@ -192,15 +207,17 @@ describe('MongoDBPlugin', () => {
 
   /** Should intercept cursor */
   describe('Instrumenting cursor operations', () => {
-    it('should create a child span for find', (done) => {
-      tracer.startRootSpan({name: 'findRootSpan'}, (rootSpan: Span) => {
+    it('should create a child span for find', done => {
+      tracer.startRootSpan({ name: 'findRootSpan' }, (rootSpan: Span) => {
         collection.find({}).toArray((err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${DB_NAME}.${COLLECTION_NAME}.cursor`,
-              SpanKind.SERVER);
+            rootSpanVerifier,
+            `${DB_NAME}.${COLLECTION_NAME}.cursor`,
+            SpanKind.SERVER
+          );
           done();
         });
       });
@@ -209,28 +226,33 @@ describe('MongoDBPlugin', () => {
 
   /** Should intercept command */
   describe('Instrumenting command operations', () => {
-    it('should create a child span for create index', (done) => {
-      tracer.startRootSpan({name: 'indexRootSpan'}, (rootSpan: Span) => {
-        collection.createIndex({a: 1}, (err, result) => {
+    it('should create a child span for create index', done => {
+      tracer.startRootSpan({ name: 'indexRootSpan' }, (rootSpan: Span) => {
+        collection.createIndex({ a: 1 }, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${DB_NAME}.$cmd.createIndexes`,
-              SpanKind.SERVER);
+            rootSpanVerifier,
+            `${DB_NAME}.$cmd.createIndexes`,
+            SpanKind.SERVER
+          );
           done();
         });
       });
     });
 
-    it('should create a child span for count', (done) => {
-      tracer.startRootSpan({name: 'countRootSpan'}, (rootSpan: Span) => {
-        collection.count({a: 1}, (err, result) => {
+    it('should create a child span for count', done => {
+      tracer.startRootSpan({ name: 'countRootSpan' }, (rootSpan: Span) => {
+        collection.count({ a: 1 }, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 1);
           rootSpan.end();
           assert.ifError(err);
           assertSpan(
-              rootSpanVerifier, `${DB_NAME}.$cmd.count`, SpanKind.SERVER);
+            rootSpanVerifier,
+            `${DB_NAME}.$cmd.count`,
+            SpanKind.SERVER
+          );
           done();
         });
       });
@@ -243,10 +265,10 @@ describe('MongoDBPlugin', () => {
       plugin.applyUnpatch();
     });
 
-    it('should not create a child span for query', (done) => {
-      const insertData = [{a: 1}, {a: 2}, {a: 3}];
+    it('should not create a child span for query', done => {
+      const insertData = [{ a: 1 }, { a: 2 }, { a: 3 }];
 
-      tracer.startRootSpan({name: 'insertRootSpan'}, (rootSpan: Span) => {
+      tracer.startRootSpan({ name: 'insertRootSpan' }, (rootSpan: Span) => {
         collection.insertMany(insertData, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 0);
           rootSpan.end();
@@ -258,8 +280,8 @@ describe('MongoDBPlugin', () => {
       });
     });
 
-    it('should not create a child span for cursor', (done) => {
-      tracer.startRootSpan({name: 'findRootSpan'}, (rootSpan: Span) => {
+    it('should not create a child span for cursor', done => {
+      tracer.startRootSpan({ name: 'findRootSpan' }, (rootSpan: Span) => {
         collection.find({}).toArray((err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 0);
           rootSpan.end();
@@ -271,9 +293,9 @@ describe('MongoDBPlugin', () => {
       });
     });
 
-    it('should not create a child span for command', (done) => {
-      tracer.startRootSpan({name: 'indexRootSpan'}, (rootSpan: Span) => {
-        collection.createIndex({a: 1}, (err, result) => {
+    it('should not create a child span for command', done => {
+      tracer.startRootSpan({ name: 'indexRootSpan' }, (rootSpan: Span) => {
+        collection.createIndex({ a: 1 }, (err, result) => {
           assert.strictEqual(rootSpanVerifier.endedSpans.length, 0);
           rootSpan.end();
           assert.ifError(err);

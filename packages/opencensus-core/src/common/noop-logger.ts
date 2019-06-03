@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Logger} from './types';
+import { Logger } from './types';
 
 /** No-op implementation of Logger */
 class NoopLogger implements Logger {

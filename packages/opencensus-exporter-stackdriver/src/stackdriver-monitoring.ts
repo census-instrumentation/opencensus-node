@@ -14,22 +14,42 @@
  * limitations under the License.
  */
 
-import {logger, Logger, Measurement, Metric, MetricDescriptor as OCMetricDescriptor, MetricProducerManager, Metrics, StatsEventListener, TagKey, TagValue, version, View} from '@opencensus/core';
-import {auth as globalAuth, GoogleAuth, JWT} from 'google-auth-library';
-import {google} from 'googleapis';
-import {getDefaultResource} from './common-utils';
-import {createMetricDescriptorData, createTimeSeriesList} from './stackdriver-monitoring-utils';
-import {MonitoredResource, StackdriverExporterOptions, TimeSeries} from './types';
+import {
+  logger,
+  Logger,
+  Measurement,
+  Metric,
+  MetricDescriptor as OCMetricDescriptor,
+  MetricProducerManager,
+  Metrics,
+  StatsEventListener,
+  TagKey,
+  TagValue,
+  version,
+  View,
+} from '@opencensus/core';
+import { auth as globalAuth, GoogleAuth, JWT } from 'google-auth-library';
+import { google } from 'googleapis';
+import { getDefaultResource } from './common-utils';
+import {
+  createMetricDescriptorData,
+  createTimeSeriesList,
+} from './stackdriver-monitoring-utils';
+import {
+  MonitoredResource,
+  StackdriverExporterOptions,
+  TimeSeries,
+} from './types';
 
 const OC_USER_AGENT = {
   product: 'opencensus-node',
-  version
+  version,
 };
 const OC_HEADER = {
-  'x-opencensus-outgoing-request': 0x1
+  'x-opencensus-outgoing-request': 0x1,
 };
 
-google.options({headers: OC_HEADER});
+google.options({ headers: OC_HEADER });
 const monitoring = google.monitoring('v3');
 let auth = globalAuth;
 
@@ -43,29 +63,32 @@ export class StackdriverStatsExporter implements StatsEventListener {
   private timer!: NodeJS.Timer;
   static readonly DEFAULT_DISPLAY_NAME_PREFIX: string = 'OpenCensus';
   static readonly CUSTOM_OPENCENSUS_DOMAIN: string =
-      'custom.googleapis.com/opencensus';
+    'custom.googleapis.com/opencensus';
   static readonly PERIOD: number = 60000;
-  private registeredMetricDescriptors: Map<string, OCMetricDescriptor> =
-      new Map();
+  private registeredMetricDescriptors: Map<
+    string,
+    OCMetricDescriptor
+  > = new Map();
   private DEFAULT_RESOURCE: Promise<MonitoredResource>;
   logger: Logger;
 
   constructor(options: StackdriverExporterOptions) {
-    this.period = options.period !== undefined ?
-        options.period :
-        StackdriverStatsExporter.PERIOD;
+    this.period =
+      options.period !== undefined
+        ? options.period
+        : StackdriverStatsExporter.PERIOD;
     this.projectId = options.projectId;
     this.metricPrefix =
-        options.prefix || StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
+      options.prefix || StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN;
     this.displayNamePrefix =
-        options.prefix || StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX;
+      options.prefix || StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX;
     this.logger = options.logger || logger.logger();
     if (options.onMetricUploadError) {
       this.onMetricUploadError = options.onMetricUploadError;
     }
     this.DEFAULT_RESOURCE = getDefaultResource(this.projectId);
     if (options.credentials) {
-      auth = new GoogleAuth({credentials: options.credentials});
+      auth = new GoogleAuth({ credentials: options.credentials });
     }
   }
 
@@ -90,13 +113,13 @@ export class StackdriverStatsExporter implements StatsEventListener {
    */
   async export() {
     const metricsList: Metric[] = [];
-    const metricProducerManager: MetricProducerManager =
-        Metrics.getMetricProducerManager();
+    const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
     for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
       for (const metric of metricProducer.getMetrics()) {
         // TODO(mayurkale): OPTIMIZATION: consider to call in parallel.
-        const isRegistered =
-            await this.registerMetricDescriptor(metric.descriptor);
+        const isRegistered = await this.registerMetricDescriptor(
+          metric.descriptor
+        );
         if (metric && isRegistered) {
           metricsList.push(metric);
         }
@@ -113,8 +136,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param metricDescriptor The OpenCensus MetricDescriptor.
    */
   private async registerMetricDescriptor(metricDescriptor: OCMetricDescriptor) {
-    const existingMetricDescriptor =
-        this.registeredMetricDescriptors.get(metricDescriptor.name);
+    const existingMetricDescriptor = this.registeredMetricDescriptors.get(
+      metricDescriptor.name
+    );
 
     if (existingMetricDescriptor) {
       if (existingMetricDescriptor === metricDescriptor) {
@@ -122,21 +146,23 @@ export class StackdriverStatsExporter implements StatsEventListener {
         return true;
       } else {
         this.logger.warn(
-            `A different metric with the same name is already registered: ${
-                existingMetricDescriptor}`);
+          `A different metric with the same name is already registered: ${existingMetricDescriptor}`
+        );
         return false;
       }
     }
     const isRegistered = await this.createMetricDescriptor(metricDescriptor)
-                             .then(() => {
-                               this.registeredMetricDescriptors.set(
-                                   metricDescriptor.name, metricDescriptor);
-                               return true;
-                             })
-                             .catch((err) => {
-                               this.logger.error(err);
-                               return false;
-                             });
+      .then(() => {
+        this.registeredMetricDescriptors.set(
+          metricDescriptor.name,
+          metricDescriptor
+        );
+        return true;
+      })
+      .catch(err => {
+        this.logger.error(err);
+        return false;
+      });
     return isRegistered;
   }
 
@@ -149,8 +175,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
     const timeSeries: TimeSeries[] = [];
     const monitoredResource = await this.DEFAULT_RESOURCE;
     for (const metric of metricsList) {
-      timeSeries.push(...createTimeSeriesList(
-          metric, monitoredResource, this.metricPrefix));
+      timeSeries.push(
+        ...createTimeSeriesList(metric, monitoredResource, this.metricPrefix)
+      );
     }
 
     if (timeSeries.length === 0) {
@@ -160,18 +187,19 @@ export class StackdriverStatsExporter implements StatsEventListener {
     return this.authorize().then(authClient => {
       const request = {
         name: `projects/${this.projectId}`,
-        resource: {timeSeries},
-        auth: authClient
+        resource: { timeSeries },
+        auth: authClient,
       };
 
       return new Promise((resolve, reject) => {
         monitoring.projects.timeSeries.create(
-            request, {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
-            (err: Error|null) => {
-              this.logger.debug(
-                  'sent time series', request.resource.timeSeries);
-              err ? reject(err) : resolve();
-            });
+          request,
+          { headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT] },
+          (err: Error | null) => {
+            this.logger.debug('sent time series', request.resource.timeSeries);
+            err ? reject(err) : resolve();
+          }
+        );
       });
     });
   }
@@ -181,30 +209,32 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param metricDescriptor The OpenCensus MetricDescriptor.
    */
   private createMetricDescriptor(metricDescriptor: OCMetricDescriptor) {
-    return this.authorize().then((authClient) => {
+    return this.authorize().then(authClient => {
       const request = {
         name: `projects/${this.projectId}`,
         resource: createMetricDescriptorData(
-            metricDescriptor, this.metricPrefix, this.displayNamePrefix),
-        auth: authClient
+          metricDescriptor,
+          this.metricPrefix,
+          this.displayNamePrefix
+        ),
+        auth: authClient,
       };
 
       return new Promise((resolve, reject) => {
-               monitoring.projects.metricDescriptors.create(
-                   request,
-                   {headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT]},
-                   (err: Error|null) => {
-                     this.logger.debug(
-                         'sent metric descriptor', request.resource);
-                     err ? reject(err) : resolve();
-                   });
-             })
-          .catch((err) => {
-            this.logger.error(
-                `StackdriverStatsExporter: Failed to write data: ${
-                    err.message}`);
-            this.stop();
-          });
+        monitoring.projects.metricDescriptors.create(
+          request,
+          { headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT] },
+          (err: Error | null) => {
+            this.logger.debug('sent metric descriptor', request.resource);
+            err ? reject(err) : resolve();
+          }
+        );
+      }).catch(err => {
+        this.logger.error(
+          `StackdriverStatsExporter: Failed to write data: ${err.message}`
+        );
+        this.stop();
+      });
     });
   }
 
@@ -221,8 +251,9 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * and authenticates the client.
    */
   private async authorize(): Promise<JWT> {
-    const client = await auth.getClient(
-        {scopes: ['https://www.googleapis.com/auth/cloud-platform']});
+    const client = await auth.getClient({
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    });
     return client as JWT;
   }
 
@@ -241,5 +272,8 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * @param tags The tags to which the value is applied
    */
   onRecord(
-      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {}
+    views: View[],
+    measurement: Measurement,
+    tags: Map<TagKey, TagValue>
+  ) {}
 }

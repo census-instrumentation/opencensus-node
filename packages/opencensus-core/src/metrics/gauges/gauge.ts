@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-import {getTimestampWithProcessHRTime} from '../../common/time-util';
-import {validateArrayElementsNotNull, validateNotNull} from '../../common/validations';
-import {LabelKey, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, TimeSeries, Timestamp} from '../export/types';
-import {Meter} from '../types';
-import {hashLabelValues, initializeDefaultLabels} from '../utils';
+import { getTimestampWithProcessHRTime } from '../../common/time-util';
+import {
+  validateArrayElementsNotNull,
+  validateNotNull,
+} from '../../common/validations';
+import {
+  LabelKey,
+  LabelValue,
+  Metric,
+  MetricDescriptor,
+  MetricDescriptorType,
+  TimeSeries,
+  Timestamp,
+} from '../export/types';
+import { Meter } from '../types';
+import { hashLabelValues, initializeDefaultLabels } from '../utils';
 import * as types from './types';
 
 /**
@@ -34,7 +45,7 @@ export class Gauge implements Meter {
   private static readonly LABEL_VALUE = 'labelValue';
   private static readonly LABEL_VALUES = 'labelValues';
   private static readonly ERROR_MESSAGE_INVALID_SIZE =
-      'Label Keys and Label Values don\'t have same size';
+    "Label Keys and Label Values don't have same size";
 
   /**
    * Constructs a new Gauge instance.
@@ -47,15 +58,24 @@ export class Gauge implements Meter {
    * @param constantLabels The map of constant labels for the Metric.
    */
   constructor(
-      name: string, description: string, unit: string,
-      type: MetricDescriptorType, readonly labelKeys: LabelKey[],
-      readonly constantLabels: Map<LabelKey, LabelValue>) {
+    name: string,
+    description: string,
+    unit: string,
+    type: MetricDescriptorType,
+    readonly labelKeys: LabelKey[],
+    readonly constantLabels: Map<LabelKey, LabelValue>
+  ) {
     this.labelKeysLength = labelKeys.length;
     const keysAndConstantKeys = [...labelKeys, ...constantLabels.keys()];
     this.constantLabelValues = [...constantLabels.values()];
 
-    this.metricDescriptor =
-        {name, description, unit, type, labelKeys: keysAndConstantKeys};
+    this.metricDescriptor = {
+      name,
+      description,
+      unit,
+      type,
+      labelKeys: keysAndConstantKeys,
+    };
     this.defaultLabelValues = initializeDefaultLabels(this.labelKeysLength);
   }
 
@@ -72,7 +92,9 @@ export class Gauge implements Meter {
    */
   getOrCreateTimeSeries(labelValues: LabelValue[]): types.Point {
     validateArrayElementsNotNull(
-        validateNotNull(labelValues, Gauge.LABEL_VALUES), Gauge.LABEL_VALUE);
+      validateNotNull(labelValues, Gauge.LABEL_VALUES),
+      Gauge.LABEL_VALUE
+    );
     return this.registerTimeSeries(labelValues);
   }
 
@@ -134,15 +156,16 @@ export class Gauge implements Meter {
    *
    * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
-  getMetric(): Metric|null {
+  getMetric(): Metric | null {
     if (this.registeredPoints.size === 0) {
       return null;
     }
     const timestamp: Timestamp = getTimestampWithProcessHRTime();
     return {
       descriptor: this.metricDescriptor,
-      timeseries: Array.from(
-          this.registeredPoints, ([_, point]) => point.getTimeSeries(timestamp))
+      timeseries: Array.from(this.registeredPoints, ([_, point]) =>
+        point.getTimeSeries(timestamp)
+      ),
     };
   }
 }
@@ -185,7 +208,7 @@ export class PointEntry implements types.Point {
   getTimeSeries(timestamp: Timestamp): TimeSeries {
     return {
       labelValues: this.labelValues,
-      points: [{value: this.value, timestamp}]
+      points: [{ value: this.value, timestamp }],
     };
   }
 }

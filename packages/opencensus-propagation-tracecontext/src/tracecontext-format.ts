@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import {HeaderGetter, HeaderSetter, Propagation, SpanContext} from '@opencensus/core';
+import {
+  HeaderGetter,
+  HeaderSetter,
+  Propagation,
+  SpanContext,
+} from '@opencensus/core';
 import * as crypto from 'crypto';
-import {isValidSpanId, isValidTraceId, isValidVersion} from './validators';
+import { isValidSpanId, isValidTraceId, isValidVersion } from './validators';
 
 /** The traceparent header key. */
 export const TRACE_PARENT = 'traceparent';
@@ -31,7 +36,7 @@ const TRACE_PARENT_REGEX = /^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$/;
  * Parses a traceparent header value into a SpanContext object, or null if the
  * traceparent value is invalid.
  */
-function traceParentToSpanContext(traceParent: string): SpanContext|null {
+function traceParentToSpanContext(traceParent: string): SpanContext | null {
   const match = traceParent.match(TRACE_PARENT_REGEX);
   if (!match) return null;
   const parts = traceParent.split('-');
@@ -39,15 +44,18 @@ function traceParentToSpanContext(traceParent: string): SpanContext|null {
   // tslint:disable-next-line:ban Needed to parse hexadecimal.
   const options = parseInt(option, 16);
 
-  if (!isValidVersion(version) || !isValidTraceId(traceId) ||
-      !isValidSpanId(spanId)) {
+  if (
+    !isValidVersion(version) ||
+    !isValidTraceId(traceId) ||
+    !isValidSpanId(spanId)
+  ) {
     return null;
   }
-  return {traceId, spanId, options};
+  return { traceId, spanId, options };
 }
 
 /** Converts a headers type to a string. */
-function parseHeader(str: string|string[]|undefined): string|undefined {
+function parseHeader(str: string | string[] | undefined): string | undefined {
   return Array.isArray(str) ? str[0] : str;
 }
 
@@ -69,7 +77,7 @@ export class TraceContextFormat implements Propagation {
    * returned.
    * @param getter
    */
-  extract(getter: HeaderGetter): SpanContext|null {
+  extract(getter: HeaderGetter): SpanContext | null {
     const traceParentHeader = getter.getHeader(TRACE_PARENT);
     if (!traceParentHeader) return null;
     const traceParent = parseHeader(traceParentHeader);
@@ -82,9 +90,9 @@ export class TraceContextFormat implements Propagation {
     if (traceStateHeader) {
       // If more than one `tracestate` header is found, we merge them into a
       // single header.
-      spanContext.traceState = Array.isArray(traceStateHeader) ?
-          traceStateHeader.join(',') :
-          traceStateHeader;
+      spanContext.traceState = Array.isArray(traceStateHeader)
+        ? traceStateHeader.join(',')
+        : traceStateHeader;
     }
     return spanContext;
   }
@@ -97,8 +105,9 @@ export class TraceContextFormat implements Propagation {
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
     // Construct traceparent from parts. Make sure the traceId and spanId
     // contain the proper number of characters.
-    const traceParent = `00-${spanContext.traceId}-${spanContext.spanId}-0${
-        (spanContext.options || DEFAULT_OPTIONS).toString(16)}`;
+    const traceParent = `00-${spanContext.traceId}-${spanContext.spanId}-0${(
+      spanContext.options || DEFAULT_OPTIONS
+    ).toString(16)}`;
 
     setter.setHeader(TRACE_PARENT, traceParent);
     if (spanContext.traceState) {
@@ -116,7 +125,7 @@ export class TraceContextFormat implements Propagation {
     return {
       traceId: buff.slice(0, 32),
       spanId: buff.slice(32, 48),
-      options: DEFAULT_OPTIONS
+      options: DEFAULT_OPTIONS,
     };
   }
 }

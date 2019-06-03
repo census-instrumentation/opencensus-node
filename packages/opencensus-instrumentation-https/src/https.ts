@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {Func} from '@opencensus/core';
-import {HttpPlugin} from '@opencensus/instrumentation-http';
+import { Func } from '@opencensus/core';
+import { HttpPlugin } from '@opencensus/instrumentation-http';
 import * as http from 'http';
 import * as https from 'https';
 import * as semver from 'semver';
@@ -34,23 +34,36 @@ export class HttpsPlugin extends HttpPlugin {
   protected applyPatch() {
     this.logger.debug('applying patch to %s@%s', this.moduleName, this.version);
 
-    if (this.moduleExports && this.moduleExports.Server &&
-        this.moduleExports.Server.prototype) {
+    if (
+      this.moduleExports &&
+      this.moduleExports.Server &&
+      this.moduleExports.Server.prototype
+    ) {
       shimmer.wrap(
-          this.moduleExports && this.moduleExports.Server &&
-              this.moduleExports.Server.prototype,
-          'emit', this.getPatchIncomingRequestFunction());
+        this.moduleExports &&
+          this.moduleExports.Server &&
+          this.moduleExports.Server.prototype,
+        'emit',
+        this.getPatchIncomingRequestFunction()
+      );
     } else {
       this.logger.error(
-          'Could not apply patch to %s.emit. Interface is not as expected.',
-          this.moduleName);
+        'Could not apply patch to %s.emit. Interface is not as expected.',
+        this.moduleName
+      );
     }
 
     shimmer.wrap(
-        this.moduleExports, 'request', this.getPatchHttpsOutgoingRequest());
+      this.moduleExports,
+      'request',
+      this.getPatchHttpsOutgoingRequest()
+    );
     if (semver.satisfies(this.version, '>=8.0.0')) {
       shimmer.wrap(
-          this.moduleExports, 'get', this.getPatchHttpsOutgoingRequest());
+        this.moduleExports,
+        'get',
+        this.getPatchHttpsOutgoingRequest()
+      );
     }
 
     return this.moduleExports;
@@ -61,27 +74,36 @@ export class HttpsPlugin extends HttpPlugin {
     return (original: Func<http.ClientRequest>): Func<http.ClientRequest> => {
       const plugin = this;
       return function httpsOutgoingRequest(
-                 options, callback): http.ClientRequest {
+        options,
+        callback
+      ): http.ClientRequest {
         // Makes sure options will have default HTTPS parameters
-        if (typeof (options) !== 'string') {
+        if (typeof options !== 'string') {
           options.protocol = options.protocol || 'https:';
           options.port = options.port || 443;
           options.agent = options.agent || https.globalAgent;
         }
-        return (plugin.getPatchOutgoingRequestFunction())(original)(
-            options, callback);
+        return plugin.getPatchOutgoingRequestFunction()(original)(
+          options,
+          callback
+        );
       };
     };
   }
 
   /** Unpatches all HTTPS patched function. */
   protected applyUnpatch(): void {
-    if (this.moduleExports && this.moduleExports.Server &&
-        this.moduleExports.Server.prototype) {
+    if (
+      this.moduleExports &&
+      this.moduleExports.Server &&
+      this.moduleExports.Server.prototype
+    ) {
       shimmer.unwrap(
-          this.moduleExports && this.moduleExports.Server &&
-              this.moduleExports.Server.prototype,
-          'emit');
+        this.moduleExports &&
+          this.moduleExports.Server &&
+          this.moduleExports.Server.prototype,
+        'emit'
+      );
     }
     shimmer.unwrap(this.moduleExports, 'request');
     if (semver.satisfies(this.version, '>=8.0.0')) {
@@ -91,4 +113,4 @@ export class HttpsPlugin extends HttpPlugin {
 }
 
 const plugin = new HttpsPlugin();
-export {plugin};
+export { plugin };

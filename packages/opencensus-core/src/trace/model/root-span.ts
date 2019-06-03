@@ -15,7 +15,7 @@
  */
 
 import * as logger from '../../common/console-logger';
-import {Span} from './span';
+import { Span } from './span';
 import * as types from './types';
 
 /** Defines a root span */
@@ -41,8 +41,13 @@ export class RootSpan extends Span {
    * @param traceState An optional traceState.
    */
   constructor(
-      tracer: types.TracerBase, name: string, kind: types.SpanKind,
-      traceId: string, parentSpanId: string, traceState?: types.TraceState) {
+    tracer: types.TracerBase,
+    name: string,
+    kind: types.SpanKind,
+    traceId: string,
+    parentSpanId: string,
+    traceState?: types.TraceState
+  ) {
     super(tracer);
     this.traceIdLocal = traceId;
     this.name = name;
@@ -66,7 +71,7 @@ export class RootSpan extends Span {
   }
 
   /** Gets trace state from rootspan instance */
-  get traceState(): types.TraceState|undefined {
+  get traceState(): types.TraceState | undefined {
     return this.traceStateLocal;
   }
 

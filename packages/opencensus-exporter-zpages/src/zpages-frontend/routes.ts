@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {Span} from '@opencensus/core';
+import { Span } from '@opencensus/core';
 import * as express from 'express';
-import {StatsParams} from '../zpages';
-import {createRpczHandler} from './controllers/rpcz.controller';
-import {createStatszHandler} from './controllers/statsz.controller';
-import {createTraceConfigzHandler} from './controllers/traceconfigz.controller';
-import {createTracezHandler} from './controllers/tracez.controller';
+import { StatsParams } from '../zpages';
+import { createRpczHandler } from './controllers/rpcz.controller';
+import { createStatszHandler } from './controllers/statsz.controller';
+import { createTraceConfigzHandler } from './controllers/traceconfigz.controller';
+import { createTracezHandler } from './controllers/tracez.controller';
 
 /**
  * Create a set of routes that consults the given TraceMap instance for span
@@ -30,7 +30,9 @@ import {createTracezHandler} from './controllers/tracez.controller';
  *     and recorded data from stats
  */
 export function createRoutes(
-    traceMap: Map<string, Span[]>, statsParams: StatsParams): express.Router {
+  traceMap: Map<string, Span[]>,
+  statsParams: StatsParams
+): express.Router {
   const router = express.Router();
 
   // Tracez Page

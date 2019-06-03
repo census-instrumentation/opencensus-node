@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import * as core from '@opencensus/core';
-import {logger} from '@opencensus/core';
+import { logger } from '@opencensus/core';
 import * as assert from 'assert';
-import {defaultConfig} from '../src/trace/config/default-config';
-import {TracingBase} from '../src/trace/tracing-base';
+import { defaultConfig } from '../src/trace/config/default-config';
+import { TracingBase } from '../src/trace/tracing-base';
 
 const NOOP_EXPORTER = new core.NoopExporter();
 describe('TracingBase', () => {
@@ -64,91 +64,110 @@ describe('TracingBase', () => {
         tracing.start();
         assert.strictEqual(defaultConfig.bufferSize, tracing.config.bufferSize);
         assert.strictEqual(
-            defaultConfig.bufferTimeout, tracing.config.bufferTimeout);
+          defaultConfig.bufferTimeout,
+          tracing.config.bufferTimeout
+        );
         assert.strictEqual(defaultConfig.logLevel, tracing.config.logLevel);
         assert.strictEqual(
-            defaultConfig.maximumLabelValueSize,
-            tracing.config.maximumLabelValueSize);
+          defaultConfig.maximumLabelValueSize,
+          tracing.config.maximumLabelValueSize
+        );
         assert.strictEqual(
-            defaultConfig.samplingRate, tracing.config.samplingRate);
+          defaultConfig.samplingRate,
+          tracing.config.samplingRate
+        );
         assert.ok(tracing.config.plugins);
         if (tracing.config.plugins) {
           assert.deepStrictEqual(
-              tracing.config.plugins, {}, 'plugins are empty by default');
+            tracing.config.plugins,
+            {},
+            'plugins are empty by default'
+          );
         }
         assert.strictEqual(
-            defaultConfig.traceParams.numberOfAnnontationEventsPerSpan, 32);
+          defaultConfig.traceParams.numberOfAnnontationEventsPerSpan,
+          32
+        );
         assert.strictEqual(
-            defaultConfig.traceParams.numberOfAttributesPerSpan, 32);
+          defaultConfig.traceParams.numberOfAttributesPerSpan,
+          32
+        );
         assert.strictEqual(defaultConfig.traceParams.numberOfLinksPerSpan, 32);
         assert.strictEqual(
-            defaultConfig.traceParams.numberOfMessageEventsPerSpan, 128);
+          defaultConfig.traceParams.numberOfMessageEventsPerSpan,
+          128
+        );
       });
 
       it('should start tracing with a non-default logLevel', () => {
-        aTracingBase = tracing.start({logLevel: 3});
+        aTracingBase = tracing.start({ logLevel: 3 });
         assert.strictEqual(tracing.config.logLevel, 3);
-        const consoleLogger =
-            aTracingBase.tracer.logger as logger.ConsoleLogger;
+        const consoleLogger = aTracingBase.tracer
+          .logger as logger.ConsoleLogger;
         assert.strictEqual(consoleLogger.level, 'info');
       });
 
       it('should start tracing with a logger instance', () => {
         const aLogger = logger.logger('debug');
-        aTracingBase = tracing.start({logger: aLogger});
+        aTracingBase = tracing.start({ logger: aLogger });
         assert.strictEqual(tracing.config.logger, aLogger);
-        const consoleLogger =
-            aTracingBase.tracer.logger as logger.ConsoleLogger;
+        const consoleLogger = aTracingBase.tracer
+          .logger as logger.ConsoleLogger;
         assert.strictEqual(consoleLogger.level, 'debug');
       });
 
       it('should start with an exporter instance', () => {
-        aTracingBase = tracing.start({exporter: NOOP_EXPORTER});
+        aTracingBase = tracing.start({ exporter: NOOP_EXPORTER });
         assert.strictEqual(tracing.config.exporter, NOOP_EXPORTER);
         assert.strictEqual(aTracingBase.exporter, NOOP_EXPORTER);
       });
 
       it('should start with a non-default bufferSize', () => {
         const bufferSizeValue = defaultConfig.bufferSize + 1;
-        tracing.start({bufferSize: bufferSizeValue});
+        tracing.start({ bufferSize: bufferSizeValue });
         assert.strictEqual(tracing.config.bufferSize, bufferSizeValue);
       });
 
       it('should start with a non-default bufferTimeout', () => {
         const bufferTimeoutValue = defaultConfig.bufferTimeout + 100;
-        tracing.start({bufferTimeout: bufferTimeoutValue});
+        tracing.start({ bufferTimeout: bufferTimeoutValue });
         assert.strictEqual(tracing.config.bufferTimeout, bufferTimeoutValue);
       });
 
       it('should start with a non-default maximumLabelValueSize', () => {
         const maximumLabelValueSizeValue =
-            defaultConfig.maximumLabelValueSize + 10;
-        tracing.start({maximumLabelValueSize: maximumLabelValueSizeValue});
+          defaultConfig.maximumLabelValueSize + 10;
+        tracing.start({ maximumLabelValueSize: maximumLabelValueSizeValue });
         assert.strictEqual(
-            tracing.config.maximumLabelValueSize, maximumLabelValueSizeValue);
+          tracing.config.maximumLabelValueSize,
+          maximumLabelValueSizeValue
+        );
       });
 
       it('should start with a non-default samplingRate', () => {
         const samplingRateValue = defaultConfig.samplingRate / 100;
-        tracing.start({samplingRate: samplingRateValue});
+        tracing.start({ samplingRate: samplingRateValue });
         assert.strictEqual(tracing.config.samplingRate, samplingRateValue);
       });
 
       it('should start with an user-provided plugin list', () => {
         const endUserPlugins = {
-          'http': 'enduser-http-pluging',
-          'simple-module': 'enduser-simple-module-pluging'
+          http: 'enduser-http-pluging',
+          'simple-module': 'enduser-simple-module-pluging',
         };
-        tracing.start({plugins: endUserPlugins});
+        tracing.start({ plugins: endUserPlugins });
         assert.ok(tracing.config.plugins);
         if (tracing.config.plugins) {
           // should overwrite default http plugin
           assert.strictEqual(
-              tracing.config.plugins['http'], endUserPlugins['http']);
+            tracing.config.plugins['http'],
+            endUserPlugins['http']
+          );
           // should add a new plugin
           assert.strictEqual(
-              tracing.config.plugins['simple-module'],
-              endUserPlugins['simple-module']);
+            tracing.config.plugins['simple-module'],
+            endUserPlugins['simple-module']
+          );
         }
       });
 
@@ -158,34 +177,50 @@ describe('TracingBase', () => {
             numberOfAttributesPerSpan: 10,
             numberOfAnnontationEventsPerSpan: 5,
             numberOfLinksPerSpan: 8,
-            numberOfMessageEventsPerSpan: 100
-          }
+            numberOfMessageEventsPerSpan: 100,
+          },
         });
         assert.ok(tracing.config.traceParams);
         if (tracing.config.traceParams) {
           assert.strictEqual(
-              tracing.config.traceParams.numberOfAttributesPerSpan, 10);
+            tracing.config.traceParams.numberOfAttributesPerSpan,
+            10
+          );
           assert.strictEqual(
-              tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 5);
+            tracing.config.traceParams.numberOfAnnontationEventsPerSpan,
+            5
+          );
           assert.strictEqual(
-              tracing.config.traceParams.numberOfLinksPerSpan, 8);
+            tracing.config.traceParams.numberOfLinksPerSpan,
+            8
+          );
           assert.strictEqual(
-              tracing.config.traceParams.numberOfMessageEventsPerSpan, 100);
+            tracing.config.traceParams.numberOfMessageEventsPerSpan,
+            100
+          );
         }
       });
 
       it('should start with a non-default and default traceparams', () => {
-        tracing.start({traceParams: {numberOfAttributesPerSpan: 10}});
+        tracing.start({ traceParams: { numberOfAttributesPerSpan: 10 } });
 
         if (tracing.config.traceParams) {
           assert.strictEqual(
-              tracing.config.traceParams.numberOfAttributesPerSpan, 10);
+            tracing.config.traceParams.numberOfAttributesPerSpan,
+            10
+          );
           assert.strictEqual(
-              tracing.config.traceParams.numberOfAnnontationEventsPerSpan, 32);
+            tracing.config.traceParams.numberOfAnnontationEventsPerSpan,
+            32
+          );
           assert.strictEqual(
-              tracing.config.traceParams.numberOfLinksPerSpan, 32);
+            tracing.config.traceParams.numberOfLinksPerSpan,
+            32
+          );
           assert.strictEqual(
-              tracing.config.traceParams.numberOfMessageEventsPerSpan, 128);
+            tracing.config.traceParams.numberOfMessageEventsPerSpan,
+            128
+          );
         }
       });
     });

@@ -14,26 +14,53 @@
  * limitations under the License.
  */
 
-import {CoreTracer, globalStats, HeaderGetter, HeaderSetter, logger, Measurement, MessageEventType, Propagation, Span, SpanContext, SpanEventListener, SpanKind, StatsEventListener, TagKey, TagMap, TagValue, View} from '@opencensus/core';
+import {
+  CoreTracer,
+  globalStats,
+  HeaderGetter,
+  HeaderSetter,
+  logger,
+  Measurement,
+  MessageEventType,
+  Propagation,
+  Span,
+  SpanContext,
+  SpanEventListener,
+  SpanKind,
+  StatsEventListener,
+  TagKey,
+  TagMap,
+  TagValue,
+  View,
+} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http from 'http';
 import * as nock from 'nock';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
 
-import {HttpPlugin, plugin} from '../src/';
+import { HttpPlugin, plugin } from '../src/';
 import * as stats from '../src/http-stats';
 
 function doNock(
-    url: string, path: string, httpCode: number, respBody: string,
-    times?: number) {
+  url: string,
+  path: string,
+  httpCode: number,
+  respBody: string,
+  times?: number
+) {
   const i = times || 1;
-  nock(url).get(path).times(i).reply(httpCode, respBody);
+  nock(url)
+    .get(path)
+    .times(i)
+    .reply(httpCode, respBody);
 }
 
 function customAttributeFunction(
-    span: Span, request: http.ClientRequest|http.IncomingMessage,
-    response: http.IncomingMessage|http.ServerResponse): void {
+  span: Span,
+  request: http.ClientRequest | http.IncomingMessage,
+  response: http.IncomingMessage | http.ServerResponse
+): void {
   span.addAttribute('span kind', span.kind);
 }
 
@@ -47,7 +74,10 @@ class TestExporter implements StatsEventListener {
   }
 
   onRecord(
-      views: View[], measurement: Measurement, tagMap: Map<TagKey, TagValue>) {
+    views: View[],
+    measurement: Measurement,
+    tagMap: Map<TagKey, TagValue>
+  ) {
     this.recordedMeasurements.push(measurement);
     this.recorededTags.push(tagMap);
   }
@@ -63,7 +93,7 @@ class TestExporter implements StatsEventListener {
 }
 
 const httpRequest = {
-  get: (options: {}|string) => {
+  get: (options: {} | string) => {
     return new Promise((resolve, reject) => {
       return http.get(options, resp => {
         let data = '';
@@ -78,14 +108,14 @@ const httpRequest = {
         });
       });
     });
-  }
+  },
 };
 
 const VERSION = process.versions.node;
 
 class DummyPropagation implements Propagation {
   extract(getter: HeaderGetter): SpanContext {
-    return {traceId: 'dummy-trace-id', spanId: 'dummy-span-id'};
+    return { traceId: 'dummy-trace-id', spanId: 'dummy-span-id' };
   }
 
   inject(setter: HeaderSetter, spanContext: SpanContext): void {
@@ -94,7 +124,7 @@ class DummyPropagation implements Propagation {
   }
 
   generate(): SpanContext {
-    return {traceId: 'dummy-trace-id', spanId: 'dummy-span-id'};
+    return { traceId: 'dummy-trace-id', spanId: 'dummy-span-id' };
   }
 }
 
@@ -108,57 +138,82 @@ class SpanVerifier implements SpanEventListener {
 }
 
 function assertSpanAttributes(
-    span: Span, httpStatusCode: number, httpMethod: string, hostName: string,
-    path: string, userAgent?: string) {
+  span: Span,
+  httpStatusCode: number,
+  httpMethod: string,
+  hostName: string,
+  path: string,
+  userAgent?: string
+) {
   assert.strictEqual(
-      span.status.code, HttpPlugin.parseResponseStatus(httpStatusCode));
+    span.status.code,
+    HttpPlugin.parseResponseStatus(httpStatusCode)
+  );
   assert.strictEqual(
-      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE],
-      span.status.message);
+    span.attributes[HttpPlugin.ATTRIBUTE_HTTP_ERROR_MESSAGE],
+    span.status.message
+  );
   assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_HOST], hostName);
   assert.strictEqual(
-      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
+    span.attributes[HttpPlugin.ATTRIBUTE_HTTP_METHOD],
+    httpMethod
+  );
   assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_PATH], path);
   assert.strictEqual(span.attributes[HttpPlugin.ATTRIBUTE_HTTP_ROUTE], path);
   if (userAgent) {
     assert.strictEqual(
-        span.attributes[HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT], userAgent);
+      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_USER_AGENT],
+      userAgent
+    );
   }
   assert.strictEqual(
-      span.attributes[HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE],
-      `${httpStatusCode}`);
+    span.attributes[HttpPlugin.ATTRIBUTE_HTTP_STATUS_CODE],
+    `${httpStatusCode}`
+  );
 }
 
 function assertCustomAttribute(
-    span: Span, attributeName: string, attributeValue: SpanKind) {
+  span: Span,
+  attributeName: string,
+  attributeValue: SpanKind
+) {
   assert.strictEqual(span.attributes[attributeName], attributeValue);
 }
 
 function assertClientStats(
-    testExporter: TestExporter, httpStatusCode: number, httpMethod: string) {
+  testExporter: TestExporter,
+  httpStatusCode: number,
+  httpMethod: string
+) {
   const tags = new TagMap();
-  tags.set(stats.HTTP_CLIENT_METHOD, {value: httpMethod});
-  tags.set(stats.HTTP_CLIENT_STATUS, {value: `${httpStatusCode}`});
+  tags.set(stats.HTTP_CLIENT_METHOD, { value: httpMethod });
+  tags.set(stats.HTTP_CLIENT_STATUS, { value: `${httpStatusCode}` });
   assert.strictEqual(testExporter.registeredViews.length, 8);
   assert.strictEqual(testExporter.recordedMeasurements.length, 1);
   assert.strictEqual(
-      testExporter.recordedMeasurements[0].measure,
-      stats.HTTP_CLIENT_ROUNDTRIP_LATENCY);
+    testExporter.recordedMeasurements[0].measure,
+    stats.HTTP_CLIENT_ROUNDTRIP_LATENCY
+  );
   assert.ok(testExporter.recordedMeasurements[0].value >= 0);
   assert.deepStrictEqual(testExporter.recorededTags[0], tags.tags);
 }
 
 function assertServerStats(
-    testExporter: TestExporter, httpStatusCode: number, httpMethod: string,
-    path: string) {
+  testExporter: TestExporter,
+  httpStatusCode: number,
+  httpMethod: string,
+  path: string
+) {
   const tags = new TagMap();
-  tags.set(stats.HTTP_SERVER_METHOD, {value: httpMethod});
-  tags.set(stats.HTTP_SERVER_STATUS, {value: `${httpStatusCode}`});
-  tags.set(stats.HTTP_SERVER_ROUTE, {value: path});
+  tags.set(stats.HTTP_SERVER_METHOD, { value: httpMethod });
+  tags.set(stats.HTTP_SERVER_STATUS, { value: `${httpStatusCode}` });
+  tags.set(stats.HTTP_SERVER_ROUTE, { value: path });
   assert.strictEqual(testExporter.registeredViews.length, 8);
   assert.strictEqual(testExporter.recordedMeasurements.length, 1);
   assert.strictEqual(
-      testExporter.recordedMeasurements[0].measure, stats.HTTP_SERVER_LATENCY);
+    testExporter.recordedMeasurements[0].measure,
+    stats.HTTP_SERVER_LATENCY
+  );
   assert.ok(testExporter.recordedMeasurements[0].value >= 0);
   assert.deepStrictEqual(testExporter.recorededTags[0], tags.tags);
 }
@@ -185,19 +240,25 @@ describe('HttpPlugin', () => {
 
   before(() => {
     plugin.enable(
-        http, tracer, VERSION, {
-          ignoreIncomingPaths: [
-            '/ignored/string', /^\/ignored\/regexp/,
-            (url: string) => url === '/ignored/function'
-          ],
-          ignoreOutgoingUrls: [
-            `${urlHost}/ignored/string`,
-            /^http:\/\/fake\.service\.io\/ignored\/regexp$/,
-            (url: string) => url === `${urlHost}/ignored/function`
-          ],
-          applyCustomAttributesOnSpan: customAttributeFunction
-        },
-        '', globalStats);
+      http,
+      tracer,
+      VERSION,
+      {
+        ignoreIncomingPaths: [
+          '/ignored/string',
+          /^\/ignored\/regexp/,
+          (url: string) => url === '/ignored/function',
+        ],
+        ignoreOutgoingUrls: [
+          `${urlHost}/ignored/string`,
+          /^http:\/\/fake\.service\.io\/ignored\/regexp$/,
+          (url: string) => url === `${urlHost}/ignored/function`,
+        ],
+        applyCustomAttributesOnSpan: customAttributeFunction,
+      },
+      '',
+      globalStats
+    );
     tracer.registerSpanEventListener(spanVerifier);
     server = http.createServer((request, response) => {
       response.end('Test Server Response');
@@ -225,14 +286,13 @@ describe('HttpPlugin', () => {
     server.close();
   });
 
-
   /** Should intercept outgoing requests */
   describe('patchOutgoingRequest()', () => {
     it('should create a rootSpan for GET requests as a client', async () => {
       const testPath = '/outgoing/rootSpan/1';
       doNock(urlHost, testPath, 200, 'Ok');
       assert.strictEqual(spanVerifier.endedSpans.length, 0);
-      await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
+      await httpRequest.get(`${urlHost}${testPath}`).then(result => {
         assert.strictEqual(result, 'Ok');
         assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(spanVerifier.endedSpans.length, 1);
@@ -250,32 +310,39 @@ describe('HttpPlugin', () => {
 
     for (let i = 0; i < httpErrorCodes.length; i++) {
       it(`should test rootSpan for GET requests with http error ${
-             httpErrorCodes[i]}`,
-         async () => {
-           const testPath = '/outgoing/rootSpan/1';
-           doNock(
-               urlHost, testPath, httpErrorCodes[i],
-               httpErrorCodes[i].toString());
-           assert.strictEqual(spanVerifier.endedSpans.length, 0);
-           await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
-             assert.strictEqual(result, httpErrorCodes[i].toString());
-             assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
-             assert.strictEqual(spanVerifier.endedSpans.length, 1);
-             const span = spanVerifier.endedSpans[0];
-             assertSpanAttributes(
-                 span, httpErrorCodes[i], 'GET', hostName, testPath);
-             assertClientStats(testExporter, httpErrorCodes[i], 'GET');
-           });
-         });
+        httpErrorCodes[i]
+      }`, async () => {
+        const testPath = '/outgoing/rootSpan/1';
+        doNock(
+          urlHost,
+          testPath,
+          httpErrorCodes[i],
+          httpErrorCodes[i].toString()
+        );
+        assert.strictEqual(spanVerifier.endedSpans.length, 0);
+        await httpRequest.get(`${urlHost}${testPath}`).then(result => {
+          assert.strictEqual(result, httpErrorCodes[i].toString());
+          assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+          assert.strictEqual(spanVerifier.endedSpans.length, 1);
+          const span = spanVerifier.endedSpans[0];
+          assertSpanAttributes(
+            span,
+            httpErrorCodes[i],
+            'GET',
+            hostName,
+            testPath
+          );
+          assertClientStats(testExporter, httpErrorCodes[i], 'GET');
+        });
+      });
     }
-
 
     it('should create a child span for GET requests', () => {
       const testPath = '/outgoing/rootSpan/childs/1';
       doNock(urlHost, testPath, 200, 'Ok');
-      const options = {name: 'TestRootSpan'};
+      const options = { name: 'TestRootSpan' };
       return tracer.startRootSpan(options, async (root: Span) => {
-        await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
+        await httpRequest.get(`${urlHost}${testPath}`).then(result => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
           assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
@@ -292,44 +359,54 @@ describe('HttpPlugin', () => {
 
     for (let i = 0; i < httpErrorCodes.length; i++) {
       it(`should test a child spans for GET requests with http error ${
-             httpErrorCodes[i]}`,
-         () => {
-           const testPath = '/outgoing/rootSpan/childs/1';
-           doNock(
-               urlHost, testPath, httpErrorCodes[i],
-               httpErrorCodes[i].toString());
-           const options = {name: 'TestRootSpan'};
-           return tracer.startRootSpan(options, async (root: Span) => {
-             await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
-               assert.ok(root.name.indexOf('TestRootSpan') >= 0);
-               assert.strictEqual(root.spans.length, 1);
-               assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
-               assert.strictEqual(root.traceId, root.spans[0].traceId);
+        httpErrorCodes[i]
+      }`, () => {
+        const testPath = '/outgoing/rootSpan/childs/1';
+        doNock(
+          urlHost,
+          testPath,
+          httpErrorCodes[i],
+          httpErrorCodes[i].toString()
+        );
+        const options = { name: 'TestRootSpan' };
+        return tracer.startRootSpan(options, async (root: Span) => {
+          await httpRequest.get(`${urlHost}${testPath}`).then(result => {
+            assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+            assert.strictEqual(root.spans.length, 1);
+            assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
+            assert.strictEqual(root.traceId, root.spans[0].traceId);
 
-               const span = root.spans[0];
-               assertSpanAttributes(
-                   span, httpErrorCodes[i], 'GET', hostName, testPath);
-               assertClientStats(testExporter, httpErrorCodes[i], 'GET');
-             });
-           });
-         });
+            const span = root.spans[0];
+            assertSpanAttributes(
+              span,
+              httpErrorCodes[i],
+              'GET',
+              hostName,
+              testPath
+            );
+            assertClientStats(testExporter, httpErrorCodes[i], 'GET');
+          });
+        });
+      });
     }
 
     it('should create multiple child spans for GET requests', () => {
       const testPath = '/outgoing/rootSpan/childs';
       const num = 5;
       doNock(urlHost, testPath, 200, 'Ok', num);
-      const options = {name: 'TestRootSpan'};
+      const options = { name: 'TestRootSpan' };
       return tracer.startRootSpan(options, async (root: Span) => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
-          await httpRequest.get(`${urlHost}${testPath}`).then((result) => {
+          await httpRequest.get(`${urlHost}${testPath}`).then(result => {
             assert.strictEqual(root.spans.length, i + 1);
             assert.ok(root.spans[i].name.indexOf(testPath) >= 0);
             assert.strictEqual(root.traceId, root.spans[i].traceId);
             assert.strictEqual(root.spans[i].messageEvents[0].id, 1);
             assert.strictEqual(
-                root.spans[i].messageEvents[0].type, MessageEventType.SENT);
+              root.spans[i].messageEvents[0].type,
+              MessageEventType.SENT
+            );
           });
         }
         // 5 child spans ended
@@ -340,23 +417,22 @@ describe('HttpPlugin', () => {
       });
     });
 
-    it('should not trace requests with \'x-opencensus-outgoing-request\' header',
-       async () => {
-         const testPath = '/outgoing/do-not-trace';
-         doNock(urlHost, testPath, 200, 'Ok');
+    it("should not trace requests with 'x-opencensus-outgoing-request' header", async () => {
+      const testPath = '/outgoing/do-not-trace';
+      doNock(urlHost, testPath, 200, 'Ok');
 
-         const options = {
-           host: hostName,
-           path: testPath,
-           headers: {'x-opencensus-outgoing-request': 1}
-         };
+      const options = {
+        host: hostName,
+        path: testPath,
+        headers: { 'x-opencensus-outgoing-request': 1 },
+      };
 
-         assert.strictEqual(spanVerifier.endedSpans.length, 0);
-         await httpRequest.get(options).then((result) => {
-           assert.strictEqual(result, 'Ok');
-           assert.strictEqual(spanVerifier.endedSpans.length, 0);
-         });
-       });
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      await httpRequest.get(options).then(result => {
+        assert.strictEqual(result, 'Ok');
+        assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      });
+    });
 
     for (const ignored of ['string', 'function', 'regexp']) {
       it(`should not trace ignored requests with type ${ignored}`, async () => {
@@ -374,25 +450,24 @@ describe('HttpPlugin', () => {
       });
     }
 
-    it('should create a rootSpan for GET requests and add propagation headers',
-       async () => {
-         nock.enableNetConnect();
-         assert.strictEqual(spanVerifier.endedSpans.length, 0);
-         await httpRequest.get(`http://google.fr/`).then((result) => {
-           assert.strictEqual(spanVerifier.endedSpans.length, 1);
-           assert.ok(spanVerifier.endedSpans[0].name.indexOf('GET /') >= 0);
+    it('should create a rootSpan for GET requests and add propagation headers', async () => {
+      nock.enableNetConnect();
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      await httpRequest.get(`http://google.fr/`).then(result => {
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf('GET /') >= 0);
 
-           const span = spanVerifier.endedSpans[0];
-           assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
-           assertClientStats(testExporter, 301, 'GET');
-         });
-         nock.disableNetConnect();
-       });
+        const span = spanVerifier.endedSpans[0];
+        assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
+        assertClientStats(testExporter, 301, 'GET');
+      });
+      nock.disableNetConnect();
+    });
 
     it('custom attributes should show up on client spans', async () => {
       nock.enableNetConnect();
       assert.strictEqual(spanVerifier.endedSpans.length, 0);
-      await httpRequest.get(`http://google.fr/`).then((result) => {
+      await httpRequest.get(`http://google.fr/`).then(result => {
         assert.strictEqual(spanVerifier.endedSpans.length, 1);
         assert.ok(spanVerifier.endedSpans[0].name.indexOf('GET /') >= 0);
 
@@ -402,25 +477,24 @@ describe('HttpPlugin', () => {
       nock.disableNetConnect();
     });
 
-    it('should create a rootSpan for GET requests and add propagation headers with Expect headers',
-       async () => {
-         nock.enableNetConnect();
-         assert.strictEqual(spanVerifier.endedSpans.length, 0);
-         const options = Object.assign(
-             {headers: {Expect: '100-continue'}},
-             url.parse('http://google.fr/'));
-         await httpRequest.get(options).then((result) => {
-           assert.strictEqual(spanVerifier.endedSpans.length, 1);
-           assert.ok(spanVerifier.endedSpans[0].name.indexOf('GET /') >= 0);
+    it('should create a rootSpan for GET requests and add propagation headers with Expect headers', async () => {
+      nock.enableNetConnect();
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      const options = Object.assign(
+        { headers: { Expect: '100-continue' } },
+        url.parse('http://google.fr/')
+      );
+      await httpRequest.get(options).then(result => {
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf('GET /') >= 0);
 
-           const span = spanVerifier.endedSpans[0];
-           assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
-           assertClientStats(testExporter, 301, 'GET');
-         });
-         nock.disableNetConnect();
-       });
+        const span = spanVerifier.endedSpans[0];
+        assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
+        assertClientStats(testExporter, 301, 'GET');
+      });
+      nock.disableNetConnect();
+    });
   });
-
 
   /** Should intercept incoming requests */
   describe('patchIncomingRequest()', () => {
@@ -431,7 +505,7 @@ describe('HttpPlugin', () => {
         host: 'localhost',
         path: testPath,
         port: serverPort,
-        headers: {'User-Agent': 'Android'}
+        headers: { 'User-Agent': 'Android' },
       };
       shimmer.unwrap(http, 'get');
       shimmer.unwrap(http, 'request');
@@ -439,44 +513,56 @@ describe('HttpPlugin', () => {
 
       assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
-      await httpRequest.get(options).then((result) => {
+      await httpRequest.get(options).then(result => {
         assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(spanVerifier.endedSpans.length, 1);
         const span = spanVerifier.endedSpans[0];
         assertSpanAttributes(
-            span, 200, 'GET', 'localhost', testPath, 'Android');
+          span,
+          200,
+          'GET',
+          'localhost',
+          testPath,
+          'Android'
+        );
         assertServerStats(testExporter, 200, 'GET', testPath);
       });
     });
 
-    it('should handle incoming requests with long request url path',
-       async () => {
-         const testPath = '/test&code=' +
-             'a'.repeat(300);
-         const options = {
-           host: 'localhost',
-           path: testPath,
-           port: serverPort,
-           headers: {'User-Agent': 'Android'}
-         };
-         shimmer.unwrap(http, 'get');
-         shimmer.unwrap(http, 'request');
-         nock.enableNetConnect();
+    it('should handle incoming requests with long request url path', async () => {
+      const testPath = '/test&code=' + 'a'.repeat(300);
+      const options = {
+        host: 'localhost',
+        path: testPath,
+        port: serverPort,
+        headers: { 'User-Agent': 'Android' },
+      };
+      shimmer.unwrap(http, 'get');
+      shimmer.unwrap(http, 'request');
+      nock.enableNetConnect();
 
-         assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
-         await httpRequest.get(options).then((result) => {
-           assert.strictEqual(spanVerifier.endedSpans.length, 1);
-           assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
-           const [span] = spanVerifier.endedSpans;
-           assertSpanAttributes(
-               span, 200, 'GET', 'localhost', testPath, 'Android');
-           assertServerStats(
-               testExporter, 200, 'GET',
-               '/test&code=' +
-                   'a'.repeat(244));
-         });
-       });
+      await httpRequest.get(options).then(result => {
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+        const [span] = spanVerifier.endedSpans;
+        assertSpanAttributes(
+          span,
+          200,
+          'GET',
+          'localhost',
+          testPath,
+          'Android'
+        );
+        assertServerStats(
+          testExporter,
+          200,
+          'GET',
+          '/test&code=' + 'a'.repeat(244)
+        );
+      });
+    });
 
     it('custom attributes should show up on server spans', async () => {
       const testPath = '/incoming/rootSpan/';
@@ -485,7 +571,7 @@ describe('HttpPlugin', () => {
         host: 'localhost',
         path: testPath,
         port: serverPort,
-        headers: {'User-Agent': 'Android'}
+        headers: { 'User-Agent': 'Android' },
       };
       shimmer.unwrap(http, 'get');
       shimmer.unwrap(http, 'request');
@@ -493,7 +579,7 @@ describe('HttpPlugin', () => {
 
       assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
-      await httpRequest.get(options).then((result) => {
+      await httpRequest.get(options).then(result => {
         assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(spanVerifier.endedSpans.length, 1);
         const span = spanVerifier.endedSpans[0];
@@ -509,7 +595,7 @@ describe('HttpPlugin', () => {
           host: 'localhost',
           path: testPath,
           port: serverPort,
-          headers: {'User-Agent': 'Android'}
+          headers: { 'User-Agent': 'Android' },
         };
         shimmer.unwrap(http, 'get');
         shimmer.unwrap(http, 'request');
@@ -533,10 +619,10 @@ describe('HttpPlugin', () => {
       const testPath = '/incoming/unpatch/';
       nock.enableNetConnect();
 
-      const options = {host: 'localhost', path: testPath, port: serverPort};
+      const options = { host: 'localhost', path: testPath, port: serverPort };
 
       assert.strictEqual(spanVerifier.endedSpans.length, 0);
-      await httpRequest.get(options).then((result) => {
+      await httpRequest.get(options).then(result => {
         assert.strictEqual(spanVerifier.endedSpans.length, 0);
         assert.strictEqual(testExporter.recordedMeasurements.length, 0);
       });

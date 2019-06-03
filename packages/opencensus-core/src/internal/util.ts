@@ -26,9 +26,9 @@ const SPAN_ID_RANDOM_BYTES = 8;
 const spanIdBuffer = Buffer.alloc(SPAN_ID_RANDOM_BYTES);
 const randomFillSync = crypto.randomFillSync;
 const randomBytes = crypto.randomBytes;
-const spanRandomBuffer = randomFillSync ?
-    () => randomFillSync(spanIdBuffer) :
-    () => randomBytes(SPAN_ID_RANDOM_BYTES);
+const spanRandomBuffer = randomFillSync
+  ? () => randomFillSync(spanIdBuffer)
+  : () => randomBytes(SPAN_ID_RANDOM_BYTES);
 
 export function randomSpanId() {
   return spanRandomBuffer().toString('hex');

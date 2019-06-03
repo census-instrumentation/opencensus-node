@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
-import {getTimestampWithProcessHRTime} from '../../common/time-util';
-import {validateArrayElementsNotNull, validateNotNull} from '../../common/validations';
-import {LabelKey, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, TimeSeries, Timestamp} from '../export/types';
-import {Meter} from '../types';
-import {hashLabelValues, initializeDefaultLabels} from '../utils';
-import {CumulativePoint} from './types';
+import { getTimestampWithProcessHRTime } from '../../common/time-util';
+import {
+  validateArrayElementsNotNull,
+  validateNotNull,
+} from '../../common/validations';
+import {
+  LabelKey,
+  LabelValue,
+  Metric,
+  MetricDescriptor,
+  MetricDescriptorType,
+  TimeSeries,
+  Timestamp,
+} from '../export/types';
+import { Meter } from '../types';
+import { hashLabelValues, initializeDefaultLabels } from '../utils';
+import { CumulativePoint } from './types';
 
 /**
  * Cumulative metric is used to record aggregated metrics that represents a
@@ -44,15 +55,24 @@ export class Cumulative implements Meter {
    * @param constantLabels The map of constant labels for the Metric.
    */
   constructor(
-      name: string, description: string, unit: string,
-      type: MetricDescriptorType, readonly labelKeys: LabelKey[],
-      readonly constantLabels: Map<LabelKey, LabelValue>) {
+    name: string,
+    description: string,
+    unit: string,
+    type: MetricDescriptorType,
+    readonly labelKeys: LabelKey[],
+    readonly constantLabels: Map<LabelKey, LabelValue>
+  ) {
     this.labelKeysLength = labelKeys.length;
     const keysAndConstantKeys = [...labelKeys, ...constantLabels.keys()];
     this.constantLabelValues = [...constantLabels.values()];
 
-    this.metricDescriptor =
-        {name, description, unit, type, labelKeys: keysAndConstantKeys};
+    this.metricDescriptor = {
+      name,
+      description,
+      unit,
+      type,
+      labelKeys: keysAndConstantKeys,
+    };
     this.defaultLabelValues = initializeDefaultLabels(this.labelKeysLength);
   }
 
@@ -69,7 +89,9 @@ export class Cumulative implements Meter {
    */
   getOrCreateTimeSeries(labelValues: LabelValue[]): CumulativePoint {
     validateArrayElementsNotNull(
-        validateNotNull(labelValues, 'labelValues'), 'labelValue');
+      validateNotNull(labelValues, 'labelValues'),
+      'labelValue'
+    );
     return this.registerTimeSeries(labelValues);
   }
 
@@ -118,11 +140,13 @@ export class Cumulative implements Meter {
       return this.registeredPoints.get(hash)!;
     }
     if (this.labelKeysLength !== labelValues.length) {
-      throw new Error('Label Keys and Label Values don\'t have same size');
+      throw new Error("Label Keys and Label Values don't have same size");
     }
 
-    const point =
-        new CumulativePointEntry([...labelValues, ...this.constantLabelValues]);
+    const point = new CumulativePointEntry([
+      ...labelValues,
+      ...this.constantLabelValues,
+    ]);
     this.registeredPoints.set(hash, point);
     return point;
   }
@@ -132,15 +156,16 @@ export class Cumulative implements Meter {
    *
    * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
-  getMetric(): Metric|null {
+  getMetric(): Metric | null {
     if (this.registeredPoints.size === 0) {
       return null;
     }
     const now: Timestamp = getTimestampWithProcessHRTime();
     return {
       descriptor: this.metricDescriptor,
-      timeseries: Array.from(
-          this.registeredPoints, ([_, point]) => point.getTimeSeries(now))
+      timeseries: Array.from(this.registeredPoints, ([_, point]) =>
+        point.getTimeSeries(now)
+      ),
     };
   }
 }
@@ -175,7 +200,7 @@ export class CumulativePointEntry implements CumulativePoint {
     if (val && val < 0) {
       throw new Error('It is not possible to decrease a cumulative metric');
     }
-    const incValue = (val === null || val === undefined) ? 1 : val;
+    const incValue = val === null || val === undefined ? 1 : val;
     this.value += incValue;
   }
 
@@ -188,8 +213,8 @@ export class CumulativePointEntry implements CumulativePoint {
   getTimeSeries(now: Timestamp): TimeSeries {
     return {
       labelValues: this.labelValues,
-      points: [{value: this.value, timestamp: now}],
-      startTimestamp: this.startTimestamp
+      points: [{ value: this.value, timestamp: now }],
+      startTimestamp: this.startTimestamp,
     };
   }
 }

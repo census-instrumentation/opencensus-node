@@ -15,21 +15,25 @@
  */
 
 import * as assert from 'assert';
-import {TagMap, TagTtl} from '../src';
-import {deserializeTextFormat, MAX_NUMBER_OF_TAGS, serializeTextFormat} from '../src/tags/propagation/text-format';
+import { TagMap, TagTtl } from '../src';
+import {
+  deserializeTextFormat,
+  MAX_NUMBER_OF_TAGS,
+  serializeTextFormat,
+} from '../src/tags/propagation/text-format';
 
 const K1 = {
-  name: 'k1'
+  name: 'k1',
 };
 const K2 = {
-  name: 'k2'
+  name: 'k2',
 };
 
 const V1 = {
-  value: 'v1'
+  value: 'v1',
 };
 const V2 = {
-  value: 'v2'
+  value: 'v2',
 };
 
 describe('Text Format Serializer', () => {
@@ -42,7 +46,7 @@ describe('Text Format Serializer', () => {
   multipleTagMap.set(K1, V1);
   multipleTagMap.set(K2, V2);
 
-  const NO_PROPAGATION_MD = {tagTtl: TagTtl.NO_PROPAGATION};
+  const NO_PROPAGATION_MD = { tagTtl: TagTtl.NO_PROPAGATION };
   const nonPropagatingTagMap = new TagMap();
   nonPropagatingTagMap.set(K1, V1, NO_PROPAGATION_MD);
 
@@ -70,7 +74,7 @@ describe('Text Format Serializer', () => {
     it('should throw an error when exceeds the max number of tags', () => {
       const tags = new TagMap();
       for (let i = 0; i < MAX_NUMBER_OF_TAGS + 1; i++) {
-        tags.set({name: `name-${i}`}, {value: `value-${i}`});
+        tags.set({ name: `name-${i}` }, { value: `value-${i}` });
       }
 
       assert.throws(() => {
@@ -99,8 +103,8 @@ describe('Text Format Serializer', () => {
 
     it('should deserialize with white spaces tag', () => {
       const expectedTagMap = new TagMap();
-      expectedTagMap.set(K1, {value: ' v1'});
-      expectedTagMap.set({name: ' k2'}, {value: 'v 2'});
+      expectedTagMap.set(K1, { value: ' v1' });
+      expectedTagMap.set({ name: ' k2' }, { value: 'v 2' });
 
       const deserializedTagMap = deserializeTextFormat('k1= v1, k2=v 2');
       assert.deepStrictEqual(deserializedTagMap.tags.size, 2);

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {MeasureUnit} from './../stats/types';
-import {LabelKey, LabelValue, Metric} from './export/types';
+import { MeasureUnit } from './../stats/types';
+import { LabelKey, LabelValue, Metric } from './export/types';
 
 /** Provides a {@link Metric} with one or more {@link TimeSeries} */
 export interface Meter {
@@ -24,7 +24,7 @@ export interface Meter {
    *
    * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
-  getMetric(): Metric|null;
+  getMetric(): Metric | null;
 }
 
 /** Options for every metric added to the MetricRegistry. */
@@ -72,5 +72,9 @@ export interface AccessorFunction {
 }
 
 export type AccessorInterface =
-    LengthAttributeInterface|LengthMethodInterface|SizeAttributeInterface|
-    SizeMethodInterface|ToValueInterface|AccessorFunction;
+  | LengthAttributeInterface
+  | LengthMethodInterface
+  | SizeAttributeInterface
+  | SizeMethodInterface
+  | ToValueInterface
+  | AccessorFunction;

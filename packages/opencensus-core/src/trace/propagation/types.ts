@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {SpanContext} from '../model/types';
+import { SpanContext } from '../model/types';
 
 /**
  * An transport and environment neutral API for getting request headers.
  */
 export interface HeaderGetter {
-  getHeader(name: string): string|string[]|undefined;
+  getHeader(name: string): string | string[] | undefined;
 }
 
 /**
@@ -34,7 +34,7 @@ export interface HeaderSetter {
  *  Propagation interface
  */
 export interface Propagation {
-  extract(getter: HeaderGetter): SpanContext|null;
+  extract(getter: HeaderGetter): SpanContext | null;
   inject(setter: HeaderSetter, spanContext: SpanContext): void;
   generate(): SpanContext;
 }

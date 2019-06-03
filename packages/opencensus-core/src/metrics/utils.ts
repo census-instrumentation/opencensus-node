@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-import {LabelValue} from './export/types';
-import {LengthAttributeInterface, LengthMethodInterface, SizeAttributeInterface, SizeMethodInterface, ToValueInterface} from './types';
+import { LabelValue } from './export/types';
+import {
+  LengthAttributeInterface,
+  LengthMethodInterface,
+  SizeAttributeInterface,
+  SizeMethodInterface,
+  ToValueInterface,
+} from './types';
 
 const COMMA_SEPARATOR = ',';
 const UNSET_LABEL_VALUE: LabelValue = {
-  value: null
+  value: null,
 };
 
 /**
@@ -29,7 +35,10 @@ const UNSET_LABEL_VALUE: LabelValue = {
  * @returns The hashed label values string.
  */
 export function hashLabelValues(labelValues: LabelValue[]): string {
-  return labelValues.map(lv => lv.value).sort().join(COMMA_SEPARATOR);
+  return labelValues
+    .map(lv => lv.value)
+    .sort()
+    .join(COMMA_SEPARATOR);
 }
 
 /**
@@ -49,23 +58,26 @@ export function initializeDefaultLabels(count: number): LabelValue[] {
 // element or any of its properties.
 
 // Checks if the specified collection is a LengthAttributeInterface.
-// tslint:disable-next-line:no-any
-export function isLengthAttributeInterface(obj: any):
-    obj is LengthAttributeInterface {
+export function isLengthAttributeInterface(
+  // tslint:disable-next-line:no-any
+  obj: any
+): obj is LengthAttributeInterface {
   return obj && typeof obj.length === 'number';
 }
 
 // Checks if the specified collection is a LengthMethodInterface.
-// tslint:disable-next-line:no-any
-export function isLengthMethodInterface(obj: any):
-    obj is LengthMethodInterface {
+export function isLengthMethodInterface(
+  // tslint:disable-next-line:no-any
+  obj: any
+): obj is LengthMethodInterface {
   return obj && typeof obj.length === 'function';
 }
 
 // Checks if the specified collection is a SizeAttributeInterface.
-// tslint:disable-next-line:no-any
-export function isSizeAttributeInterface(obj: any):
-    obj is SizeAttributeInterface {
+export function isSizeAttributeInterface(
+  // tslint:disable-next-line:no-any
+  obj: any
+): obj is SizeAttributeInterface {
   return obj && typeof obj.size === 'number';
 }
 

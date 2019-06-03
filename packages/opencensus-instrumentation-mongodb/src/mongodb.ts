@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, Func, Span, SpanKind} from '@opencensus/core';
+import { BasePlugin, Func, Span, SpanKind } from '@opencensus/core';
 import * as mongodb from 'mongodb';
 import * as shimmer from 'shimmer';
 
@@ -39,22 +39,31 @@ export class MongoDBPlugin extends BasePlugin {
     if (this.moduleExports.Server) {
       this.logger.debug('patching mongodb-core.Server.prototype.command');
       shimmer.wrap(
-          this.moduleExports.Server.prototype, 'command' as never,
-          this.getPatchCommand());
+        this.moduleExports.Server.prototype,
+        'command' as never,
+        this.getPatchCommand()
+      );
       this.logger.debug(
-          'patching mongodb-core.Server.prototype functions:', this.SERVER_FNS);
+        'patching mongodb-core.Server.prototype functions:',
+        this.SERVER_FNS
+      );
       shimmer.massWrap(
-          [this.moduleExports.Server.prototype], this.SERVER_FNS as never[],
-          this.getPatchQuery());
+        [this.moduleExports.Server.prototype],
+        this.SERVER_FNS as never[],
+        this.getPatchQuery()
+      );
     }
 
     if (this.moduleExports.Cursor) {
       this.logger.debug(
-          'patching mongodb-core.Cursor.prototype functions:',
-          this.CURSOR_FNS_FIRST);
+        'patching mongodb-core.Cursor.prototype functions:',
+        this.CURSOR_FNS_FIRST
+      );
       shimmer.massWrap(
-          [this.moduleExports.Cursor.prototype],
-          this.CURSOR_FNS_FIRST as never[], this.getPatchCursor());
+        [this.moduleExports.Cursor.prototype],
+        this.CURSOR_FNS_FIRST as never[],
+        this.getPatchCursor()
+      );
     }
 
     return this.moduleExports;
@@ -65,7 +74,9 @@ export class MongoDBPlugin extends BasePlugin {
     shimmer.unwrap(this.moduleExports.Server.prototype, 'command');
     shimmer.massUnwrap(this.moduleExports.Server.prototype, this.SERVER_FNS);
     shimmer.massUnwrap(
-        this.moduleExports.Cursor.prototype, this.CURSOR_FNS_FIRST);
+      this.moduleExports.Cursor.prototype,
+      this.CURSOR_FNS_FIRST
+    );
   }
 
   /** Creates spans for Command operations */
@@ -73,13 +84,20 @@ export class MongoDBPlugin extends BasePlugin {
     const plugin = this;
     return (original: Func<mongodb.Server>) => {
       return function(
-                 // tslint:disable-next-line:no-any
-                 this: mongodb.Server, ns: string, command: any,
-                 options: {}|Function, callback: Function): mongodb.Server {
+        this: mongodb.Server,
+        ns: string,
+        // tslint:disable-next-line:no-any
+        command: any,
+        options: {} | Function,
+        callback: Function
+      ): mongodb.Server {
         const resultHandler =
-            typeof options === 'function' ? options : callback;
-        if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
-            typeof resultHandler === 'function') {
+          typeof options === 'function' ? options : callback;
+        if (
+          plugin.tracer.currentRootSpan &&
+          arguments.length > 0 &&
+          typeof resultHandler === 'function'
+        ) {
           let type: string;
           if (command.createIndexes) {
             type = 'createIndexes';
@@ -93,14 +111,25 @@ export class MongoDBPlugin extends BasePlugin {
             type = 'command';
           }
 
-          const span = plugin.tracer.startChildSpan(
-              {name: `${ns}.${type}`, kind: SpanKind.SERVER});
+          const span = plugin.tracer.startChildSpan({
+            name: `${ns}.${type}`,
+            kind: SpanKind.SERVER,
+          });
           if (typeof options === 'function') {
             return original.call(
-                this, ns, command, plugin.patchEnd(span, options));
+              this,
+              ns,
+              command,
+              plugin.patchEnd(span, options)
+            );
           } else {
             return original.call(
-                this, ns, command, options, plugin.patchEnd(span, callback));
+              this,
+              ns,
+              command,
+              options,
+              plugin.patchEnd(span, callback)
+            );
           }
         }
 
@@ -114,21 +143,40 @@ export class MongoDBPlugin extends BasePlugin {
     const plugin = this;
     return (original: Func<mongodb.Server>) => {
       return function(
-                 // tslint:disable-next-line:no-any
-                 this: mongodb.Server, ns: string, command: any, options: any,
-                 callback: Function): mongodb.Server {
+        this: mongodb.Server,
+        ns: string,
+        // tslint:disable-next-line:no-any
+        command: any,
+        // tslint:disable-next-line:no-any
+        options: any,
+        callback: Function
+      ): mongodb.Server {
         const resultHandler =
-            typeof options === 'function' ? options : callback;
-        if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
-            typeof resultHandler === 'function') {
-          const span = plugin.tracer.startChildSpan(
-              {name: `${ns}.query`, kind: SpanKind.SERVER});
+          typeof options === 'function' ? options : callback;
+        if (
+          plugin.tracer.currentRootSpan &&
+          arguments.length > 0 &&
+          typeof resultHandler === 'function'
+        ) {
+          const span = plugin.tracer.startChildSpan({
+            name: `${ns}.query`,
+            kind: SpanKind.SERVER,
+          });
           if (typeof options === 'function') {
             return original.call(
-                this, ns, command, plugin.patchEnd(span, options));
+              this,
+              ns,
+              command,
+              plugin.patchEnd(span, options)
+            );
           } else {
             return original.call(
-                this, ns, command, options, plugin.patchEnd(span, callback));
+              this,
+              ns,
+              command,
+              options,
+              plugin.patchEnd(span, callback)
+            );
           }
         }
 
@@ -144,10 +192,15 @@ export class MongoDBPlugin extends BasePlugin {
       // tslint:disable-next-line:no-any
       return function(this: any, ...args: any[]): mongodb.Cursor {
         let resultHandler = args[0];
-        if (plugin.tracer.currentRootSpan && arguments.length > 0 &&
-            typeof resultHandler === 'function') {
-          const span = plugin.tracer.startChildSpan(
-              {name: `${this.ns}.cursor`, kind: SpanKind.SERVER});
+        if (
+          plugin.tracer.currentRootSpan &&
+          arguments.length > 0 &&
+          typeof resultHandler === 'function'
+        ) {
+          const span = plugin.tracer.startChildSpan({
+            name: `${this.ns}.cursor`,
+            kind: SpanKind.SERVER,
+          });
           resultHandler = plugin.patchEnd(span, resultHandler);
         }
 
@@ -171,4 +224,4 @@ export class MongoDBPlugin extends BasePlugin {
 }
 
 const plugin = new MongoDBPlugin('mongodb');
-export {plugin};
+export { plugin };

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {validateNotNull} from '../../common/validations';
-import {MetricProducer, MetricProducerManager} from './types';
+import { validateNotNull } from '../../common/validations';
+import { MetricProducer, MetricProducerManager } from './types';
 
 /**
  * Keeps a set of MetricProducer that is used by exporters to determine the

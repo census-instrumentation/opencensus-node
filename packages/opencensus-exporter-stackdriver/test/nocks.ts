@@ -22,106 +22,130 @@ import * as nock from 'nock';
 const accept = () => true;
 
 const HEADERS = {
-  ['metadata-flavor']: 'Google'
+  ['metadata-flavor']: 'Google',
 };
 
 const HOST_ADDRESS = 'http://metadata.google.internal.';
 
-export function oauth2<T extends {} = {}>(validator?: (body: T) => boolean):
-    nock.Scope {
+export function oauth2<T extends {} = {}>(
+  validator?: (body: T) => boolean
+): nock.Scope {
   validator = validator || accept;
   return nock(/https:\/\/(accounts\.google\.com|www\.googleapis\.com)/)
-      .persist()
-      .post(/\/oauth2.*token/, validator)
-      .reply(200, {
-        refresh_token: 'hello',
-        access_token: 'goodbye',
-        expiry_date: new Date(9999, 1, 1)
-      });
+    .persist()
+    .post(/\/oauth2.*token/, validator)
+    .reply(200, {
+      refresh_token: 'hello',
+      access_token: 'goodbye',
+      expiry_date: new Date(9999, 1, 1),
+    });
 }
 
-export function projectId(status: number|(() => string), reply?: () => string) {
+export function projectId(
+  status: number | (() => string),
+  reply?: () => string
+) {
   if (typeof status === 'function') {
     reply = status;
     status = 200;
   }
   return nock(HOST_ADDRESS)
-      .get('/computeMetadata/v1/project/project-id')
-      .once()
-      .reply(status, reply, {'Metadata-Flavor': 'Google'});
+    .get('/computeMetadata/v1/project/project-id')
+    .once()
+    .reply(status, reply, { 'Metadata-Flavor': 'Google' });
 }
 
 export function noDetectResource() {
   const scopes = [
     nock(HOST_ADDRESS)
-        .get('/computeMetadata/v1/instance')
-        .once()
-        .replyWithError({code: 'ENOTFOUND'}),
+      .get('/computeMetadata/v1/instance')
+      .once()
+      .replyWithError({ code: 'ENOTFOUND' }),
     nock('http://169.254.169.254/latest/dynamic/instance-identity/document')
-        .get('')
-        .replyWithError({code: 'ENOTFOUND'})
+      .get('')
+      .replyWithError({ code: 'ENOTFOUND' }),
   ];
   return scopes;
 }
 
 export function detectGceResource() {
   return nock(HOST_ADDRESS)
-      .get('/computeMetadata/v1/instance')
-      .reply(200, {}, HEADERS)
-      .get('/computeMetadata/v1/project/project-id')
-      .reply(200, () => 'my-project-id', HEADERS)
-      .get('/computeMetadata/v1/instance/zone')
-      .reply(200, () => 'project/zone/my-zone', HEADERS)
-      .get('/computeMetadata/v1/instance/id')
-      .reply(200, () => 4520031799277581759, HEADERS);
+    .get('/computeMetadata/v1/instance')
+    .reply(200, {}, HEADERS)
+    .get('/computeMetadata/v1/project/project-id')
+    .reply(200, () => 'my-project-id', HEADERS)
+    .get('/computeMetadata/v1/instance/zone')
+    .reply(200, () => 'project/zone/my-zone', HEADERS)
+    .get('/computeMetadata/v1/instance/id')
+    .reply(200, () => 4520031799277581759, HEADERS);
 }
 
 export function instanceId(
-    status: number|(() => string), reply?: () => string) {
+  status: number | (() => string),
+  reply?: () => string
+) {
   if (typeof status === 'function') {
     reply = status;
     status = 200;
   }
   return nock(HOST_ADDRESS)
-      .get('/computeMetadata/v1/instance/id')
-      .once()
-      .reply(status, reply, {'Metadata-Flavor': 'Google'});
+    .get('/computeMetadata/v1/instance/id')
+    .once()
+    .reply(status, reply, { 'Metadata-Flavor': 'Google' });
 }
 
-export function hostname(status: number|(() => string), reply?: () => string) {
+export function hostname(
+  status: number | (() => string),
+  reply?: () => string
+) {
   if (typeof status === 'function') {
     reply = status;
     status = 200;
   }
   return nock(HOST_ADDRESS)
-      .get('/computeMetadata/v1/instance/hostname')
-      .once()
-      .reply(status, reply, {'Metadata-Flavor': 'Google'});
+    .get('/computeMetadata/v1/instance/hostname')
+    .once()
+    .reply(status, reply, { 'Metadata-Flavor': 'Google' });
 }
 
 export function batchWrite<T extends {} = {}>(
-    project: string, validator?: (body: T) => boolean, reply?: () => string) {
+  project: string,
+  validator?: (body: T) => boolean,
+  reply?: () => string,
+  withError?: boolean
+) {
   validator = validator || accept;
-  const interceptor =
-      nock('https://cloudtrace.googleapis.com')
-          .post('/v2/projects/' + project + '/traces:batchWrite', validator);
+  const interceptor = nock('https://cloudtrace.googleapis.com').post(
+    '/v2/projects/' + project + '/traces:batchWrite',
+    validator
+  );
   return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }
 
 export function timeSeries<T extends {} = {}>(
-    project: string, validator?: (body: T) => boolean, reply?: () => string) {
+  project: string,
+  validator?: (body: T) => boolean,
+  reply?: () => string,
+  withError?: boolean
+) {
   validator = validator || accept;
-  const interceptor =
-      nock('https://monitoring.googleapis.com')
-          .post('/v3/projects/' + project + '/timeSeries', validator);
+  const interceptor = nock('https://monitoring.googleapis.com').post(
+    '/v3/projects/' + project + '/timeSeries',
+    validator
+  );
   return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }
 
 export function metricDescriptors<T extends {} = {}>(
-    project: string, validator?: (body: T) => boolean, reply?: () => string) {
+  project: string,
+  validator?: (body: T) => boolean,
+  reply?: () => string,
+  withError?: boolean
+) {
   validator = validator || accept;
-  const interceptor =
-      nock('https://monitoring.googleapis.com')
-          .post('/v3/projects/' + project + '/metricDescriptors', validator);
+  const interceptor = nock('https://monitoring.googleapis.com').post(
+    '/v3/projects/' + project + '/metricDescriptors',
+    validator
+  );
   return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }

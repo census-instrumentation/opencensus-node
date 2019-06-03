@@ -41,7 +41,7 @@ export const CLOUD_RESOURCE = {
   ACCOUNT_ID_KEY: 'cloud.account.id',
 
   /** Key for the zone in which entities are running. */
-  ZONE_KEY: 'cloud.zone'
+  ZONE_KEY: 'cloud.zone',
 };
 
 /** Constants for K8S container Resource. */
@@ -56,7 +56,7 @@ export const CONTAINER_RESOURCE = {
   IMAGE_NAME_KEY: 'container.image.name',
 
   /** Key for the container image tag. */
-  IMAGE_TAG_KEY: 'container.image.tag'
+  IMAGE_TAG_KEY: 'container.image.tag',
 };
 
 /**
@@ -84,7 +84,7 @@ export const HOST_RESOURCE = {
   ID_KEY: 'host.id',
 
   /** Key for the type of the host (machine type). */
-  TYPE_KEY: 'host.type'
+  TYPE_KEY: 'host.type',
 };
 
 /** Constants for Kubernetes deployment service Resource. */
@@ -99,5 +99,5 @@ export const K8S_RESOURCE = {
   NAMESPACE_NAME_KEY: 'k8s.namespace.name',
 
   /** Key for the name of the pod. */
-  POD_NAME_KEY: 'k8s.pod.name'
+  POD_NAME_KEY: 'k8s.pod.name',
 };

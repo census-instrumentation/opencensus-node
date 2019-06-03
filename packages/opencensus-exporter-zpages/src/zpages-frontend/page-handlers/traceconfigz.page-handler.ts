@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {SamplerBuilder} from '@opencensus/core';
+import { SamplerBuilder } from '@opencensus/core';
 import * as tracing from '@opencensus/nodejs';
 import * as ejs from 'ejs';
-import {templatesDir} from './templates-dir';
+import { templatesDir } from './templates-dir';
 
 export interface TraceConfigzParams {
   change: string;
@@ -25,13 +25,13 @@ export interface TraceConfigzParams {
 }
 
 export interface TraceConfigzData {
-  defaultConfig: {samplingRate: number};
+  defaultConfig: { samplingRate: number };
   samplingProbability: number;
 }
 
 export class TraceConfigzPageHandler {
   /** Configuration defaults. Currently just the default sampling rate. */
-  private defaultConfig?: {samplingRate: number;};
+  private defaultConfig?: { samplingRate: number };
 
   /**
    * Generate Zpages Trace Config HTML Page
@@ -46,23 +46,23 @@ export class TraceConfigzPageHandler {
 
     if (!this.defaultConfig) {
       this.defaultConfig = {
-        samplingRate: TraceConfigzPageHandler.extractSamplingProbability()
+        samplingRate: TraceConfigzPageHandler.extractSamplingProbability(),
       };
     }
 
     /** template HTML */
-    const traceConfigzFile =
-        ejs.fileLoader(`${templatesDir}/traceconfigz.ejs`).toString();
+    const traceConfigzFile = ejs
+      .fileLoader(`${templatesDir}/traceconfigz.ejs`)
+      .toString();
     /** EJS render options */
-    const options = {delimiter: '?'};
+    const options = { delimiter: '?' };
     /** Current sampling rate  */
-    const samplingProbability =
-        TraceConfigzPageHandler.extractSamplingProbability();
+    const samplingProbability = TraceConfigzPageHandler.extractSamplingProbability();
 
     /** Rendering the HTML table summary */
     const renderParams: TraceConfigzData = {
       defaultConfig: this.defaultConfig,
-      samplingProbability
+      samplingProbability,
     };
     if (json) {
       return JSON.stringify(renderParams, null, 2);
@@ -78,15 +78,17 @@ export class TraceConfigzPageHandler {
   private saveChanges(query: Partial<TraceConfigzParams>): void {
     /** restore the config to default */
     if (query.change === 'restore_default') {
-      tracing.tracer.sampler =
-          SamplerBuilder.getSampler(this.defaultConfig!.samplingRate);
+      tracing.tracer.sampler = SamplerBuilder.getSampler(
+        this.defaultConfig!.samplingRate
+      );
       return;
     }
 
     /** change the sampling probability value */
     if (query.samplingprobability) {
-      tracing.tracer.sampler =
-          SamplerBuilder.getSampler(query.samplingprobability);
+      tracing.tracer.sampler = SamplerBuilder.getSampler(
+        query.samplingprobability
+      );
     }
   }
 

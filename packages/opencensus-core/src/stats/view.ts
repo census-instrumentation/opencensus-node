@@ -15,16 +15,36 @@
  */
 
 import * as defaultLogger from '../common/console-logger';
-import {getTimestampWithProcessHRTime, timestampFromMillis} from '../common/time-util';
+import {
+  getTimestampWithProcessHRTime,
+  timestampFromMillis,
+} from '../common/time-util';
 import * as loggerTypes from '../common/types';
-import {Bucket as metricBucket, DistributionValue, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, Point, TimeSeries, Timestamp} from '../metrics/export/types';
-import {TagMap} from '../tags/tag-map';
-import {TagKey, TagValue} from '../tags/types';
-import {isValidTagKey} from '../tags/validation';
-import {BucketBoundaries} from './bucket-boundaries';
-import {MetricUtils} from './metric-utils';
-import {Recorder} from './recorder';
-import {AggregationData, AggregationType, Measure, Measurement, StatsExemplar, View} from './types';
+import {
+  Bucket as metricBucket,
+  DistributionValue,
+  LabelValue,
+  Metric,
+  MetricDescriptor,
+  MetricDescriptorType,
+  Point,
+  TimeSeries,
+  Timestamp,
+} from '../metrics/export/types';
+import { TagMap } from '../tags/tag-map';
+import { TagKey, TagValue } from '../tags/types';
+import { isValidTagKey } from '../tags/validation';
+import { BucketBoundaries } from './bucket-boundaries';
+import { MetricUtils } from './metric-utils';
+import { Recorder } from './recorder';
+import {
+  AggregationData,
+  AggregationType,
+  Measure,
+  Measurement,
+  StatsExemplar,
+  View,
+} from './types';
 
 const RECORD_SEPARATOR = String.fromCharCode(30);
 
@@ -48,7 +68,7 @@ export class BaseView implements View {
    * If no Tags are provided, then, all data is recorded in a single
    * aggregation.
    */
-  private tagValueAggregationMap: {[key: string]: AggregationData} = {};
+  private tagValueAggregationMap: { [key: string]: AggregationData } = {};
   /**
    * A list of tag keys that represents the possible column labels
    */
@@ -74,8 +94,7 @@ export class BaseView implements View {
   /** true if the view was registered */
   registered = false;
   /** An object to log information to */
-  // @ts-ignore
-  private logger: loggerTypes.Logger;
+  logger: loggerTypes.Logger;
 
   /**
    * Creates a new View instance. This constructor is used by Stats. User should
@@ -90,9 +109,14 @@ export class BaseView implements View {
    * @param logger
    */
   constructor(
-      name: string, measure: Measure, aggregation: AggregationType,
-      tagsKeys: TagKey[], description: string, bucketBoundaries?: number[],
-      logger = defaultLogger) {
+    name: string,
+    measure: Measure,
+    aggregation: AggregationType,
+    tagsKeys: TagKey[],
+    description: string,
+    bucketBoundaries?: number[],
+    logger = defaultLogger
+  ) {
     if (aggregation === AggregationType.DISTRIBUTION && !bucketBoundaries) {
       throw new Error('No bucketBoundaries specified');
     }
@@ -126,40 +150,48 @@ export class BaseView implements View {
    *     string pairs.
    */
   recordMeasurement(
-      measurement: Measurement, tags: TagMap,
-      attachments?: {[key: string]: string}) {
+    measurement: Measurement,
+    tags: TagMap,
+    attachments?: { [key: string]: string }
+  ) {
     const tagValues = Recorder.getTagValues(tags.tags, this.columns);
     const encodedTags = this.encodeTagValues(tagValues);
     if (!this.tagValueAggregationMap[encodedTags]) {
-      this.tagValueAggregationMap[encodedTags] =
-          this.createAggregationData(tagValues);
+      this.tagValueAggregationMap[encodedTags] = this.createAggregationData(
+        tagValues
+      );
     }
 
     Recorder.addMeasurement(
-        this.tagValueAggregationMap[encodedTags], measurement, attachments);
+      this.tagValueAggregationMap[encodedTags],
+      measurement,
+      attachments
+    );
   }
 
   /**
    * Encodes a TagValue object into a value sorted string.
    * @param tagValues The tagValues to encode
    */
-  private encodeTagValues(tagValues: Array<TagValue|null>): string {
-    return tagValues.map((tagValue) => tagValue ? tagValue.value : null)
-        .sort()
-        .join(RECORD_SEPARATOR);
+  private encodeTagValues(tagValues: Array<TagValue | null>): string {
+    return tagValues
+      .map(tagValue => (tagValue ? tagValue.value : null))
+      .sort()
+      .join(RECORD_SEPARATOR);
   }
 
   /**
    * Creates an empty aggregation data for a given tags.
    * @param tagValues The tags for that aggregation data
    */
-  private createAggregationData(tagValues: Array<TagValue|null>):
-      AggregationData {
-    const aggregationMetadata = {tagValues, timestamp: Date.now()};
+  private createAggregationData(
+    tagValues: Array<TagValue | null>
+  ): AggregationData {
+    const aggregationMetadata = { tagValues, timestamp: Date.now() };
 
     switch (this.aggregation) {
       case AggregationType.DISTRIBUTION:
-        const {buckets, bucketCounts} = this.bucketBoundaries!;
+        const { buckets, bucketCounts } = this.bucketBoundaries!;
         const bucketsCopy = Object.assign([], buckets);
         const bucketCountsCopy = Object.assign([], bucketCounts);
         const exemplars = new Array(bucketCounts.length);
@@ -175,17 +207,21 @@ export class BaseView implements View {
           sumOfSquaredDeviation: 0,
           buckets: bucketsCopy,
           bucketCounts: bucketCountsCopy,
-          exemplars
+          exemplars,
         };
       case AggregationType.SUM:
-        return {...aggregationMetadata, type: AggregationType.SUM, value: 0};
+        return { ...aggregationMetadata, type: AggregationType.SUM, value: 0 };
       case AggregationType.COUNT:
-        return {...aggregationMetadata, type: AggregationType.COUNT, value: 0};
+        return {
+          ...aggregationMetadata,
+          type: AggregationType.COUNT,
+          value: 0,
+        };
       default:
         return {
           ...aggregationMetadata,
           type: AggregationType.LAST_VALUE,
-          value: 0
+          value: 0,
         };
     }
   }
@@ -196,31 +232,34 @@ export class BaseView implements View {
    * @returns The Metric.
    */
   getMetric(start: number): Metric {
-    const {type} = this.metricDescriptor;
+    const { type } = this.metricDescriptor;
     let startTimestamp: Timestamp;
 
     // The moment when this point was recorded.
     const now: Timestamp = getTimestampWithProcessHRTime();
-    if (type !== MetricDescriptorType.GAUGE_INT64 &&
-        type !== MetricDescriptorType.GAUGE_DOUBLE) {
+    if (
+      type !== MetricDescriptorType.GAUGE_INT64 &&
+      type !== MetricDescriptorType.GAUGE_DOUBLE
+    ) {
       startTimestamp = timestampFromMillis(start);
     }
 
     const timeseries: TimeSeries[] = [];
     Object.keys(this.tagValueAggregationMap).forEach(key => {
-      const {tagValues} = this.tagValueAggregationMap[key];
-      const labelValues: LabelValue[] =
-          MetricUtils.tagValuesToLabelValues(tagValues);
+      const { tagValues } = this.tagValueAggregationMap[key];
+      const labelValues: LabelValue[] = MetricUtils.tagValuesToLabelValues(
+        tagValues
+      );
       const point: Point = this.toPoint(now, this.getSnapshot(tagValues));
 
       if (startTimestamp) {
-        timeseries.push({startTimestamp, labelValues, points: [point]});
+        timeseries.push({ startTimestamp, labelValues, points: [point] });
       } else {
-        timeseries.push({labelValues, points: [point]});
+        timeseries.push({ labelValues, points: [point] });
       }
     });
 
-    return {descriptor: this.metricDescriptor, timeseries};
+    return { descriptor: this.metricDescriptor, timeseries };
   }
 
   /**
@@ -231,7 +270,7 @@ export class BaseView implements View {
    */
   private toPoint(timestamp: Timestamp, data: AggregationData): Point {
     if (data.type === AggregationType.DISTRIBUTION) {
-      const {count, sum, sumOfSquaredDeviation, exemplars} = data;
+      const { count, sum, sumOfSquaredDeviation, exemplars } = data;
       const buckets = [];
       if (data.bucketCounts) {
         for (let bucket = 0; bucket < data.bucketCounts.length; bucket++) {
@@ -245,12 +284,12 @@ export class BaseView implements View {
         sum,
         sumOfSquaredDeviation,
         buckets,
-        bucketOptions: {explicit: {bounds: data.buckets}},
+        bucketOptions: { explicit: { bounds: data.buckets } },
       };
-      return {timestamp, value};
+      return { timestamp, value };
     } else {
       const value: number = data.value;
-      return {timestamp, value};
+      return { timestamp, value };
     }
   }
 
@@ -259,13 +298,15 @@ export class BaseView implements View {
    * @param tags The desired data's tags
    * @returns The AggregationData.
    */
-  getSnapshot(tagValues: Array<TagValue|null>): AggregationData {
+  getSnapshot(tagValues: Array<TagValue | null>): AggregationData {
     return this.tagValueAggregationMap[this.encodeTagValues(tagValues)];
   }
 
   /** Returns a Bucket with count and examplar (if present) */
-  private getMetricBucket(bucketCount: number, statsExemplar?: StatsExemplar):
-      metricBucket {
+  private getMetricBucket(
+    bucketCount: number,
+    statsExemplar?: StatsExemplar
+  ): metricBucket {
     if (statsExemplar) {
       // Bucket with an Exemplar.
       return {
@@ -273,24 +314,25 @@ export class BaseView implements View {
         exemplar: {
           value: statsExemplar.value,
           timestamp: timestampFromMillis(statsExemplar.timestamp),
-          attachments: statsExemplar.attachments
-        }
+          attachments: statsExemplar.attachments,
+        },
       };
     }
     // Bucket with no Exemplar.
-    return {count: bucketCount};
+    return { count: bucketCount };
   }
 
   /** Determines whether the given TagKeys are valid. */
   private validateTagKeys(tagKeys: TagKey[]): TagKey[] {
     const tagKeysCopy = Object.assign([], tagKeys);
-    tagKeysCopy.forEach((tagKey) => {
+    tagKeysCopy.forEach(tagKey => {
       if (!isValidTagKey(tagKey)) {
         throw new Error(`Invalid TagKey name: ${tagKey}`);
       }
     });
-    const tagKeysSet =
-        new Set(tagKeysCopy.map((tagKey: TagKey) => tagKey.name));
+    const tagKeysSet = new Set(
+      tagKeysCopy.map((tagKey: TagKey) => tagKey.name)
+    );
     if (tagKeysSet.size !== tagKeysCopy.length) {
       throw new Error('Columns have duplicate');
     }

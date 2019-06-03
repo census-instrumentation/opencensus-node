@@ -15,18 +15,24 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-import {Exporter, ExporterBuffer, ExporterConfig, Span, SpanKind} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import {
+  Exporter,
+  ExporterBuffer,
+  ExporterConfig,
+  Span,
+  SpanKind,
+} from '@opencensus/core';
+import { logger, Logger } from '@opencensus/core';
 import * as http from 'http';
 import * as url from 'url';
 
 const STATUS_CODE = 'census.status_code';
 const STATUS_DESCRIPTION = 'census.status_description';
 
-const MESSAGE_EVENT_TYPE_TRANSLATION: {[k: number]: string} = {
+const MESSAGE_EVENT_TYPE_TRANSLATION: { [k: number]: string } = {
   0: 'UNSPECIFIED',
   1: 'SENT',
-  2: 'RECEIVED'
+  2: 'RECEIVED',
 };
 export const MICROS_PER_MILLI = 1000;
 
@@ -41,17 +47,17 @@ export interface TranslatedSpan {
   id: string;
   parentId?: string;
   kind: string;
-  timestamp: number;  // in microseconds
+  timestamp: number; // in microseconds
   duration: number;
   debug: boolean;
   shared: boolean;
-  localEndpoint: {serviceName: string};
+  localEndpoint: { serviceName: string };
   annotations: Annotation[];
-  tags: {[key: string]: string};
+  tags: { [key: string]: string };
 }
 
 export interface Annotation {
-  timestamp?: number;  // in microseconds
+  timestamp?: number; // in microseconds
   value?: string;
 }
 
@@ -64,8 +70,9 @@ export class ZipkinTraceExporter implements Exporter {
   logger: Logger;
 
   constructor(options: ZipkinExporterOptions) {
-    this.zipkinUrl = options.url && url.parse(options.url) ||
-        url.parse(ZipkinTraceExporter.DEFAULT_URL);
+    this.zipkinUrl =
+      (options.url && url.parse(options.url)) ||
+      url.parse(ZipkinTraceExporter.DEFAULT_URL);
     this.serviceName = options.serviceName;
     this.buffer = new ExporterBuffer(this, options);
     this.logger = options.logger || logger.logger();
@@ -98,25 +105,27 @@ export class ZipkinTraceExporter implements Exporter {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
     };
 
     return new Promise((resolve, reject) => {
       /** Request object */
-      const req = http.request(options, (res) => {
-        res.on('data', (chunk) => {});
+      const req = http.request(options, res => {
+        res.on('data', chunk => {});
         // Resolve on end
         res.on('end', () => {
-          resolve(
-              {statusCode: res.statusCode, statusMessage: res.statusMessage});
+          resolve({
+            statusCode: res.statusCode,
+            statusMessage: res.statusMessage,
+          });
         });
       });
 
       /** Request error event */
-      req.on('error', (e) => {
+      req.on('error', e => {
         reject({
           statusCode: 0,
-          statusMessage: `Problem with request: ${e.message}`
+          statusMessage: `Problem with request: ${e.message}`,
         });
       });
 
@@ -169,9 +178,9 @@ export class ZipkinTraceExporter implements Exporter {
       duration: Math.round(span.duration * MICROS_PER_MILLI),
       debug: true,
       shared: !span.parentSpanId,
-      localEndpoint: {serviceName: this.serviceName},
+      localEndpoint: { serviceName: this.serviceName },
       tags: this.createTags(span.attributes, span.status),
-      annotations: this.createAnnotations(span.annotations, span.messageEvents)
+      annotations: this.createAnnotations(span.annotations, span.messageEvents),
     };
 
     if (span.parentSpanId) {
@@ -182,8 +191,10 @@ export class ZipkinTraceExporter implements Exporter {
 
   /** Converts OpenCensus Attributes and Status to Zipkin Tags format. */
   private createTags(
-      attributes: coreTypes.Attributes, status: coreTypes.Status) {
-    const tags: {[key: string]: string} = {};
+    attributes: coreTypes.Attributes,
+    status: coreTypes.Status
+  ) {
+    const tags: { [key: string]: string } = {};
     for (const key of Object.keys(attributes)) {
       tags[key] = String(attributes[key]);
     }
@@ -199,22 +210,23 @@ export class ZipkinTraceExporter implements Exporter {
    * format.
    */
   private createAnnotations(
-      annotationTimedEvents: coreTypes.Annotation[],
-      messageEventTimedEvents: coreTypes.MessageEvent[]) {
+    annotationTimedEvents: coreTypes.Annotation[],
+    messageEventTimedEvents: coreTypes.MessageEvent[]
+  ) {
     let annotations: Annotation[] = [];
     if (annotationTimedEvents) {
-      annotations = annotationTimedEvents.map(
-          (annotation) => ({
-            timestamp: annotation.timestamp * MICROS_PER_MILLI,
-            value: annotation.description
-          }));
+      annotations = annotationTimedEvents.map(annotation => ({
+        timestamp: annotation.timestamp * MICROS_PER_MILLI,
+        value: annotation.description,
+      }));
     }
     if (messageEventTimedEvents) {
-      annotations.push(...messageEventTimedEvents.map(
-          (messageEvent) => ({
-            timestamp: messageEvent.timestamp * MICROS_PER_MILLI,
-            value: MESSAGE_EVENT_TYPE_TRANSLATION[messageEvent.type]
-          })));
+      annotations.push(
+        ...messageEventTimedEvents.map(messageEvent => ({
+          timestamp: messageEvent.timestamp * MICROS_PER_MILLI,
+          value: MESSAGE_EVENT_TYPE_TRANSLATION[messageEvent.type],
+        }))
+      );
     }
     return annotations;
   }
@@ -228,7 +240,7 @@ export class ZipkinTraceExporter implements Exporter {
   publish(spans: Span[]) {
     const spanList = this.mountSpanList(spans);
 
-    return this.sendTraces(spanList).catch((err) => {
+    return this.sendTraces(spanList).catch(err => {
       return err;
     });
   }

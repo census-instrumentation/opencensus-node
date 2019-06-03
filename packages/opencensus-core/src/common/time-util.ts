@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Timestamp} from '../metrics/export/types';
+import { Timestamp } from '../metrics/export/types';
 
 const MILLIS_PER_SECOND = 1e3;
 const NANOS_PER_MILLI = 1e3 * 1e3;
@@ -54,9 +54,9 @@ export function getTimestampWithProcessHRTime(): Timestamp {
   const nanos = hrtimeRefNanos + offsetNanos;
 
   if (nanos >= NANOS_PER_SECOND) {
-    return {seconds: seconds + 1, nanos: nanos % NANOS_PER_SECOND};
+    return { seconds: seconds + 1, nanos: nanos % NANOS_PER_SECOND };
   }
-  return {seconds, nanos};
+  return { seconds, nanos };
 }
 
 /**
@@ -68,7 +68,7 @@ export function getTimestampWithProcessHRTime(): Timestamp {
 export function timestampFromMillis(epochMilli: number): Timestamp {
   return {
     seconds: Math.floor(epochMilli / MILLIS_PER_SECOND),
-    nanos: (epochMilli % MILLIS_PER_SECOND) * NANOS_PER_MILLI
+    nanos: (epochMilli % MILLIS_PER_SECOND) * NANOS_PER_MILLI,
   };
 }
 
@@ -76,5 +76,5 @@ setHrtimeReference();
 
 export const TEST_ONLY = {
   setHrtimeReference,
-  resetHrtimeFunctionCache
+  resetHrtimeFunctionCache,
 };

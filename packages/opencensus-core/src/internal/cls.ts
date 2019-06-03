@@ -23,13 +23,12 @@ import * as semver from 'semver';
 export type Namespace = CLS.Namespace;
 export type Func<T> = CLS.Func<T>;
 
-const useAsyncHooks: boolean = semver.satisfies(
-    process.version, '>=8');  //&&
-                              // !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
+const useAsyncHooks: boolean = semver.satisfies(process.version, '>=8'); //&&
+// !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
 
-const cls: typeof CLS =
-    useAsyncHooks ? require('./cls-ah') : require('continuation-local-storage');
-
+const cls: typeof CLS = useAsyncHooks
+  ? require('./cls-ah')
+  : require('continuation-local-storage');
 
 const TRACE_NAMESPACE = 'opencensus.io';
 
