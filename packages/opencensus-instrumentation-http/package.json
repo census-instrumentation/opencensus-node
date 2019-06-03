@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^5.2.5",
-    "@types/nock": "^9.1.3",
+    "@types/nock": "^10.0.0",
     "@types/node": "^9.4.7",
     "@types/semver": "^6.0.0",
     "@types/shimmer": "^1.0.1",
