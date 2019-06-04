@@ -18,7 +18,7 @@ import {CanonicalCode, CoreTracer, MessageEventType, Span, SpanKind, TracerConfi
 import * as assert from 'assert';
 import * as nock from 'nock';
 
-import {MICROS_PER_MILLI, ZipkinExporterOptions, ZipkinTraceExporter} from '../src/zipkin';
+import {MICROS_PER_MILLI, TranslatedSpan, ZipkinExporterOptions, ZipkinTraceExporter} from '../src/zipkin';
 
 /** Zipkin host url */
 const zipkinHost = 'http://localhost:9411';
@@ -41,23 +41,6 @@ const zipkinOptions: ZipkinExporterOptions = {
 const defaultConfig: TracerConfig = {
   samplingRate: 1
 };
-
-/** Run a nock server to replace zipkin service */
-const runNockServer = () => {
-  nock(zipkinHost)
-      .persist()
-      .post(postPath)
-      .reply(202)
-      .post('/wrong')
-      .reply(404);
-};
-
-/** Checking if tests will use a real network, otherwise run a nock server */
-before(() => {
-  if (!OPENCENSUS_NETWORK_TESTS) {
-    runNockServer();
-  }
-});
 
 /** Zipkin tests */
 describe('Zipkin Exporter', function() {
@@ -89,14 +72,85 @@ describe('Zipkin Exporter', function() {
       const tracer = new CoreTracer();
       tracer.start(defaultConfig);
 
+      let scope: nock.Scope;
+      let requestBody: [TranslatedSpan];
+
+      /**
+       * Checking if tests will use a real network, otherwise run a nock server
+       */
+      if (!OPENCENSUS_NETWORK_TESTS) {
+        /** Run a nock server to replace zipkin service */
+        scope = nock(zipkinHost)
+                    .persist()
+                    .post(
+                        postPath,
+                        (body: [TranslatedSpan]) => {
+                          requestBody = body;
+                          return true;
+                        })
+                    .reply(202);
+      }
+
       return tracer.startRootSpan(
           {name: 'root-test'}, async (rootSpan: Span) => {
-            const span = rootSpan.startChildSpan(
+            const span1 = rootSpan.startChildSpan(
                 {name: 'spanTest', kind: SpanKind.CLIENT});
-            span.end();
+            const span2 = tracer.startChildSpan(
+                {name: 'spanTest', kind: SpanKind.CLIENT, childOf: span1});
+            span2.end();
+            span1.end();
             rootSpan.end();
-            return exporter.publish([rootSpan, rootSpan]).then((result) => {
+            return exporter.publish([rootSpan]).then((result) => {
               assert.strictEqual(result.statusCode, 202);
+
+              if (!OPENCENSUS_NETWORK_TESTS) {
+                scope.done();
+                assert.deepStrictEqual(requestBody, [
+                  {
+                    'annotations': [],
+                    'debug': true,
+                    'duration':
+                        Math.round(rootSpan.duration * MICROS_PER_MILLI),
+                    'id': rootSpan.id,
+                    'kind': 'SERVER',
+                    'localEndpoint': {'serviceName': 'opencensus-tests'},
+                    'name': 'root-test',
+                    'shared': true,
+                    'tags': {'census.status_code': '0'},
+                    'timestamp':
+                        rootSpan.startTime.getTime() * MICROS_PER_MILLI,
+                    'traceId': rootSpan.traceId
+                  },
+                  {
+                    'annotations': [],
+                    'debug': true,
+                    'duration': Math.round(span1.duration * MICROS_PER_MILLI),
+                    'id': span1.id,
+                    'kind': 'CLIENT',
+                    'localEndpoint': {'serviceName': 'opencensus-tests'},
+                    'name': 'spanTest',
+                    'parentId': rootSpan.id,
+                    'shared': false,
+                    'tags': {'census.status_code': '0'},
+                    'timestamp': span1.startTime.getTime() * MICROS_PER_MILLI,
+                    'traceId': span1.traceId
+                  },
+                  {
+                    'annotations': [],
+                    'debug': true,
+                    'duration': Math.round(span2.duration * MICROS_PER_MILLI),
+                    'id': span2.id,
+                    'kind': 'CLIENT',
+                    'localEndpoint': {'serviceName': 'opencensus-tests'},
+                    'name': 'spanTest',
+                    'parentId': span1.id,
+                    'shared': false,
+                    'tags': {'census.status_code': '0'},
+                    'timestamp': span2.startTime.getTime() * MICROS_PER_MILLI,
+                    'traceId': span2.traceId
+                  }
+                ]);
+              }
             });
           });
     });
@@ -190,6 +244,17 @@ describe('Zipkin Exporter', function() {
            serviceName: 'opencensus-tests'
          };
 
+         let scope: nock.Scope;
+
+         /**
+          * Checking if tests will use a real network, otherwise run a nock
+          * server
+          */
+         if (!OPENCENSUS_NETWORK_TESTS) {
+           /** Run a nock server to replace zipkin service */
+           scope = nock(zipkinHost).persist().post('/wrong').reply(404);
+         }
+
          const exporter = new ZipkinTraceExporter(options);
          const tracer = new CoreTracer();
          tracer.start(defaultConfig);
@@ -202,6 +267,10 @@ describe('Zipkin Exporter', function() {
                rootSpan.end();
                return exporter.publish([rootSpan]).then((result) => {
                  assert.strictEqual(result.statusCode, 404);
+
+                 if (!OPENCENSUS_NETWORK_TESTS) {
+                   scope.done();
+                 }
                });
              });
        });

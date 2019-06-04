@@ -144,9 +144,9 @@ export class ZipkinTraceExporter implements Exporter {
       /** RootSpan data */
       spanList.push(this.translateSpan(span));
 
-      // Builds spans data
-      for (const child of span.spans) {
-        spanList.push(this.translateSpan(child));
+      // Traverse child spans recursively
+      if (span.spans.length > 0) {
+        Array.prototype.push.apply(spanList, this.mountSpanList(span.spans));
       }
     }
 
