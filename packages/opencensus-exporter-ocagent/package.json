@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/exporter-ocagent",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "OpenCensus Agent Exporter allows user to send collected trace to the OpenCensus Agent",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -64,8 +64,8 @@
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.5.0",
-    "@opencensus/core": "^0.0.13",
-    "@opencensus/nodejs": "^0.0.13",
+    "@opencensus/core": "^0.0.14",
+    "@opencensus/nodejs": "^0.0.14",
     "grpc": "^1.20.3"
   }
 }

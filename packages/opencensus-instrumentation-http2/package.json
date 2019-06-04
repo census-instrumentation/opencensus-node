@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-http2",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Opencensus http2 automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -63,8 +63,8 @@
     "typescript": "~2.9.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.13",
-    "@opencensus/instrumentation-http": "^0.0.13",
+    "@opencensus/core": "^0.0.14",
+    "@opencensus/instrumentation-http": "^0.0.14",
     "semver": "^6.0.0",
     "shimmer": "^1.2.0"
   }
