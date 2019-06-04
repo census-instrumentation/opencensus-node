@@ -4,8 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+
+## 0.0.14 - 2019-06-04
 - Exporter/Stats/Stackdriver: Add support for exemplar
 - exporter-stackdriver: Add support the credentials option used for authentication instead of your application default credentials
+- Update dependency @types/nock to v10
+- Object Trace Exporter for programatic span access
+- Update dependency axios to ^0.19.0 [SECURITY]
+- Refactor resource util to match specs
+- Update dependency jaeger-client to ~3.15.0
+- Trace Context Propagation: return null instead of empty spancontext
+- Update dependency gcp-metadata to v2
+- Fix duplicate spans issue and clean up
+- chore(deps): update dependency nyc to v14.1.1
+- chore: add node 12 ci job
 
 ## 0.0.13 - 2019-05-20
 - Exporter/Stats/Prometheus: Fix missing tags for HTTP metrics
