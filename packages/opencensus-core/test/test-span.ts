@@ -15,11 +15,11 @@
  */
 
 import * as assert from 'assert';
-import {RootSpan} from '../src/trace/model/root-span';
-import {Span} from '../src/trace/model/span';
-import {CoreTracer} from '../src/trace/model/tracer';
+import { RootSpan } from '../src/trace/model/root-span';
+import { Span } from '../src/trace/model/span';
+import { CoreTracer } from '../src/trace/model/tracer';
 import * as types from '../src/trace/model/types';
-import {Annotation, Link} from '../src/trace/model/types';
+import { Annotation, Link } from '../src/trace/model/types';
 
 // TODO: we should evaluate a way to merge similar test cases between span and
 // rootspan
@@ -29,7 +29,7 @@ tracer.activeTraceParams = {
   numberOfAttributesPerSpan: 32,
   numberOfLinksPerSpan: 32,
   numberOfAnnontationEventsPerSpan: 32,
-  numberOfMessageEventsPerSpan: 32
+  numberOfMessageEventsPerSpan: 32,
 };
 
 describe('Span', () => {
@@ -114,33 +114,35 @@ describe('Span', () => {
       assert.ok(span.started);
     });
 
+    it('should start a RootSpan and set CurrentRootSpan when parentSpanId is empty', () => {
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, '');
+      rootSpan.start();
+      assert.strictEqual(tracer.currentRootSpan, rootSpan);
 
-    it('should start a RootSpan and set CurrentRootSpan when parentSpanId is empty',
-       () => {
-         const rootSpan = new RootSpan(tracer, name, kind, traceId, '');
-         rootSpan.start();
-         assert.strictEqual(tracer.currentRootSpan, rootSpan);
+      const span = new Span(tracer, rootSpan);
+      span.start();
+      assert.strictEqual(tracer.currentRootSpan, rootSpan);
 
-         const span = new Span(tracer, rootSpan);
-         span.start();
-         assert.strictEqual(tracer.currentRootSpan, rootSpan);
+      assert.ok(span.started);
+    });
 
-         assert.ok(span.started);
-       });
+    it('should start a RootSpan and set CurrentRootSpan when parentSpanId is not empty', () => {
+      const rootSpan = new RootSpan(
+        tracer,
+        name,
+        kind,
+        traceId,
+        'd5955a12632d46a1'
+      );
+      rootSpan.start();
+      assert.strictEqual(tracer.currentRootSpan, rootSpan);
 
-    it('should start a RootSpan and set CurrentRootSpan when parentSpanId is not empty',
-       () => {
-         const rootSpan =
-             new RootSpan(tracer, name, kind, traceId, 'd5955a12632d46a1');
-         rootSpan.start();
-         assert.strictEqual(tracer.currentRootSpan, rootSpan);
+      const span = new Span(tracer, rootSpan);
+      span.start();
+      assert.strictEqual(tracer.currentRootSpan, rootSpan);
 
-         const span = new Span(tracer, rootSpan);
-         span.start();
-         assert.strictEqual(tracer.currentRootSpan, rootSpan);
-
-         assert.ok(span.started);
-       });
+      assert.ok(span.started);
+    });
   });
 
   /**
@@ -221,9 +223,11 @@ describe('Span', () => {
       ['String', 'Number', 'Boolean'].map(attType => {
         span.addAttribute('testKey' + attType, 'testValue' + attType);
         assert.strictEqual(
-            span.attributes['testKey' + attType], 'testValue' + attType);
+          span.attributes['testKey' + attType],
+          'testValue' + attType
+        );
       });
-      span.addAttribute('object', {foo: 'bar'});
+      span.addAttribute('object', { foo: 'bar' });
       assert.strictEqual(span.attributes['object'], '{"foo":"bar"}');
       span.addAttribute('array', [1, 2, 3]);
       assert.strictEqual(span.attributes['array'], '[1,2,3]');
@@ -251,8 +255,11 @@ describe('Span', () => {
     it('should add an annotation', () => {
       // tslint:disable:no-any
       function instanceOfAnnotation(object: any): object is Annotation {
-        return 'description' in object && 'timestamp' in object &&
-            'attributes' in object;
+        return (
+          'description' in object &&
+          'timestamp' in object &&
+          'attributes' in object
+        );
       }
 
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
@@ -300,7 +307,10 @@ describe('Span', () => {
       span.start();
 
       span.addLink(
-          span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
+        span.traceId,
+        rootSpan.id,
+        types.LinkType.PARENT_LINKED_SPAN
+      );
 
       assert.ok(span.links.length > 0);
       assert.strictEqual(span.droppedLinksCount, 0);
@@ -315,7 +325,10 @@ describe('Span', () => {
 
       for (let i = 0; i < 35; i++) {
         span.addLink(
-            span.traceId, rootSpan.id, types.LinkType.PARENT_LINKED_SPAN);
+          span.traceId,
+          rootSpan.id,
+          types.LinkType.PARENT_LINKED_SPAN
+        );
       }
 
       assert.strictEqual(span.links.length, 32);
@@ -340,18 +353,23 @@ describe('Span', () => {
       span.start();
 
       span.addMessageEvent(
-          types.MessageEventType.UNSPECIFIED, /* id */ 1,
-          /* timestamp */ 1550000000000, /* uncompressedSize */ 55,
-          /** compressedSize */ 40);
+        types.MessageEventType.UNSPECIFIED,
+        /* id */ 1,
+        /* timestamp */ 1550000000000,
+        /* uncompressedSize */ 55,
+        /** compressedSize */ 40
+      );
 
       assert.ok(span.messageEvents.length > 0);
-      assert.deepStrictEqual(span.messageEvents, [{
-                               type: types.MessageEventType.UNSPECIFIED,
-                               id: 1,
-                               timestamp: 1550000000000,
-                               uncompressedSize: 55,
-                               compressedSize: 40,
-                             }]);
+      assert.deepStrictEqual(span.messageEvents, [
+        {
+          type: types.MessageEventType.UNSPECIFIED,
+          id: 1,
+          timestamp: 1550000000000,
+          uncompressedSize: 55,
+          compressedSize: 40,
+        },
+      ]);
       assert.strictEqual(span.droppedMessageEventsCount, 0);
       assert.ok(instanceOfLink(span.messageEvents[0]));
     });
@@ -401,8 +419,14 @@ describe('Span', () => {
 
   describe('get traceState()', () => {
     it('should return the traceState', () => {
-      const rootSpan =
-          new RootSpan(tracer, name, kind, traceId, parentSpanId, 'traceState');
+      const rootSpan = new RootSpan(
+        tracer,
+        name,
+        kind,
+        traceId,
+        parentSpanId,
+        'traceState'
+      );
       rootSpan.start();
       assert.strictEqual(rootSpan.traceState, 'traceState');
 

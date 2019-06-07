@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {StringUtils} from '../src/internal/string-utils';
+import { StringUtils } from '../src/internal/string-utils';
 
 describe('StringUtils', () => {
   it('should return true when string is printable', () => {

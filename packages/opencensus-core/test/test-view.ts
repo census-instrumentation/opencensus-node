@@ -16,10 +16,21 @@
 
 import * as assert from 'assert';
 
-import {BaseView, TagMap, TagValue} from '../src';
-import {TEST_ONLY} from '../src/common/time-util';
-import {DistributionValue, MetricDescriptorType, Timestamp} from '../src/metrics/export/types';
-import {AggregationType, DistributionData, Measure, MeasureType, MeasureUnit, View} from '../src/stats/types';
+import { BaseView, TagMap, TagValue } from '../src';
+import { TEST_ONLY } from '../src/common/time-util';
+import {
+  DistributionValue,
+  MetricDescriptorType,
+  Timestamp,
+} from '../src/metrics/export/types';
+import {
+  AggregationType,
+  DistributionData,
+  Measure,
+  MeasureType,
+  MeasureUnit,
+  View,
+} from '../src/stats/types';
 
 /** The order of how close values must be to be considerated almost equal */
 const EPSILON = 6;
@@ -31,12 +42,17 @@ interface AggregationTestCase {
 }
 
 function isAlmostEqual(
-    actual: number, expected: number, epsilon: number): boolean {
+  actual: number,
+  expected: number,
+  epsilon: number
+): boolean {
   return Math.abs(actual - expected) < Math.pow(10, -epsilon);
 }
 
 function assertDistributionData(
-    distributionData: DistributionData, values: number[]) {
+  distributionData: DistributionData,
+  values: number[]
+) {
   const valuesSum = values.reduce((acc, cur) => acc + cur);
 
   assert.strictEqual(distributionData.count, values.length);
@@ -45,22 +61,31 @@ function assertDistributionData(
   const expectedMean = valuesSum / values.length;
   assert.ok(isAlmostEqual(distributionData.mean, expectedMean, EPSILON));
 
-  const expectedSumSquaredDeviations =
-      values.map(value => Math.pow(value - expectedMean, 2))
-          .reduce((acc, curr) => acc + curr);
-  assert.ok(isAlmostEqual(
-      distributionData.sumOfSquaredDeviation, expectedSumSquaredDeviations,
-      EPSILON));
+  const expectedSumSquaredDeviations = values
+    .map(value => Math.pow(value - expectedMean, 2))
+    .reduce((acc, curr) => acc + curr);
+  assert.ok(
+    isAlmostEqual(
+      distributionData.sumOfSquaredDeviation,
+      expectedSumSquaredDeviations,
+      EPSILON
+    )
+  );
 
-  const expectedStdDeviation =
-      Math.sqrt(expectedSumSquaredDeviations / values.length);
-  assert.ok(isAlmostEqual(
-      distributionData.stdDeviation, expectedStdDeviation, EPSILON));
+  const expectedStdDeviation = Math.sqrt(
+    expectedSumSquaredDeviations / values.length
+  );
+  assert.ok(
+    isAlmostEqual(distributionData.stdDeviation, expectedStdDeviation, EPSILON)
+  );
 }
 
 function assertView(
-    view: View, recordedValues: number[], aggregationType: AggregationType,
-    tagValues: TagValue[]) {
+  view: View,
+  recordedValues: number[],
+  aggregationType: AggregationType,
+  tagValues: TagValue[]
+) {
   assert.strictEqual(view.aggregation, aggregationType);
   const aggregationData = view.getSnapshot(tagValues);
   switch (aggregationData.type) {
@@ -76,7 +101,9 @@ function assertView(
       break;
     default:
       assert.strictEqual(
-          aggregationData.value, recordedValues[recordedValues.length - 1]);
+        aggregationData.value,
+        recordedValues[recordedValues.length - 1]
+      );
       break;
   }
 }
@@ -85,38 +112,42 @@ describe('BaseView', () => {
   const measure: Measure = {
     name: 'Test Measure',
     type: MeasureType.DOUBLE,
-    unit: MeasureUnit.UNIT
+    unit: MeasureUnit.UNIT,
   };
 
   const aggregationTestCases: AggregationTestCase[] = [
     {
       aggregationType: AggregationType.SUM,
       description: 'Sum',
-      metricDescriptorType: MetricDescriptorType.CUMULATIVE_DOUBLE
+      metricDescriptorType: MetricDescriptorType.CUMULATIVE_DOUBLE,
     },
     {
       aggregationType: AggregationType.COUNT,
       description: 'Count',
-      metricDescriptorType: MetricDescriptorType.CUMULATIVE_INT64
+      metricDescriptorType: MetricDescriptorType.CUMULATIVE_INT64,
     },
     {
       aggregationType: AggregationType.LAST_VALUE,
       description: 'Last Value',
-      metricDescriptorType: MetricDescriptorType.GAUGE_DOUBLE
+      metricDescriptorType: MetricDescriptorType.GAUGE_DOUBLE,
     },
     {
       aggregationType: AggregationType.DISTRIBUTION,
       description: 'Distribution',
-      metricDescriptorType: MetricDescriptorType.CUMULATIVE_DISTRIBUTION
-    }
+      metricDescriptorType: MetricDescriptorType.CUMULATIVE_DISTRIBUTION,
+    },
   ];
 
   describe('getColumns()', () => {
     it('should access the given tag keys', () => {
-      const tagKeys = [{name: 'testKey1'}, {name: 'testKey2'}];
+      const tagKeys = [{ name: 'testKey1' }, { name: 'testKey2' }];
       const view = new BaseView(
-          'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-          'description test');
+        'test/view/name',
+        measure,
+        AggregationType.LAST_VALUE,
+        tagKeys,
+        'description test'
+      );
 
       assert.deepStrictEqual(view.getColumns(), tagKeys);
     });
@@ -124,12 +155,19 @@ describe('BaseView', () => {
 
   describe('createView()', () => {
     it('should throw error when keys are duplicate', () => {
-      const tagKeys =
-          [{name: 'testKey1'}, {name: 'testKey1'}, {name: 'testKey2'}];
+      const tagKeys = [
+        { name: 'testKey1' },
+        { name: 'testKey1' },
+        { name: 'testKey2' },
+      ];
       assert.throws(() => {
         const view = new BaseView(
-            'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-            'description test');
+          'test/view/name',
+          measure,
+          AggregationType.LAST_VALUE,
+          tagKeys,
+          'description test'
+        );
         assert.deepStrictEqual(view.getColumns(), tagKeys);
       }, /^Error: Columns have duplicate$/);
     });
@@ -138,13 +176,13 @@ describe('BaseView', () => {
   describe('recordMeasurement()', () => {
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const bucketBoundaries = [2, 4, 6];
-    const tagKey1 = {name: 'testKey1'};
-    const tagKey2 = {name: 'testKey2'};
+    const tagKey1 = { name: 'testKey1' };
+    const tagKey2 = { name: 'testKey2' };
     const tagKeys = [tagKey1, tagKey2];
-    const tagKey3 = {name: 'testKey3'};
-    const tagValue1 = {value: 'testValue1'};
-    const tagValue2 = {value: 'testValue2'};
-    const tagValue3 = {value: 'testValue3'};
+    const tagKey3 = { name: 'testKey3' };
+    const tagValue1 = { value: 'testValue1' };
+    const tagValue2 = { value: 'testValue2' };
+    const tagValue3 = { value: 'testValue3' };
 
     const tags = new TagMap();
     tags.set(tagKey1, tagValue1);
@@ -152,32 +190,45 @@ describe('BaseView', () => {
 
     for (const aggregationTestCase of aggregationTestCases) {
       it(`should record measurements on a View with ${
-             aggregationTestCase.description} Aggregation Data type`,
-         () => {
-           const view = new BaseView(
-               'test/view/name', measure, aggregationTestCase.aggregationType,
-               tagKeys, 'description test', bucketBoundaries);
-           const recordedValues = [];
-           for (const value of measurementValues) {
-             recordedValues.push(value);
-             const measurement = {measure, value};
-             view.recordMeasurement(measurement, tags);
-             assertView(
-                 view, recordedValues, aggregationTestCase.aggregationType,
-                 [tagValue1, tagValue2]);
-           }
-         });
+        aggregationTestCase.description
+      } Aggregation Data type`, () => {
+        const view = new BaseView(
+          'test/view/name',
+          measure,
+          aggregationTestCase.aggregationType,
+          tagKeys,
+          'description test',
+          bucketBoundaries
+        );
+        const recordedValues = [];
+        for (const value of measurementValues) {
+          recordedValues.push(value);
+          const measurement = { measure, value };
+          view.recordMeasurement(measurement, tags);
+          assertView(
+            view,
+            recordedValues,
+            aggregationTestCase.aggregationType,
+            [tagValue1, tagValue2]
+          );
+        }
+      });
     }
 
     it('should ignore negative bucket bounds', () => {
       const negativeBucketBoundaries = [-Infinity, -4, -2, 0, 2, 4, 6];
       const view = new BaseView(
-          'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
-          'description test', negativeBucketBoundaries);
+        'test/view/name',
+        measure,
+        AggregationType.DISTRIBUTION,
+        tagKeys,
+        'description test',
+        negativeBucketBoundaries
+      );
       const recordedValues = [];
       for (const value of measurementValues) {
         recordedValues.push(value);
-        const measurement = {measure, value};
+        const measurement = { measure, value };
         view.recordMeasurement(measurement, tags);
       }
       const data = view.getSnapshot([tagValue1, tagValue2]) as DistributionData;
@@ -186,13 +237,17 @@ describe('BaseView', () => {
     });
 
     const view = new BaseView(
-        'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-        'description test');
+      'test/view/name',
+      measure,
+      AggregationType.LAST_VALUE,
+      tagKeys,
+      'description test'
+    );
 
     it('should not record a measurement when it have wrong tag keys', () => {
       const tagMap = new TagMap();
       tagMap.set(tagKey3, tagValue3);
-      const measurement = {measure, value: 10};
+      const measurement = { measure, value: 10 };
       view.recordMeasurement(measurement, tagMap);
       assert.ok(!view.getSnapshot([tagValue3]));
     });
@@ -201,18 +256,18 @@ describe('BaseView', () => {
   describe('getMetric()', () => {
     const realHrtimeFn = process.hrtime;
     const realNowFn = Date.now;
-    const mockedTime: Timestamp = {seconds: 1450000100, nanos: 1e7};
+    const mockedTime: Timestamp = { seconds: 1450000100, nanos: 1e7 };
     const mockStartTime = 1546540757282;
-    const mockStartTimestamp: Timestamp = {seconds: 1546540757, nanos: 282e6};
+    const mockStartTimestamp: Timestamp = { seconds: 1546540757, nanos: 282e6 };
     const measurementValues = [1.1, 2.3, 3.2, 4.3, 5.2];
     const buckets = [2, 4, 6];
-    const tagKey1 = {name: 'testKey1'};
-    const tagKey2 = {name: 'testKey2'};
+    const tagKey1 = { name: 'testKey1' };
+    const tagKey2 = { name: 'testKey2' };
     const tagKeys = [tagKey1, tagKey2];
-    const tagValue1 = {value: 'testValue1'};
-    const tagValue2 = {value: 'testValue2'};
-    const tagValue3 = {value: 'testValue3'};
-    const tagValue4 = {value: 'testValue4'};
+    const tagValue1 = { value: 'testValue1' };
+    const tagValue2 = { value: 'testValue2' };
+    const tagValue3 = { value: 'testValue3' };
+    const tagValue4 = { value: 'testValue4' };
 
     const tags = new TagMap();
     tags.set(tagKey1, tagValue1);
@@ -224,10 +279,15 @@ describe('BaseView', () => {
 
     for (const aggregationTestCase of aggregationTestCases) {
       const view: View = new BaseView(
-          'test/view/name', measure, aggregationTestCase.aggregationType,
-          tagKeys, 'description test', buckets);
+        'test/view/name',
+        measure,
+        aggregationTestCase.aggregationType,
+        tagKeys,
+        'description test',
+        buckets
+      );
       for (const value of measurementValues) {
-        const measurement = {measure, value};
+        const measurement = { measure, value };
         view.recordMeasurement(measurement, tags);
       }
 
@@ -245,83 +305,94 @@ describe('BaseView', () => {
         TEST_ONLY.resetHrtimeFunctionCache();
       });
 
-      const {descriptor, timeseries} = view.getMetric(mockStartTime);
+      const { descriptor, timeseries } = view.getMetric(mockStartTime);
 
-      describe(
-          `Aggregation type: ${aggregationTestCase.aggregationType}`, () => {
-            it('should have descriptor', () => {
-              assert.ok(descriptor);
-              assert.deepStrictEqual(descriptor, {
-                description: 'description test',
-                labelKeys: [
-                  {key: 'testKey1', description: ''},
-                  {key: 'testKey2', description: ''}
-                ],
-                name: 'test/view/name',
-                type: aggregationTestCase.metricDescriptorType,
-                unit: '1',
-              });
-            });
-
-            const [{startTimestamp, labelValues}] = timeseries;
-
-            if (aggregationTestCase.metricDescriptorType ===
-                MetricDescriptorType.GAUGE_INT64) {
-              it('GAUGE_INT64 shouldnt have timeseries startTimestamp', () => {
-                assert.strictEqual(startTimestamp, undefined);
-              });
-            } else if (
-                aggregationTestCase.metricDescriptorType ===
-                MetricDescriptorType.GAUGE_DOUBLE) {
-              it('GAUGE_DOUBLE shouldnt have timeseries startTimestamp', () => {
-                assert.strictEqual(startTimestamp, undefined);
-              });
-            } else {
-              it('should have timeseries startTimestamp', () => {
-                assert.ok(startTimestamp);
-                assert.strictEqual(typeof startTimestamp!.nanos, 'number');
-                assert.strictEqual(typeof startTimestamp!.seconds, 'number');
-                assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
-              });
-            }
-
-            it('should have labelValues', () => {
-              assert.ok(labelValues);
-              assert.deepStrictEqual(
-                  labelValues, [{value: 'testValue1'}, {value: 'testValue2'}]);
-            });
+      describe(`Aggregation type: ${
+        aggregationTestCase.aggregationType
+      }`, () => {
+        it('should have descriptor', () => {
+          assert.ok(descriptor);
+          assert.deepStrictEqual(descriptor, {
+            description: 'description test',
+            labelKeys: [
+              { key: 'testKey1', description: '' },
+              { key: 'testKey2', description: '' },
+            ],
+            name: 'test/view/name',
+            type: aggregationTestCase.metricDescriptorType,
+            unit: '1',
           });
+        });
+
+        const [{ startTimestamp, labelValues }] = timeseries;
+
+        if (
+          aggregationTestCase.metricDescriptorType ===
+          MetricDescriptorType.GAUGE_INT64
+        ) {
+          it('GAUGE_INT64 shouldnt have timeseries startTimestamp', () => {
+            assert.strictEqual(startTimestamp, undefined);
+          });
+        } else if (
+          aggregationTestCase.metricDescriptorType ===
+          MetricDescriptorType.GAUGE_DOUBLE
+        ) {
+          it('GAUGE_DOUBLE shouldnt have timeseries startTimestamp', () => {
+            assert.strictEqual(startTimestamp, undefined);
+          });
+        } else {
+          it('should have timeseries startTimestamp', () => {
+            assert.ok(startTimestamp);
+            assert.strictEqual(typeof startTimestamp!.nanos, 'number');
+            assert.strictEqual(typeof startTimestamp!.seconds, 'number');
+            assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
+          });
+        }
+
+        it('should have labelValues', () => {
+          assert.ok(labelValues);
+          assert.deepStrictEqual(labelValues, [
+            { value: 'testValue1' },
+            { value: 'testValue2' },
+          ]);
+        });
+      });
     }
 
     describe('DISTRIBUTION aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
-          'description test', buckets);
+        'test/view/name',
+        measure,
+        AggregationType.DISTRIBUTION,
+        tagKeys,
+        'description test',
+        buckets
+      );
       let total = 0;
       for (const value of measurementValues) {
         total += value;
-        const measurement = {measure, value};
+        const measurement = { measure, value };
         view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
-        const {timeseries} = view.getMetric(mockStartTime);
-        const [{points, startTimestamp}] = timeseries;
+        const { timeseries } = view.getMetric(mockStartTime);
+        const [{ points, startTimestamp }] = timeseries;
         assert.ok(points);
         const [point] = points;
-        const {timestamp, value} = point;
+        const { timestamp, value } = point;
         assert.ok(timestamp);
         assert.strictEqual(typeof timestamp.nanos, 'number');
         assert.strictEqual(typeof timestamp.seconds, 'number');
         assert.strictEqual(timestamp.seconds, mockedTime.seconds);
         assert.strictEqual(timestamp.nanos, mockedTime.nanos);
         assert.notStrictEqual(typeof value, 'number');
-        assert.deepStrictEqual((value as DistributionValue), {
-          bucketOptions: {explicit: {bounds: buckets}},
-          buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
+        assert.deepStrictEqual(value as DistributionValue, {
+          bucketOptions: { explicit: { bounds: buckets } },
+          buckets: [{ count: 1 }, { count: 2 }, { count: 2 }, { count: 0 }],
           count: 5,
           sum: total,
-          sumOfSquaredDeviation: 10.427999999999997
+          sumOfSquaredDeviation: 10.427999999999997,
         });
 
         assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
@@ -339,191 +410,211 @@ describe('BaseView', () => {
 
       it('should have point with attachments', () => {
         const view: View = new BaseView(
-            'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
-            'description test', buckets);
+          'test/view/name',
+          measure,
+          AggregationType.DISTRIBUTION,
+          tagKeys,
+          'description test',
+          buckets
+        );
         let total = 0;
-        const attachments = {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'};
+        const attachments = { k1: 'v1', k2: 'v2', k3: 'v3' };
         for (const value of measurementValues) {
           total += value;
-          const measurement = {measure, value};
+          const measurement = { measure, value };
           view.recordMeasurement(measurement, tags, attachments);
         }
 
-        const {timeseries} = view.getMetric(mockStartTime);
-        const [{points, startTimestamp}] = timeseries;
+        const { timeseries } = view.getMetric(mockStartTime);
+        const [{ points, startTimestamp }] = timeseries;
         assert.ok(points);
         const [point] = points;
-        const {timestamp, value} = point;
+        const { timestamp, value } = point;
         assert.ok(timestamp);
-        assert.deepStrictEqual((value as DistributionValue), {
-          bucketOptions: {explicit: {bounds: buckets}},
+        assert.deepStrictEqual(value as DistributionValue, {
+          bucketOptions: { explicit: { bounds: buckets } },
           buckets: [
             {
               count: 1,
               exemplar: {
                 value: 1.1,
-                timestamp: {seconds: 1450000000, nanos: 0},
-                attachments
-              }
+                timestamp: { seconds: 1450000000, nanos: 0 },
+                attachments,
+              },
             },
             {
               count: 2,
               exemplar: {
                 value: 3.2,
-                timestamp: {seconds: 1450000000, nanos: 0},
-                attachments
-              }
+                timestamp: { seconds: 1450000000, nanos: 0 },
+                attachments,
+              },
             },
             {
               count: 2,
               exemplar: {
                 value: 5.2,
-                timestamp: {seconds: 1450000000, nanos: 0},
-                attachments
-              }
+                timestamp: { seconds: 1450000000, nanos: 0 },
+                attachments,
+              },
             },
-            {count: 0}
+            { count: 0 },
           ],
           count: 5,
           sum: total,
-          sumOfSquaredDeviation: 10.427999999999997
+          sumOfSquaredDeviation: 10.427999999999997,
         });
         assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
       });
 
       it('should have point with empty attachments', () => {
         const view: View = new BaseView(
-            'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
-            'description test', buckets);
+          'test/view/name',
+          measure,
+          AggregationType.DISTRIBUTION,
+          tagKeys,
+          'description test',
+          buckets
+        );
         let total = 0;
         for (const value of measurementValues) {
           total += value;
-          const measurement = {measure, value};
+          const measurement = { measure, value };
           view.recordMeasurement(measurement, tags, {});
         }
 
-        const {timeseries} = view.getMetric(mockStartTime);
-        const [{points, startTimestamp}] = timeseries;
+        const { timeseries } = view.getMetric(mockStartTime);
+        const [{ points, startTimestamp }] = timeseries;
         assert.ok(points);
         const [point] = points;
-        const {timestamp, value} = point;
+        const { timestamp, value } = point;
         assert.ok(timestamp);
-        assert.deepStrictEqual((value as DistributionValue), {
-          bucketOptions: {explicit: {bounds: buckets}},
+        assert.deepStrictEqual(value as DistributionValue, {
+          bucketOptions: { explicit: { bounds: buckets } },
           buckets: [
             {
               count: 1,
               exemplar: {
                 value: 1.1,
-                timestamp: {seconds: 1450000000, nanos: 0},
-                attachments: {}
-              }
+                timestamp: { seconds: 1450000000, nanos: 0 },
+                attachments: {},
+              },
             },
             {
               count: 2,
               exemplar: {
                 value: 3.2,
-                timestamp: {seconds: 1450000000, nanos: 0},
-                attachments: {}
-              }
+                timestamp: { seconds: 1450000000, nanos: 0 },
+                attachments: {},
+              },
             },
             {
               count: 2,
               exemplar: {
                 value: 5.2,
-                timestamp: {seconds: 1450000000, nanos: 0},
-                attachments: {}
-              }
+                timestamp: { seconds: 1450000000, nanos: 0 },
+                attachments: {},
+              },
             },
-            {count: 0}
+            { count: 0 },
           ],
           count: 5,
           sum: total,
-          sumOfSquaredDeviation: 10.427999999999997
+          sumOfSquaredDeviation: 10.427999999999997,
         });
         assert.deepStrictEqual(startTimestamp, mockStartTimestamp);
       });
     });
 
-    describe(
-        'DISTRIBUTION aggregation type: record with measurements in succession from a single view and single measure',
-        () => {
-          const view: View = new BaseView(
-              'test/view/name', measure, AggregationType.DISTRIBUTION, tagKeys,
-              'description test', buckets);
-          let total = 0;
-          for (const value of measurementValues) {
-            total += value;
-            const measurement = {measure, value};
-            const measurement1 = {measure, value};
-            view.recordMeasurement(measurement, tags);
-            view.recordMeasurement(measurement1, tagMap);
-          }
+    describe('DISTRIBUTION aggregation type: record with measurements in succession from a single view and single measure', () => {
+      const view: View = new BaseView(
+        'test/view/name',
+        measure,
+        AggregationType.DISTRIBUTION,
+        tagKeys,
+        'description test',
+        buckets
+      );
+      let total = 0;
+      for (const value of measurementValues) {
+        total += value;
+        const measurement = { measure, value };
+        const measurement1 = { measure, value };
+        view.recordMeasurement(measurement, tags);
+        view.recordMeasurement(measurement1, tagMap);
+      }
 
-          it('should have points', () => {
-            const {timeseries} = view.getMetric(mockStartTime);
-            assert.strictEqual(timeseries.length, 2);
-            const [{labelValues: labelValues1, points: points1}, {
-              labelValues: labelValues2,
-              points: points2
-            }] = timeseries;
-            assert.ok(points1);
+      it('should have points', () => {
+        const { timeseries } = view.getMetric(mockStartTime);
+        assert.strictEqual(timeseries.length, 2);
+        const [
+          { labelValues: labelValues1, points: points1 },
+          { labelValues: labelValues2, points: points2 },
+        ] = timeseries;
+        assert.ok(points1);
 
-            let [point] = points1;
-            let {timestamp, value} = point;
-            assert.ok(timestamp);
-            assert.strictEqual(typeof timestamp.nanos, 'number');
-            assert.strictEqual(typeof timestamp.seconds, 'number');
-            assert.strictEqual(timestamp.seconds, mockedTime.seconds);
-            assert.strictEqual(timestamp.nanos, mockedTime.nanos);
-            assert.notStrictEqual(typeof value, 'number');
-            assert.deepStrictEqual((value as DistributionValue), {
-              bucketOptions: {explicit: {bounds: buckets}},
-              buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
-              count: 5,
-              sum: total,
-              sumOfSquaredDeviation: 10.427999999999997
-            });
-            assert.deepStrictEqual(
-                labelValues1,
-                [{'value': 'testValue1'}, {'value': 'testValue2'}]);
-            assert.ok(points2);
-            [point] = points2;
-            ({timestamp, value} = point);
-            assert.ok(timestamp);
-            assert.strictEqual(typeof timestamp.nanos, 'number');
-            assert.strictEqual(typeof timestamp.seconds, 'number');
-            assert.strictEqual(timestamp.seconds, mockedTime.seconds);
-            assert.strictEqual(timestamp.nanos, mockedTime.nanos);
-            assert.notStrictEqual(typeof value, 'number');
-            assert.deepStrictEqual((value as DistributionValue), {
-              bucketOptions: {explicit: {bounds: buckets}},
-              buckets: [{count: 1}, {count: 2}, {count: 2}, {count: 0}],
-              count: 5,
-              sum: total,
-              sumOfSquaredDeviation: 10.427999999999997
-            });
-            assert.deepStrictEqual(
-                labelValues2,
-                [{'value': 'testValue3'}, {'value': 'testValue4'}]);
-          });
+        let [point] = points1;
+        let { timestamp, value } = point;
+        assert.ok(timestamp);
+        assert.strictEqual(typeof timestamp.nanos, 'number');
+        assert.strictEqual(typeof timestamp.seconds, 'number');
+        assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+        assert.strictEqual(timestamp.nanos, mockedTime.nanos);
+        assert.notStrictEqual(typeof value, 'number');
+        assert.deepStrictEqual(value as DistributionValue, {
+          bucketOptions: { explicit: { bounds: buckets } },
+          buckets: [{ count: 1 }, { count: 2 }, { count: 2 }, { count: 0 }],
+          count: 5,
+          sum: total,
+          sumOfSquaredDeviation: 10.427999999999997,
         });
+        assert.deepStrictEqual(labelValues1, [
+          { value: 'testValue1' },
+          { value: 'testValue2' },
+        ]);
+        assert.ok(points2);
+        [point] = points2;
+        ({ timestamp, value } = point);
+        assert.ok(timestamp);
+        assert.strictEqual(typeof timestamp.nanos, 'number');
+        assert.strictEqual(typeof timestamp.seconds, 'number');
+        assert.strictEqual(timestamp.seconds, mockedTime.seconds);
+        assert.strictEqual(timestamp.nanos, mockedTime.nanos);
+        assert.notStrictEqual(typeof value, 'number');
+        assert.deepStrictEqual(value as DistributionValue, {
+          bucketOptions: { explicit: { bounds: buckets } },
+          buckets: [{ count: 1 }, { count: 2 }, { count: 2 }, { count: 0 }],
+          count: 5,
+          sum: total,
+          sumOfSquaredDeviation: 10.427999999999997,
+        });
+        assert.deepStrictEqual(labelValues2, [
+          { value: 'testValue3' },
+          { value: 'testValue4' },
+        ]);
+      });
+    });
 
     describe('COUNT aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.COUNT, tagKeys,
-          'description test', buckets);
+        'test/view/name',
+        measure,
+        AggregationType.COUNT,
+        tagKeys,
+        'description test',
+        buckets
+      );
       for (const value of measurementValues) {
-        const measurement = {measure, value};
+        const measurement = { measure, value };
         view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
-        const {timeseries} = view.getMetric(mockStartTime);
-        const [{points, startTimestamp}] = timeseries;
+        const { timeseries } = view.getMetric(mockStartTime);
+        const [{ points, startTimestamp }] = timeseries;
         assert.ok(points);
         const [point] = points;
-        const {timestamp, value} = point;
+        const { timestamp, value } = point;
         assert.ok(timestamp);
         assert.strictEqual(typeof timestamp.nanos, 'number');
         assert.strictEqual(typeof timestamp.seconds, 'number');
@@ -537,21 +628,26 @@ describe('BaseView', () => {
 
     describe('SUM aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.SUM, tagKeys,
-          'description test', buckets);
+        'test/view/name',
+        measure,
+        AggregationType.SUM,
+        tagKeys,
+        'description test',
+        buckets
+      );
       let total = 0;
       for (const value of measurementValues) {
         total += value;
-        const measurement = {measure, value};
+        const measurement = { measure, value };
         view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
-        const {timeseries} = view.getMetric(mockStartTime);
-        const [{points, startTimestamp}] = timeseries;
+        const { timeseries } = view.getMetric(mockStartTime);
+        const [{ points, startTimestamp }] = timeseries;
         assert.ok(points);
         const [point] = points;
-        const {timestamp, value} = point;
+        const { timestamp, value } = point;
         assert.ok(timestamp);
         assert.strictEqual(typeof timestamp.nanos, 'number');
         assert.strictEqual(typeof timestamp.seconds, 'number');
@@ -565,24 +661,31 @@ describe('BaseView', () => {
 
     describe('LAST_VALUE aggregation type', () => {
       const view: View = new BaseView(
-          'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-          'description test', buckets);
+        'test/view/name',
+        measure,
+        AggregationType.LAST_VALUE,
+        tagKeys,
+        'description test',
+        buckets
+      );
       for (const value of measurementValues) {
-        const measurement = {measure, value};
+        const measurement = { measure, value };
         view.recordMeasurement(measurement, tags);
       }
 
       it('should have point', () => {
-        const {timeseries} = view.getMetric(mockStartTime);
-        const [{points, startTimestamp}] = timeseries;
+        const { timeseries } = view.getMetric(mockStartTime);
+        const [{ points, startTimestamp }] = timeseries;
         assert.ok(points);
         const [point] = points;
-        const {timestamp, value} = point;
+        const { timestamp, value } = point;
         assert.strictEqual(timestamp.seconds, mockedTime.seconds);
         assert.strictEqual(timestamp.nanos, mockedTime.nanos);
         assert.strictEqual(typeof value, 'number');
         assert.strictEqual(
-            value, measurementValues[measurementValues.length - 1]);
+          value,
+          measurementValues[measurementValues.length - 1]
+        );
         assert.strictEqual(startTimestamp, undefined);
       });
     });
@@ -590,11 +693,11 @@ describe('BaseView', () => {
 
   describe('getSnapshots()', () => {
     let view: View;
-    const tagKey1 = {name: 'testKey1'};
-    const tagKey2 = {name: 'testKey2'};
+    const tagKey1 = { name: 'testKey1' };
+    const tagKey2 = { name: 'testKey2' };
     const tagKeys = [tagKey1, tagKey2];
-    const tagValue1 = {value: 'testValue1'};
-    const tagValue2 = {value: 'testValue2'};
+    const tagValue1 = { value: 'testValue1' };
+    const tagValue2 = { value: 'testValue2' };
 
     const tags = new TagMap();
     tags.set(tagKey1, tagValue1);
@@ -602,18 +705,25 @@ describe('BaseView', () => {
 
     before(() => {
       view = new BaseView(
-          'test/view/name', measure, AggregationType.LAST_VALUE, tagKeys,
-          'description test');
+        'test/view/name',
+        measure,
+        AggregationType.LAST_VALUE,
+        tagKeys,
+        'description test'
+      );
 
-      const measurement = {measure, value: 10};
+      const measurement = { measure, value: 10 };
       view.recordMeasurement(measurement, tags);
     });
 
-    it('should not get aggregation data when wrong tags values are given',
-       () => {
-         assert.ok(!view.getSnapshot(
-             [{value: 'wrongTagValue'}, {value: 'wrongTagValue'}]));
-       });
+    it('should not get aggregation data when wrong tags values are given', () => {
+      assert.ok(
+        !view.getSnapshot([
+          { value: 'wrongTagValue' },
+          { value: 'wrongTagValue' },
+        ])
+      );
+    });
 
     it('should not get aggregation data when not enough tags are given', () => {
       assert.ok(!view.getSnapshot([tagValue1]));

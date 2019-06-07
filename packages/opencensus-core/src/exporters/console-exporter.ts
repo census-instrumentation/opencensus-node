@@ -15,11 +15,12 @@
  */
 
 import * as loggerTypes from '../common/types';
-import {Measurement, View} from '../stats/types';
-import {TagKey, TagValue} from '../tags/types';
+import { Measurement, View } from '../stats/types';
+import { TagKey, TagValue } from '../tags/types';
 import * as modelTypes from '../trace/model/types';
-import {ExporterBuffer} from './exporter-buffer';
-import {Exporter, ExporterConfig, StatsEventListener} from './types';
+import { ExporterBuffer } from './exporter-buffer';
+import * as logger from '../common/console-logger';
+import { Exporter, ExporterConfig, StatsEventListener } from './types';
 
 /** Do not send span data */
 export class NoopExporter implements Exporter {
@@ -34,8 +35,7 @@ export class NoopExporter implements Exporter {
 /** Format and sends span data to the console. */
 export class ConsoleExporter implements Exporter {
   /** Buffer object to store the spans. */
-  // @ts-ignore
-  private logger?: loggerTypes.Logger;
+  logger: loggerTypes.Logger;
   private buffer: ExporterBuffer;
 
   /**
@@ -45,7 +45,7 @@ export class ConsoleExporter implements Exporter {
    */
   constructor(config: ExporterConfig) {
     this.buffer = new ExporterBuffer(this, config);
-    this.logger = config.logger;
+    this.logger = config.logger || logger.logger();
   }
 
   onStartSpan(span: modelTypes.Span) {}
@@ -66,17 +66,16 @@ export class ConsoleExporter implements Exporter {
    * @param spans A list of spans to publish.
    */
   publish(spans: modelTypes.Span[]) {
-    spans.map((span) => {
+    spans.map(span => {
       const ROOT_STR = `RootSpan: {traceId: ${span.traceId}, spanId: ${
-          span.id}, name: ${span.name} }`;
-      const SPANS_STR: string[] = span.spans.map(
-          (child) => [`\t\t{spanId: ${child.id}, name: ${child.name}}`].join(
-              '\n'));
+        span.id
+      }, name: ${span.name} }`;
+      const SPANS_STR: string[] = span.spans.map(child =>
+        [`\t\t{spanId: ${child.id}, name: ${child.name}}`].join('\n')
+      );
 
       const result: string[] = [];
-      result.push(
-          ROOT_STR + '\n\tChildSpans:\n' +
-          `${SPANS_STR.join('\n')}`);
+      result.push(ROOT_STR + '\n\tChildSpans:\n' + `${SPANS_STR.join('\n')}`);
       console.log(`${result}`);
     });
     return Promise.resolve();
@@ -90,8 +89,9 @@ export class ConsoleStatsExporter implements StatsEventListener {
    * @param view registered view
    */
   onRegisterView(view: View) {
-    console.log(`View registered: ${view.name}, Measure registered: ${
-        view.measure.name}`);
+    console.log(
+      `View registered: ${view.name}, Measure registered: ${view.measure.name}`
+    );
   }
   /**
    * Event called when a measurement is recorded
@@ -100,7 +100,10 @@ export class ConsoleStatsExporter implements StatsEventListener {
    * @param tags The tags to which the value is applied
    */
   onRecord(
-      views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>) {
+    views: View[],
+    measurement: Measurement,
+    tags: Map<TagKey, TagValue>
+  ) {
     console.log(`Measurement recorded: ${measurement.measure.name}`);
   }
 

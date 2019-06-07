@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-
-import {LabelValue, MetricDescriptor, MetricDescriptorType} from '../metrics/export/types';
-import {TagValue} from '../tags/types';
-import {AggregationType, Measure, MeasureType, View} from './types';
+import {
+  LabelValue,
+  MetricDescriptor,
+  MetricDescriptorType,
+} from '../metrics/export/types';
+import { TagValue } from '../tags/types';
+import { AggregationType, Measure, MeasureType, View } from './types';
 
 /** Utils to convert Stats data models to Metric data models */
 export class MetricUtils {
@@ -27,8 +30,10 @@ export class MetricUtils {
    * @param aggregation The aggregation for which to find a metric type
    * @returns The Type of metric descriptor
    */
-  private static getType(measure: Measure, aggregation: AggregationType):
-      MetricDescriptorType {
+  private static getType(
+    measure: Measure,
+    aggregation: AggregationType
+  ): MetricDescriptorType {
     if (aggregation === AggregationType.SUM) {
       switch (measure.type) {
         case MeasureType.INT64:
@@ -67,8 +72,9 @@ export class MetricUtils {
       unit: view.measure.unit,
       type: MetricUtils.getType(view.measure, view.aggregation),
       labelKeys: view.getColumns().map(
-          // TODO(mayurkale): add description
-          tagKey => ({key: tagKey.name, description: ''}))
+        // TODO(mayurkale): add description
+        tagKey => ({ key: tagKey.name, description: '' })
+      ),
     };
   }
 
@@ -77,8 +83,11 @@ export class MetricUtils {
    * @param tagValues the list of tag values
    * @returns The List of label values
    */
-  static tagValuesToLabelValues(tagValues: Array<TagValue|null>): LabelValue[] {
-    return tagValues.map(
-        (tagValue) => ({value: tagValue ? tagValue.value : null}));
+  static tagValuesToLabelValues(
+    tagValues: Array<TagValue | null>
+  ): LabelValue[] {
+    return tagValues.map(tagValue => ({
+      value: tagValue ? tagValue.value : null,
+    }));
   }
 }

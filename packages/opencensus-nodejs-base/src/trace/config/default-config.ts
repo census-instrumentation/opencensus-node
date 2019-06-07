@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Constants} from '../constants';
+import { Constants } from '../constants';
 
 /**
  * Defines a default configuration. For fields with primitive values,
@@ -30,5 +30,5 @@ export const defaultConfig = {
   bufferSize: Constants.DEFAULT_BUFFER_SIZE,
   bufferTimeout: Constants.DEFAULT_BUFFER_TIMEOUT,
   samplingRate: 1,
-  traceParams: Constants.DEFAULT_TRACE_PARAMS
+  traceParams: Constants.DEFAULT_TRACE_PARAMS,
 };

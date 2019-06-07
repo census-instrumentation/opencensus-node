@@ -16,14 +16,14 @@
 
 import * as assert from 'assert';
 
-import {CoreResource} from '../src/resource/resource';
-import {Labels, Resource} from '../src/resource/types';
+import { CoreResource } from '../src/resource/resource';
+import { Labels, Resource } from '../src/resource/types';
 
 describe('Resource()', () => {
   before(() => {
     process.env.OC_RESOURCE_TYPE = 'k8s.io/container';
     process.env.OC_RESOURCE_LABELS =
-        'k8s.io/pod/name="pod-xyz-123",k8s.io/container/name="c1",k8s.io/namespace/name="default"';
+      'k8s.io/pod/name="pod-xyz-123",k8s.io/container/name="c1",k8s.io/namespace/name="default"';
     CoreResource.setup();
   });
 
@@ -38,7 +38,7 @@ describe('Resource()', () => {
     const expectedLabels: Labels = {
       'k8s.io/container/name': '"c1"',
       'k8s.io/namespace/name': '"default"',
-      'k8s.io/pod/name': '"pod-xyz-123"'
+      'k8s.io/pod/name': '"pod-xyz-123"',
     };
 
     assert.strictEqual(resource.type, 'k8s.io/container');
@@ -48,16 +48,21 @@ describe('Resource()', () => {
 });
 
 describe('mergeResources()', () => {
-  const DEFAULT_RESOURCE: Resource = {type: null, labels: {}};
-  const DEFAULT_RESOURCE_1: Resource = {type: 'default', labels: {'a': '100'}};
-  const RESOURCE_1: Resource = {type: 't1', labels: {'a': '1', 'b': '2'}};
-  const RESOURCE_2:
-      Resource = {type: 't2', labels: {'a': '1', 'b': '3', 'c': '4'}};
+  const DEFAULT_RESOURCE: Resource = { type: null, labels: {} };
+  const DEFAULT_RESOURCE_1: Resource = {
+    type: 'default',
+    labels: { a: '100' },
+  };
+  const RESOURCE_1: Resource = { type: 't1', labels: { a: '1', b: '2' } };
+  const RESOURCE_2: Resource = {
+    type: 't2',
+    labels: { a: '1', b: '3', c: '4' },
+  };
 
   it('merge resources with default, resource1', () => {
     const resources: Resource[] = [DEFAULT_RESOURCE, RESOURCE_1];
     const resource = CoreResource.mergeResources(resources);
-    const expectedLabels: Labels = {'a': '1', 'b': '2'};
+    const expectedLabels: Labels = { a: '1', b: '2' };
 
     assert.strictEqual(resource.type, 't1');
     assert.strictEqual(Object.keys(resource.labels).length, 2);
@@ -65,10 +70,13 @@ describe('mergeResources()', () => {
   });
 
   it('merge resources with default, resource1, resource2 = empty', () => {
-    const resources: Resource[] =
-        [DEFAULT_RESOURCE, RESOURCE_1, {type: null, labels: {}}];
+    const resources: Resource[] = [
+      DEFAULT_RESOURCE,
+      RESOURCE_1,
+      { type: null, labels: {} },
+    ];
     const resource = CoreResource.mergeResources(resources);
-    const expectedLabels: Labels = {'a': '1', 'b': '2'};
+    const expectedLabels: Labels = { a: '1', b: '2' };
 
     assert.strictEqual(resource.type, 't1');
     assert.strictEqual(Object.keys(resource.labels).length, 2);
@@ -76,10 +84,13 @@ describe('mergeResources()', () => {
   });
 
   it('merge resources with default, resource1 = empty, resource2', () => {
-    const resources: Resource[] =
-        [DEFAULT_RESOURCE, {type: null, labels: {}}, RESOURCE_2];
+    const resources: Resource[] = [
+      DEFAULT_RESOURCE,
+      { type: null, labels: {} },
+      RESOURCE_2,
+    ];
     const resource = CoreResource.mergeResources(resources);
-    const expectedLabels: Labels = {'a': '1', 'b': '3', 'c': '4'};
+    const expectedLabels: Labels = { a: '1', b: '3', c: '4' };
 
     assert.strictEqual(resource.type, 't2');
     assert.strictEqual(Object.keys(resource.labels).length, 3);
@@ -89,7 +100,7 @@ describe('mergeResources()', () => {
   it('merge resources with default1, resource1, resource2', () => {
     const resources: Resource[] = [DEFAULT_RESOURCE_1, RESOURCE_1, RESOURCE_2];
     const resource = CoreResource.mergeResources(resources);
-    const expectedLabels: Labels = {'a': '100', 'b': '2', 'c': '4'};
+    const expectedLabels: Labels = { a: '100', b: '2', c: '4' };
 
     assert.strictEqual(resource.type, 'default');
     assert.strictEqual(Object.keys(resource.labels).length, 3);

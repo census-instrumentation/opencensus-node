@@ -18,21 +18,30 @@
 // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs
 
 import * as asyncHook from 'async_hooks';
-import {Context, Func, Namespace as CLSNamespace} from 'continuation-local-storage';
-import {EventEmitter} from 'events';
+import {
+  Context,
+  Func,
+  Namespace as CLSNamespace,
+} from 'continuation-local-storage';
+import { EventEmitter } from 'events';
 import * as shimmer from 'shimmer';
 
 const WRAPPED = Symbol('context_wrapped');
 /** A map of AsyncResource IDs to Context objects. */
-let contexts: {[asyncId: number]: Context;} = {};
+let contexts: { [asyncId: number]: Context } = {};
 let current: Context = {};
 
 // Create the hook.
-asyncHook.createHook({init, before, destroy}).enable();
+asyncHook.createHook({ init, before, destroy }).enable();
 
 // A list of well-known EventEmitter methods that add event listeners.
-const EVENT_EMITTER_METHODS: Array<keyof EventEmitter> =
-    ['addListener', 'on', 'once', 'prependListener', 'prependOnceListener'];
+const EVENT_EMITTER_METHODS: Array<keyof EventEmitter> = [
+  'addListener',
+  'on',
+  'once',
+  'prependListener',
+  'prependOnceListener',
+];
 
 class AsyncHooksNamespace implements CLSNamespace {
   get name(): string {
@@ -76,7 +85,7 @@ class AsyncHooksNamespace implements CLSNamespace {
     // TODO(kjin): Monitor https://github.com/Microsoft/TypeScript/pull/15473.
     // When it's landed and released, we can remove these `any` casts.
     // tslint:disable-next-line:no-any
-    if ((cb as any)[WRAPPED] as boolean || !current) {
+    if (((cb as any)[WRAPPED] as boolean) || !current) {
       return cb;
     }
     const boundContext = current;
@@ -93,7 +102,7 @@ class AsyncHooksNamespace implements CLSNamespace {
       enumerable: false,
       configurable: true,
       writable: false,
-      value: cb.length
+      value: cb.length,
     });
     return contextWrapper;
   }
@@ -105,9 +114,9 @@ class AsyncHooksNamespace implements CLSNamespace {
   // will cause us to lose context.
   bindEmitter(ee: NodeJS.EventEmitter): void {
     const ns = this;
-    EVENT_EMITTER_METHODS.forEach((method) => {
+    EVENT_EMITTER_METHODS.forEach(method => {
       if (ee[method]) {
-        shimmer.wrap(ee, method, (oldMethod) => {
+        shimmer.wrap(ee, method, oldMethod => {
           return function(this: {}, event: string, cb: Func<void>) {
             return oldMethod.call(this, event, ns.bind(cb));
           };
@@ -123,7 +132,11 @@ const namespace = new AsyncHooksNamespace();
 
 /** init is called during object construction. */
 function init(
-    uid: number, provider: string, parentUid: number, parentHandle: {}) {
+  uid: number,
+  provider: string,
+  parentUid: number,
+  parentHandle: {}
+) {
   contexts[uid] = current;
 }
 

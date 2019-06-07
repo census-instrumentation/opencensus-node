@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {BucketBoundaries} from '../src';
+import { BucketBoundaries } from '../src';
 
 describe('BucketBoundaries', () => {
   it('should return boundaries', () => {

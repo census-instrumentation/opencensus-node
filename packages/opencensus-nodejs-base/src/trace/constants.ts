@@ -29,8 +29,8 @@ const constants = {
     numberOfAnnontationEventsPerSpan: 32,
     numberOfAttributesPerSpan: 32,
     numberOfLinksPerSpan: 32,
-    numberOfMessageEventsPerSpan: 128
-  }
+    numberOfMessageEventsPerSpan: 128,
+  },
 };
 
-export {constants as Constants};
+export { constants as Constants };

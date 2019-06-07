@@ -22,30 +22,41 @@ export class LatencyBucketBoundaries {
   // Using the opencensus java standard names
   /* tslint:disable:variable-name */
   static readonly ZERO_MICROSx10 = new LatencyBucketBoundaries(
-      0, LatencyBucketBoundaries.microsecondsToNanos(10));
+    0,
+    LatencyBucketBoundaries.microsecondsToNanos(10)
+  );
   static readonly MICROSx10_MICROSx100 = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.microsecondsToNanos(10),
-      LatencyBucketBoundaries.microsecondsToNanos(100));
+    LatencyBucketBoundaries.microsecondsToNanos(10),
+    LatencyBucketBoundaries.microsecondsToNanos(100)
+  );
   static readonly MICROSx100_MILLIx1 = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.microsecondsToNanos(100),
-      LatencyBucketBoundaries.millisecondsToNanos(1));
+    LatencyBucketBoundaries.microsecondsToNanos(100),
+    LatencyBucketBoundaries.millisecondsToNanos(1)
+  );
   static readonly MILLIx1_MILLIx10 = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.millisecondsToNanos(1),
-      LatencyBucketBoundaries.millisecondsToNanos(10));
+    LatencyBucketBoundaries.millisecondsToNanos(1),
+    LatencyBucketBoundaries.millisecondsToNanos(10)
+  );
   static readonly MILLIx10_MILLIx100 = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.millisecondsToNanos(10),
-      LatencyBucketBoundaries.millisecondsToNanos(100));
+    LatencyBucketBoundaries.millisecondsToNanos(10),
+    LatencyBucketBoundaries.millisecondsToNanos(100)
+  );
   static readonly MILLIx100_SECONDx1 = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.millisecondsToNanos(100),
-      LatencyBucketBoundaries.secondsToNanos(1));
+    LatencyBucketBoundaries.millisecondsToNanos(100),
+    LatencyBucketBoundaries.secondsToNanos(1)
+  );
   static readonly SECONDx1_SECONDx10 = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.secondsToNanos(1),
-      LatencyBucketBoundaries.secondsToNanos(10));
+    LatencyBucketBoundaries.secondsToNanos(1),
+    LatencyBucketBoundaries.secondsToNanos(10)
+  );
   static readonly SECONDx10_SECONDx100 = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.secondsToNanos(10),
-      LatencyBucketBoundaries.secondsToNanos(100));
+    LatencyBucketBoundaries.secondsToNanos(10),
+    LatencyBucketBoundaries.secondsToNanos(100)
+  );
   static readonly SECONDx100_MAX = new LatencyBucketBoundaries(
-      LatencyBucketBoundaries.secondsToNanos(100), Number.MAX_VALUE);
+    LatencyBucketBoundaries.secondsToNanos(100),
+    Number.MAX_VALUE
+  );
   /* tslint:enable */
 
   /** Latency list */
@@ -58,7 +69,7 @@ export class LatencyBucketBoundaries {
     LatencyBucketBoundaries.MILLIx100_SECONDx1,
     LatencyBucketBoundaries.SECONDx1_SECONDx10,
     LatencyBucketBoundaries.SECONDx10_SECONDx100,
-    LatencyBucketBoundaries.SECONDx100_MAX
+    LatencyBucketBoundaries.SECONDx100_MAX,
   ];
 
   constructor(latencyLowerNs: number, latencyUpperNs: number) {
@@ -130,8 +141,9 @@ export class LatencyBucketBoundaries {
    * Gets the corresponding LatencyBucketBoundaries from a time in nanoseconds
    * @param timeNs time in nanoseconds
    */
-  static getLatencyBucketBoundariesByTime(timeNs: number):
-      LatencyBucketBoundaries {
+  static getLatencyBucketBoundariesByTime(
+    timeNs: number
+  ): LatencyBucketBoundaries {
     for (const latency of LatencyBucketBoundaries.values) {
       if (latency.belongs(timeNs)) {
         return latency;
@@ -164,6 +176,6 @@ export class LatencyBucketBoundaries {
    * @returns nanoseconds
    */
   static secondsToNanos(seconds: number): number {
-    return seconds * 1e+9;
+    return seconds * 1e9;
   }
 }

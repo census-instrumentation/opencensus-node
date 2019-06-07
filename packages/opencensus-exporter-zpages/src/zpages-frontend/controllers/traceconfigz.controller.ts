@@ -15,7 +15,7 @@
  */
 
 import * as express from 'express';
-import {TraceConfigzPageHandler} from './../page-handlers/traceconfigz.page-handler';
+import { TraceConfigzPageHandler } from './../page-handlers/traceconfigz.page-handler';
 
 /**
  * An Express middleware that renders the TraceConfigz view.

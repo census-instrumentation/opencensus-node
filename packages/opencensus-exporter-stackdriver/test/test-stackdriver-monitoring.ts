@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import {globalStats, Logger, MeasureUnit, Metrics} from '@opencensus/core';
+import { globalStats, Logger, MeasureUnit, Metrics } from '@opencensus/core';
 import * as assert from 'assert';
-import {StackdriverStatsExporter} from '../src/stackdriver-monitoring';
-import {MetricKind, StackdriverExporterOptions, ValueType} from '../src/types';
+import { StackdriverStatsExporter } from '../src/stackdriver-monitoring';
+import {
+  MetricKind,
+  StackdriverExporterOptions,
+  ValueType,
+} from '../src/types';
 import * as nocks from './nocks';
 
 const PROJECT_ID = 'fake-project-id';
@@ -44,16 +48,18 @@ class MockLogger implements Logger {
   info(...args: any[]) {}
 }
 
-
 describe('Stackdriver Stats Exporter', () => {
   // CircleCI pre-empts the VM
   const DELAY = 200;
   describe('test constants', () => {
     assert.strictEqual(
-        StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN,
-        'custom.googleapis.com/opencensus');
+      StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN,
+      'custom.googleapis.com/opencensus'
+    );
     assert.strictEqual(
-        StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX, 'OpenCensus');
+      StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX,
+      'OpenCensus'
+    );
   });
 
   describe('Send data to Stackdriver', () => {
@@ -62,7 +68,11 @@ describe('Stackdriver Stats Exporter', () => {
     let exporter: StackdriverStatsExporter;
 
     before(() => {
-      exporterOptions = {period: 0, projectId: PROJECT_ID, logger: mockLogger};
+      exporterOptions = {
+        period: 0,
+        projectId: PROJECT_ID,
+        logger: mockLogger,
+      };
       nocks.noDetectResource();
       exporter = new StackdriverStatsExporter(exporterOptions);
       nocks.oauth2();
@@ -86,7 +96,7 @@ describe('Stackdriver Stats Exporter', () => {
       const METRIC_OPTIONS = {
         description: METRIC_DESCRIPTION,
         unit: UNIT,
-        labelKeys: [{key: 'code', description: 'desc'}]
+        labelKeys: [{ key: 'code', description: 'desc' }],
       };
 
       const metricRegistry = Metrics.getMetricRegistry();
@@ -101,31 +111,32 @@ describe('Stackdriver Stats Exporter', () => {
       assert.strictEqual(mockLogger.debugBuffer.length, 1);
       const [metricDescriptor] = mockLogger.debugBuffer;
       assert.strictEqual(
-          metricDescriptor.type,
-          `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
-              METRIC_NAME}`);
+        metricDescriptor.type,
+        `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${METRIC_NAME}`
+      );
       assert.strictEqual(metricDescriptor.description, METRIC_DESCRIPTION);
       assert.strictEqual(
-          metricDescriptor.displayName,
-          `${StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX}/${
-              METRIC_NAME}`);
+        metricDescriptor.displayName,
+        `${StackdriverStatsExporter.DEFAULT_DISPLAY_NAME_PREFIX}/${METRIC_NAME}`
+      );
       assert.strictEqual(metricDescriptor.metricKind, MetricKind.GAUGE);
       assert.strictEqual(metricDescriptor.valueType, ValueType.INT64);
       assert.strictEqual(metricDescriptor.unit, UNIT);
       assert.deepStrictEqual(metricDescriptor.labels, [
-        {key: 'code', valueType: 'STRING', description: 'desc'}, {
+        { key: 'code', valueType: 'STRING', description: 'desc' },
+        {
           key: 'opencensus_task',
           valueType: 'STRING',
-          description: 'Opencensus task identifier'
-        }
+          description: 'Opencensus task identifier',
+        },
       ]);
 
-      await new Promise((resolve) => setTimeout(resolve, DELAY)).then(() => {
+      await new Promise(resolve => setTimeout(resolve, DELAY)).then(() => {
         const timeSeries = mockLogger.debugBuffer[1][0];
         assert.strictEqual(
-            timeSeries.metric.type,
-            `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${
-                METRIC_NAME}`);
+          timeSeries.metric.type,
+          `${StackdriverStatsExporter.CUSTOM_OPENCENSUS_DOMAIN}/${METRIC_NAME}`
+        );
         assert.ok(timeSeries.resource.type);
         assert.ok(timeSeries.resource.labels.project_id);
         assert.strictEqual(timeSeries.resource.labels.project_id, PROJECT_ID);

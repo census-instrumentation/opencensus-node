@@ -22,7 +22,7 @@
  *       master/encodings/BinaryEncoding.md
  */
 
-import {SpanContext} from '@opencensus/core';
+import { SpanContext } from '@opencensus/core';
 
 const VERSION_ID = 0;
 const TRACE_ID_FIELD_ID = 0;
@@ -44,7 +44,7 @@ const TRACE_OPTION_FIELD_ID_OFFSET = SPAN_ID_OFFSET + SPAN_ID_SIZE;
 const TRACE_OPTIONS_OFFSET = TRACE_OPTION_FIELD_ID_OFFSET + ID_SIZE;
 
 const FORMAT_LENGTH =
-    4 * ID_SIZE + TRACE_ID_SIZE + SPAN_ID_SIZE + TRACE_OPTION_SIZE;
+  4 * ID_SIZE + TRACE_ID_SIZE + SPAN_ID_SIZE + TRACE_OPTION_SIZE;
 
 /**
  * Serialize the given span context into a Buffer.
@@ -83,25 +83,28 @@ export function serializeSpanContext(spanContext: SpanContext): Buffer {
  * null.
  * @param buffer The span context to deserialize.
  */
-export function deserializeSpanContext(buffer: Buffer): SpanContext|null {
-  const result: SpanContext = {traceId: '', spanId: ''};
+export function deserializeSpanContext(buffer: Buffer): SpanContext | null {
+  const result: SpanContext = { traceId: '', spanId: '' };
   // Length must be 29.
   if (buffer.length !== FORMAT_LENGTH) {
     return null;
   }
   // Check version and field numbers.
-  if (buffer.readUInt8(VERSION_ID_OFFSET) !== VERSION_ID ||
-      buffer.readUInt8(TRACE_ID_FIELD_ID_OFFSET) !== TRACE_ID_FIELD_ID ||
-      buffer.readUInt8(SPAN_ID_FIELD_ID_OFFSET) !== SPAN_ID_FIELD_ID ||
-      buffer.readUInt8(TRACE_OPTION_FIELD_ID_OFFSET) !==
-          TRACE_OPTION_FIELD_ID) {
+  if (
+    buffer.readUInt8(VERSION_ID_OFFSET) !== VERSION_ID ||
+    buffer.readUInt8(TRACE_ID_FIELD_ID_OFFSET) !== TRACE_ID_FIELD_ID ||
+    buffer.readUInt8(SPAN_ID_FIELD_ID_OFFSET) !== SPAN_ID_FIELD_ID ||
+    buffer.readUInt8(TRACE_OPTION_FIELD_ID_OFFSET) !== TRACE_OPTION_FIELD_ID
+  ) {
     return null;
   }
   // See serializeSpanContext for byte offsets.
-  result.traceId =
-      buffer.slice(TRACE_ID_OFFSET, SPAN_ID_FIELD_ID_OFFSET).toString('hex');
-  result.spanId = buffer.slice(SPAN_ID_OFFSET, TRACE_OPTION_FIELD_ID_OFFSET)
-                      .toString('hex');
+  result.traceId = buffer
+    .slice(TRACE_ID_OFFSET, SPAN_ID_FIELD_ID_OFFSET)
+    .toString('hex');
+  result.spanId = buffer
+    .slice(SPAN_ID_OFFSET, TRACE_OPTION_FIELD_ID_OFFSET)
+    .toString('hex');
   result.options = buffer.readUInt8(TRACE_OPTIONS_OFFSET);
   return result;
 }

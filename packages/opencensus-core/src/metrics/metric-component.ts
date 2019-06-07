@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {metricProducerManagerInstance} from './export/metric-producer-manager';
-import {MetricRegistry} from './metric-registry';
+import { metricProducerManagerInstance } from './export/metric-producer-manager';
+import { MetricRegistry } from './metric-registry';
 
 /**
  * Class that holds the implementation instance for MetricRegistry.

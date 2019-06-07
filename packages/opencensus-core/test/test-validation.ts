@@ -15,40 +15,38 @@
  */
 
 import * as assert from 'assert';
-import {isValidTagKey, isValidTagValue} from '../src/tags/validation';
+import { isValidTagKey, isValidTagValue } from '../src/tags/validation';
 
 describe('isValidTagKey()', () => {
   it('should return true when tag key is valid', () => {
-    const tagKey = {name: 'key1'};
+    const tagKey = { name: 'key1' };
     assert.ok(isValidTagKey(tagKey));
   });
 
   it('should return false when tag key is 0 character long', () => {
-    const tagKey = {name: ''};
+    const tagKey = { name: '' };
     assert.strictEqual(isValidTagKey(tagKey), false);
   });
 
-  it('should return false when the tag key length is longer than 255 characters ',
-     () => {
-       const tagKey = {name: 'a'.repeat(256)};
-       assert.strictEqual(isValidTagKey(tagKey), false);
-     });
+  it('should return false when the tag key length is longer than 255 characters ', () => {
+    const tagKey = { name: 'a'.repeat(256) };
+    assert.strictEqual(isValidTagKey(tagKey), false);
+  });
 });
 
 describe('isValidTagValue()', () => {
   it('should return true when tag value is valid', () => {
-    const tagValue = {value: 'value1'};
+    const tagValue = { value: 'value1' };
     assert.ok(isValidTagValue(tagValue));
   });
 
   it('should not throw an error when tag value is 0 character long', () => {
-    const tagValue = {value: ''};
+    const tagValue = { value: '' };
     assert.ok(isValidTagValue(tagValue));
   });
 
-  it('should return false when the tag value length is longer than 255 characters ',
-     () => {
-       const tagValue = {value: 'a'.repeat(256)};
-       assert.strictEqual(isValidTagValue(tagValue), false);
-     });
+  it('should return false when the tag value length is longer than 255 characters ', () => {
+    const tagValue = { value: 'a'.repeat(256) };
+    assert.strictEqual(isValidTagValue(tagValue), false);
+  });
 });

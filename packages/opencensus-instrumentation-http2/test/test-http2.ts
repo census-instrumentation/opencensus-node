@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-
-import {CoreTracer, logger, MessageEventType, Span, SpanEventListener} from '@opencensus/core';
+import {
+  CoreTracer,
+  logger,
+  MessageEventType,
+  Span,
+  SpanEventListener,
+} from '@opencensus/core';
 import * as assert from 'assert';
 import * as http2 from 'http2';
 import * as semver from 'semver';
 
-import {plugin} from '../src/';
-import {Http2Plugin} from '../src/';
+import { plugin } from '../src/';
+import { Http2Plugin } from '../src/';
 
 const VERSION = process.versions.node;
 
@@ -35,25 +40,38 @@ class SpanVerifier implements SpanEventListener {
 }
 
 function assertSpanAttributes(
-    span: Span, httpStatusCode: number, httpMethod: string, hostName: string,
-    path: string, userAgent?: string) {
+  span: Span,
+  httpStatusCode: number,
+  httpMethod: string,
+  hostName: string,
+  path: string,
+  userAgent?: string
+) {
   assert.strictEqual(
-      span.status.code, Http2Plugin.parseResponseStatus(httpStatusCode));
+    span.status.code,
+    Http2Plugin.parseResponseStatus(httpStatusCode)
+  );
   assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_HOST], hostName);
+    span.attributes[Http2Plugin.ATTRIBUTE_HTTP_HOST],
+    hostName
+  );
   assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_METHOD], httpMethod);
+    span.attributes[Http2Plugin.ATTRIBUTE_HTTP_METHOD],
+    httpMethod
+  );
   assert.strictEqual(span.attributes[Http2Plugin.ATTRIBUTE_HTTP_PATH], path);
   assert.strictEqual(span.attributes[Http2Plugin.ATTRIBUTE_HTTP_ROUTE], path);
   if (userAgent) {
     assert.strictEqual(
-        span.attributes[Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT], userAgent);
+      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_USER_AGENT],
+      userAgent
+    );
   }
   assert.strictEqual(
-      span.attributes[Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE],
-      `${httpStatusCode}`);
+    span.attributes[Http2Plugin.ATTRIBUTE_HTTP_STATUS_CODE],
+    `${httpStatusCode}`
+  );
 }
-
 
 describe('Http2Plugin', () => {
   if (semver.satisfies(process.version, '<8')) {
@@ -78,7 +96,7 @@ describe('Http2Plugin', () => {
           reject(err);
         });
       });
-    }
+    },
   };
 
   let server: http2.Http2Server;
@@ -90,7 +108,7 @@ describe('Http2Plugin', () => {
   const log = logger.logger();
   const tracer = new CoreTracer();
   const spanVerifier = new SpanVerifier();
-  tracer.start({samplingRate: 1, logger: log});
+  tracer.start({ samplingRate: 1, logger: log });
 
   it('should return a plugin', () => {
     assert.ok(plugin instanceof Http2Plugin);
@@ -107,7 +125,7 @@ describe('Http2Plugin', () => {
       if (path && path.length > 1) {
         statusCode = isNaN(Number(path.slice(1))) ? 200 : Number(path.slice(1));
       }
-      stream.respond({':status': statusCode, 'content-type': 'text/plain'});
+      stream.respond({ ':status': statusCode, 'content-type': 'text/plain' });
       stream.end(`${statusCode}`);
     });
     server.listen(serverPort);
@@ -124,16 +142,15 @@ describe('Http2Plugin', () => {
     client.destroy();
   });
 
-
   /** Should intercept outgoing requests */
   describe('Instrumenting outgoing requests', () => {
     it('should create a rootSpan for GET requests as a client', async () => {
       const statusCode = 200;
       const testPath = `/${statusCode}`;
-      const requestOptions = {':method': 'GET', ':path': testPath};
+      const requestOptions = { ':method': 'GET', ':path': testPath };
       assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
-      await http2Request.get(client, requestOptions).then((result) => {
+      await http2Request.get(client, requestOptions).then(result => {
         assert.strictEqual(result, `${statusCode}`);
         assert.strictEqual(spanVerifier.endedSpans.length, 2);
         assert.ok(spanVerifier.endedSpans[1].name.indexOf(testPath) >= 0);
@@ -153,31 +170,30 @@ describe('Http2Plugin', () => {
     const httpErrorCodes = [400, 401, 403, 404, 429, 501, 503, 504, 500];
 
     httpErrorCodes.map(errorCode => {
-      it(`should test rootSpan for GET requests with http error ${errorCode}`,
-         async () => {
-           const testPath = `/${errorCode}`;
-           const requestOptions = {':method': 'GET', ':path': testPath};
-           assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      it(`should test rootSpan for GET requests with http error ${errorCode}`, async () => {
+        const testPath = `/${errorCode}`;
+        const requestOptions = { ':method': 'GET', ':path': testPath };
+        assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
-           await http2Request.get(client, requestOptions).then((result) => {
-             assert.strictEqual(result, errorCode.toString());
-             assert.strictEqual(spanVerifier.endedSpans.length, 2);
-             assert.ok(spanVerifier.endedSpans[1].name.indexOf(testPath) >= 0);
+        await http2Request.get(client, requestOptions).then(result => {
+          assert.strictEqual(result, errorCode.toString());
+          assert.strictEqual(spanVerifier.endedSpans.length, 2);
+          assert.ok(spanVerifier.endedSpans[1].name.indexOf(testPath) >= 0);
 
-             const span = spanVerifier.endedSpans[1];
-             assertSpanAttributes(span, errorCode, 'GET', host, testPath);
-           });
-         });
+          const span = spanVerifier.endedSpans[1];
+          assertSpanAttributes(span, errorCode, 'GET', host, testPath);
+        });
+      });
     });
 
     it('should create a child span for GET requests', () => {
       const statusCode = 200;
       const testPath = `/${statusCode}`;
-      const requestOptions = {':method': 'GET', ':path': testPath};
-      const options = {name: 'TestRootSpan'};
+      const requestOptions = { ':method': 'GET', ':path': testPath };
+      const options = { name: 'TestRootSpan' };
 
       return tracer.startRootSpan(options, async (root: Span) => {
-        await http2Request.get(client, requestOptions).then((result) => {
+        await http2Request.get(client, requestOptions).then(result => {
           assert.ok(root.name.indexOf('TestRootSpan') >= 0);
           assert.strictEqual(root.spans.length, 1);
           assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
@@ -189,38 +205,36 @@ describe('Http2Plugin', () => {
     });
 
     httpErrorCodes.map(errorCode => {
-      it(`should test a child spans for GET requests with http error ${
-             errorCode}`,
-         () => {
-           const testPath = `/${errorCode}`;
-           const requestOptions = {':method': 'GET', ':path': testPath};
-           const options = {name: 'TestRootSpan'};
+      it(`should test a child spans for GET requests with http error ${errorCode}`, () => {
+        const testPath = `/${errorCode}`;
+        const requestOptions = { ':method': 'GET', ':path': testPath };
+        const options = { name: 'TestRootSpan' };
 
-           return tracer.startRootSpan(options, async (root: Span) => {
-             await http2Request.get(client, requestOptions).then((result) => {
-               assert.ok(root.name.indexOf('TestRootSpan') >= 0);
-               assert.strictEqual(root.spans.length, 1);
-               assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
-               assert.strictEqual(root.traceId, root.spans[0].traceId);
+        return tracer.startRootSpan(options, async (root: Span) => {
+          await http2Request.get(client, requestOptions).then(result => {
+            assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+            assert.strictEqual(root.spans.length, 1);
+            assert.ok(root.spans[0].name.indexOf(testPath) >= 0);
+            assert.strictEqual(root.traceId, root.spans[0].traceId);
 
-               const span = root.spans[0];
-               assertSpanAttributes(span, errorCode, 'GET', host, testPath);
-             });
-           });
-         });
+            const span = root.spans[0];
+            assertSpanAttributes(span, errorCode, 'GET', host, testPath);
+          });
+        });
+      });
     });
 
     it('should create multiple child spans for GET requests', () => {
       const statusCode = 200;
       const testPath = `/${statusCode}`;
-      const requestOptions = {':method': 'GET', ':path': testPath};
+      const requestOptions = { ':method': 'GET', ':path': testPath };
       const num = 5;
-      const options = {name: 'TestRootSpan'};
+      const options = { name: 'TestRootSpan' };
 
       return tracer.startRootSpan(options, async (root: Span) => {
         assert.ok(root.name.indexOf('TestRootSpan') >= 0);
         for (let i = 0; i < num; i++) {
-          await http2Request.get(client, requestOptions).then((result) => {
+          await http2Request.get(client, requestOptions).then(result => {
             assert.strictEqual(root.spans.length, i + 1);
             assert.ok(root.spans[i].name.indexOf(testPath) >= 0);
             assert.strictEqual(root.traceId, root.spans[i].traceId);
@@ -234,24 +248,22 @@ describe('Http2Plugin', () => {
       });
     });
 
-    it('should not trace requests with \'x-opencensus-outgoing-request\' header',
-       async () => {
-         const statusCode = 200;
-         const testPath = `/${statusCode}`;
-         const requestOptions = {
-           ':method': 'GET',
-           ':path': testPath,
-           'x-opencensus-outgoing-request': 1
-         };
+    it("should not trace requests with 'x-opencensus-outgoing-request' header", async () => {
+      const statusCode = 200;
+      const testPath = `/${statusCode}`;
+      const requestOptions = {
+        ':method': 'GET',
+        ':path': testPath,
+        'x-opencensus-outgoing-request': 1,
+      };
 
-         assert.strictEqual(spanVerifier.endedSpans.length, 0);
-         await http2Request.get(client, requestOptions).then((result) => {
-           assert.strictEqual(result, `${statusCode}`);
-           assert.strictEqual(spanVerifier.endedSpans.length, 1);
-         });
-       });
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      await http2Request.get(client, requestOptions).then(result => {
+        assert.strictEqual(result, `${statusCode}`);
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+      });
+    });
   });
-
 
   /** Should intercept incoming requests */
   describe('Instrumenting incoming requests', () => {
@@ -261,12 +273,12 @@ describe('Http2Plugin', () => {
       const requestOptions = {
         ':method': 'GET',
         ':path': testPath,
-        'User-Agent': 'Android'
+        'User-Agent': 'Android',
       };
 
       assert.strictEqual(spanVerifier.endedSpans.length, 0);
 
-      await http2Request.get(client, requestOptions).then((result) => {
+      await http2Request.get(client, requestOptions).then(result => {
         assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
         assert.strictEqual(spanVerifier.endedSpans.length, 2);
         const span = spanVerifier.endedSpans[0];

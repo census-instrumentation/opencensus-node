@@ -14,56 +14,68 @@
  * limitations under the License.
  */
 
-import {SpanContext} from '@opencensus/core';
+import { SpanContext } from '@opencensus/core';
 import * as assert from 'assert';
-import {deserializeSpanContext, serializeSpanContext} from '../src/binary-format';
+import {
+  deserializeSpanContext,
+  serializeSpanContext,
+} from '../src/binary-format';
 
 describe('Binary Format Propagator', () => {
   const commonTraceId = 'd4cda95b652f4a1592b449d5929fda1b';
-  const testCases: Array<
-      {structured: SpanContext | null; binary: string; description: string;}> =
-      [
-        {
-          structured:
-              {traceId: commonTraceId, spanId: '75e8ed491aec7eca', options: 1},
-          binary: `0000${commonTraceId}01${'75e8ed491aec7eca'}02${'01'}`,
-          description: 'span context with 64-bit span ID'
-        },
-        {
-          structured: {traceId: commonTraceId, spanId: '75e8ed491aec7eca'},
-          binary: `0000${commonTraceId}01${'75e8ed491aec7eca'}02${'00'}`,
-          description: 'span context with no options'
-        },
-        {
-          structured: null,
-          binary: '00',
-          description: 'incomplete binary span context (by returning null)'
-        },
-        {
-          structured: null,
-          binary: '0'.repeat(58),
-          description: 'bad binary span context (by returning null)'
-        }
-      ];
+  const testCases: Array<{
+    structured: SpanContext | null;
+    binary: string;
+    description: string;
+  }> = [
+    {
+      structured: {
+        traceId: commonTraceId,
+        spanId: '75e8ed491aec7eca',
+        options: 1,
+      },
+      binary: `0000${commonTraceId}01${'75e8ed491aec7eca'}02${'01'}`,
+      description: 'span context with 64-bit span ID',
+    },
+    {
+      structured: { traceId: commonTraceId, spanId: '75e8ed491aec7eca' },
+      binary: `0000${commonTraceId}01${'75e8ed491aec7eca'}02${'00'}`,
+      description: 'span context with no options',
+    },
+    {
+      structured: null,
+      binary: '00',
+      description: 'incomplete binary span context (by returning null)',
+    },
+    {
+      structured: null,
+      binary: '0'.repeat(58),
+      description: 'bad binary span context (by returning null)',
+    },
+  ];
 
   describe('serializeSpanContext', () => {
     testCases.forEach(
-        testCase =>
-            testCase.structured &&
-            it(`should serialize ${testCase.description}`, () => {
-              assert.deepStrictEqual(
-                  serializeSpanContext(testCase.structured!).toString('hex'),
-                  testCase.binary);
-            }));
+      testCase =>
+        testCase.structured &&
+        it(`should serialize ${testCase.description}`, () => {
+          assert.deepStrictEqual(
+            serializeSpanContext(testCase.structured!).toString('hex'),
+            testCase.binary
+          );
+        })
+    );
   });
 
   describe('deserializeSpanContext', () => {
-    testCases.forEach(
-        testCase => it(`should deserialize ${testCase.description}`, () => {
-          assert.deepStrictEqual(
-              deserializeSpanContext(Buffer.from(testCase.binary, 'hex')),
-              testCase.structured &&
-                  Object.assign({options: 0}, testCase.structured));
-        }));
+    testCases.forEach(testCase =>
+      it(`should deserialize ${testCase.description}`, () => {
+        assert.deepStrictEqual(
+          deserializeSpanContext(Buffer.from(testCase.binary, 'hex')),
+          testCase.structured &&
+            Object.assign({ options: 0 }, testCase.structured)
+        );
+      })
+    );
   });
 });

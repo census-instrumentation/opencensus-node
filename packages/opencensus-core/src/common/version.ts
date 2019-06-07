@@ -1,4 +1,3 @@
-
 /**
  * Copyright 2018, OpenCensus Authors
  *
@@ -15,9 +14,9 @@
  * limitations under the License.
  */
 
-type Package = {
+interface Package {
   version: string;
-};
+}
 
 // Load the package details. Note that the `require` is performed at runtime,
 // which means package.json will be relative to the location of this file.

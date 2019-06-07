@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-import {CustomAttributeFunction, Span} from '@opencensus/core';
-import {ClientRequest, IncomingMessage, ServerResponse} from 'http';
+import { CustomAttributeFunction, Span } from '@opencensus/core';
+import { ClientRequest, IncomingMessage, ServerResponse } from 'http';
 
 export type IgnoreMatcher<T> =
-    string|RegExp|((url: string, request: T) => boolean);
+  | string
+  | RegExp
+  | ((url: string, request: T) => boolean);
 
 export interface HttpCustomAttributeFunction extends CustomAttributeFunction {
-  (span: Span, request: ClientRequest|IncomingMessage,
-   response: IncomingMessage|ServerResponse): void;
+  (
+    span: Span,
+    request: ClientRequest | IncomingMessage,
+    response: IncomingMessage | ServerResponse
+  ): void;
 }
 
-export type HttpPluginConfig = {
+export interface HttpPluginConfig {
   ignoreIncomingPaths?: Array<IgnoreMatcher<IncomingMessage>>;
   ignoreOutgoingUrls?: Array<IgnoreMatcher<ClientRequest>>;
   applyCustomAttributesOnSpan?: HttpCustomAttributeFunction;
-};
+}

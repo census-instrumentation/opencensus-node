@@ -14,41 +14,56 @@
  * limitations under the License.
  */
 
-import {AggregationType, globalStats, Measure, MeasureUnit, View} from '@opencensus/core';
+import {
+  AggregationType,
+  globalStats,
+  Measure,
+  MeasureUnit,
+  View,
+} from '@opencensus/core';
 
-import {DEFAULT_BYTES_DISTRIBUTION, DEFAULT_MESSAGE_COUNT_DISTRIBUTION, DEFAULT_MILLI_SECONDS_DISTRIBUTION} from './common-distributions';
+import {
+  DEFAULT_BYTES_DISTRIBUTION,
+  DEFAULT_MESSAGE_COUNT_DISTRIBUTION,
+  DEFAULT_MILLI_SECONDS_DISTRIBUTION,
+} from './common-distributions';
 
 /** {@link Measure} for number of messages received in each RPC. */
-export const GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC: Measure =
-    globalStats.createMeasureInt64(
-        'grpc.io/server/received_messages_per_rpc', MeasureUnit.UNIT,
-        'Number of messages received in each RPC. Has value 1 for non-streaming RPCs.');
+export const GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC: Measure = globalStats.createMeasureInt64(
+  'grpc.io/server/received_messages_per_rpc',
+  MeasureUnit.UNIT,
+  'Number of messages received in each RPC. Has value 1 for non-streaming RPCs.'
+);
 
 /** {@link Measure} for gRPC server latency in milliseconds. */
 export const GRPC_SERVER_SERVER_LATENCY: Measure = globalStats.createMeasureDouble(
-    'grpc.io/server/server_latency', MeasureUnit.MS,
-    'Time between first byte of request received to last byte of response sent, or terminal error.');
-
+  'grpc.io/server/server_latency',
+  MeasureUnit.MS,
+  'Time between first byte of request received to last byte of response sent, or terminal error.'
+);
 
 /** {@link Measure} for number of messages sent in each RPC. */
-export const GRPC_SERVER_SENT_MESSAGES_PER_RPC: Measure =
-    globalStats.createMeasureInt64(
-        'grpc.io/server/sent_messages_per_rpc', MeasureUnit.UNIT,
-        'Number of messages sent in each RPC. Has value 1 for non-streaming RPCs.');
+export const GRPC_SERVER_SENT_MESSAGES_PER_RPC: Measure = globalStats.createMeasureInt64(
+  'grpc.io/server/sent_messages_per_rpc',
+  MeasureUnit.UNIT,
+  'Number of messages sent in each RPC. Has value 1 for non-streaming RPCs.'
+);
 
 /** {@link Measure} for total bytes received across all messages per RPC. */
-export const GRPC_SERVER_RECEIVED_BYTES_PER_RPC: Measure =
-    globalStats.createMeasureDouble(
-        'grpc.io/server/received_bytes_per_rpc', MeasureUnit.BYTE,
-        'Total bytes received across all messages per RPC.');
+export const GRPC_SERVER_RECEIVED_BYTES_PER_RPC: Measure = globalStats.createMeasureDouble(
+  'grpc.io/server/received_bytes_per_rpc',
+  MeasureUnit.BYTE,
+  'Total bytes received across all messages per RPC.'
+);
 
 /**
  * {@link Measure} for total bytes sent across all response messages per RPC.
  */
-export const GRPC_SERVER_SENT_BYTES_PER_RPC: Measure =
-    globalStats.createMeasureDouble(
-        'grpc.io/server/sent_bytes_per_rpc', MeasureUnit.BYTE,
-        'Total bytes sent in across all response messages per RPC');
+export const GRPC_SERVER_SENT_BYTES_PER_RPC: Measure = globalStats.createMeasureDouble(
+  'grpc.io/server/sent_bytes_per_rpc',
+  MeasureUnit.BYTE,
+  'Total bytes sent in across all response messages per RPC'
+);
 
 /**
  * Tag key that represents a server gRPC method.
@@ -57,7 +72,7 @@ export const GRPC_SERVER_SENT_BYTES_PER_RPC: Measure =
  * available in the context for the entire RPC call handling.
  */
 export const GRPC_SERVER_METHOD = {
-  name: 'grpc_server_method'
+  name: 'grpc_server_method',
 };
 
 /**
@@ -68,44 +83,58 @@ export const GRPC_SERVER_METHOD = {
  * is only available around metrics recorded at the end of the incoming request.
  */
 export const GRPC_SERVER_STATUS = {
-  name: 'grpc_server_status'
+  name: 'grpc_server_status',
 };
 
 /** {@link View} for server received messages per RPC. */
 const GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC_VIEW = globalStats.createView(
-    'grpc.io/server/received_messages_per_rpc',
-    GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC, AggregationType.DISTRIBUTION,
-    [GRPC_SERVER_METHOD],
-    'Distribution of messages received count per RPC, by method.',
-    DEFAULT_MESSAGE_COUNT_DISTRIBUTION);
+  'grpc.io/server/received_messages_per_rpc',
+  GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC,
+  AggregationType.DISTRIBUTION,
+  [GRPC_SERVER_METHOD],
+  'Distribution of messages received count per RPC, by method.',
+  DEFAULT_MESSAGE_COUNT_DISTRIBUTION
+);
 
 /** {@link View} for server received bytes per RPC. */
 const GRPC_SERVER_RECEIVED_BYTES_PER_RPC_VIEW = globalStats.createView(
-    'grpc.io/server/received_bytes_per_rpc', GRPC_SERVER_RECEIVED_BYTES_PER_RPC,
-    AggregationType.DISTRIBUTION, [GRPC_SERVER_METHOD],
-    'Distribution of received bytes per RPC, by method.',
-    DEFAULT_BYTES_DISTRIBUTION);
+  'grpc.io/server/received_bytes_per_rpc',
+  GRPC_SERVER_RECEIVED_BYTES_PER_RPC,
+  AggregationType.DISTRIBUTION,
+  [GRPC_SERVER_METHOD],
+  'Distribution of received bytes per RPC, by method.',
+  DEFAULT_BYTES_DISTRIBUTION
+);
 
 /** {@link View} for server sent messages per RPC. */
 const GRPC_SERVER_SENT_MESSAGES_PER_RPC_VIEW = globalStats.createView(
-    'grpc.io/server/sent_messages_per_rpc', GRPC_SERVER_SENT_MESSAGES_PER_RPC,
-    AggregationType.DISTRIBUTION, [GRPC_SERVER_METHOD],
-    'Distribution of messages received count per RPC, by method.',
-    DEFAULT_MESSAGE_COUNT_DISTRIBUTION);
+  'grpc.io/server/sent_messages_per_rpc',
+  GRPC_SERVER_SENT_MESSAGES_PER_RPC,
+  AggregationType.DISTRIBUTION,
+  [GRPC_SERVER_METHOD],
+  'Distribution of messages received count per RPC, by method.',
+  DEFAULT_MESSAGE_COUNT_DISTRIBUTION
+);
 
 /** {@link View} for server sent bytes per RPC. */
 const GRPC_SERVER_SENT_BYTES_PER_RPC_VIEW = globalStats.createView(
-    'grpc.io/server/sent_bytes_per_rpc', GRPC_SERVER_SENT_BYTES_PER_RPC,
-    AggregationType.DISTRIBUTION, [GRPC_SERVER_METHOD],
-    'Distribution of total sent bytes per RPC, by method.',
-    DEFAULT_BYTES_DISTRIBUTION);
+  'grpc.io/server/sent_bytes_per_rpc',
+  GRPC_SERVER_SENT_BYTES_PER_RPC,
+  AggregationType.DISTRIBUTION,
+  [GRPC_SERVER_METHOD],
+  'Distribution of total sent bytes per RPC, by method.',
+  DEFAULT_BYTES_DISTRIBUTION
+);
 
 /** {@link View} for server server latency in milliseconds. */
 const GRPC_SERVER_SERVER_LATENCY_VIEW = globalStats.createView(
-    'grpc.io/server/server_latency', GRPC_SERVER_SERVER_LATENCY,
-    AggregationType.DISTRIBUTION, [GRPC_SERVER_METHOD],
-    'Distribution of server latency in milliseconds, by method.',
-    DEFAULT_MILLI_SECONDS_DISTRIBUTION);
+  'grpc.io/server/server_latency',
+  GRPC_SERVER_SERVER_LATENCY,
+  AggregationType.DISTRIBUTION,
+  [GRPC_SERVER_METHOD],
+  'Distribution of server latency in milliseconds, by method.',
+  DEFAULT_MILLI_SECONDS_DISTRIBUTION
+);
 
 /**
  * {@link View} for completed server RPCs.
@@ -116,9 +145,13 @@ const GRPC_SERVER_SERVER_LATENCY_VIEW = globalStats.createView(
  * use a separate "count" measure.
  */
 const GRPC_SERVER_COMPLETED_RPC_VIEW = globalStats.createView(
-    'grpc.io/server/completed_rpcs', GRPC_SERVER_SERVER_LATENCY,
-    AggregationType.COUNT, [GRPC_SERVER_METHOD, GRPC_SERVER_STATUS],
-    'Count of RPCs by method and status.', DEFAULT_MESSAGE_COUNT_DISTRIBUTION);
+  'grpc.io/server/completed_rpcs',
+  GRPC_SERVER_SERVER_LATENCY,
+  AggregationType.COUNT,
+  [GRPC_SERVER_METHOD, GRPC_SERVER_STATUS],
+  'Count of RPCs by method and status.',
+  DEFAULT_MESSAGE_COUNT_DISTRIBUTION
+);
 
 export const GRPC_BASIC_SERVER_VIEWS: View[] = [
   GRPC_SERVER_RECEIVED_MESSAGES_PER_RPC_VIEW,

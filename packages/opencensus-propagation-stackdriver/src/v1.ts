@@ -21,20 +21,25 @@
  */
 
 import * as crypto from 'crypto';
-import {decToHex, hexToDec} from 'hex2dec';
+import { decToHex, hexToDec } from 'hex2dec';
 import * as uuid from 'uuid';
-import {HeaderGetter, HeaderSetter, SpanContext} from './index';
+import { HeaderGetter, HeaderSetter, SpanContext } from './index';
 
 const TRACE_CONTEXT_HEADER_NAME = 'x-cloud-trace-context';
 
-export function parseContextFromHeader(str: string|string[]|
-                                       undefined): SpanContext|null {
+export function parseContextFromHeader(
+  str: string | string[] | undefined
+): SpanContext | null {
   if (typeof str !== 'string') {
     return null;
   }
   const matches = str.match(/^([0-9a-fA-F]+)(?:\/([0-9]+))(?:;o=(.*))?/);
-  if (!matches || matches.length !== 4 || matches[0] !== str ||
-      (matches[2] && isNaN(Number(matches[2])))) {
+  if (
+    !matches ||
+    matches.length !== 4 ||
+    matches[0] !== str ||
+    (matches[2] && isNaN(Number(matches[2])))
+  ) {
     return null;
   }
   return {
@@ -42,7 +47,7 @@ export function parseContextFromHeader(str: string|string[]|
     // strip 0x prefix from hex output from decToHex, and and pad so it's always
     // a length-16 hex string
     spanId: `0000000000000000${decToHex(matches[2]).slice(2)}`.slice(-16),
-    options: isNaN(Number(matches[3])) ? undefined : Number(matches[3])
+    options: isNaN(Number(matches[3])) ? undefined : Number(matches[3]),
   };
 }
 
@@ -60,7 +65,9 @@ export function extract(getter: HeaderGetter) {
 
 export function inject(setter: HeaderSetter, spanContext: SpanContext) {
   setter.setHeader(
-      TRACE_CONTEXT_HEADER_NAME, serializeSpanContext(spanContext));
+    TRACE_CONTEXT_HEADER_NAME,
+    serializeSpanContext(spanContext)
+  );
 }
 
 const SPAN_ID_RANDOM_BYTES = 8;
@@ -72,13 +79,16 @@ const SPAN_ID_RANDOM_BYTES = 8;
 const spanIdBuffer = Buffer.alloc(SPAN_ID_RANDOM_BYTES);
 const randomFillSync = crypto.randomFillSync;
 const randomBytes = crypto.randomBytes;
-const spanRandomBuffer = randomFillSync ?
-    () => randomFillSync(spanIdBuffer) :
-    () => randomBytes(SPAN_ID_RANDOM_BYTES);
+const spanRandomBuffer = randomFillSync
+  ? () => randomFillSync(spanIdBuffer)
+  : () => randomBytes(SPAN_ID_RANDOM_BYTES);
 
 export function generate(): SpanContext {
   return {
-    traceId: uuid.v4().split('-').join(''),
-    spanId: spanRandomBuffer().toString('hex')
+    traceId: uuid
+      .v4()
+      .split('-')
+      .join(''),
+    spanId: spanRandomBuffer().toString('hex'),
   };
 }

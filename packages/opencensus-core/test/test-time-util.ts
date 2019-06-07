@@ -15,7 +15,10 @@
  */
 
 import * as assert from 'assert';
-import {getTimestampWithProcessHRTime, TEST_ONLY} from '../src/common/time-util';
+import {
+  getTimestampWithProcessHRTime,
+  TEST_ONLY,
+} from '../src/common/time-util';
 
 describe('getTimestampWithProcessHRTime()', () => {
   const realHrtimeFn = process.hrtime;
@@ -36,7 +39,7 @@ describe('getTimestampWithProcessHRTime()', () => {
 
     const currentTime = getTimestampWithProcessHRTime();
 
-    assert.deepStrictEqual(currentTime, {seconds: 1450000100, nanos: 1e7});
+    assert.deepStrictEqual(currentTime, { seconds: 1450000100, nanos: 1e7 });
   });
 
   it('should handle excess of nanos', () => {
@@ -47,6 +50,6 @@ describe('getTimestampWithProcessHRTime()', () => {
 
     const currentTime = getTimestampWithProcessHRTime();
 
-    assert.deepStrictEqual(currentTime, {seconds: 1450000101, nanos: 12});
+    assert.deepStrictEqual(currentTime, { seconds: 1450000101, nanos: 12 });
   });
 });

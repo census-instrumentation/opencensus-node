@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {TraceParams} from '../config/types';
-import {Sampler} from './types';
+import { TraceParams } from '../config/types';
+import { Sampler } from './types';
 
 // We use 52-bits as our max number because it remains a javascript "safe
 // integer" for arithmetic and parsing while using the full hex range for
@@ -54,7 +54,6 @@ export class ProbabilitySampler implements Sampler {
     this.idUpperBound = probability * MAX_NUMBER;
   }
 
-
   /**
    * Checks if trace belong the sample.
    * @param traceId Used to check the probability
@@ -62,8 +61,9 @@ export class ProbabilitySampler implements Sampler {
    * False if the traceId is not in probability.
    */
   shouldSample(traceId: string): boolean {
-    const LOWER_BYTES =
-        traceId ? ('0000000000000' + traceId).slice(-LOWER_BYTE_COUNT) : '0';
+    const LOWER_BYTES = traceId
+      ? ('0000000000000' + traceId).slice(-LOWER_BYTE_COUNT)
+      : '0';
     // tslint:disable-next-line:ban Needed to parse hexadecimal.
     const LOWER_LONG = parseInt(LOWER_BYTES, 16);
 
@@ -74,7 +74,6 @@ export class ProbabilitySampler implements Sampler {
     }
   }
 }
-
 
 /** Builder class of Samplers */
 export class SamplerBuilder {
@@ -116,37 +115,46 @@ export const DEFAULT_SPAN_MAX_NUM_LINKS = 32;
 
 /** Builder Class of TraceParams */
 export class TraceParamsBuilder {
-  static getNumberOfAnnotationEventsPerSpan(traceParameters: TraceParams):
-      number {
-    if (!traceParameters.numberOfAnnontationEventsPerSpan ||
-        traceParameters.numberOfAnnontationEventsPerSpan >
-            DEFAULT_SPAN_MAX_NUM_ANNOTATIONS) {
+  static getNumberOfAnnotationEventsPerSpan(
+    traceParameters: TraceParams
+  ): number {
+    if (
+      !traceParameters.numberOfAnnontationEventsPerSpan ||
+      traceParameters.numberOfAnnontationEventsPerSpan >
+        DEFAULT_SPAN_MAX_NUM_ANNOTATIONS
+    ) {
       return DEFAULT_SPAN_MAX_NUM_ANNOTATIONS;
     }
     return traceParameters.numberOfAnnontationEventsPerSpan;
   }
 
   static getNumberOfAttributesPerSpan(traceParameters: TraceParams): number {
-    if (!traceParameters.numberOfAttributesPerSpan ||
-        traceParameters.numberOfAttributesPerSpan >
-            DEFAULT_SPAN_MAX_NUM_ATTRIBUTES) {
+    if (
+      !traceParameters.numberOfAttributesPerSpan ||
+      traceParameters.numberOfAttributesPerSpan >
+        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES
+    ) {
       return DEFAULT_SPAN_MAX_NUM_ATTRIBUTES;
     }
     return traceParameters.numberOfAttributesPerSpan;
   }
 
   static getNumberOfMessageEventsPerSpan(traceParameters: TraceParams): number {
-    if (!traceParameters.numberOfMessageEventsPerSpan ||
-        traceParameters.numberOfMessageEventsPerSpan >
-            DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS) {
+    if (
+      !traceParameters.numberOfMessageEventsPerSpan ||
+      traceParameters.numberOfMessageEventsPerSpan >
+        DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS
+    ) {
       return DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS;
     }
     return traceParameters.numberOfMessageEventsPerSpan;
   }
 
   static getNumberOfLinksPerSpan(traceParameters: TraceParams): number {
-    if (!traceParameters.numberOfLinksPerSpan ||
-        traceParameters.numberOfLinksPerSpan > DEFAULT_SPAN_MAX_NUM_LINKS) {
+    if (
+      !traceParameters.numberOfLinksPerSpan ||
+      traceParameters.numberOfLinksPerSpan > DEFAULT_SPAN_MAX_NUM_LINKS
+    ) {
       return DEFAULT_SPAN_MAX_NUM_LINKS;
     }
     return traceParameters.numberOfLinksPerSpan;

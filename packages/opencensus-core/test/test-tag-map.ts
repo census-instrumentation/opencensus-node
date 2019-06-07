@@ -15,28 +15,28 @@
  */
 
 import * as assert from 'assert';
-import {TagMap} from '../src/tags/tag-map';
-import {TagTtl} from '../src/tags/types';
+import { TagMap } from '../src/tags/tag-map';
+import { TagTtl } from '../src/tags/types';
 
 describe('TagMap()', () => {
   let tagMap: TagMap;
-  const key1 = {name: 'key1'};
-  const key2 = {name: 'key2'};
-  const invalidKey1 = {name: 'a'.repeat(256)};
-  const value1 = {value: 'value1'};
-  const value2 = {value: 'value2'};
-  const invalidValue1 = {value: 'a'.repeat(256)};
-  const NO_PROPAGATION_MD = {tagTtl: TagTtl.NO_PROPAGATION};
-  const UNLIMITED_PROPAGATION_MD = {tagTtl: TagTtl.UNLIMITED_PROPAGATION};
+  const key1 = { name: 'key1' };
+  const key2 = { name: 'key2' };
+  const invalidKey1 = { name: 'a'.repeat(256) };
+  const value1 = { value: 'value1' };
+  const value2 = { value: 'value2' };
+  const invalidValue1 = { value: 'a'.repeat(256) };
+  const NO_PROPAGATION_MD = { tagTtl: TagTtl.NO_PROPAGATION };
+  const UNLIMITED_PROPAGATION_MD = { tagTtl: TagTtl.UNLIMITED_PROPAGATION };
 
   const expectedTagValueWithMetadata1 = {
-    tagValue: {value: 'value1'},
-    tagMetadata: {tagTtl: -1}
+    tagValue: { value: 'value1' },
+    tagMetadata: { tagTtl: -1 },
   };
 
   const expectedTagValueWithMetadata2 = {
-    tagValue: {value: 'value2'},
-    tagMetadata: {tagTtl: -1}
+    tagValue: { value: 'value2' },
+    tagMetadata: { tagTtl: -1 },
   };
 
   beforeEach(() => {
@@ -53,8 +53,8 @@ describe('TagMap()', () => {
 
     it('should set tagkey and tagvalue with NO_PROPAGATION TagTtl', () => {
       const expectedTagValueWithMetadata = {
-        tagValue: {value: 'value1'},
-        tagMetadata: {tagTtl: 0}
+        tagValue: { value: 'value1' },
+        tagMetadata: { tagTtl: 0 },
       };
 
       tagMap.set(key1, value1, NO_PROPAGATION_MD);
@@ -63,18 +63,17 @@ describe('TagMap()', () => {
       assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata);
     });
 
-    it('should set tagkey and tagvalue with UNLIMITED_PROPAGATION TagTtl',
-       () => {
-         const expectedTagValueWithMetadata = {
-           tagValue: {value: 'value1'},
-           tagMetadata: {tagTtl: -1}
-         };
+    it('should set tagkey and tagvalue with UNLIMITED_PROPAGATION TagTtl', () => {
+      const expectedTagValueWithMetadata = {
+        tagValue: { value: 'value1' },
+        tagMetadata: { tagTtl: -1 },
+      };
 
-         tagMap.set(key1, value1, UNLIMITED_PROPAGATION_MD);
-         const tags = tagMap.tagsWithMetadata;
-         assert.strictEqual(tags.size, 1);
-         assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata);
-       });
+      tagMap.set(key1, value1, UNLIMITED_PROPAGATION_MD);
+      const tags = tagMap.tagsWithMetadata;
+      assert.strictEqual(tags.size, 1);
+      assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata);
+    });
 
     it('should throw an error when invalid tagKey', () => {
       assert.throws(() => {

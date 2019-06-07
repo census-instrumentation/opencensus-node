@@ -16,7 +16,7 @@
 
 import * as loggerTypes from '../../common/types';
 import * as configTypes from '../config/types';
-import {Propagation} from '../propagation/types';
+import { Propagation } from '../propagation/types';
 import * as samplerTypes from '../sampler/types';
 
 /** Default type for functions */
@@ -25,7 +25,7 @@ export type Func<T> = (...args: any[]) => T;
 
 /** Maps a label to a string, number or boolean. */
 export interface Attributes {
-  [attributeKey: string]: string|number|boolean;
+  [attributeKey: string]: string | number | boolean;
 }
 
 /**
@@ -272,7 +272,7 @@ export enum MessageEventType {
   /** Indicates a sent message. */
   SENT = 1,
   /** Indicates a received message. */
-  RECEIVED = 2
+  RECEIVED = 2,
 }
 
 /**
@@ -291,7 +291,7 @@ export enum SpanKind {
    * Indicates that the span covers the client-side wrapper around an RPC or
    * other remote request.
    */
-  CLIENT = 2
+  CLIENT = 2,
 }
 
 /**
@@ -307,7 +307,7 @@ export enum LinkType {
   /** The linked span is a child of the current span. */
   CHILD_LINKED_SPAN = 1,
   /** The linked span is a parent of the current span. */
-  PARENT_LINKED_SPAN = 2
+  PARENT_LINKED_SPAN = 2,
 }
 
 /** Interface for Span */
@@ -407,7 +407,7 @@ export interface Span {
    * @param key Describes the value added.
    * @param value The result of an operation.
    */
-  addAttribute(key: string, value: string|number|boolean|object): void;
+  addAttribute(key: string, value: string | number | boolean | object): void;
 
   /**
    * Adds an annotation to the span.
@@ -416,7 +416,10 @@ export interface Span {
    * @param timestamp A timestamp for this event.
    */
   addAnnotation(
-      description: string, attributes?: Attributes, timestamp?: number): void;
+    description: string,
+    attributes?: Attributes,
+    timestamp?: number
+  ): void;
 
   /**
    * Adds a link to the span.
@@ -426,8 +429,11 @@ export interface Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: LinkType,
-      attributes?: Attributes): void;
+    traceId: string,
+    spanId: string,
+    type: LinkType,
+    attributes?: Attributes
+  ): void;
 
   /**
    * Adds a message event to the span.
@@ -439,8 +445,12 @@ export interface Span {
    *     zero or undefined, assumed to be the same size as uncompressed.
    */
   addMessageEvent(
-      type: MessageEventType, id: number, timestamp?: number,
-      uncompressedSize?: number, compressedSize?: number): void;
+    type: MessageEventType,
+    id: number,
+    timestamp?: number,
+    uncompressedSize?: number,
+    compressedSize?: number
+  ): void;
 
   /**
    * Sets a status to the span.

@@ -44,9 +44,9 @@
  * </ul>
  */
 
-import {TagMap} from '../tag-map';
-import {TagKey, TagValue} from '../types';
-import {DecodeVarint, EncodeVarint} from './variant-encoding';
+import { TagMap } from '../tag-map';
+import { TagKey, TagValue } from '../types';
+import { DecodeVarint, EncodeVarint } from './variant-encoding';
 
 // This size limit only applies to the bytes representing tag keys and values.
 export const TAG_MAP_SERIALIZED_SIZE_LIMIT = 8192;
@@ -72,8 +72,9 @@ export function serializeBinary(tagMap: TagMap): Buffer {
   });
 
   if (totalChars > TAG_MAP_SERIALIZED_SIZE_LIMIT) {
-    throw new Error(`Size of TagMap exceeds the maximum serialized size ${
-        TAG_MAP_SERIALIZED_SIZE_LIMIT}`);
+    throw new Error(
+      `Size of TagMap exceeds the maximum serialized size ${TAG_MAP_SERIALIZED_SIZE_LIMIT}`
+    );
   }
   return Buffer.from(byteArray);
 }
@@ -88,8 +89,9 @@ export function deserializeBinary(buffer: Buffer): TagMap {
   }
   const versionId = buffer.readInt8(VERSION_ID_INDEX);
   if (versionId > VERSION_ID) {
-    throw new Error(`Wrong Version ID: ${
-        versionId}. Currently supports version up to: ${VERSION_ID}`);
+    throw new Error(
+      `Wrong Version ID: ${versionId}. Currently supports version up to: ${VERSION_ID}`
+    );
   }
   return parseTags(buffer);
 }
@@ -131,10 +133,11 @@ function parseTags(buffer: Buffer): TagMap {
 
     currentIndex += 1;
     if (totalChars > TAG_MAP_SERIALIZED_SIZE_LIMIT) {
-      throw new Error(`Size of TagMap exceeds the maximum serialized size ${
-          TAG_MAP_SERIALIZED_SIZE_LIMIT}`);
+      throw new Error(
+        `Size of TagMap exceeds the maximum serialized size ${TAG_MAP_SERIALIZED_SIZE_LIMIT}`
+      );
     } else {
-      tags.set({name: key}, {value: val});
+      tags.set({ name: key }, { value: val });
     }
   }
   return tags;

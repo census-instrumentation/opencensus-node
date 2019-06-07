@@ -14,15 +14,31 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, Span as OCSpan, SpanContext} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
-import {auth as globalAuth, GoogleAuth, JWT} from 'google-auth-library';
-import {google} from 'googleapis';
-import {getDefaultResource} from './common-utils';
-import {createAttributes, createLinks, createTimeEvents, getResourceLabels, stringToTruncatableString} from './stackdriver-cloudtrace-utils';
-import {AttributeValue, Span, SpansWithCredentials, StackdriverExporterOptions} from './types';
+import {
+  Exporter,
+  ExporterBuffer,
+  Span as OCSpan,
+  SpanContext,
+} from '@opencensus/core';
+import { logger, Logger } from '@opencensus/core';
+import { auth as globalAuth, GoogleAuth, JWT } from 'google-auth-library';
+import { google } from 'googleapis';
+import { getDefaultResource } from './common-utils';
+import {
+  createAttributes,
+  createLinks,
+  createTimeEvents,
+  getResourceLabels,
+  stringToTruncatableString,
+} from './stackdriver-cloudtrace-utils';
+import {
+  AttributeValue,
+  Span,
+  SpansWithCredentials,
+  StackdriverExporterOptions,
+} from './types';
 
-google.options({headers: {'x-opencensus-outgoing-request': 0x1}});
+google.options({ headers: { 'x-opencensus-outgoing-request': 0x1 } });
 const cloudTrace = google.cloudtrace('v2');
 let auth = globalAuth;
 
@@ -38,10 +54,11 @@ export class StackdriverTraceExporter implements Exporter {
     this.projectId = options.projectId;
     this.logger = options.logger || logger.logger();
     this.exporterBuffer = new ExporterBuffer(this, options);
-    this.RESOURCE_LABELS =
-        getResourceLabels(getDefaultResource(this.projectId));
+    this.RESOURCE_LABELS = getResourceLabels(
+      getDefaultResource(this.projectId)
+    );
     if (options.credentials) {
-      auth = new GoogleAuth({credentials: options.credentials});
+      auth = new GoogleAuth({ credentials: options.credentials });
     }
   }
 
@@ -67,15 +84,15 @@ export class StackdriverTraceExporter implements Exporter {
     const spanList = await this.translateSpan(spans);
 
     return this.authorize(spanList)
-        .then((spans: SpansWithCredentials) => {
-          return this.batchWriteSpans(spans);
-        })
-        .catch(err => {
-          for (const span of spans) {
-            this.failBuffer.push(span.spanContext);
-          }
-          return err;
-        });
+      .then((spans: SpansWithCredentials) => {
+        return this.batchWriteSpans(spans);
+      })
+      .catch(err => {
+        for (const span of spans) {
+          this.failBuffer.push(span.spanContext);
+        }
+        return err;
+      });
   }
 
   async translateSpan(spans: OCSpan[]) {
@@ -84,7 +101,8 @@ export class StackdriverTraceExporter implements Exporter {
     spans.forEach(span => {
       // RootSpan data
       spanList.push(
-          this.createSpan(span, resourceLabel, span.numberOfChildren));
+        this.createSpan(span, resourceLabel, span.numberOfChildren)
+      );
       span.spans.forEach(child => {
         // Builds spans data
         spanList.push(this.createSpan(child, resourceLabel));
@@ -94,10 +112,13 @@ export class StackdriverTraceExporter implements Exporter {
   }
 
   private createSpan(
-      span: OCSpan, resourceLabels: Record<string, AttributeValue>,
-      numberOfChildren = 0): Span {
-    const spanName =
-        `projects/${this.projectId}/traces/${span.traceId}/spans/${span.id}`;
+    span: OCSpan,
+    resourceLabels: Record<string, AttributeValue>,
+    numberOfChildren = 0
+  ): Span {
+    const spanName = `projects/${this.projectId}/traces/${span.traceId}/spans/${
+      span.id
+    }`;
 
     const spanBuilder: Span = {
       name: spanName,
@@ -106,15 +127,21 @@ export class StackdriverTraceExporter implements Exporter {
       startTime: span.startTime.toISOString(),
       endTime: span.endTime.toISOString(),
       attributes: createAttributes(
-          span.attributes, resourceLabels, span.droppedAttributesCount),
+        span.attributes,
+        resourceLabels,
+        span.droppedAttributesCount
+      ),
       timeEvents: createTimeEvents(
-          span.annotations, span.messageEvents, span.droppedAnnotationsCount,
-          span.droppedMessageEventsCount),
+        span.annotations,
+        span.messageEvents,
+        span.droppedAnnotationsCount,
+        span.droppedMessageEventsCount
+      ),
       links: createLinks(span.links, span.droppedLinksCount),
-      status: {code: span.status.code},
+      status: { code: span.status.code },
       sameProcessAsParentSpan: !span.remoteParent,
       childSpanCount: numberOfChildren,
-      stackTrace: undefined,  // Unsupported by nodejs
+      stackTrace: undefined, // Unsupported by nodejs
     };
     if (span.parentSpanId) {
       spanBuilder.parentSpanId = span.parentSpanId;
@@ -137,7 +164,7 @@ export class StackdriverTraceExporter implements Exporter {
       // data to backend :
       // https://cloud.google.com/trace/docs/reference/v2/rpc/google.devtools.
       // cloudtrace.v2#google.devtools.cloudtrace.v2.TraceService
-      cloudTrace.projects.traces.batchWrite(spans, (err: Error|null) => {
+      cloudTrace.projects.traces.batchWrite(spans, (err: Error | null) => {
         if (err) {
           err.message = `batchWriteSpans error: ${err.message}`;
           this.logger.error(err.message);
@@ -156,21 +183,23 @@ export class StackdriverTraceExporter implements Exporter {
    * authenticates the client and calls a method to send the spans data.
    * @param stackdriverSpans The spans to export
    */
-  private async authorize(stackdriverSpans: Span[]):
-      Promise<SpansWithCredentials> {
+  private async authorize(
+    stackdriverSpans: Span[]
+  ): Promise<SpansWithCredentials> {
     try {
-      const client = await auth.getClient(
-          {scopes: ['https://www.googleapis.com/auth/cloud-platform']});
+      const client = await auth.getClient({
+        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+      });
 
       return {
         name: `projects/${this.projectId}`,
-        resource: {spans: stackdriverSpans},
-        auth: client as JWT
+        resource: { spans: stackdriverSpans },
+        auth: client as JWT,
       };
     } catch (err) {
       err.message = `authorize error: ${err.message}`;
       this.logger.error(err.message);
-      throw (err);
+      throw err;
     }
   }
 }

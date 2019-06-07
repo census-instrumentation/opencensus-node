@@ -16,22 +16,30 @@
 
 import * as defaultLogger from '../common/console-logger';
 import * as loggerTypes from '../common/types';
-import {StatsEventListener} from '../exporters/types';
+import { StatsEventListener } from '../exporters/types';
 import * as cls from '../internal/cls';
-import {Metric} from '../metrics/export/types';
-import {Metrics} from '../metrics/metrics';
-import {TagMap} from '../tags/tag-map';
+import { Metric } from '../metrics/export/types';
+import { Metrics } from '../metrics/metrics';
+import { TagMap } from '../tags/tag-map';
 import * as tagger from '../tags/tagger';
-import {TagKey} from '../tags/types';
-import {MetricProducerForStats} from './metric-producer';
-import {AggregationType, Measure, Measurement, MeasureType, MeasureUnit, Stats, View} from './types';
-import {BaseView} from './view';
+import { TagKey } from '../tags/types';
+import { MetricProducerForStats } from './metric-producer';
+import {
+  AggregationType,
+  Measure,
+  Measurement,
+  MeasureType,
+  MeasureUnit,
+  Stats,
+  View,
+} from './types';
+import { BaseView } from './view';
 
 export class BaseStats implements Stats {
   /** A list of Stats exporters */
   private statsEventListeners: StatsEventListener[] = [];
   /** A map of Measures (name) to their corresponding Views */
-  private registeredViews: {[key: string]: View[]} = {};
+  private registeredViews: { [key: string]: View[] } = {};
   /** An object to log information to */
   private logger: loggerTypes.Logger;
   /** Singleton instance */
@@ -73,6 +81,7 @@ export class BaseStats implements Stats {
 
     // Notifies all exporters
     for (const exporter of this.statsEventListeners) {
+      // tslint:disable-next-line:deprecation
       exporter.onRegisterView(view);
     }
   }
@@ -88,11 +97,21 @@ export class BaseStats implements Stats {
    *     distribution aggregation type
    */
   createView(
-      name: string, measure: Measure, aggregation: AggregationType,
-      tagKeys: TagKey[], description: string,
-      bucketBoundaries?: number[]): View {
+    name: string,
+    measure: Measure,
+    aggregation: AggregationType,
+    tagKeys: TagKey[],
+    description: string,
+    bucketBoundaries?: number[]
+  ): View {
     const view = new BaseView(
-        name, measure, aggregation, tagKeys, description, bucketBoundaries);
+      name,
+      measure,
+      aggregation,
+      tagKeys,
+      description,
+      bucketBoundaries
+    );
     return view;
   }
 
@@ -105,6 +124,7 @@ export class BaseStats implements Stats {
 
     for (const measureName of Object.keys(this.registeredViews)) {
       for (const view of this.registeredViews[measureName]) {
+        // tslint:disable-next-line:deprecation
         exporter.onRegisterView(view);
       }
     }
@@ -119,7 +139,8 @@ export class BaseStats implements Stats {
   unregisterExporter(exporter: StatsEventListener): void {
     if (exporter) {
       this.statsEventListeners = this.statsEventListeners.filter(
-          currentExporter => currentExporter !== exporter);
+        currentExporter => currentExporter !== exporter
+      );
       exporter.stop();
     }
   }
@@ -130,9 +151,12 @@ export class BaseStats implements Stats {
    * @param unit The measure unit
    * @param description An optional measure description
    */
-  createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
-      Measure {
-    return {name, unit, type: MeasureType.DOUBLE, description};
+  createMeasureDouble(
+    name: string,
+    unit: MeasureUnit,
+    description?: string
+  ): Measure {
+    return { name, unit, type: MeasureType.DOUBLE, description };
   }
 
   /**
@@ -142,9 +166,12 @@ export class BaseStats implements Stats {
    * @param unit The measure unit
    * @param description An optional measure description
    */
-  createMeasureInt64(name: string, unit: MeasureUnit, description?: string):
-      Measure {
-    return {name, unit, type: MeasureType.INT64, description};
+  createMeasureInt64(
+    name: string,
+    unit: MeasureUnit,
+    description?: string
+  ): Measure {
+    return { name, unit, type: MeasureType.INT64, description };
   }
 
   /**
@@ -183,8 +210,10 @@ export class BaseStats implements Stats {
    *     string pairs.
    */
   record(
-      measurements: Measurement[], tags?: TagMap,
-      attachments?: {[key: string]: string}): void {
+    measurements: Measurement[],
+    tags?: TagMap,
+    attachments?: { [key: string]: string }
+  ): void {
     if (this.hasNegativeValue(measurements)) {
       this.logger.warn(`Dropping measurments ${measurements}, value to record
           must be non-negative.`);
@@ -208,6 +237,7 @@ export class BaseStats implements Stats {
 
       // Notifies all exporters
       for (const exporter of this.statsEventListeners) {
+        // tslint:disable-next-line:deprecation
         exporter.onRecord(views, measurement, tags.tags);
       }
     }

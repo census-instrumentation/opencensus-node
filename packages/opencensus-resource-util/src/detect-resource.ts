@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-import {CoreResource, Resource} from '@opencensus/core';
-import {getAwsEC2Resource, getComputerEngineResource, getKubernetesEngineResource, getResourceType, ResourceType} from './resource-utils';
+import { CoreResource, Resource } from '@opencensus/core';
+import {
+  getAwsEC2Resource,
+  getComputerEngineResource,
+  getKubernetesEngineResource,
+  getResourceType,
+  ResourceType,
+} from './resource-utils';
 
 /**
  * Returns a Resource. Detector sequentially runs resource detection from

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LabelKey, LabelValue} from '../metrics/export/types';
+import { LabelKey, LabelValue } from '../metrics/export/types';
 
 /**
  * Validates that an object reference passed as a parameter to the calling
@@ -38,9 +38,12 @@ export function validateNotNull<T>(reference: T, errorMessage: string): T {
  * @param errorMessage The exception message to use if the check fails.
  */
 export function validateArrayElementsNotNull<T>(
-    array: T[], errorMessage: string) {
+  array: T[],
+  errorMessage: string
+) {
   const areAllDefined = array.every(
-      element => element !== null && typeof element !== 'undefined');
+    element => element !== null && typeof element !== 'undefined'
+  );
   if (!areAllDefined) {
     throw new Error(`${errorMessage} elements should not be a NULL`);
   }
@@ -48,7 +51,9 @@ export function validateArrayElementsNotNull<T>(
 
 /** Throws an error if any of the map elements is null. */
 export function validateMapElementNotNull<K, V>(
-    map: Map<K, V>, errorMessage: string) {
+  map: Map<K, V>,
+  errorMessage: string
+) {
   for (const [key, value] of map.entries()) {
     if (key == null || value == null) {
       throw new Error(`${errorMessage} elements should not be a NULL`);
@@ -58,11 +63,15 @@ export function validateMapElementNotNull<K, V>(
 
 /** Throws an error if any of the array element present in the map. */
 export function validateDuplicateKeys(
-    keys: LabelKey[], constantLabels: Map<LabelKey, LabelValue>) {
-  const keysAndConstantKeys =
-      new Set([...keys, ...constantLabels.keys()].map(k => k.key));
-  if (keysAndConstantKeys.size !== (keys.length + constantLabels.size)) {
+  keys: LabelKey[],
+  constantLabels: Map<LabelKey, LabelValue>
+) {
+  const keysAndConstantKeys = new Set(
+    [...keys, ...constantLabels.keys()].map(k => k.key)
+  );
+  if (keysAndConstantKeys.size !== keys.length + constantLabels.size) {
     throw new Error(
-        `The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys`);
+      `The keys from LabelKeys should not be present in constantLabels or LabelKeys should not contains duplicate keys`
+    );
   }
 }

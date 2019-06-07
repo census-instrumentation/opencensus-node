@@ -14,19 +14,31 @@
  * limitations under the License.
  */
 
-import {TagKey, TagValue} from '../tags/types';
-import {AggregationData, AggregationType, CountData, DistributionData, LastValueData, Measurement, MeasureType, SumData} from './types';
+import { TagKey, TagValue } from '../tags/types';
+import {
+  AggregationData,
+  AggregationType,
+  CountData,
+  DistributionData,
+  LastValueData,
+  Measurement,
+  MeasureType,
+  SumData,
+} from './types';
 
-const UNKNOWN_TAG_VALUE: TagValue|null = null;
+const UNKNOWN_TAG_VALUE: TagValue | null = null;
 
 export class Recorder {
   static addMeasurement(
-      aggregationData: AggregationData, measurement: Measurement,
-      attachments?: {[key: string]: string}): AggregationData {
+    aggregationData: AggregationData,
+    measurement: Measurement,
+    attachments?: { [key: string]: string }
+  ): AggregationData {
     aggregationData.timestamp = Date.now();
-    const value = measurement.measure.type === MeasureType.DOUBLE ?
-        measurement.value :
-        Math.trunc(measurement.value);
+    const value =
+      measurement.measure.type === MeasureType.DOUBLE
+        ? measurement.value
+        : Math.trunc(measurement.value);
 
     switch (aggregationData.type) {
       case AggregationType.DISTRIBUTION:
@@ -44,28 +56,36 @@ export class Recorder {
   }
 
   /** Gets the tag values from tags and columns */
-  static getTagValues(tags: Map<TagKey, TagValue>, columns: TagKey[]):
-      Array<TagValue|null> {
+  static getTagValues(
+    tags: Map<TagKey, TagValue>,
+    columns: TagKey[]
+  ): Array<TagValue | null> {
     return columns.map(
-        (tagKey) =>
-            (tags.get(tagKey) ||
-             /** replace not found key values by null. */ UNKNOWN_TAG_VALUE));
+      tagKey =>
+        tags.get(tagKey) ||
+        /** replace not found key values by null. */ UNKNOWN_TAG_VALUE
+    );
   }
 
   private static addToDistribution(
-      distributionData: DistributionData, value: number,
-      attachments?: {[key: string]: string}): DistributionData {
+    distributionData: DistributionData,
+    value: number,
+    attachments?: { [key: string]: string }
+  ): DistributionData {
     distributionData.count += 1;
 
-    let bucketIndex =
-        distributionData.buckets.findIndex(bucket => bucket > value);
+    let bucketIndex = distributionData.buckets.findIndex(
+      bucket => bucket > value
+    );
 
     if (bucketIndex < 0) {
       bucketIndex = distributionData.buckets.length;
     }
 
-    if (distributionData.bucketCounts &&
-        distributionData.bucketCounts.length > bucketIndex) {
+    if (
+      distributionData.bucketCounts &&
+      distributionData.bucketCounts.length > bucketIndex
+    ) {
       distributionData.bucketCounts[bucketIndex] += 1;
     }
 
@@ -76,22 +96,27 @@ export class Recorder {
     distributionData.sum += value;
 
     const oldMean = distributionData.mean;
-    distributionData.mean = distributionData.mean +
-        (value - distributionData.mean) / distributionData.count;
+    distributionData.mean =
+      distributionData.mean +
+      (value - distributionData.mean) / distributionData.count;
     distributionData.sumOfSquaredDeviation =
-        distributionData.sumOfSquaredDeviation +
-        (value - oldMean) * (value - distributionData.mean);
+      distributionData.sumOfSquaredDeviation +
+      (value - oldMean) * (value - distributionData.mean);
     distributionData.stdDeviation = Math.sqrt(
-        distributionData.sumOfSquaredDeviation / distributionData.count);
+      distributionData.sumOfSquaredDeviation / distributionData.count
+    );
 
     // No implicit recording for exemplars - if there are no attachments
     // (contextual information), don't record exemplars.
-    if (attachments && distributionData.exemplars &&
-        distributionData.exemplars.length > bucketIndex) {
+    if (
+      attachments &&
+      distributionData.exemplars &&
+      distributionData.exemplars.length > bucketIndex
+    ) {
       distributionData.exemplars[bucketIndex] = {
         value,
         timestamp: distributionData.timestamp,
-        attachments
+        attachments,
       };
     }
     return distributionData;
@@ -107,8 +132,10 @@ export class Recorder {
     return countData;
   }
 
-  private static addToLastValue(lastValueData: LastValueData, value: number):
-      LastValueData {
+  private static addToLastValue(
+    lastValueData: LastValueData,
+    value: number
+  ): LastValueData {
     lastValueData.value = value;
     return lastValueData;
   }

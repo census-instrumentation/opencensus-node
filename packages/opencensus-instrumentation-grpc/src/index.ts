@@ -15,4 +15,8 @@
  */
 
 export * from './grpc';
-export {registerAllGrpcViews, registerClientGrpcBasicViews, registerServerGrpcBasicViews} from './grpc-stats/stats-common';
+export {
+  registerAllGrpcViews,
+  registerClientGrpcBasicViews,
+  registerServerGrpcBasicViews,
+} from './grpc-stats/stats-common';

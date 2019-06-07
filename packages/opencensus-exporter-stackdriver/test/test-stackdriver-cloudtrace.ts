@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-import {CoreTracer, logger, Span as OCSpan, version} from '@opencensus/core';
+import { CoreTracer, logger, Span as OCSpan, version } from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as nock from 'nock';
 
-import {Span, StackdriverExporterOptions, StackdriverTraceExporter} from '../src/';
+import {
+  Span,
+  StackdriverExporterOptions,
+  StackdriverTraceExporter,
+} from '../src/';
 
 import * as nocks from './nocks';
 
@@ -39,7 +43,7 @@ describe('Stackdriver Trace Exporter', function() {
     exporterOptions = {
       projectId: PROJECT_ID,
       bufferTimeout: 200,
-      logger: testLogger
+      logger: testLogger,
     };
   });
 
@@ -47,101 +51,108 @@ describe('Stackdriver Trace Exporter', function() {
     nocks.noDetectResource();
     exporter = new StackdriverTraceExporter(exporterOptions);
     tracer = new CoreTracer();
-    tracer.start({samplingRate: 1});
+    tracer.start({ samplingRate: 1 });
     tracer.registerSpanEventListener(exporter);
   });
 
   describe('onEndSpan()', () => {
     it('should add a root span to an exporter buffer', () => {
-      const rootSpanOptions = {name: 'sdBufferTestRootSpan'};
+      const rootSpanOptions = { name: 'sdBufferTestRootSpan' };
       return tracer.startRootSpan(rootSpanOptions, (rootSpan: OCSpan) => {
         assert.strictEqual(exporter.exporterBuffer.getQueue().length, 0);
 
         const spanName = 'sdBufferTestChildSpan';
-        const span = tracer.startChildSpan({name: spanName});
+        const span = tracer.startChildSpan({ name: spanName });
         span.end();
         rootSpan.end();
 
         assert.strictEqual(exporter.exporterBuffer.getQueue().length, 1);
         assert.strictEqual(
-            exporter.exporterBuffer.getQueue()[0].name, rootSpanOptions.name);
+          exporter.exporterBuffer.getQueue()[0].name,
+          rootSpanOptions.name
+        );
         assert.strictEqual(
-            exporter.exporterBuffer.getQueue()[0].spans.length, 1);
+          exporter.exporterBuffer.getQueue()[0].spans.length,
+          1
+        );
         assert.strictEqual(
-            exporter.exporterBuffer.getQueue()[0].spans[0].name, spanName);
+          exporter.exporterBuffer.getQueue()[0].spans[0].name,
+          spanName
+        );
       });
     });
   });
 
-
   describe('translateSpan()', () => {
     it('should translate to stackdriver spans', () => {
       return tracer.startRootSpan(
-          {name: 'root-test'}, async (rootSpan: OCSpan) => {
-            const span = tracer.startChildSpan({name: 'spanTest'});
-            span.end();
-            rootSpan.end();
+        { name: 'root-test' },
+        async (rootSpan: OCSpan) => {
+          const span = tracer.startChildSpan({ name: 'spanTest' });
+          span.end();
+          rootSpan.end();
 
-            const spanList = await exporter.translateSpan([rootSpan]);
-            assert.strictEqual(spanList.length, 2);
-            assert.deepStrictEqual(spanList, [
-              {
-                'attributes': {
-                  'attributeMap': {
-                    'g.co/agent': {
-                      'stringValue':
-                          {'value': `opencensus-node [${version}]`}
-                    }
+          const spanList = await exporter.translateSpan([rootSpan]);
+          assert.strictEqual(spanList.length, 2);
+          assert.deepStrictEqual(spanList, [
+            {
+              attributes: {
+                attributeMap: {
+                  'g.co/agent': {
+                    stringValue: { value: `opencensus-node [${version}]` },
                   },
-                  'droppedAttributesCount': 0
                 },
-                'childSpanCount': 1,
-                'displayName': {'value': 'root-test'},
-                'endTime': rootSpan.endTime.toISOString(),
-                'links': {'droppedLinksCount': 0, 'link': []},
-                'name': `projects/fake-project-id/traces/${
-                    rootSpan.traceId}/spans/${rootSpan.id}`,
-                'sameProcessAsParentSpan': true,
-                'spanId': rootSpan.id,
-                'stackTrace': undefined,
-                'startTime': rootSpan.startTime.toISOString(),
-                'status': {'code': 0},
-                'timeEvents': {
-                  'droppedAnnotationsCount': 0,
-                  'droppedMessageEventsCount': 0,
-                  'timeEvent': []
-                }
+                droppedAttributesCount: 0,
               },
-              {
-                'attributes': {
-                  'attributeMap': {
-                    'g.co/agent': {
-                      'stringValue':
-                          {'value': `opencensus-node [${version}]`}
-                    }
+              childSpanCount: 1,
+              displayName: { value: 'root-test' },
+              endTime: rootSpan.endTime.toISOString(),
+              links: { droppedLinksCount: 0, link: [] },
+              name: `projects/fake-project-id/traces/${
+                rootSpan.traceId
+              }/spans/${rootSpan.id}`,
+              sameProcessAsParentSpan: true,
+              spanId: rootSpan.id,
+              stackTrace: undefined,
+              startTime: rootSpan.startTime.toISOString(),
+              status: { code: 0 },
+              timeEvents: {
+                droppedAnnotationsCount: 0,
+                droppedMessageEventsCount: 0,
+                timeEvent: [],
+              },
+            },
+            {
+              attributes: {
+                attributeMap: {
+                  'g.co/agent': {
+                    stringValue: { value: `opencensus-node [${version}]` },
                   },
-                  'droppedAttributesCount': 0
                 },
-                'childSpanCount': 0,
-                'displayName': {'value': 'spanTest'},
-                'endTime': span.endTime.toISOString(),
-                'links': {'droppedLinksCount': 0, 'link': []},
-                'name': `projects/fake-project-id/traces/${
-                    span.traceId}/spans/${span.id}`,
-                'parentSpanId': rootSpan.id,
-                'sameProcessAsParentSpan': true,
-                'spanId': span.id,
-                'stackTrace': undefined,
-                'startTime': span.startTime.toISOString(),
-                'status': {'code': 0},
-                'timeEvents': {
-                  'droppedAnnotationsCount': 0,
-                  'droppedMessageEventsCount': 0,
-                  'timeEvent': []
-                },
-              }
-            ]);
-          });
+                droppedAttributesCount: 0,
+              },
+              childSpanCount: 0,
+              displayName: { value: 'spanTest' },
+              endTime: span.endTime.toISOString(),
+              links: { droppedLinksCount: 0, link: [] },
+              name: `projects/fake-project-id/traces/${span.traceId}/spans/${
+                span.id
+              }`,
+              parentSpanId: rootSpan.id,
+              sameProcessAsParentSpan: true,
+              spanId: span.id,
+              stackTrace: undefined,
+              startTime: span.startTime.toISOString(),
+              status: { code: 0 },
+              timeEvents: {
+                droppedAnnotationsCount: 0,
+                droppedMessageEventsCount: 0,
+                timeEvent: [],
+              },
+            },
+          ]);
+        }
+      );
     });
   });
 
@@ -150,85 +161,99 @@ describe('Stackdriver Trace Exporter', function() {
       nock.enableNetConnect();
       const NOEXIST_PROJECT_ID = 'no-existent-project-id-99999';
       process.env.GOOGLE_APPLICATION_CREDENTIALS =
-          __dirname + '/fixtures/fakecredentials.json';
+        __dirname + '/fixtures/fakecredentials.json';
       nocks.oauth2(body => true);
       const failExporterOptions = {
         projectId: NOEXIST_PROJECT_ID,
-        logger: logger.logger('debug')
+        logger: logger.logger('debug'),
       };
       const failExporter = new StackdriverTraceExporter(failExporterOptions);
       const failTracer = new CoreTracer();
-      failTracer.start({samplingRate: 1});
+      failTracer.start({ samplingRate: 1 });
       failTracer.registerSpanEventListener(failExporter);
       return failTracer.startRootSpan(
-          {name: 'sdNoExportTestRootSpan'}, async (rootSpan: OCSpan) => {
-            const span =
-                failTracer.startChildSpan({name: 'sdNoExportTestChildSpan'});
-            span.end();
-            rootSpan.end();
-
-            return failExporter.publish([rootSpan]).then(result => {
-              assert.strictEqual(result.code, 401);
-              assert.ok(result.message.indexOf('batchWriteSpans error') >= 0);
-
-              assert.strictEqual(
-                  failExporter.failBuffer[0].traceId,
-                  rootSpan.spanContext.traceId);
-            });
+        { name: 'sdNoExportTestRootSpan' },
+        async (rootSpan: OCSpan) => {
+          const span = failTracer.startChildSpan({
+            name: 'sdNoExportTestChildSpan',
           });
+          span.end();
+          rootSpan.end();
+
+          return failExporter.publish([rootSpan]).then(result => {
+            assert.strictEqual(result.code, 401);
+            assert.ok(result.message.indexOf('batchWriteSpans error') >= 0);
+
+            assert.strictEqual(
+              failExporter.failBuffer[0].traceId,
+              rootSpan.spanContext.traceId
+            );
+          });
+        }
+      );
     });
 
     it('should export traces to stackdriver', () => {
       return tracer.startRootSpan(
-          {name: 'sdExportTestRootSpan'}, async (rootSpan: OCSpan) => {
-            const span = tracer.startChildSpan({name: 'sdExportTestChildSpan'});
+        { name: 'sdExportTestRootSpan' },
+        async (rootSpan: OCSpan) => {
+          const span = tracer.startChildSpan({ name: 'sdExportTestChildSpan' });
 
-            nocks.oauth2(body => true);
-            nocks.batchWrite(PROJECT_ID, (body: {spans: Span[]}): boolean => {
+          nocks.oauth2(body => true);
+          nocks.batchWrite(
+            PROJECT_ID,
+            (body: { spans: Span[] }): boolean => {
               assert.strictEqual(body.spans.length, 2);
               const spans = body.spans;
               assert.strictEqual(spans[0].spanId, rootSpan.id);
               assert.strictEqual(spans[1].spanId, span.id);
               return true;
-            });
-            span.end();
-            rootSpan.end();
+            }
+          );
+          span.end();
+          rootSpan.end();
 
-            return exporter.publish([rootSpan]).then(result => {
-              assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
-            });
+          return exporter.publish([rootSpan]).then(result => {
+            assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
           });
+        }
+      );
     });
 
     it('should fail exporting by network error', async () => {
       nock('https://cloudtrace.googleapis.com')
-          .intercept(
-              '/v2/projects/' + exporterOptions.projectId +
-                  '/traces:batchWrite',
-              'post')
-          .reply(443, 'Simulated Network Error');
+        .intercept(
+          '/v2/projects/' + exporterOptions.projectId + '/traces:batchWrite',
+          'post'
+        )
+        .reply(443, 'Simulated Network Error');
 
       nocks.oauth2(body => true);
 
       return tracer.startRootSpan(
-          {name: 'sdErrorExportTestRootSpan'}, (rootSpan: OCSpan) => {
-            const span =
-                tracer.startChildSpan({name: 'sdErrorExportTestChildSpan'});
-            span.end();
-            rootSpan.end();
-
-            return exporter.publish([rootSpan]).then(result => {
-              assert.ok(
-                  result.message.indexOf(
-                      'batchWriteSpans error: Simulated Network Error') >= 0);
-            });
+        { name: 'sdErrorExportTestRootSpan' },
+        (rootSpan: OCSpan) => {
+          const span = tracer.startChildSpan({
+            name: 'sdErrorExportTestChildSpan',
           });
+          span.end();
+          rootSpan.end();
+
+          return exporter.publish([rootSpan]).then(result => {
+            assert.ok(
+              result.message.indexOf(
+                'batchWriteSpans error: Simulated Network Error'
+              ) >= 0
+            );
+          });
+        }
+      );
     });
 
     describe('with credentials option', () => {
       const FAKE_CREDENTIALS = JSON.parse(
-          fs.readFileSync(__dirname + '/fixtures/fakecredentials.json')
-              .toString());
+        fs.readFileSync(__dirname + '/fixtures/fakecredentials.json').toString()
+      );
 
       before(() => {
         exporterOptions = {
@@ -241,50 +266,61 @@ describe('Stackdriver Trace Exporter', function() {
 
       it('should export traces to stackdriver', () => {
         return tracer.startRootSpan(
-            {name: 'sdExportTestRootSpan'}, async (rootSpan: OCSpan) => {
-              const span =
-                  tracer.startChildSpan({name: 'sdExportTestChildSpan'});
+          { name: 'sdExportTestRootSpan' },
+          async (rootSpan: OCSpan) => {
+            const span = tracer.startChildSpan({
+              name: 'sdExportTestChildSpan',
+            });
 
-              nocks.oauth2(body => true);
-              nocks.batchWrite(PROJECT_ID, (body: {spans: Span[]}): boolean => {
+            nocks.oauth2(body => true);
+            nocks.batchWrite(
+              PROJECT_ID,
+              (body: { spans: Span[] }): boolean => {
                 assert.strictEqual(body.spans.length, 2);
                 const spans = body.spans;
                 assert.strictEqual(spans[0].spanId, rootSpan.id);
                 assert.strictEqual(spans[1].spanId, span.id);
                 return true;
-              });
-              span.end();
-              rootSpan.end();
+              }
+            );
+            span.end();
+            rootSpan.end();
 
-              return exporter.publish([rootSpan]).then(result => {
-                assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
-              });
+            return exporter.publish([rootSpan]).then(result => {
+              assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
             });
+          }
+        );
       });
 
       it('should fail exporting by network error', async () => {
         nock('https://cloudtrace.googleapis.com')
-            .intercept(
-                '/v2/projects/' + exporterOptions.projectId +
-                    '/traces:batchWrite',
-                'post')
-            .reply(443, 'Simulated Network Error');
+          .intercept(
+            '/v2/projects/' + exporterOptions.projectId + '/traces:batchWrite',
+            'post'
+          )
+          .reply(443, 'Simulated Network Error');
 
         nocks.oauth2(body => true);
 
         return tracer.startRootSpan(
-            {name: 'sdErrorExportTestRootSpan'}, (rootSpan: OCSpan) => {
-              const span =
-                  tracer.startChildSpan({name: 'sdErrorExportTestChildSpan'});
-              span.end();
-              rootSpan.end();
-
-              return exporter.publish([rootSpan]).then(result => {
-                assert.ok(
-                    result.message.indexOf(
-                        'batchWriteSpans error: Simulated Network Error') >= 0);
-              });
+          { name: 'sdErrorExportTestRootSpan' },
+          (rootSpan: OCSpan) => {
+            const span = tracer.startChildSpan({
+              name: 'sdErrorExportTestChildSpan',
             });
+            span.end();
+            rootSpan.end();
+
+            return exporter.publish([rootSpan]).then(result => {
+              assert.ok(
+                result.message.indexOf(
+                  'batchWriteSpans error: Simulated Network Error'
+                ) >= 0
+              );
+            });
+          }
+        );
       });
     });
   });

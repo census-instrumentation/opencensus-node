@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {StringUtils} from '../internal/string-utils';
-import {Labels, Resource} from './types';
+import { StringUtils } from '../internal/string-utils';
+import { Labels, Resource } from './types';
 
 /**
  * Resource represents a resource, which capture identifying information about
@@ -34,16 +34,20 @@ export class CoreResource {
   // OC_RESOURCE_LABELS contains key value pair separated by '='.
   private static readonly LABEL_KEY_VALUE_SPLITTER = '=';
 
-  private static ENV_TYPE =
-      CoreResource.parseResourceType(process.env.OC_RESOURCE_TYPE);
-  private static ENV_LABEL_MAP =
-      CoreResource.parseResourceLabels(process.env.OC_RESOURCE_LABELS);
+  private static ENV_TYPE = CoreResource.parseResourceType(
+    process.env.OC_RESOURCE_TYPE
+  );
+  private static ENV_LABEL_MAP = CoreResource.parseResourceLabels(
+    process.env.OC_RESOURCE_LABELS
+  );
   private static readonly ERROR_MESSAGE_INVALID_CHARS =
-      'should be a ASCII string with a length greater than 0 and not exceed ' +
-      CoreResource.MAX_LENGTH + ' characters.';
+    'should be a ASCII string with a length greater than 0 and not exceed ' +
+    CoreResource.MAX_LENGTH +
+    ' characters.';
   private static readonly ERROR_MESSAGE_INVALID_VALUE =
-      'should be a ASCII string with a length not exceed ' +
-      CoreResource.MAX_LENGTH + ' characters.';
+    'should be a ASCII string with a length not exceed ' +
+    CoreResource.MAX_LENGTH +
+    ' characters.';
 
   /**
    * Returns a Resource. This resource information is loaded from the
@@ -52,7 +56,7 @@ export class CoreResource {
    * @returns The resource.
    */
   static createFromEnvironmentVariables(): Resource {
-    return {type: CoreResource.ENV_TYPE, labels: CoreResource.ENV_LABEL_MAP};
+    return { type: CoreResource.ENV_TYPE, labels: CoreResource.ENV_LABEL_MAP };
   }
 
   /**
@@ -64,7 +68,7 @@ export class CoreResource {
    * @returns The resource.
    */
   static mergeResources(resources: Resource[]): Resource {
-    if (resources.length === 0) return {type: 'global', labels: {}};
+    if (resources.length === 0) return { type: 'global', labels: {} };
     let currentResource = resources[0];
     for (let i = 1; i < resources.length; i++) {
       currentResource = this.merge(currentResource, resources[i]);
@@ -81,7 +85,7 @@ export class CoreResource {
    * @param rawEnvType The resource type.
    * @returns The sanitized resource type.
    */
-  private static parseResourceType(rawEnvType?: string): string|null {
+  private static parseResourceType(rawEnvType?: string): string | null {
     if (!rawEnvType) return null;
     if (!CoreResource.isValidAndNotEmpty(rawEnvType)) {
       throw new Error(`Type ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
@@ -107,22 +111,29 @@ export class CoreResource {
     const labels: Labels = {};
     const rawLabels: string[] = rawEnvLabels.split(this.COMMA_SEPARATOR, -1);
     for (const rawLabel of rawLabels) {
-      const keyValuePair: string[] =
-          rawLabel.split(this.LABEL_KEY_VALUE_SPLITTER, -1);
+      const keyValuePair: string[] = rawLabel.split(
+        this.LABEL_KEY_VALUE_SPLITTER,
+        -1
+      );
       if (keyValuePair.length !== 2) {
         continue;
       }
       let [key, value] = keyValuePair;
       // Leading and trailing whitespaces are trimmed.
       key = key.trim();
-      value = value.trim().split('^"|"$').join('');
+      value = value
+        .trim()
+        .split('^"|"$')
+        .join('');
       if (!CoreResource.isValidAndNotEmpty(key)) {
         throw new Error(
-            `Label key ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`);
+          `Label key ${CoreResource.ERROR_MESSAGE_INVALID_CHARS}`
+        );
       }
       if (!CoreResource.isValid(value)) {
         throw new Error(
-            `Label value ${CoreResource.ERROR_MESSAGE_INVALID_VALUE}`);
+          `Label value ${CoreResource.ERROR_MESSAGE_INVALID_VALUE}`
+        );
       }
       labels[key] = value;
     }
@@ -146,10 +157,9 @@ export class CoreResource {
     }
     return {
       type: resource.type || otherResource.type,
-      labels: Object.assign({}, otherResource.labels, resource.labels)
+      labels: Object.assign({}, otherResource.labels, resource.labels),
     };
   }
-
 
   /**
    * Determines whether the given String is a valid printable ASCII string with
@@ -159,8 +169,10 @@ export class CoreResource {
    * @returns Whether the String is valid.
    */
   private static isValid(name: string): boolean {
-    return name.length <= CoreResource.MAX_LENGTH &&
-        StringUtils.isPrintableString(name);
+    return (
+      name.length <= CoreResource.MAX_LENGTH &&
+      StringUtils.isPrintableString(name)
+    );
   }
 
   /**
@@ -176,9 +188,11 @@ export class CoreResource {
 
   /** TEST_ONLY */
   static setup() {
-    CoreResource.ENV_TYPE =
-        CoreResource.parseResourceType(process.env.OC_RESOURCE_TYPE);
-    CoreResource.ENV_LABEL_MAP =
-        CoreResource.parseResourceLabels(process.env.OC_RESOURCE_LABELS);
+    CoreResource.ENV_TYPE = CoreResource.parseResourceType(
+      process.env.OC_RESOURCE_TYPE
+    );
+    CoreResource.ENV_LABEL_MAP = CoreResource.parseResourceLabels(
+      process.env.OC_RESOURCE_LABELS
+    );
   }
 }

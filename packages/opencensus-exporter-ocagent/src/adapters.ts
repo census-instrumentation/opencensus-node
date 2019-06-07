@@ -14,25 +14,37 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, Link, LinkType, MessageEvent, MessageEventType, Span, SpanKind} from '@opencensus/core';
-import {google, opencensus} from './types';
+import {
+  Annotation,
+  Attributes,
+  Link,
+  LinkType,
+  MessageEvent,
+  MessageEventType,
+  Span,
+  SpanKind,
+} from '@opencensus/core';
+import { google, opencensus } from './types';
 
 /**
  * Adapts a string to a `opencensus.proto.trace.v1.TruncatableString` type.
  * @param value string
  * @returns opencensus.proto.trace.v1.TruncatableString
  */
-const stringToTruncatableString =
-    (value: string): opencensus.proto.trace.v1.TruncatableString => {
-      return {value, truncatedByteCount: null};
-    };
+const stringToTruncatableString = (
+  value: string
+): opencensus.proto.trace.v1.TruncatableString => {
+  return { value, truncatedByteCount: null };
+};
 
 /**
  * Adapts a millis number or Date object to a `google.protobuf.Timestamp` type.
  * @param millis Date | number
  * @returns google.protobuf.Timestamp
  */
-const millisToTimestamp = (millis: Date|number): google.protobuf.Timestamp => {
+const millisToTimestamp = (
+  millis: Date | number
+): google.protobuf.Timestamp => {
   let milliseconds = 0;
   if (typeof millis === 'number') {
     milliseconds = millis;
@@ -43,7 +55,7 @@ const millisToTimestamp = (millis: Date|number): google.protobuf.Timestamp => {
   const seconds = Math.floor(milliseconds / 1000);
   const nanos = (milliseconds % 1000) * 1000000;
 
-  return {seconds, nanos};
+  return { seconds, nanos };
 };
 
 /**
@@ -52,7 +64,7 @@ const millisToTimestamp = (millis: Date|number): google.protobuf.Timestamp => {
  * @param hex string
  * @returns Uint8Array
  */
-const hexStringToUint8Array = (hex: string): Uint8Array|null => {
+const hexStringToUint8Array = (hex: string): Uint8Array | null => {
   if (!hex) return null;
   const match = hex.match(/.{1,2}/g);
   if (!match) return null;
@@ -64,42 +76,46 @@ const hexStringToUint8Array = (hex: string): Uint8Array|null => {
  * Adapts a string spanKind value to a `opencensus.proto.trace.v1.Span.SpanKind`
  * enum type.
  */
-const spanKindToEnum =
-    (kind: SpanKind): opencensus.proto.trace.v1.Span.SpanKind => {
-      switch (kind) {
-        case SpanKind.SERVER: {
-          return opencensus.proto.trace.v1.Span.SpanKind.SERVER;
-        }
-        case SpanKind.CLIENT: {
-          return opencensus.proto.trace.v1.Span.SpanKind.CLIENT;
-        }
-        default: {
-          return opencensus.proto.trace.v1.Span.SpanKind.SPAN_KIND_UNSPECIFIED;
-        }
-      }
-    };
+const spanKindToEnum = (
+  kind: SpanKind
+): opencensus.proto.trace.v1.Span.SpanKind => {
+  switch (kind) {
+    case SpanKind.SERVER: {
+      return opencensus.proto.trace.v1.Span.SpanKind.SERVER;
+    }
+    case SpanKind.CLIENT: {
+      return opencensus.proto.trace.v1.Span.SpanKind.CLIENT;
+    }
+    default: {
+      return opencensus.proto.trace.v1.Span.SpanKind.SPAN_KIND_UNSPECIFIED;
+    }
+  }
+};
 
 /**
  * Adapts Attributes to a `opencensus.proto.trace.v1.Span.Attributes` type.
  * @param attributes Attributes
  * @returns opencensus.proto.trace.v1.Span.Attributes
  */
-const adaptAttributes = (attributes: Attributes,
-                         droppedAttributesCount: number):
-                            opencensus.proto.trace.v1.Span.Attributes|null => {
+const adaptAttributes = (
+  attributes: Attributes,
+  droppedAttributesCount: number
+): opencensus.proto.trace.v1.Span.Attributes | null => {
   if (!attributes) {
     return null;
   }
 
-  const attributeMap:
-      Record<string, opencensus.proto.trace.v1.AttributeValue> = {};
+  const attributeMap: Record<
+    string,
+    opencensus.proto.trace.v1.AttributeValue
+  > = {};
 
-  Object.getOwnPropertyNames(attributes).forEach((name) => {
+  Object.getOwnPropertyNames(attributes).forEach(name => {
     const value = attributes[name];
 
-    let stringValue: opencensus.proto.trace.v1.TruncatableString|null = null;
-    let intValue: number|null = null;
-    let boolValue: boolean|null = null;
+    let stringValue: opencensus.proto.trace.v1.TruncatableString | null = null;
+    let intValue: number | null = null;
+    let boolValue: boolean | null = null;
 
     switch (typeof value) {
       case 'number': {
@@ -111,7 +127,7 @@ const adaptAttributes = (attributes: Attributes,
         break;
       }
       case 'string': {
-        stringValue = {value: value as string, truncatedByteCount: null};
+        stringValue = { value: value as string, truncatedByteCount: null };
         break;
       }
       default: {
@@ -119,10 +135,10 @@ const adaptAttributes = (attributes: Attributes,
       }
     }
 
-    attributeMap[name] = {stringValue, intValue, boolValue};
+    attributeMap[name] = { stringValue, intValue, boolValue };
   });
 
-  return {attributeMap, droppedAttributesCount};
+  return { attributeMap, droppedAttributesCount };
 };
 
 /**
@@ -131,19 +147,20 @@ const adaptAttributes = (attributes: Attributes,
  * @param value
  * @return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type
  */
-const adaptMessageEventType = (type: MessageEventType): opencensus.proto.trace
-                                  .v1.Span.TimeEvent.MessageEvent.Type => {
+const adaptMessageEventType = (
+  type: MessageEventType
+): opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type => {
   switch (type) {
     case MessageEventType.SENT: {
       return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type.SENT;
     }
     case MessageEventType.RECEIVED: {
       return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type
-          .RECEIVED;
+        .RECEIVED;
     }
     default: {
       return opencensus.proto.trace.v1.Span.TimeEvent.MessageEvent.Type
-          .TYPE_UNSPECIFIED;
+        .TYPE_UNSPECIFIED;
     }
   }
 };
@@ -156,44 +173,46 @@ const adaptMessageEventType = (type: MessageEventType): opencensus.proto.trace
  * @param messageEvents MessageEvent[]
  * @returns opencensus.proto.trace.v1.Span.TimeEvents
  */
-const adaptTimeEvents =
-    (annotations: Annotation[], messageEvents: MessageEvent[],
-     droppedAnnotationsCount: number, droppedMessageEventsCount: number):
-        opencensus.proto.trace.v1.Span.TimeEvents => {
-      const timeEvents: opencensus.proto.trace.v1.Span.TimeEvent[] = [];
+const adaptTimeEvents = (
+  annotations: Annotation[],
+  messageEvents: MessageEvent[],
+  droppedAnnotationsCount: number,
+  droppedMessageEventsCount: number
+): opencensus.proto.trace.v1.Span.TimeEvents => {
+  const timeEvents: opencensus.proto.trace.v1.Span.TimeEvent[] = [];
 
-      if (annotations) {
-        annotations.forEach(annotation => {
-          timeEvents.push({
-            time: null,
-            annotation: {
-              description: stringToTruncatableString(annotation.description),
-              attributes: adaptAttributes(annotation.attributes, 0)
-            }
-          });
-        });
-      }
+  if (annotations) {
+    annotations.forEach(annotation => {
+      timeEvents.push({
+        time: null,
+        annotation: {
+          description: stringToTruncatableString(annotation.description),
+          attributes: adaptAttributes(annotation.attributes, 0),
+        },
+      });
+    });
+  }
 
-      if (messageEvents) {
-        messageEvents.forEach(messageEvent => {
-          timeEvents.push({
-            time: millisToTimestamp(messageEvent.timestamp),
-            messageEvent: {
-              id: messageEvent.id,
-              type: adaptMessageEventType(messageEvent.type),
-              uncompressedSize: messageEvent.uncompressedSize || 0,
-              compressedSize: messageEvent.compressedSize || 0
-            }
-          });
-        });
-      }
+  if (messageEvents) {
+    messageEvents.forEach(messageEvent => {
+      timeEvents.push({
+        time: millisToTimestamp(messageEvent.timestamp),
+        messageEvent: {
+          id: messageEvent.id,
+          type: adaptMessageEventType(messageEvent.type),
+          uncompressedSize: messageEvent.uncompressedSize || 0,
+          compressedSize: messageEvent.compressedSize || 0,
+        },
+      });
+    });
+  }
 
-      return {
-        timeEvent: timeEvents,
-        droppedAnnotationsCount,
-        droppedMessageEventsCount
-      };
-    };
+  return {
+    timeEvent: timeEvents,
+    droppedAnnotationsCount,
+    droppedMessageEventsCount,
+  };
+};
 
 /**
  * Adapts a traceState string to a `opencensus.proto.trace.v1.Span.Tracestate`
@@ -202,16 +221,20 @@ const adaptTimeEvents =
  * @param traceState string
  * @returns opencensus.proto.trace.v1.Span.Tracestate
  */
-const adaptTraceState =
-    (traceState?: string): opencensus.proto.trace.v1.Span.Tracestate => {
-      const entries: opencensus.proto.trace.v1.Span.Tracestate.Entry[]|null =
-          !traceState ? null : traceState.split(',').map(state => {
-            const [key, value] = state.split('=');
-            return {key, value};
-          });
+const adaptTraceState = (
+  traceState?: string
+): opencensus.proto.trace.v1.Span.Tracestate => {
+  const entries:
+    | opencensus.proto.trace.v1.Span.Tracestate.Entry[]
+    | null = !traceState
+    ? null
+    : traceState.split(',').map(state => {
+        const [key, value] = state.split('=');
+        return { key, value };
+      });
 
-      return {entries};
-    };
+  return { entries };
+};
 
 /**
  * Adapts a link to a `opencensus.proto.trace.v1.Span.Link` type.
@@ -239,7 +262,7 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
 
   const attributes = adaptAttributes(link.attributes, 0);
 
-  return {traceId, spanId, type, attributes};
+  return { traceId, spanId, type, attributes };
 };
 
 /**
@@ -247,9 +270,11 @@ const adaptLink = (link: Link): opencensus.proto.trace.v1.Span.Link => {
  * @param links Link[]
  * @returns opencensus.proto.trace.v1.Span.Links
  */
-const adaptLinks = (links: Link[] = [], droppedLinksCount: number):
-                       opencensus.proto.trace.v1.Span.Links => {
-  return {link: links.map(adaptLink), droppedLinksCount};
+const adaptLinks = (
+  links: Link[] = [],
+  droppedLinksCount: number
+): opencensus.proto.trace.v1.Span.Links => {
+  return { link: links.map(adaptLink), droppedLinksCount };
 };
 
 /**
@@ -257,7 +282,7 @@ const adaptLinks = (links: Link[] = [], droppedLinksCount: number):
  * @param value boolean
  * @returns google.protobuf.BoolValue
  */
-const adaptBoolean = (value: boolean): google.protobuf.BoolValue => ({value});
+const adaptBoolean = (value: boolean): google.protobuf.BoolValue => ({ value });
 
 /**
  * Adapts a span to a `opencensus.proto.trace.v1.Span` type.
@@ -275,10 +300,13 @@ export const adaptSpan = (span: Span): opencensus.proto.trace.v1.Span => {
     startTime: millisToTimestamp(span.startTime),
     endTime: millisToTimestamp(span.endTime),
     attributes: adaptAttributes(span.attributes, span.droppedAttributesCount),
-    stackTrace: null,  // Unsupported by nodejs
+    stackTrace: null, // Unsupported by nodejs
     timeEvents: adaptTimeEvents(
-        span.annotations, span.messageEvents, span.droppedAnnotationsCount,
-        span.droppedMessageEventsCount),
+      span.annotations,
+      span.messageEvents,
+      span.droppedAnnotationsCount,
+      span.droppedMessageEventsCount
+    ),
     links: adaptLinks(span.links, span.droppedLinksCount),
     status: span.status,
     sameProcessAsParentSpan: adaptBoolean(!span.remoteParent),
@@ -305,7 +333,7 @@ export interface CreateNodeOptions {
   coreVersion: string;
   hostName: string;
   processStartTimeMillis: number;
-  attributes: Record<string, string>|undefined;
+  attributes: Record<string, string> | undefined;
 }
 
 /**
@@ -314,20 +342,21 @@ export interface CreateNodeOptions {
  * @param options CreateNodeOptions
  * @returns opencensus.proto.agent.common.v1.Node
  */
-export const createNode = (options: CreateNodeOptions):
-                              opencensus.proto.agent.common.v1.Node => {
+export const createNode = (
+  options: CreateNodeOptions
+): opencensus.proto.agent.common.v1.Node => {
   return {
     identifier: {
       hostName: options.hostName,
       pid: process.pid,
-      startTimestamp: millisToTimestamp(options.processStartTimeMillis)
+      startTimestamp: millisToTimestamp(options.processStartTimeMillis),
     },
     libraryInfo: {
       language: opencensus.proto.agent.common.v1.LibraryInfo.Language.NODE_JS,
       exporterVersion: options.exporterVersion,
-      coreLibraryVersion: options.coreVersion
+      coreLibraryVersion: options.coreVersion,
     },
-    serviceInfo: {name: options.serviceName},
-    attributes: options.attributes
+    serviceInfo: { name: options.serviceName },
+    attributes: options.attributes,
   };
 };

@@ -28,8 +28,10 @@ const AGENT_LABEL_VALUE = createAttributeValue(AGENT_LABEL_VALUE_STRING);
  * @returns types.Links
  */
 export function createLinks(
-    links: coreTypes.Link[], droppedLinksCount: number): types.Links {
-  return {link: links.map((link) => createLink(link)), droppedLinksCount};
+  links: coreTypes.Link[],
+  droppedLinksCount: number
+): types.Links {
+  return { link: links.map(link => createLink(link)), droppedLinksCount };
 }
 
 /**
@@ -40,16 +42,22 @@ export function createLinks(
  * @returns types.Attributes
  */
 export function createAttributes(
-    attributes: coreTypes.Attributes,
-    resourceLabels: Record<string, types.AttributeValue>,
-    droppedAttributesCount: number): types.Attributes {
-  const attributesBuilder =
-      createAttributesBuilder(attributes, droppedAttributesCount);
+  attributes: coreTypes.Attributes,
+  resourceLabels: Record<string, types.AttributeValue>,
+  droppedAttributesCount: number
+): types.Attributes {
+  const attributesBuilder = createAttributesBuilder(
+    attributes,
+    droppedAttributesCount
+  );
   if (attributesBuilder.attributeMap) {
     attributesBuilder.attributeMap[AGENT_LABEL_KEY] = AGENT_LABEL_VALUE;
   }
-  attributesBuilder.attributeMap =
-      Object.assign({}, attributesBuilder.attributeMap, resourceLabels);
+  attributesBuilder.attributeMap = Object.assign(
+    {},
+    attributesBuilder.attributeMap,
+    resourceLabels
+  );
   return attributesBuilder;
 }
 
@@ -62,47 +70,50 @@ export function createAttributes(
  * @returns types.TimeEvents
  */
 export function createTimeEvents(
-    annotationTimedEvents: coreTypes.Annotation[],
-    messageEventTimedEvents: coreTypes.MessageEvent[],
-    droppedAnnotationsCount: number,
-    droppedMessageEventsCount: number): types.TimeEvents {
+  annotationTimedEvents: coreTypes.Annotation[],
+  messageEventTimedEvents: coreTypes.MessageEvent[],
+  droppedAnnotationsCount: number,
+  droppedMessageEventsCount: number
+): types.TimeEvents {
   let timeEvents: types.TimeEvent[] = [];
   if (annotationTimedEvents) {
-    timeEvents = annotationTimedEvents.map(
-        (annotation) => ({
-          time: new Date(annotation.timestamp).toISOString(),
-          annotation: {
-            description: stringToTruncatableString(annotation.description),
-            attributes: createAttributesBuilder(annotation.attributes, 0)
-          }
-        }));
+    timeEvents = annotationTimedEvents.map(annotation => ({
+      time: new Date(annotation.timestamp).toISOString(),
+      annotation: {
+        description: stringToTruncatableString(annotation.description),
+        attributes: createAttributesBuilder(annotation.attributes, 0),
+      },
+    }));
   }
   if (messageEventTimedEvents) {
-    timeEvents.push(...messageEventTimedEvents.map(
-        (messageEvent) => ({
-          time: new Date(messageEvent.timestamp).toISOString(),
-          messageEvent: {
-            id: String(messageEvent.id),
-            type: createMessageEventType(messageEvent.type),
-            uncompressedSizeBytes: String(messageEvent.uncompressedSize || 0),
-            compressedSizeBytes: String(messageEvent.compressedSize || 0)
-          }
-        })));
+    timeEvents.push(
+      ...messageEventTimedEvents.map(messageEvent => ({
+        time: new Date(messageEvent.timestamp).toISOString(),
+        messageEvent: {
+          id: String(messageEvent.id),
+          type: createMessageEventType(messageEvent.type),
+          uncompressedSizeBytes: String(messageEvent.uncompressedSize || 0),
+          compressedSizeBytes: String(messageEvent.compressedSize || 0),
+        },
+      }))
+    );
   }
   return {
     timeEvent: timeEvents,
     droppedAnnotationsCount,
-    droppedMessageEventsCount
+    droppedMessageEventsCount,
   };
 }
 
-export function stringToTruncatableString(value: string):
-    types.TruncatableString {
-  return {value};
+export function stringToTruncatableString(
+  value: string
+): types.TruncatableString {
+  return { value };
 }
 
 export async function getResourceLabels(
-    monitoredResource: Promise<types.MonitoredResource>) {
+  monitoredResource: Promise<types.MonitoredResource>
+) {
   const resource = await monitoredResource;
   const resourceLabels: Record<string, types.AttributeValue> = {};
   if (resource.type === 'global') {
@@ -116,13 +127,14 @@ export async function getResourceLabels(
 }
 
 function createAttributesBuilder(
-    attributes: coreTypes.Attributes,
-    droppedAttributesCount: number): types.Attributes {
+  attributes: coreTypes.Attributes,
+  droppedAttributesCount: number
+): types.Attributes {
   const attributeMap: Record<string, types.AttributeValue> = {};
   for (const key of Object.keys(attributes)) {
     attributeMap[key] = createAttributeValue(attributes[key]);
   }
-  return {attributeMap, droppedAttributesCount};
+  return { attributeMap, droppedAttributesCount };
 }
 
 function createLink(link: coreTypes.Link): types.Link {
@@ -130,19 +142,20 @@ function createLink(link: coreTypes.Link): types.Link {
   const spanId = link.spanId;
   const type = createLinkType(link.type);
   const attributes = createAttributesBuilder(link.attributes, 0);
-  return {traceId, spanId, type, attributes};
+  return { traceId, spanId, type, attributes };
 }
 
-function createAttributeValue(value: string|number|
-                              boolean): types.AttributeValue {
+function createAttributeValue(
+  value: string | number | boolean
+): types.AttributeValue {
   switch (typeof value) {
     case 'number':
       // TODO: Consider to change to doubleValue when available in V2 API.
-      return {intValue: String(value)};
+      return { intValue: String(value) };
     case 'boolean':
-      return {boolValue: value as boolean};
+      return { boolValue: value as boolean };
     case 'string':
-      return {stringValue: stringToTruncatableString(value)};
+      return { stringValue: stringToTruncatableString(value) };
     default:
       throw new Error(`Unsupported type : ${typeof value}`);
   }
@@ -156,7 +169,9 @@ function createMessageEventType(type: coreTypes.MessageEventType) {
     case coreTypes.MessageEventType.RECEIVED: {
       return types.Type.RECEIVED;
     }
-    default: { return types.Type.TYPE_UNSPECIFIED; }
+    default: {
+      return types.Type.TYPE_UNSPECIFIED;
+    }
   }
 }
 
@@ -168,6 +183,8 @@ function createLinkType(type: coreTypes.LinkType) {
     case coreTypes.LinkType.PARENT_LINKED_SPAN: {
       return types.LinkType.PARENT_LINKED_SPAN;
     }
-    default: { return types.LinkType.UNSPECIFIED; }
+    default: {
+      return types.LinkType.UNSPECIFIED;
+    }
   }
 }

@@ -15,19 +15,33 @@
  */
 
 import * as assert from 'assert';
-import {CanonicalCode, CoreTracer, LinkType, MessageEventType, SpanKind} from '../src';
-import {NoRecordRootSpan} from '../src/trace/model/no-record/no-record-root-span';
+import {
+  CanonicalCode,
+  CoreTracer,
+  LinkType,
+  MessageEventType,
+  SpanKind,
+} from '../src';
+import { NoRecordRootSpan } from '../src/trace/model/no-record/no-record-root-span';
 
 const tracer = new CoreTracer();
 
 describe('NoRecordRootSpan()', () => {
   it('do not crash', () => {
-    const noRecordRootSpan =
-        new NoRecordRootSpan(tracer, 'name', SpanKind.SERVER, 'traceid', '');
+    const noRecordRootSpan = new NoRecordRootSpan(
+      tracer,
+      'name',
+      SpanKind.SERVER,
+      'traceid',
+      ''
+    );
     noRecordRootSpan.addAnnotation('MyAnnotation');
-    noRecordRootSpan.addAnnotation('MyAnnotation', {myString: 'bar'});
-    noRecordRootSpan.addAnnotation(
-        'MyAnnotation', {myString: 'bar', myNumber: 123, myBoolean: true});
+    noRecordRootSpan.addAnnotation('MyAnnotation', { myString: 'bar' });
+    noRecordRootSpan.addAnnotation('MyAnnotation', {
+      myString: 'bar',
+      myNumber: 123,
+      myBoolean: true,
+    });
     noRecordRootSpan.addLink('aaaaa', 'aaa', LinkType.CHILD_LINKED_SPAN);
     noRecordRootSpan.addMessageEvent(MessageEventType.RECEIVED, 1, 123456789);
     noRecordRootSpan.addAttribute('my_first_attribute', 'foo');

@@ -16,8 +16,7 @@
 
 import * as assert from 'assert';
 import * as logger from '../src/common/console-logger';
-import {ConsoleLogger} from '../src/common/console-logger';
-
+import { ConsoleLogger } from '../src/common/console-logger';
 
 const LEVELS = ['silent', 'error', 'warn', 'info', 'debug'];
 let consoleTxt = '';

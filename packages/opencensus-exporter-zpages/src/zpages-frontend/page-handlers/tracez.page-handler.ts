@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import {Span} from '@opencensus/core';
+import { Span } from '@opencensus/core';
 import * as ejs from 'ejs';
-import {LatencyBucketBoundaries} from '../latency-bucket-boundaries';
-import {templatesDir} from './templates-dir';
+import { LatencyBucketBoundaries } from '../latency-bucket-boundaries';
+import { templatesDir } from './templates-dir';
 
-export type TracezParams = {
-  tracename: string; type: string;
-};
+export interface TracezParams {
+  tracename: string;
+  type: string;
+}
 
 /** Index to latencies */
-export type Latency = {
-  [key: string]: number
-};
+export interface Latency {
+  [key: string]: number;
+}
 
 /**
  * Information needed to display selected traces.
@@ -107,14 +108,14 @@ function serializeSpan(inputSpan: Span): SerializedSpan {
     traceId: inputSpan.traceId,
     id: inputSpan.id,
     parentSpanId: inputSpan.parentSpanId,
-    spans: []
+    spans: [],
   };
   span.spans = inputSpan.spans.map((childSpan: Span) => ({
-                                     startTime: childSpan.startTime,
-                                     id: childSpan.id,
-                                     name: childSpan.name,
-                                     duration: childSpan.duration
-                                   }));
+    startTime: childSpan.startTime,
+    id: childSpan.id,
+    name: childSpan.name,
+    duration: childSpan.duration,
+  }));
   return span;
 }
 
@@ -136,9 +137,9 @@ export class TracezPageHandler {
         MILLIx100_SECONDx1: 0,
         SECONDx1_SECONDx10: 0,
         SECONDx10_SECONDx100: 0,
-        SECONDx100_MAX: 0
+        SECONDx100_MAX: 0,
       },
-      ERRORS: 0
+      ERRORS: 0,
     };
 
     // Building span list
@@ -146,11 +147,12 @@ export class TracezPageHandler {
       if (span.status && span.status.code !== 0) {
         spanCell.ERRORS += 1;
       } else if (span.ended) {
-        const durationNs =
-            LatencyBucketBoundaries.millisecondsToNanos(span.duration);
-        const latency =
-            LatencyBucketBoundaries.getLatencyBucketBoundariesByTime(
-                durationNs);
+        const durationNs = LatencyBucketBoundaries.millisecondsToNanos(
+          span.duration
+        );
+        const latency = LatencyBucketBoundaries.getLatencyBucketBoundariesByTime(
+          durationNs
+        );
         spanCell.latencies[latency.getName()] += 1;
       } else if (span.started) {
         spanCell.RUNNING += 1;
@@ -168,15 +170,18 @@ export class TracezPageHandler {
    */
   emitHtml(params: Partial<TracezParams>, json: boolean): string {
     const tracezFile = ejs.fileLoader(`${templatesDir}/tracez.ejs`).toString();
-    const stylesFile =
-        ejs.fileLoader(`${templatesDir}/styles.min.css`).toString();
-    const summaryFile =
-        ejs.fileLoader(`${templatesDir}/summary.ejs`).toString();
-    const spanCellFile =
-        ejs.fileLoader(`${templatesDir}/span-cell.ejs`).toString();
+    const stylesFile = ejs
+      .fileLoader(`${templatesDir}/styles.min.css`)
+      .toString();
+    const summaryFile = ejs
+      .fileLoader(`${templatesDir}/summary.ejs`)
+      .toString();
+    const spanCellFile = ejs
+      .fileLoader(`${templatesDir}/span-cell.ejs`)
+      .toString();
     const spansFile = ejs.fileLoader(`${templatesDir}/spans.ejs`).toString();
     /** EJS render options */
-    const options = {delimiter: '?'};
+    const options = { delimiter: '?' };
     /** Latency array */
     const latencyBucketBoundaries = LatencyBucketBoundaries.values;
     /** Latency names list */
@@ -186,7 +191,7 @@ export class TracezPageHandler {
     /** Span cell data. */
     const spanCells: SpanCell[] = [];
     /** Selected traces. Populated only if the `tracename` param exists. */
-    let selectedTraces: SelectedTraces|null = null;
+    let selectedTraces: SelectedTraces | null = null;
 
     // Building a string list of latencyBucketBoundaries
     for (const latency of latencyBucketBoundaries) {
@@ -215,11 +220,12 @@ export class TracezPageHandler {
               traceList.push(span);
             }
           } else if (span.ended && span.status.code === 0) {
-            const durationNs =
-                LatencyBucketBoundaries.millisecondsToNanos(span.duration);
-            const latency =
-                LatencyBucketBoundaries.getLatencyBucketBoundariesByTime(
-                    durationNs);
+            const durationNs = LatencyBucketBoundaries.millisecondsToNanos(
+              span.duration
+            );
+            const latency = LatencyBucketBoundaries.getLatencyBucketBoundariesByTime(
+              durationNs
+            );
             if (latency.getName() === params.type) {
               traceList.push(span);
             }
@@ -229,33 +235,39 @@ export class TracezPageHandler {
       selectedTraces = {
         name: params.tracename,
         traces: traceList.map(serializeSpan),
-        getCanonicalCode
+        getCanonicalCode,
       };
     }
 
     /** Rendering the final HTML */
     if (json) {
-      const jsonObj = {selectedTraces, spanCells} as TracezData;
+      const jsonObj = { selectedTraces, spanCells } as TracezData;
       return JSON.stringify(jsonObj, null, 2);
     } else {
       /** HTML table summary */
-      const renderedSummary =
-          ejs.render(summaryFile, {latencyBucketNames}, options);
+      const renderedSummary = ejs.render(
+        summaryFile,
+        { latencyBucketNames },
+        options
+      );
       /** HTML selected trace list */
-      const renderedSelectedTraces: string =
-          selectedTraces ? ejs.render(spansFile, selectedTraces, options) : '';
+      const renderedSelectedTraces: string = selectedTraces
+        ? ejs.render(spansFile, selectedTraces, options)
+        : '';
       /** RootSpan lines */
-      const renderedSpanCells: string =
-          spanCells.map(spanCell => ejs.render(spanCellFile, spanCell, options))
-              .join('');
+      const renderedSpanCells: string = spanCells
+        .map(spanCell => ejs.render(spanCellFile, spanCell, options))
+        .join('');
       return ejs.render(
-          tracezFile, {
-            styles: stylesFile,
-            table_content: renderedSummary + renderedSpanCells,
-            title: 'TraceZ Summary',
-            selectedTraces: renderedSelectedTraces
-          },
-          options);
+        tracezFile,
+        {
+          styles: stylesFile,
+          table_content: renderedSummary + renderedSpanCells,
+          title: 'TraceZ Summary',
+          selectedTraces: renderedSelectedTraces,
+        },
+        options
+      );
     }
   }
 }

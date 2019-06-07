@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterConfig, Span} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import { Exporter, ExporterConfig, Span } from '@opencensus/core';
+import { logger, Logger } from '@opencensus/core';
 import * as os from 'os';
-import {spanToThrift, Tag, TagValue, ThriftProcess, ThriftUtils, UDPSender, Utils} from './jaeger-driver';
+import {
+  spanToThrift,
+  Tag,
+  TagValue,
+  ThriftProcess,
+  ThriftUtils,
+  UDPSender,
+  Utils,
+} from './jaeger-driver';
 
 const DEFAULT_BUFFER_FLUSH_INTERVAL_MILLIS = 1000;
 const DEFAULT_BUFFER_SIZE = 1000;
@@ -49,10 +57,10 @@ try {
 export class JaegerTraceExporter implements Exporter {
   // Name of the tag used to report client version.
   static readonly JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY =
-      'opencensus.exporter.jaeger.version';
+    'opencensus.exporter.jaeger.version';
   // host name of the process.
   static readonly TRACER_HOSTNAME_TAG_KEY =
-      'opencensus.exporter.jaeger.hostname';
+    'opencensus.exporter.jaeger.hostname';
   //  ip of the process.
   static readonly PROCESS_IP = 'ip';
 
@@ -72,15 +80,15 @@ export class JaegerTraceExporter implements Exporter {
   constructor(options: JaegerTraceExporterOptions) {
     this.logger = options.logger || logger.logger();
     this.bufferTimeout =
-        options.bufferTimeout || DEFAULT_BUFFER_FLUSH_INTERVAL_MILLIS;
+      options.bufferTimeout || DEFAULT_BUFFER_FLUSH_INTERVAL_MILLIS;
     this.bufferSize = options.bufferSize || DEFAULT_BUFFER_SIZE;
     this.sender = new UDPSender(options);
     const tags: Tag[] = options.tags || [];
 
     const defaultTags: Record<string, TagValue> = {};
-    defaultTags[JaegerTraceExporter
-                    .JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY] =
-        `opencensus-exporter-jaeger-${pjsonVersion}`;
+    defaultTags[
+      JaegerTraceExporter.JAEGER_OPENCENSUS_EXPORTER_VERSION_TAG_KEY
+    ] = `opencensus-exporter-jaeger-${pjsonVersion}`;
     defaultTags[JaegerTraceExporter.TRACER_HOSTNAME_TAG_KEY] = os.hostname();
     defaultTags[JaegerTraceExporter.PROCESS_IP] = Utils.myIp();
 
@@ -92,7 +100,6 @@ export class JaegerTraceExporter implements Exporter {
     };
     this.sender.setProcess(this.process);
   }
-
 
   // TODO: should be evaluated if onEndSpan should also return a Promise.
 
@@ -108,21 +115,21 @@ export class JaegerTraceExporter implements Exporter {
 
     // UDPSender buffer is limited by maxPacketSize
     this.addSpanToSenderBuffer(span)
-        .then(result => {
-          this.addToBuffer(span, result as number);
-          for (const localSpan of span.spans) {
-            this.addSpanToSenderBuffer(localSpan)
-                .then(result => {
-                  this.addToBuffer(localSpan, result as number);
-                })
-                .catch(err => {
-                  return;
-                });
-          }
-        })
-        .catch(err => {
-          return;
-        });
+      .then(result => {
+        this.addToBuffer(span, result as number);
+        for (const localSpan of span.spans) {
+          this.addSpanToSenderBuffer(localSpan)
+            .then(result => {
+              this.addToBuffer(localSpan, result as number);
+            })
+            .catch(err => {
+              return;
+            });
+        }
+      })
+      .catch(err => {
+        return;
+      });
 
     // Set a buffer timeout
     this.setBufferTimeout();

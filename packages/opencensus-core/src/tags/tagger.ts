@@ -15,7 +15,7 @@
  */
 
 import * as cls from '../internal/cls';
-import {TagMap} from './tag-map';
+import { TagMap } from './tag-map';
 
 export const EMPTY_TAG_MAP = new TagMap();
 const CURRENT_TAG_MAP_KEY = 'current_tag_map';
@@ -34,7 +34,9 @@ export function getCurrentTagContext(contextManager: cls.Namespace): TagMap {
  * @param tags The TagMap.
  */
 export function setCurrentTagContext(
-    contextManager: cls.Namespace, tags: TagMap) {
+  contextManager: cls.Namespace,
+  tags: TagMap
+) {
   contextManager.set(CURRENT_TAG_MAP_KEY, makeDeepCopy(tags));
 }
 
@@ -46,7 +48,10 @@ export function setCurrentTagContext(
  * @returns The callback return.
  */
 export function withTagContext<T>(
-    contextManager: cls.Namespace, tags: TagMap, fn: cls.Func<T>): T {
+  contextManager: cls.Namespace,
+  tags: TagMap,
+  fn: cls.Func<T>
+): T {
   const oldContext = getCurrentTagContext(contextManager);
   return contextManager.runAndReturn(() => {
     const newContext = new TagMap();
@@ -70,7 +75,10 @@ function makeDeepCopy(tags: TagMap) {
   const tagsCopy = new TagMap();
   for (const [tagKey, valueWithMetadata] of tags.tagsWithMetadata) {
     tagsCopy.set(
-        tagKey, valueWithMetadata.tagValue, valueWithMetadata.tagMetadata);
+      tagKey,
+      valueWithMetadata.tagValue,
+      valueWithMetadata.tagMetadata
+    );
   }
   return tagsCopy;
 }

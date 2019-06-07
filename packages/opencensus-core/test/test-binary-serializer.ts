@@ -15,33 +15,37 @@
  */
 
 import * as assert from 'assert';
-import {deserializeBinary, serializeBinary, TAG_MAP_SERIALIZED_SIZE_LIMIT} from '../src/tags/propagation/binary-serializer';
-import {TagMap} from '../src/tags/tag-map';
+import {
+  deserializeBinary,
+  serializeBinary,
+  TAG_MAP_SERIALIZED_SIZE_LIMIT,
+} from '../src/tags/propagation/binary-serializer';
+import { TagMap } from '../src/tags/tag-map';
 
 const K1 = {
-  name: 'k1'
+  name: 'k1',
 };
 const K2 = {
-  name: 'k2'
+  name: 'k2',
 };
 const K3 = {
-  name: 'k3'
+  name: 'k3',
 };
 const K4 = {
-  name: 'k4'
+  name: 'k4',
 };
 
 const V1 = {
-  value: 'v1'
+  value: 'v1',
 };
 const V2 = {
-  value: 'v2'
+  value: 'v2',
 };
 const V3 = {
-  value: 'v3'
+  value: 'v3',
 };
 const V4 = {
-  value: 'v4'
+  value: 'v4',
 };
 
 describe('Binary Format Serializer', () => {
@@ -79,11 +83,11 @@ describe('Binary Format Serializer', () => {
         // length of it is 8.
         const pad = '0000'.substring(0, 4 - `${i}`.length);
         const str = `${pad}${i}`;
-        tags.set({name: str}, {value: str});
+        tags.set({ name: str }, { value: str });
       }
       // The last tag will be of size 9, so the total size of the TagMap
       // (8193) will be one byte more than limit.
-      tags.set({name: 'last'}, {value: 'last1'});
+      tags.set({ name: 'last' }, { value: 'last1' });
 
       assert.throws(() => {
         serializeBinary(tags);
@@ -93,8 +97,16 @@ describe('Binary Format Serializer', () => {
 
   describe('deserializeBinary', () => {
     it('should throw an error when invalid tagKey', () => {
-      const buff =
-          Buffer.from([0x01, 0x00, 0x02, 0x6b, 0x31, 0x02, 0x76, 0x31]);
+      const buff = Buffer.from([
+        0x01,
+        0x00,
+        0x02,
+        0x6b,
+        0x31,
+        0x02,
+        0x76,
+        0x31,
+      ]);
       assert.throws(() => {
         deserializeBinary(buff);
       }, /^Error: Wrong Version ID: 1. Currently supports version up to: 0/);
@@ -105,8 +117,21 @@ describe('Binary Format Serializer', () => {
       expectedTags.set(K1, V1);
 
       const buff = Buffer.from([
-        0x00, 0x00, 0x02, 0x6b, 0x31, 0x02, 0x76, 0x31, 0x01, 0x02, 0x6b, 0x32,
-        0x02, 0x76, 0x32
+        0x00,
+        0x00,
+        0x02,
+        0x6b,
+        0x31,
+        0x02,
+        0x76,
+        0x31,
+        0x01,
+        0x02,
+        0x6b,
+        0x32,
+        0x02,
+        0x76,
+        0x32,
       ]);
       const tags = deserializeBinary(buff);
       assert.strictEqual(tags.tags.size, 1);

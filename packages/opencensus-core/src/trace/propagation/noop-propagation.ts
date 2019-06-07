@@ -16,12 +16,12 @@
 
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
-import {SpanContext} from '../model/types';
-import {HeaderGetter, HeaderSetter, Propagation} from './types';
+import { SpanContext } from '../model/types';
+import { HeaderGetter, HeaderSetter, Propagation } from './types';
 
 /** No-op implementation of Propagation */
 class NoopPropagation implements Propagation {
-  extract(getter: HeaderGetter): SpanContext|null {
+  extract(getter: HeaderGetter): SpanContext | null {
     return null;
   }
 
@@ -29,7 +29,10 @@ class NoopPropagation implements Propagation {
 
   generate(): SpanContext {
     return {
-      traceId: uuid.v4().split('-').join(''),
+      traceId: uuid
+        .v4()
+        .split('-')
+        .join(''),
       spanId: crypto.randomBytes(8).toString('hex'),
     };
   }

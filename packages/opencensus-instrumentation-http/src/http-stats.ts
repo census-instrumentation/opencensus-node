@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
-import {AggregationType, globalStats, Measure, MeasureUnit, Stats, View} from '@opencensus/core';
+import {
+  AggregationType,
+  globalStats,
+  Measure,
+  MeasureUnit,
+  Stats,
+  View,
+} from '@opencensus/core';
 
 /**
  * {@link Measure} for the client-side total bytes sent in request body (not
  * including headers). This is uncompressed bytes.
  */
 export const HTTP_CLIENT_SENT_BYTES: Measure = globalStats.createMeasureInt64(
-    'opencensus.io/http/client/sent_bytes', MeasureUnit.BYTE,
-    'Client-side total bytes sent in request body (uncompressed)');
+  'opencensus.io/http/client/sent_bytes',
+  MeasureUnit.BYTE,
+  'Client-side total bytes sent in request body (uncompressed)'
+);
 
 /**
  * {@link Measure} for the client-side total bytes received in response
@@ -31,27 +40,31 @@ export const HTTP_CLIENT_SENT_BYTES: Measure = globalStats.createMeasureInt64(
  * the Content-Length header. This is uncompressed bytes. Responses with no
  * body should record 0 for this value.
  */
-export const HTTP_CLIENT_RECEIVED_BYTES: Measure =
-    globalStats.createMeasureInt64(
-        'opencensus.io/http/client/received_bytes', MeasureUnit.BYTE,
-        'Client-side total bytes received in response bodies (uncompressed)');
+export const HTTP_CLIENT_RECEIVED_BYTES: Measure = globalStats.createMeasureInt64(
+  'opencensus.io/http/client/received_bytes',
+  MeasureUnit.BYTE,
+  'Client-side total bytes received in response bodies (uncompressed)'
+);
 
 /**
  * {@link Measure} for the client-side time between first byte of request
  * headers sent to last byte of response received, or terminal error.
  */
 export const HTTP_CLIENT_ROUNDTRIP_LATENCY: Measure = globalStats.createMeasureDouble(
-    'opencensus.io/http/client/roundtrip_latency', MeasureUnit.MS,
-    'Client-side time between first byte of request headers sent to last byte of response received, or terminal error');
+  'opencensus.io/http/client/roundtrip_latency',
+  MeasureUnit.MS,
+  'Client-side time between first byte of request headers sent to last byte of response received, or terminal error'
+);
 
 /**
  * {@link Measure} for the server-side total bytes received in request body
  * (not including headers). This is uncompressed bytes.
  */
-export const HTTP_SERVER_RECEIVED_BYTES: Measure =
-    globalStats.createMeasureInt64(
-        'opencensus.io/http/server/received_bytes', MeasureUnit.BYTE,
-        'Server-side total bytes received in request body (uncompressed)');
+export const HTTP_SERVER_RECEIVED_BYTES: Measure = globalStats.createMeasureInt64(
+  'opencensus.io/http/server/received_bytes',
+  MeasureUnit.BYTE,
+  'Server-side total bytes received in request body (uncompressed)'
+);
 
 /**
  * {@link Measure} for the server-side total bytes sent in response bodies
@@ -61,25 +74,29 @@ export const HTTP_SERVER_RECEIVED_BYTES: Measure =
  * body should record 0 for this value.
  */
 export const HTTP_SERVER_SENT_BYTES: Measure = globalStats.createMeasureInt64(
-    'opencensus.io/http/server/sent_bytes', MeasureUnit.BYTE,
-    'Server-side total bytes sent in response bodies (uncompressed)');
+  'opencensus.io/http/server/sent_bytes',
+  MeasureUnit.BYTE,
+  'Server-side total bytes sent in response bodies (uncompressed)'
+);
 
 /**
  * {@link Measure} for the server-side time between first byte of request
  * headers received to last byte of response sent, or terminal error.
  */
 export const HTTP_SERVER_LATENCY: Measure = globalStats.createMeasureDouble(
-    'opencensus.io/http/server/server_latency', MeasureUnit.MS,
-    'Server-side time between first byte of request headers received to last byte of response sent, or terminal error');
+  'opencensus.io/http/server/server_latency',
+  MeasureUnit.MS,
+  'Server-side time between first byte of request headers received to last byte of response sent, or terminal error'
+);
 
 /** {@link TagKey} for the value of the client-side HTTP host header. */
 export const HTTP_CLIENT_HOST = {
-  name: 'http_client_host'
+  name: 'http_client_host',
 };
 
 /** {@link TagKey} for the value of the server-side HTTP host header. */
 export const HTTP_SERVER_HOST = {
-  name: 'http_server_host'
+  name: 'http_server_host',
 };
 
 /**
@@ -88,7 +105,7 @@ export const HTTP_SERVER_HOST = {
  * use "error" as the {@code TagValue}.
  */
 export const HTTP_CLIENT_STATUS = {
-  name: 'http_client_status'
+  name: 'http_client_status',
 };
 
 /**
@@ -97,7 +114,7 @@ export const HTTP_CLIENT_STATUS = {
  * use "error" as the {@code TagValue}.
  */
 export const HTTP_SERVER_STATUS = {
-  name: 'http_server_status'
+  name: 'http_server_status',
 };
 
 /**
@@ -105,7 +122,7 @@ export const HTTP_SERVER_STATUS = {
  * the request.
  */
 export const HTTP_CLIENT_PATH = {
-  name: 'http_client_path'
+  name: 'http_client_path',
 };
 
 /**
@@ -113,7 +130,7 @@ export const HTTP_CLIENT_PATH = {
  * the request.
  */
 export const HTTP_SERVER_PATH = {
-  name: 'http_server_path'
+  name: 'http_server_path',
 };
 
 /**
@@ -121,7 +138,7 @@ export const HTTP_SERVER_PATH = {
  * (GET, POST, etc.).
  */
 export const HTTP_CLIENT_METHOD = {
-  name: 'http_client_method'
+  name: 'http_client_method',
 };
 
 /**
@@ -129,7 +146,7 @@ export const HTTP_CLIENT_METHOD = {
  * (GET, POST, etc.).
  */
 export const HTTP_SERVER_METHOD = {
-  name: 'http_server_method'
+  name: 'http_server_method',
 };
 
 /**
@@ -137,87 +154,156 @@ export const HTTP_SERVER_METHOD = {
  * URL, of a handler that processed the request.
  */
 export const HTTP_SERVER_ROUTE = {
-  name: 'http_server_route'
+  name: 'http_server_route',
 };
 
 const SIZE_DISTRIBUTION: number[] = [
-  1024, 2048, 4096, 16384, 65536, 262144, 1048576, 4194304, 16777216, 67108864,
-  268435456, 1073741824, 4294967296
+  1024,
+  2048,
+  4096,
+  16384,
+  65536,
+  262144,
+  1048576,
+  4194304,
+  16777216,
+  67108864,
+  268435456,
+  1073741824,
+  4294967296,
 ];
 
 const LATENCY_DISTRIBUTION: number[] = [
-  1,   2,   3,   4,    5,    6,    8,     10,    13,    16,    20,  25,
-  30,  40,  50,  65,   80,   100,  130,   160,   200,   250,   300, 400,
-  500, 650, 800, 1000, 2000, 5000, 10000, 20000, 50000, 100000
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  10,
+  13,
+  16,
+  20,
+  25,
+  30,
+  40,
+  50,
+  65,
+  80,
+  100,
+  130,
+  160,
+  200,
+  250,
+  300,
+  400,
+  500,
+  650,
+  800,
+  1000,
+  2000,
+  5000,
+  10000,
+  20000,
+  50000,
+  100000,
 ];
 
 /** {@link View} for count of client-side HTTP requests completed. */
 const HTTP_CLIENT_COMPLETED_COUNT_VIEW = globalStats.createView(
-    'opencensus.io/http/client/completed_count', HTTP_CLIENT_ROUNDTRIP_LATENCY,
-    AggregationType.COUNT, [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
-    'Count of client-side HTTP requests completed');
+  'opencensus.io/http/client/completed_count',
+  HTTP_CLIENT_ROUNDTRIP_LATENCY,
+  AggregationType.COUNT,
+  [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
+  'Count of client-side HTTP requests completed'
+);
 
 /** {@link View} for size distribution of client-side HTTP request body. */
 const HTTP_CLIENT_SENT_BYTES_VIEW = globalStats.createView(
-    'opencensus.io/http/client/sent_bytes', HTTP_CLIENT_SENT_BYTES,
-    AggregationType.DISTRIBUTION, [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
-    'Size distribution of client-side HTTP request body', SIZE_DISTRIBUTION);
+  'opencensus.io/http/client/sent_bytes',
+  HTTP_CLIENT_SENT_BYTES,
+  AggregationType.DISTRIBUTION,
+  [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
+  'Size distribution of client-side HTTP request body',
+  SIZE_DISTRIBUTION
+);
 
 /** {@link View} for size distribution of client-side HTTP response body. */
 const HTTP_CLIENT_RECEIVED_BYTES_VIEW = globalStats.createView(
-    'opencensus.io/http/client/received_bytes', HTTP_CLIENT_RECEIVED_BYTES,
-    AggregationType.DISTRIBUTION, [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
-    'Size distribution of client-side HTTP response body', SIZE_DISTRIBUTION);
+  'opencensus.io/http/client/received_bytes',
+  HTTP_CLIENT_RECEIVED_BYTES,
+  AggregationType.DISTRIBUTION,
+  [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
+  'Size distribution of client-side HTTP response body',
+  SIZE_DISTRIBUTION
+);
 
 /**
  * {@link View} for roundtrip latency distribution of client-side HTTP requests.
  */
 const HTTP_CLIENT_ROUNDTRIP_LATENCY_VIEW = globalStats.createView(
-    'opencensus.io/http/client/roundtrip_latency',
-    HTTP_CLIENT_ROUNDTRIP_LATENCY, AggregationType.DISTRIBUTION,
-    [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
-    'Roundtrip latency distribution of client-side HTTP requests',
-    LATENCY_DISTRIBUTION);
+  'opencensus.io/http/client/roundtrip_latency',
+  HTTP_CLIENT_ROUNDTRIP_LATENCY,
+  AggregationType.DISTRIBUTION,
+  [HTTP_CLIENT_METHOD, HTTP_CLIENT_STATUS],
+  'Roundtrip latency distribution of client-side HTTP requests',
+  LATENCY_DISTRIBUTION
+);
 
 /** {@link View} for count of server-side HTTP requests serving completed. */
 const HTTP_SERVER_COMPLETED_COUNT_VIEW = globalStats.createView(
-    'opencensus.io/http/server/completed_count', HTTP_SERVER_LATENCY,
-    AggregationType.COUNT,
-    [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
-    'Count of HTTP server-side requests serving completed');
+  'opencensus.io/http/server/completed_count',
+  HTTP_SERVER_LATENCY,
+  AggregationType.COUNT,
+  [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
+  'Count of HTTP server-side requests serving completed'
+);
 
 /** {@link View} for size distribution of server-side HTTP request body. */
 const HTTP_SERVER_RECEIVED_BYTES_VIEW = globalStats.createView(
-    'opencensus.io/http/server/received_bytes', HTTP_SERVER_RECEIVED_BYTES,
-    AggregationType.DISTRIBUTION,
-    [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
-    'Size distribution of server-side HTTP request body', SIZE_DISTRIBUTION);
+  'opencensus.io/http/server/received_bytes',
+  HTTP_SERVER_RECEIVED_BYTES,
+  AggregationType.DISTRIBUTION,
+  [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
+  'Size distribution of server-side HTTP request body',
+  SIZE_DISTRIBUTION
+);
 
 /** {@link View} for size distribution of server-side HTTP response body. */
 const HTTP_SERVER_SENT_BYTES_VIEW = globalStats.createView(
-    'opencensus.io/http/server/sent_bytes', HTTP_SERVER_SENT_BYTES,
-    AggregationType.DISTRIBUTION,
-    [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
-    'Size distribution of server-side HTTP response body', SIZE_DISTRIBUTION);
+  'opencensus.io/http/server/sent_bytes',
+  HTTP_SERVER_SENT_BYTES,
+  AggregationType.DISTRIBUTION,
+  [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
+  'Size distribution of server-side HTTP response body',
+  SIZE_DISTRIBUTION
+);
 
 /**
  * {@link View} for latency distribution of server-side HTTP requests serving.
  */
 const HTTP_SERVER_LATENCY_VIEW = globalStats.createView(
-    'opencensus.io/http/server/server_latency', HTTP_SERVER_LATENCY,
-    AggregationType.DISTRIBUTION,
-    [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
-    'Latency distribution of server-side HTTP requests serving',
-    LATENCY_DISTRIBUTION);
+  'opencensus.io/http/server/server_latency',
+  HTTP_SERVER_LATENCY,
+  AggregationType.DISTRIBUTION,
+  [HTTP_SERVER_METHOD, HTTP_SERVER_ROUTE, HTTP_SERVER_STATUS],
+  'Latency distribution of server-side HTTP requests serving',
+  LATENCY_DISTRIBUTION
+);
 
 const HTTP_BASIC_SERVER_VIEWS: View[] = [
-  HTTP_SERVER_COMPLETED_COUNT_VIEW, HTTP_SERVER_RECEIVED_BYTES_VIEW,
-  HTTP_SERVER_SENT_BYTES_VIEW, HTTP_SERVER_LATENCY_VIEW
+  HTTP_SERVER_COMPLETED_COUNT_VIEW,
+  HTTP_SERVER_RECEIVED_BYTES_VIEW,
+  HTTP_SERVER_SENT_BYTES_VIEW,
+  HTTP_SERVER_LATENCY_VIEW,
 ];
 
 const HTTP_BASIC_CLIENT_VIEWS: View[] = [
-  HTTP_CLIENT_COMPLETED_COUNT_VIEW, HTTP_CLIENT_SENT_BYTES_VIEW,
-  HTTP_CLIENT_RECEIVED_BYTES_VIEW, HTTP_CLIENT_ROUNDTRIP_LATENCY_VIEW
+  HTTP_CLIENT_COMPLETED_COUNT_VIEW,
+  HTTP_CLIENT_SENT_BYTES_VIEW,
+  HTTP_CLIENT_RECEIVED_BYTES_VIEW,
+  HTTP_CLIENT_ROUNDTRIP_LATENCY_VIEW,
 ];
 
 /** Register all default views. */

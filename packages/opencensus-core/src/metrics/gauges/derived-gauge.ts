@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-import {getTimestampWithProcessHRTime} from '../../common/time-util';
-import {validateArrayElementsNotNull, validateNotNull} from '../../common/validations';
-import {LabelKey, LabelValue, Metric, MetricDescriptor, MetricDescriptorType, TimeSeries, Timestamp} from '../export/types';
+import { getTimestampWithProcessHRTime } from '../../common/time-util';
+import {
+  validateArrayElementsNotNull,
+  validateNotNull,
+} from '../../common/validations';
+import {
+  LabelKey,
+  LabelValue,
+  Metric,
+  MetricDescriptor,
+  MetricDescriptorType,
+  TimeSeries,
+  Timestamp,
+} from '../export/types';
 import * as types from '../types';
-import {AccessorInterface} from '../types';
+import { AccessorInterface } from '../types';
 import * as util from '../utils';
 
 type ValueExtractor = () => number;
@@ -42,11 +53,11 @@ export class DerivedGauge implements types.Meter {
   private static readonly LABEL_VALUES = 'labelValues';
   private static readonly OBJECT = 'obj';
   private static readonly ERROR_MESSAGE_INVALID_SIZE =
-      'Label Keys and Label Values don\'t have same size';
+    "Label Keys and Label Values don't have same size";
   private static readonly ERROR_MESSAGE_DUPLICATE_TIME_SERIES =
-      'A different time series with the same labels already exists.';
+    'A different time series with the same labels already exists.';
   private static readonly ERROR_MESSAGE_UNKNOWN_INTERFACE =
-      'Unknown interface/object type';
+    'Unknown interface/object type';
 
   /**
    * Constructs a new DerivedGauge instance.
@@ -59,15 +70,24 @@ export class DerivedGauge implements types.Meter {
    * @param constantLabels The map of constant labels for the Metric.
    */
   constructor(
-      name: string, description: string, unit: string,
-      type: MetricDescriptorType, labelKeys: LabelKey[],
-      readonly constantLabels: Map<LabelKey, LabelValue>) {
+    name: string,
+    description: string,
+    unit: string,
+    type: MetricDescriptorType,
+    labelKeys: LabelKey[],
+    readonly constantLabels: Map<LabelKey, LabelValue>
+  ) {
     this.labelKeysLength = labelKeys.length;
     const keysAndConstantKeys = [...labelKeys, ...constantLabels.keys()];
     this.constantLabelValues = [...constantLabels.values()];
 
-    this.metricDescriptor =
-        {name, description, unit, type, labelKeys: keysAndConstantKeys};
+    this.metricDescriptor = {
+      name,
+      description,
+      unit,
+      type,
+      labelKeys: keysAndConstantKeys,
+    };
   }
 
   /**
@@ -83,11 +103,14 @@ export class DerivedGauge implements types.Meter {
    *     fn is the function that will be called to get the current value
    *     of the gauge.
    */
-  createTimeSeries(labelValues: LabelValue[], objOrFn: AccessorInterface):
-      void {
+  createTimeSeries(
+    labelValues: LabelValue[],
+    objOrFn: AccessorInterface
+  ): void {
     validateArrayElementsNotNull(
-        validateNotNull(labelValues, DerivedGauge.LABEL_VALUES),
-        DerivedGauge.LABEL_VALUE);
+      validateNotNull(labelValues, DerivedGauge.LABEL_VALUES),
+      DerivedGauge.LABEL_VALUE
+    );
     validateNotNull(objOrFn, DerivedGauge.OBJECT);
 
     const hash = util.hashLabelValues(labelValues);
@@ -114,7 +137,7 @@ export class DerivedGauge implements types.Meter {
       throw new Error(DerivedGauge.ERROR_MESSAGE_UNKNOWN_INTERFACE);
     }
 
-    this.registeredPoints.set(hash, {labelValues, extractor: this.extractor});
+    this.registeredPoints.set(hash, { labelValues, extractor: this.extractor });
   }
 
   /**
@@ -142,7 +165,7 @@ export class DerivedGauge implements types.Meter {
    *
    * @returns The Metric, or null if TimeSeries is not present in Metric.
    */
-  getMetric(): Metric|null {
+  getMetric(): Metric | null {
     if (this.registeredPoints.size === 0) {
       return null;
     }
@@ -150,12 +173,12 @@ export class DerivedGauge implements types.Meter {
     return {
       descriptor: this.metricDescriptor,
       timeseries: Array.from(
-          this.registeredPoints,
-          ([_, gaugeEntry]): TimeSeries => ({
-            labelValues:
-                [...gaugeEntry.labelValues, ...this.constantLabelValues],
-            points: [{value: gaugeEntry.extractor(), timestamp}]
-          }))
+        this.registeredPoints,
+        ([_, gaugeEntry]): TimeSeries => ({
+          labelValues: [...gaugeEntry.labelValues, ...this.constantLabelValues],
+          points: [{ value: gaugeEntry.extractor(), timestamp }],
+        })
+      ),
     };
   }
 }

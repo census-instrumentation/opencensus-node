@@ -15,7 +15,7 @@
  */
 
 import * as core from '@opencensus/core';
-import {Tracing} from './trace/tracing';
+import { Tracing } from './trace/tracing';
 
 const tracing: core.Tracing = Tracing.instance;
 

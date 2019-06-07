@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BasePlugin, CanonicalCode, Span, SpanKind} from '@opencensus/core';
+import { BasePlugin, CanonicalCode, Span, SpanKind } from '@opencensus/core';
 import * as redis from 'redis';
 import * as semver from 'semver';
 import * as shimmer from 'shimmer';
@@ -50,15 +50,22 @@ export class RedisPlugin extends BasePlugin {
     if (this.moduleExports.RedisClient) {
       this.logger.debug('patching redis.RedisClient.prototype.create_stream');
       shimmer.wrap(
-          this.moduleExports.RedisClient.prototype, 'create_stream',
-          this.getPatchCreateStream());
+        this.moduleExports.RedisClient.prototype,
+        'create_stream',
+        this.getPatchCreateStream()
+      );
       this.logger.debug('patching redis.RedisClient.prototype.internal_send');
       shimmer.wrap(
-          this.moduleExports.RedisClient.prototype, 'internal_send_command',
-          this.getPatchSendCommand());
+        this.moduleExports.RedisClient.prototype,
+        'internal_send_command',
+        this.getPatchSendCommand()
+      );
       this.logger.debug('patching redis.RedisClient.prototype.createClient');
       shimmer.wrap(
-          this.moduleExports, 'createClient', this.getPatchCreateClient());
+        this.moduleExports,
+        'createClient',
+        this.getPatchCreateClient()
+      );
     }
     return this.moduleExports;
   }
@@ -68,7 +75,9 @@ export class RedisPlugin extends BasePlugin {
     if (semver.lt(this.version, '2.6.0')) return;
 
     shimmer.unwrap(
-        this.moduleExports.RedisClient.prototype, 'internal_send_command');
+      this.moduleExports.RedisClient.prototype,
+      'internal_send_command'
+    );
     shimmer.unwrap(this.moduleExports, 'createClient');
     shimmer.unwrap(this.moduleExports.RedisClient.prototype, 'create_stream');
   }
@@ -87,7 +96,7 @@ export class RedisPlugin extends BasePlugin {
             set(val) {
               plugin.tracer.wrapEmitter(val);
               this._patched_redis_stream = val;
-            }
+            },
           });
         }
         return original.apply(this, arguments);
@@ -99,12 +108,13 @@ export class RedisPlugin extends BasePlugin {
   private getPatchCreateClient() {
     const plugin = this;
     return function createClientWrap(original: Function) {
-      return function createClientTrace(this: redis.RedisClient):
-          redis.RedisClient {
-            const client: redis.RedisClient = original.apply(this, arguments);
-            plugin.tracer.wrapEmitter(client);
-            return client;
-          };
+      return function createClientTrace(
+        this: redis.RedisClient
+      ): redis.RedisClient {
+        const client: redis.RedisClient = original.apply(this, arguments);
+        plugin.tracer.wrapEmitter(client);
+        return client;
+      };
     };
   }
 
@@ -113,15 +123,19 @@ export class RedisPlugin extends BasePlugin {
     const plugin = this;
     return function internalSendCommandWrap(original: Function) {
       return function internal_send_command_trace(
-          this: redis.RedisClient, cmd: RedisCommand|undefined) {
+        this: redis.RedisClient,
+        cmd: RedisCommand | undefined
+      ) {
         if (!plugin.tracer.currentRootSpan) {
           return original.apply(this, arguments);
         }
         // New versions of redis (2.4+) use a single options object instead
         // of separate named arguments.
         if (arguments.length === 1 && typeof cmd === 'object') {
-          const span = plugin.tracer.startChildSpan(
-              {name: `redis-${cmd.command}`, kind: SpanKind.CLIENT});
+          const span = plugin.tracer.startChildSpan({
+            name: `redis-${cmd.command}`,
+            kind: SpanKind.CLIENT,
+          });
           if (span === null) return original.apply(this, arguments);
 
           span.addAttribute('command', cmd.command);
@@ -153,4 +167,4 @@ export class RedisPlugin extends BasePlugin {
 }
 
 const plugin = new RedisPlugin('redis');
-export {plugin};
+export { plugin };

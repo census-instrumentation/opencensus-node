@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-import {CoreTracerBase, logger} from '@opencensus/core';
+import { CoreTracerBase, logger } from '@opencensus/core';
 import * as assert from 'assert';
-import {Constants} from '../src/trace/constants';
-import {PluginLoader} from '../src/trace/instrumentation/plugin-loader';
+import { Constants } from '../src/trace/constants';
+import { PluginLoader } from '../src/trace/instrumentation/plugin-loader';
 
 const INSTALLED_PLUGINS_PATH = `${__dirname}/instrumentation/node_modules`;
 const TEST_MODULES = [
-  'simple-module'  // this module exist and has a plugin
-  ,
-  'nonexistent-module'  // this module does not exist
-  ,
-  'http'  // this module does not have a plugin
-  ,
-  'load-internal-file-module'  // this module has an internal file not exported
+  'simple-module', // this module exist and has a plugin
+  'nonexistent-module', // this module does not exist
+  'http', // this module does not have a plugin
+  'load-internal-file-module', // this module has an internal file not exported
 ];
-
 
 const clearRequireCache = () => {
   Object.keys(require.cache).forEach(key => delete require.cache[key]);
@@ -47,11 +43,10 @@ describe('Plugin Loader', () => {
     clearRequireCache();
   });
 
-
   describe('PluginLoader', () => {
     const plugins = PluginLoader.defaultPluginsFromArray(TEST_MODULES);
     const tracer = new CoreTracerBase();
-    tracer.start({logger: log});
+    tracer.start({ logger: log });
 
     /** Should get the plugins to use. */
     describe('static defaultPluginsFromArray()', () => {
@@ -61,22 +56,27 @@ describe('Plugin Loader', () => {
         assert.ok(plugins[TEST_MODULES[2]]);
         assert.ok(plugins[TEST_MODULES[3]]);
         assert.strictEqual(
-            plugins[TEST_MODULES[0]],
-            `@opencensus/${
-                Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-simple-module`);
+          plugins[TEST_MODULES[0]],
+          `@opencensus/${
+            Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
+          }-simple-module`
+        );
         assert.strictEqual(
-            plugins[TEST_MODULES[1]],
-            `@opencensus/${
-                Constants
-                    .DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-nonexistent-module`);
+          plugins[TEST_MODULES[1]],
+          `@opencensus/${
+            Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
+          }-nonexistent-module`
+        );
         assert.strictEqual(
-            plugins[TEST_MODULES[2]],
-            `@opencensus/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-http`);
+          plugins[TEST_MODULES[2]],
+          `@opencensus/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-http`
+        );
         assert.strictEqual(
-            plugins[TEST_MODULES[3]],
-            `@opencensus/${
-                Constants
-                    .DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-load-internal-file-module`);
+          plugins[TEST_MODULES[3]],
+          `@opencensus/${
+            Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
+          }-load-internal-file-module`
+        );
       });
     });
 
@@ -109,16 +109,19 @@ describe('Plugin Loader', () => {
         const loadInternalFileModule = require(moduleName);
         assert.strictEqual(pluginLoader.plugins.length, 1);
         assert.strictEqual(
-            loadInternalFileModule.name(), 'patched-' + moduleName);
+          loadInternalFileModule.name(),
+          'patched-' + moduleName
+        );
         assert.strictEqual(loadInternalFileModule.value(), 111);
 
         const extraModuleName = 'extra-module';
         assert.strictEqual(
-            loadInternalFileModule.extraName(), 'patched-' + extraModuleName);
+          loadInternalFileModule.extraName(),
+          'patched-' + extraModuleName
+        );
         assert.strictEqual(loadInternalFileModule.extraValue(), 121);
         pluginLoader.unloadPlugins();
       });
-
 
       it('should not load a non existing plugin and just log an error', () => {
         const intercept = require('intercept-stdout');
@@ -158,13 +161,15 @@ describe('Plugin Loader', () => {
         assert.strictEqual(pluginLoader.plugins.length, 0);
 
         const endUserPlugins = {
-          'simple-module': 'enduser-simple-module-plugin'
+          'simple-module': 'enduser-simple-module-plugin',
         };
         pluginLoader.loadPlugins(endUserPlugins);
         const simpleModule = require(TEST_MODULES[0]);
         assert.strictEqual(pluginLoader.plugins.length, 1);
         assert.strictEqual(
-            simpleModule.name(), 'my-patched-' + TEST_MODULES[0]);
+          simpleModule.name(),
+          'my-patched-' + TEST_MODULES[0]
+        );
         assert.strictEqual(simpleModule.value(), 102);
         pluginLoader.unloadPlugins();
         assert.strictEqual(pluginLoader.plugins.length, 0);

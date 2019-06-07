@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {noopLogger} from '../../../common/noop-logger';
-import {Logger} from '../../../common/types';
-import {randomSpanId} from '../../../internal/util';
+import { noopLogger } from '../../../common/noop-logger';
+import { Logger } from '../../../common/types';
+import { randomSpanId } from '../../../internal/util';
 import * as configTypes from '../../config/types';
 import * as types from '../types';
 
 const STATUS_OK = {
-  code: types.CanonicalCode.OK
+  code: types.CanonicalCode.OK,
 };
 
 /** Implementation for the SpanBase class that does not record trace events. */
@@ -29,9 +29,6 @@ export class NoRecordSpan implements types.Span {
   private startedLocal = false;
   /** Indicates if this span was ended */
   private endedLocal = false;
-  /** Indicates if this span was forced to end */
-  // @ts-ignore
-  private truncated = false;
   /** The Span ID of this span */
   readonly id: string;
   /** An object to log information to */
@@ -91,7 +88,7 @@ export class NoRecordSpan implements types.Span {
   }
 
   /** Gets the trace state */
-  get traceState(): types.TraceState|undefined {
+  get traceState(): types.TraceState | undefined {
     return undefined;
   }
 
@@ -144,7 +141,7 @@ export class NoRecordSpan implements types.Span {
       traceId: this.traceId,
       spanId: this.id,
       options: 0,
-      traceState: this.traceState
+      traceState: this.traceState,
     };
   }
 
@@ -154,21 +151,31 @@ export class NoRecordSpan implements types.Span {
   }
 
   /** No-op implementation of this method. */
-  addAttribute(key: string, value: string|number|boolean|object) {}
+  addAttribute(key: string, value: string | number | boolean | object) {}
 
   /** No-op implementation of this method. */
   addAnnotation(
-      description: string, attributes?: types.Attributes, timestamp = 0) {}
+    description: string,
+    attributes?: types.Attributes,
+    timestamp = 0
+  ) {}
 
   /** No-op implementation of this method. */
   addLink(
-      traceId: string, spanId: string, type: types.LinkType,
-      attributes?: types.Attributes) {}
+    traceId: string,
+    spanId: string,
+    type: types.LinkType,
+    attributes?: types.Attributes
+  ) {}
 
   /** No-op implementation of this method. */
   addMessageEvent(
-      type: types.MessageEventType, id: number, timestamp = 0,
-      uncompressedSize?: number, compressedSize?: number) {}
+    type: types.MessageEventType,
+    id: number,
+    timestamp = 0,
+    uncompressedSize?: number,
+    compressedSize?: number
+  ) {}
 
   /** No-op implementation of this method. */
   setStatus(code: types.CanonicalCode, message?: string) {}

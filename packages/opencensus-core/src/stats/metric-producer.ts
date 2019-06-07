@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {BaseMetricProducer} from '../metrics/export/base-metric-producer';
-import {Metric} from '../metrics/export/types';
-import {Stats} from './types';
+import { BaseMetricProducer } from '../metrics/export/base-metric-producer';
+import { Metric } from '../metrics/export/types';
+import { Stats } from './types';
 
 /**
  * A MetricProducer producer that can be registered for exporting using

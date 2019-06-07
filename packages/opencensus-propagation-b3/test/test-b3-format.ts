@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-import {HeaderGetter, HeaderSetter} from '@opencensus/core';
+import { HeaderGetter, HeaderSetter } from '@opencensus/core';
 import * as assert from 'assert';
 import * as uuid from 'uuid';
 
-import {B3Format, NOT_SAMPLED_VALUE, SAMPLED_VALUE, X_B3_SAMPLED, X_B3_SPAN_ID, X_B3_TRACE_ID} from '../src/';
+import {
+  B3Format,
+  NOT_SAMPLED_VALUE,
+  SAMPLED_VALUE,
+  X_B3_SAMPLED,
+  X_B3_SPAN_ID,
+  X_B3_TRACE_ID,
+} from '../src/';
 
 const b3Format = new B3Format();
 
@@ -37,14 +44,17 @@ describe('B3Propagation', () => {
       const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
-        }
+        },
       };
 
       assert.deepStrictEqual(b3Format.extract(getter), spanContext);
     });
 
     it('should return null when options and spanId are undefined', () => {
-      const traceId = uuid.v4().split('-').join('');
+      const traceId = uuid
+        .v4()
+        .split('-')
+        .join('');
       // tslint:disable-next-line
       const headers = {} as any;
       headers[X_B3_TRACE_ID] = traceId;
@@ -53,7 +63,7 @@ describe('B3Propagation', () => {
       const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
-        }
+        },
       };
 
       assert.deepStrictEqual(b3Format.extract(getter), null);
@@ -68,7 +78,7 @@ describe('B3Propagation', () => {
       const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
-        }
+        },
       };
 
       assert.deepStrictEqual(b3Format.extract(getter), null);
@@ -78,15 +88,20 @@ describe('B3Propagation', () => {
       const spanContext = b3Format.generate();
       // tslint:disable-next-line
       const headers = {} as any;
-      headers[X_B3_TRACE_ID] =
-          [spanContext.traceId, uuid.v4().split('-').join('')];
+      headers[X_B3_TRACE_ID] = [
+        spanContext.traceId,
+        uuid
+          .v4()
+          .split('-')
+          .join(''),
+      ];
       headers[X_B3_SPAN_ID] = [spanContext.spanId];
       headers[X_B3_SAMPLED] = [SAMPLED_VALUE];
 
       const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
-        }
+        },
       };
 
       assert.deepStrictEqual(b3Format.extract(getter), spanContext);
@@ -102,12 +117,12 @@ describe('B3Propagation', () => {
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
-        }
+        },
       };
       const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
-        }
+        },
       };
 
       b3Format.inject(setter, spanContext);
@@ -126,12 +141,12 @@ describe('B3Propagation', () => {
       const setter: HeaderSetter = {
         setHeader(name: string, value: string) {
           headers[name] = value;
-        }
+        },
       };
       const getter: HeaderGetter = {
         getHeader(name: string) {
           return headers[name];
-        }
+        },
       };
 
       b3Format.inject(setter, emptySpanContext);
@@ -139,23 +154,23 @@ describe('B3Propagation', () => {
     });
   });
 
-
   // Same test as propagation-stackdriver.
   describe('generate', () => {
     const TIMES = 20;
 
     // Generate some span contexts.
-    const GENERATED =
-        Array.from({length: TIMES}).fill(0).map(_ => b3Format.generate());
+    const GENERATED = Array.from({ length: TIMES })
+      .fill(0)
+      .map(_ => b3Format.generate());
 
     it('should generate unique traceIds', () => {
       const traceIds = GENERATED.map(c => c.traceId);
-      assert.strictEqual((new Set(traceIds)).size, TIMES);
+      assert.strictEqual(new Set(traceIds).size, TIMES);
     });
 
     it('should generate unique spanIds', () => {
       const spanIds = GENERATED.map(c => c.spanId);
-      assert.strictEqual((new Set(spanIds)).size, TIMES);
+      assert.strictEqual(new Set(spanIds).size, TIMES);
     });
   });
 });

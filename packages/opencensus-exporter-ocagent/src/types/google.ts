@@ -18,42 +18,42 @@
 
 export namespace google.protobuf {
   export interface Timestamp {
-    seconds?: number|Long|null;
-    nanos?: number|null;
+    seconds?: number | Long | null;
+    nanos?: number | null;
   }
 
   export interface DoubleValue {
-    value?: number|null;
+    value?: number | null;
   }
 
   export interface FloatValue {
-    value?: number|null;
+    value?: number | null;
   }
   export interface Int64Value {
-    value?: number|Long|null;
+    value?: number | Long | null;
   }
 
   export interface UInt64Value {
-    value?: number|Long|null;
+    value?: number | Long | null;
   }
 
   export interface Int32Value {
-    value?: number|null;
+    value?: number | null;
   }
 
   export interface UInt32Value {
-    value?: number|null;
+    value?: number | null;
   }
 
   export interface BoolValue {
-    value?: boolean|null;
+    value?: boolean | null;
   }
 
   export interface StringValue {
-    value?: string|null;
+    value?: string | null;
   }
 
   export interface BytesValue {
-    value?: Uint8Array|null;
+    value?: Uint8Array | null;
   }
 }

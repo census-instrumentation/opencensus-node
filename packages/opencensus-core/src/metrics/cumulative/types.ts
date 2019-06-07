@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {TimeSeries, Timestamp} from '../export/types';
+import { TimeSeries, Timestamp } from '../export/types';
 
 export interface CumulativePoint {
   /** Reset cumulative metric. */
