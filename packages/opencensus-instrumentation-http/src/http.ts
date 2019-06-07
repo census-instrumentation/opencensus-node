@@ -27,7 +27,7 @@ import {
   TagTtl,
   TraceOptions,
   serializeTextFormat,
-  deserializeTextFormat
+  deserializeTextFormat,
 } from '@opencensus/core';
 import {
   ClientRequest,
@@ -265,8 +265,8 @@ export class HttpPlugin extends BasePlugin {
 
             const requestUrl = request.url ? url.parse(request.url) : null;
             const host = headers.host || 'localhost';
-            const userAgent =
-                (headers['user-agent'] || headers['User-Agent']) as string;
+            const userAgent = (headers['user-agent'] ||
+              headers['User-Agent']) as string;
             const tags = HttpPlugin.getTagMap(headers) || new TagMap();
 
             rootSpan.addAttribute(
@@ -491,8 +491,9 @@ export class HttpPlugin extends BasePlugin {
 
           // record stats: new RPCs on client-side inherit the tag context from
           // the current Context.
-          const tags =
-              plugin.stats ? plugin.stats.getCurrentTagContext() : new TagMap();
+          const tags = plugin.stats
+            ? plugin.stats.getCurrentTagContext()
+            : new TagMap();
           if (tags.tags.size > 0) {
             if (plugin.hasExpectHeader(options) && options.headers) {
               options.headers[CORRELATION_CONTEXT] = serializeTextFormat(tags);
@@ -501,7 +502,7 @@ export class HttpPlugin extends BasePlugin {
             }
           }
 
-          tags.set(stats.HTTP_CLIENT_METHOD, {value: method});
+          tags.set(stats.HTTP_CLIENT_METHOD, { value: method });
 
           const host = options.hostname || options.host || 'localhost';
           span.addAttribute(HttpPlugin.ATTRIBUTE_HTTP_HOST, host);
@@ -625,9 +626,9 @@ export class HttpPlugin extends BasePlugin {
    * @param headers The incoming HTTP header object from which TagMap should be
    *     retrieved.
    */
-  static getTagMap(headers: IncomingHttpHeaders): TagMap|null {
+  static getTagMap(headers: IncomingHttpHeaders): TagMap | null {
     const contextValue = (headers[CORRELATION_CONTEXT.toLocaleLowerCase()] ||
-                          headers[CORRELATION_CONTEXT]) as string;
+      headers[CORRELATION_CONTEXT]) as string;
     // Entry doesn't exist.
     if (!contextValue) return null;
     return deserializeTextFormat(contextValue);
