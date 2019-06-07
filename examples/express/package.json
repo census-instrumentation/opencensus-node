@@ -1,0 +1,37 @@
+{
+  "name": "express-example",
+  "version": "0.0.1",
+  "description": "Example of Express integration with OpenCensus",
+  "repository": "census-instrumentation/opencensus-node",
+  "keywords": [
+    "opencensus",
+    "http",
+    "tracing",
+    "stats",
+    "metrics"
+  ],
+  "author": "OpenCensus Authors",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=8"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "lint": "semistandard *.js",
+    "fix": "semistandard --fix"
+  },
+  "dependencies": {
+    "@opencensus/exporter-zipkin": "^0.0.14",
+    "@opencensus/nodejs": "^0.0.14",
+    "@opencensus/propagation-b3": "^0.0.14",
+    "cookie-parser": "^1.4.4",
+    "express": "^4.17.0",
+    "http": "*",
+    "method-override": "^3.0.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
+  },
+  "devDependencies": {
+    "semistandard": "^13.0.1"
+  }
+}
