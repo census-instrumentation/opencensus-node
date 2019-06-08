@@ -35,6 +35,7 @@ const exporter = new zipkin.ZipkinTraceExporter({
   serviceName: 'opencensus-express'
 });
 
+// NOTE: Please ensure that you start the tracer BEFORE initializing express app
 // Starts tracing and set sampling rate, exporter and propagation
 tracing.start({
   exporter,

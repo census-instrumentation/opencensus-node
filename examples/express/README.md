@@ -2,6 +2,8 @@
 
 OpenCensus HTTP Instrumentation allows the user to automatically collect trace data and export them to the backend of choice (we are using Zipkin for this example), to give observability to distributed systems.
 
+> NOTE: Please ensure that you start the OpenCensus tracer BEFORE initializing your express app, if you want to enable automatic tracing for built-in plugins (HTTP in this case). https://github.com/census-instrumentation/opencensus-node#plugins
+
 ## Installation
 
 ```sh
