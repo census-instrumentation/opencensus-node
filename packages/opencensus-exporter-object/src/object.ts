@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterBuffer, ExporterConfig, Span} from '@opencensus/core';
-import {logger, Logger} from '@opencensus/core';
+import {
+  Exporter,
+  ExporterBuffer,
+  ExporterConfig,
+  Span,
+} from '@opencensus/core';
+import { logger, Logger } from '@opencensus/core';
 
 /** Object Exporter manager class */
 export class ObjectTraceExporter implements Exporter {

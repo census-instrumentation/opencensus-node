@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {CoreTracer, Span, SpanKind, TracerConfig} from '@opencensus/core';
+import { CoreTracer, Span, SpanKind, TracerConfig } from '@opencensus/core';
 import * as assert from 'assert';
-import {ObjectTraceExporter} from '../src/object';
+import { ObjectTraceExporter } from '../src/object';
 
 /** Default config for traces tests */
 const defaultConfig: TracerConfig = {
-  samplingRate: 1
+  samplingRate: 1,
 };
 
 /** Object Exporter tests */
@@ -33,9 +33,9 @@ describe('Object Exporter', () => {
       tracer.registerSpanEventListener(exporter);
       tracer.start(defaultConfig);
 
-      tracer.startRootSpan({name: 'root-test'}, (rootSpan: Span) => {
+      tracer.startRootSpan({ name: 'root-test' }, (rootSpan: Span) => {
         assert.strictEqual(exporter.startedSpans.length, 1);
-        rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
+        rootSpan.startChildSpan({ name: 'spanTest', kind: SpanKind.CLIENT });
         assert.strictEqual(exporter.startedSpans.length, 2);
       });
     });
@@ -49,9 +49,11 @@ describe('Object Exporter', () => {
       tracer.registerSpanEventListener(exporter);
       tracer.start(defaultConfig);
 
-      tracer.startRootSpan({name: 'root-test'}, (rootSpan: Span) => {
-        const span =
-            rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
+      tracer.startRootSpan({ name: 'root-test' }, (rootSpan: Span) => {
+        const span = rootSpan.startChildSpan({
+          name: 'spanTest',
+          kind: SpanKind.CLIENT,
+        });
         span.end();
         assert.strictEqual(exporter.endedSpans.length, 1);
         rootSpan.end();
@@ -69,14 +71,18 @@ describe('Object Exporter', () => {
       tracer.start(defaultConfig);
 
       return tracer.startRootSpan(
-          {name: 'root-test'}, async (rootSpan: Span) => {
-            const span = rootSpan.startChildSpan(
-                {name: 'spanTest', kind: SpanKind.CLIENT});
-            span.end();
-            rootSpan.end();
-            await exporter.publish([rootSpan, rootSpan]);
-            assert.strictEqual(exporter.publishedSpans.length, 2);
+        { name: 'root-test' },
+        async (rootSpan: Span) => {
+          const span = rootSpan.startChildSpan({
+            name: 'spanTest',
+            kind: SpanKind.CLIENT,
           });
+          span.end();
+          rootSpan.end();
+          await exporter.publish([rootSpan, rootSpan]);
+          assert.strictEqual(exporter.publishedSpans.length, 2);
+        }
+      );
     });
   });
 
@@ -88,9 +94,11 @@ describe('Object Exporter', () => {
       tracer.registerSpanEventListener(exporter);
       tracer.start(defaultConfig);
 
-      tracer.startRootSpan({name: 'root-test'}, (rootSpan: Span) => {
-        const span =
-            rootSpan.startChildSpan({name: 'spanTest', kind: SpanKind.CLIENT});
+      tracer.startRootSpan({ name: 'root-test' }, (rootSpan: Span) => {
+        const span = rootSpan.startChildSpan({
+          name: 'spanTest',
+          kind: SpanKind.CLIENT,
+        });
         span.end();
         rootSpan.end();
         exporter.publish([rootSpan, rootSpan]);
