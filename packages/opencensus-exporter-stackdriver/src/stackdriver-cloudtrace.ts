@@ -183,7 +183,9 @@ export class StackdriverTraceExporter implements Exporter {
    * authenticates the client and calls a method to send the spans data.
    * @param stackdriverSpans The spans to export
    */
-  private async authorize(stackdriverSpans: Span[]): Promise<SpansWithCredentials> {
+  private async authorize(
+    stackdriverSpans: Span[]
+  ): Promise<SpansWithCredentials> {
     try {
       const client = await auth.getClient({
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
