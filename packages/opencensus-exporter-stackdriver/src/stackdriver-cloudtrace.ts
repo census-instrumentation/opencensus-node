@@ -170,7 +170,7 @@ export class StackdriverTraceExporter implements Exporter {
           this.logger.error(err.message);
           reject(err);
         } else {
-          const successMsg = 'batchWriteSpans sucessfully';
+          const successMsg = 'batchWriteSpans successfully';
           this.logger.debug(successMsg);
           resolve(successMsg);
         }

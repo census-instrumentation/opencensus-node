@@ -214,7 +214,7 @@ describe('Stackdriver Trace Exporter', function() {
           rootSpan.end();
 
           return exporter.publish([rootSpan]).then(result => {
-            assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
+            assert.ok(result.indexOf('batchWriteSpans successfully') >= 0);
           });
         }
       );
@@ -287,7 +287,7 @@ describe('Stackdriver Trace Exporter', function() {
             rootSpan.end();
 
             return exporter.publish([rootSpan]).then(result => {
-              assert.ok(result.indexOf('batchWriteSpans sucessfully') >= 0);
+              assert.ok(result.indexOf('batchWriteSpans successfully') >= 0);
             });
           }
         );
