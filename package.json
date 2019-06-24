@@ -13,7 +13,8 @@
     "bootstrap": "lerna bootstrap",
     "bump": "lerna publish",
     "codecov": "lerna run codecov",
-    "check": "lerna run check"
+    "check": "lerna run check",
+    "docs": "typedoc --tsconfig  ./packages/opencensus-core/tsconfig.json"
   },
   "keywords": [
     "opencensus",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@types/node": "^10.12.12",
     "lerna": "^2.11.0",
+    "typedoc": "^0.14.2",
     "typescript": "^3.0.0"
   }
 }

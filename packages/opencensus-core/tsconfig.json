@@ -15,5 +15,12 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "typedocOptions": {
+    "name": "OpenCensus Documentation",
+    "out": "docs",
+    "mode": "file",
+    "hideGenerator": true,
+    "ignoreCompilerErrors": true
+  }
 }
