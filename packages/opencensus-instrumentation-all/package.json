@@ -11,9 +11,10 @@
     "check": "echo Ok",
     "compile": "echo Ok",
     "fix": "echo Ok",
-    "prepare": "echo Ok",
+    "prepare": "npm run snyk-protect; echo Ok",
     "pretest": "echo Ok",
-    "posttest": "echo Ok"
+    "posttest": "echo Ok",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "opencensus",
@@ -44,6 +45,8 @@
     "@opencensus/instrumentation-https": "^0.0.14",
     "@opencensus/instrumentation-ioredis": "^0.0.14",
     "@opencensus/instrumentation-mongodb": "^0.0.14",
-    "@opencensus/instrumentation-redis": "^0.0.14"
-  }
+    "@opencensus/instrumentation-redis": "^0.0.14",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
