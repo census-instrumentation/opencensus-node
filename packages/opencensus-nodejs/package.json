@@ -12,10 +12,11 @@
     "check": "gts check",
     "compile": "tsc -p .",
     "fix": "gts fix",
-    "prepare": "npm run compile",
+    "prepare": "npm run snyk-protect; npm run compile",
     "pretest": "npm run compile; npm run copy-fixtures",
     "posttest": "npm run check",
-    "copy-fixtures": "./scripts/copy-fixtures.sh"
+    "copy-fixtures": "./scripts/copy-fixtures.sh",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "opencensus",
@@ -56,6 +57,8 @@
   "dependencies": {
     "@opencensus/core": "^0.0.14",
     "@opencensus/instrumentation-all": "^0.0.14",
-    "@opencensus/nodejs-base": "^0.0.14"
-  }
+    "@opencensus/nodejs-base": "^0.0.14",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
