@@ -12,8 +12,9 @@
     "check": "gts check",
     "compile": "tsc -p .",
     "fix": "gts fix",
-    "prepare": "npm run compile",
-    "posttest": "npm run check"
+    "prepare": "npm run snyk-protect; npm run compile",
+    "posttest": "npm run check",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "opencensus",
@@ -63,6 +64,8 @@
     "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.14"
-  }
+    "@opencensus/core": "^0.0.14",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
