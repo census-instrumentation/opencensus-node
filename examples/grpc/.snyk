@@ -1,0 +1,18 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.5
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-450202:
+    - '@opencensus/instrumentation-grpc > lodash':
+        patched: '2019-07-03T17:38:28.502Z'
+    - semistandard > eslint > lodash:
+        patched: '2019-07-03T17:38:28.502Z'
+    - semistandard > eslint-plugin-import > lodash:
+        patched: '2019-07-03T17:38:28.502Z'
+    - '@opencensus/nodejs > @opencensus/instrumentation-all > @opencensus/instrumentation-grpc > lodash':
+        patched: '2019-07-03T17:38:28.502Z'
+    - semistandard > eslint > inquirer > lodash:
+        patched: '2019-07-03T17:38:28.502Z'
+    - semistandard > eslint > table > lodash:
+        patched: '2019-07-03T17:38:28.502Z'
