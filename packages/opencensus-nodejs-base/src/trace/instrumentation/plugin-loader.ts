@@ -126,7 +126,18 @@ export class PluginLoader {
    */
   loadPlugins(pluginList: PluginNames) {
     if (this.hookState === HookState.UNINITIALIZED) {
-      hook(Object.keys(pluginList), (exports, name, basedir) => {
+      const modulesToHook = Object.keys(pluginList);
+
+      // Do not hook require when no module is provided. In this case it is
+      // not necessary. With skipping this step we lower our footprint in
+      // customer applications and require-in-the-middle won't show up in CPU
+      // frames.
+      if (modulesToHook.length === 0) {
+        this.hookState = HookState.DISABLED;
+        return;
+      }
+
+      hook(modulesToHook, (exports, name, basedir) => {
         if (this.hookState !== HookState.ENABLED) {
           return exports;
         }
