@@ -13,8 +13,9 @@
     "compile": "tsc -p .",
     "compile:release": "tsc -p tsconfig-release.json",
     "fix": "gts fix",
-    "prepare": "npm run compile:release",
-    "posttest": "npm run check"
+    "prepare": "npm run snyk-protect; npm run compile:release",
+    "posttest": "npm run check",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "opencensus",
@@ -73,6 +74,8 @@
     "log-driver": "^1.2.7",
     "semver": "^6.0.0",
     "shimmer": "^1.2.0",
-    "uuid": "^3.2.1"
-  }
+    "uuid": "^3.2.1",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
