@@ -12,8 +12,9 @@
     "clean": "gts clean",
     "compile": "tsc -p .",
     "fix": "gts fix",
-    "prepare": "npm run compile",
-    "posttest": "npm run check"
+    "prepare": "npm run snyk-protect; npm run compile",
+    "posttest": "npm run check",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "opencensus",
@@ -39,12 +40,14 @@
   "dependencies": {
     "@opencensus/core": "^0.0.14",
     "hex2dec": "^1.0.1",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "snyk": "^1.189.0"
   },
   "files": [
     "build/src"
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "snyk": true
 }
