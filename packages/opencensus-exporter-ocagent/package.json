@@ -14,10 +14,11 @@
     "postcompile": "npm run protos:copy",
     "watch": "nodemon --exec tsc -p .",
     "fix": "gts fix",
-    "prepare": "npm run compile",
+    "prepare": "npm run snyk-protect; npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run check",
-    "protos:copy": "cp -R src/protos build/src/protos && cp -R node_modules/google-proto-files/google build/src/protos/google"
+    "protos:copy": "cp -R src/protos build/src/protos && cp -R node_modules/google-proto-files/google build/src/protos/google",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "opencensus",
@@ -66,6 +67,8 @@
     "@grpc/proto-loader": "^0.5.0",
     "@opencensus/core": "^0.0.14",
     "@opencensus/nodejs": "^0.0.14",
-    "grpc": "^1.20.3"
-  }
+    "grpc": "^1.20.3",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
