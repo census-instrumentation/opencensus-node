@@ -13,7 +13,9 @@
     "bootstrap": "lerna bootstrap",
     "bump": "lerna publish",
     "codecov": "lerna run codecov",
-    "check": "lerna run check"
+    "check": "lerna run check",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "keywords": [
     "opencensus",
@@ -43,5 +45,9 @@
     "@types/node": "^10.12.12",
     "lerna": "^2.11.0",
     "typescript": "^3.0.0"
+  },
+  "snyk": true,
+  "dependencies": {
+    "snyk": "^1.189.0"
   }
 }
