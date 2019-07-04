@@ -12,8 +12,9 @@
     "check": "gts check",
     "compile": "tsc -p .",
     "fix": "gts fix",
-    "prepare": "npm run compile",
-    "posttest": "npm run check"
+    "prepare": "npm run snyk-protect; npm run compile",
+    "posttest": "npm run check",
+    "snyk-protect": "snyk protect"
   },
   "keywords": [
     "opencensus",
@@ -67,6 +68,8 @@
     "@opencensus/core": "^0.0.14",
     "@opencensus/resource-util": "^0.0.14",
     "google-auth-library": "^4.0.0",
-    "googleapis": "^40.0.0"
-  }
+    "googleapis": "^40.0.0",
+    "snyk": "^1.189.0"
+  },
+  "snyk": true
 }
