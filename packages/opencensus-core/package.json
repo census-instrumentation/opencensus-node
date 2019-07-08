@@ -59,7 +59,7 @@
     "@types/semver": "^6.0.0",
     "@types/shimmer": "^1.0.1",
     "@types/uuid": "^3.4.3",
-    "codecov": "^3.4.0",
+    "codecov": "^3.5.0",
     "gts": "^1.0.0",
     "intercept-stdout": "^0.1.2",
     "mocha": "^6.1.0",
