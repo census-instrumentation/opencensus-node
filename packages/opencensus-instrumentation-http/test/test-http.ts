@@ -38,7 +38,6 @@ import * as http from 'http';
 import * as nock from 'nock';
 import * as shimmer from 'shimmer';
 import * as url from 'url';
-
 import { HttpPlugin, plugin } from '../src/';
 import * as stats from '../src/http-stats';
 
@@ -183,11 +182,19 @@ function assertCustomAttribute(
 function assertClientStats(
   testExporter: TestExporter,
   httpStatusCode: number,
-  httpMethod: string
+  httpMethod: string,
+  tagCtx?: TagMap
 ) {
   const tags = new TagMap();
   tags.set(stats.HTTP_CLIENT_METHOD, { value: httpMethod });
   tags.set(stats.HTTP_CLIENT_STATUS, { value: `${httpStatusCode}` });
+
+  if (tagCtx) {
+    tagCtx.tags.forEach((tagValue: TagValue, tagKey: TagKey) => {
+      tags.set(tagKey, tagValue);
+    });
+  }
+
   assert.strictEqual(testExporter.registeredViews.length, 8);
   assert.strictEqual(testExporter.recordedMeasurements.length, 1);
   assert.strictEqual(
@@ -202,12 +209,20 @@ function assertServerStats(
   testExporter: TestExporter,
   httpStatusCode: number,
   httpMethod: string,
-  path: string
+  path: string,
+  tagCtx?: TagMap
 ) {
   const tags = new TagMap();
   tags.set(stats.HTTP_SERVER_METHOD, { value: httpMethod });
   tags.set(stats.HTTP_SERVER_STATUS, { value: `${httpStatusCode}` });
   tags.set(stats.HTTP_SERVER_ROUTE, { value: path });
+
+  if (tagCtx) {
+    tagCtx.tags.forEach((tagValue: TagValue, tagKey: TagKey) => {
+      tags.set(tagKey, tagValue);
+    });
+  }
+
   assert.strictEqual(testExporter.registeredViews.length, 8);
   assert.strictEqual(testExporter.recordedMeasurements.length, 1);
   assert.strictEqual(
@@ -354,6 +369,60 @@ describe('HttpPlugin', () => {
           assert.strictEqual(span.messageEvents[0].id, 1);
           assertClientStats(testExporter, 200, 'GET');
         });
+      });
+    });
+
+    it('should create a child span for GET requests with tag context', () => {
+      const testPath = '/outgoing/rootSpan/childs/1';
+      doNock(urlHost, testPath, 200, 'Ok');
+      const tags = new TagMap();
+      tags.set({ name: 'testKey1' }, { value: 'value1' });
+      tags.set({ name: 'testKey2' }, { value: 'value2' });
+      return globalStats.withTagContext(tags, async () => {
+        return tracer.startRootSpan(
+          { name: 'TestRootSpan' },
+          async (root: Span) => {
+            await httpRequest.get(`${urlHost}${testPath}`).then(result => {
+              assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+              assert.strictEqual(root.spans.length, 1);
+              const [span] = root.spans;
+              assert.ok(span.name.indexOf(testPath) >= 0);
+              assert.strictEqual(root.traceId, span.traceId);
+              assertSpanAttributes(span, 200, 'GET', hostName, testPath);
+              assert.strictEqual(span.messageEvents.length, 1);
+              const [messageEvent] = span.messageEvents;
+              assert.strictEqual(messageEvent.type, MessageEventType.SENT);
+              assert.strictEqual(messageEvent.id, 1);
+              assertClientStats(testExporter, 200, 'GET', tags);
+            });
+          }
+        );
+      });
+    });
+
+    it('should create a child span for GET requests with empty tag context', () => {
+      const testPath = '/outgoing/rootSpan/childs/1';
+      doNock(urlHost, testPath, 200, 'Ok');
+      const tags = new TagMap();
+      return globalStats.withTagContext(tags, async () => {
+        return tracer.startRootSpan(
+          { name: 'TestRootSpan' },
+          async (root: Span) => {
+            await httpRequest.get(`${urlHost}${testPath}`).then(result => {
+              assert.ok(root.name.indexOf('TestRootSpan') >= 0);
+              assert.strictEqual(root.spans.length, 1);
+              const [span] = root.spans;
+              assert.ok(span.name.indexOf(testPath) >= 0);
+              assert.strictEqual(root.traceId, span.traceId);
+              assertSpanAttributes(span, 200, 'GET', hostName, testPath);
+              assert.strictEqual(span.messageEvents.length, 1);
+              const [messageEvent] = span.messageEvents;
+              assert.strictEqual(messageEvent.type, MessageEventType.SENT);
+              assert.strictEqual(messageEvent.id, 1);
+              assertClientStats(testExporter, 200, 'GET');
+            });
+          }
+        );
       });
     });
 
@@ -526,6 +595,84 @@ describe('HttpPlugin', () => {
           'Android'
         );
         assertServerStats(testExporter, 200, 'GET', testPath);
+      });
+    });
+
+    it('should handle incoming requests with long request url path', async () => {
+      const testPath = '/test&code=' + 'a'.repeat(300);
+      const options = {
+        host: 'localhost',
+        path: testPath,
+        port: serverPort,
+        headers: { 'User-Agent': 'Android' },
+      };
+      shimmer.unwrap(http, 'get');
+      shimmer.unwrap(http, 'request');
+      nock.enableNetConnect();
+
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+
+      await httpRequest.get(options).then(result => {
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+        const [span] = spanVerifier.endedSpans;
+        assertSpanAttributes(
+          span,
+          200,
+          'GET',
+          'localhost',
+          testPath,
+          'Android'
+        );
+        assertServerStats(
+          testExporter,
+          200,
+          'GET',
+          '/test&code=' + 'a'.repeat(244)
+        );
+      });
+    });
+    it('should create a root span for incoming requests with Correlation Context header', async () => {
+      const testPath = '/incoming/rootSpan/';
+      const options = {
+        host: 'localhost',
+        path: testPath,
+        port: serverPort,
+        headers: {
+          'User-Agent': 'Android',
+          'Correlation-Context': 'k1=v1,k2=v2',
+        },
+      };
+
+      const expectedTagsFromHeaders = new TagMap();
+      expectedTagsFromHeaders.set({ name: 'k1' }, { value: 'v1' });
+      expectedTagsFromHeaders.set({ name: 'k2' }, { value: 'v2' });
+
+      shimmer.unwrap(http, 'get');
+      shimmer.unwrap(http, 'request');
+      nock.enableNetConnect();
+
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+
+      await httpRequest.get(options).then(result => {
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf(testPath) >= 0);
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        const [span] = spanVerifier.endedSpans;
+        assertSpanAttributes(
+          span,
+          200,
+          'GET',
+          'localhost',
+          testPath,
+          'Android'
+        );
+        assertServerStats(
+          testExporter,
+          200,
+          'GET',
+          testPath,
+          expectedTagsFromHeaders
+        );
       });
     });
 

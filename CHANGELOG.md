@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Add support for HTTP tags propagation.
 
 ## 0.0.14 - 2019-06-04
 - Exporter/Stats/Stackdriver: Add support for exemplar
