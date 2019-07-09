@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.15 - 2019-07-09
+- Update dependency codecov to 3.5 (#612)
+- feat(nodejs-base): do not hook require when not necessary (#585)
+- Update dependency google-auth-library and googleapis (#579)
+- Update dependency gts to v1 (#578)
+- Add Express example (#577)
+- License header fix: replace gRPC:// with https:// (#576)
+- Upgrade gts to 1.0 (#572)
+- fix(zipkin-exporter): fix nested child span support (#574)
+- fix(deps): update dependency grpc to ~1.21.0 (#549)
 
 ## 0.0.14 - 2019-06-04
 - Exporter/Stats/Stackdriver: Add support for exemplar
