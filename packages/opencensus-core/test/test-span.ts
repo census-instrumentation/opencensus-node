@@ -53,8 +53,9 @@ describe('Span', () => {
       rootSpan.start();
       const dayInMs = 24 * 60 * 60 * 1000;
       const futureDate = Date.now() + dayInMs;
-      // Change rootSpan's clock to the future, so child span doesn't pick it up
-      // new Date() will be before it.
+      // Change rootSpan's clock to the future, so if child span doesn't pick
+      // root's clock and just uses new Date(), child span's time will be before
+      // root span's for sure.
       // tslint:disable-next-line
       rootSpan.clock.startTimeLocal = new Date(futureDate);
       const span = new Span(tracer, rootSpan);
