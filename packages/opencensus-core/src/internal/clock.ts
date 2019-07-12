@@ -27,9 +27,11 @@ export class Clock {
   /** The duration between start and end of the clock. */
   private diff: [number, number] = [0, 0];
 
-  /** Constructs a new SamplerImpl instance. */
-  constructor() {
-    this.startTimeLocal = new Date();
+  /** Constructs a new Clock instance. */
+  constructor(startTime?: Date) {
+    // In some cases clocks need to be relative to other resources, passing a
+    // startTime makes it possible.
+    this.startTimeLocal = startTime || new Date();
     this.hrtimeLocal = process.hrtime();
   }
 
@@ -40,6 +42,14 @@ export class Clock {
     }
     this.diff = process.hrtime(this.hrtimeLocal);
     this.endedLocal = true;
+  }
+
+  /** Gets the current date from ellapsed milliseconds and start time. */
+  get currentDate(): Date {
+    const diff = process.hrtime(this.hrtimeLocal);
+    const ns = diff[0] * 1e9 + diff[1];
+    const ellapsed = ns / 1e6;
+    return new Date(this.startTime.getTime() + ellapsed);
   }
 
   /** Gets the duration of the clock. */

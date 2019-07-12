@@ -316,7 +316,12 @@ export class Span implements types.Span {
       );
       return;
     }
-    this.clock = new Clock();
+    // start child span's clock from root's current time to preserve integrity.
+    if (this.parentSpan) {
+      this.clock = new Clock(this.parentSpan.clock.currentDate);
+    } else {
+      this.clock = new Clock();
+    }
     this.startedLocal = true;
     this.logger.debug('starting %s  %o', this.className, {
       traceId: this.traceId,
