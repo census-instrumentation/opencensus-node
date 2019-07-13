@@ -231,7 +231,7 @@ export class CoreTracerBase implements types.TracerBase {
       this.logger.debug(
         'no current trace found - must start a new root span first'
       );
-      return new NoRecordSpan();
+      return new NoRecordSpan(this);
     }
     const span = options.childOf.startChildSpan(options);
 

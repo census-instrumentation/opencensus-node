@@ -15,12 +15,14 @@
  */
 
 import * as assert from 'assert';
+import { CoreTracerBase } from '../src/trace/model/tracer-base';
 import { CanonicalCode, LinkType, MessageEventType } from '../src';
 import { NoRecordSpan } from '../src/trace/model/no-record/no-record-span';
 
 describe('NoRecordSpan()', () => {
   it('do not crash', () => {
-    const noRecordSpan = new NoRecordSpan();
+    const tracer = new CoreTracerBase();
+    const noRecordSpan = new NoRecordSpan(tracer);
     noRecordSpan.addAnnotation('MyAnnotation');
     noRecordSpan.addAnnotation('MyAnnotation', { myString: 'bar' });
     noRecordSpan.addAnnotation('MyAnnotation', {

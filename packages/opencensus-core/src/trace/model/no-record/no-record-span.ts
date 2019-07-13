@@ -31,6 +31,8 @@ export class NoRecordSpan implements types.Span {
   private endedLocal = false;
   /** The Span ID of this span */
   readonly id: string;
+  /** A tracer object */
+  tracer: types.TracerBase;
   /** An object to log information to */
   logger: Logger = noopLogger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
@@ -66,7 +68,8 @@ export class NoRecordSpan implements types.Span {
   droppedMessageEventsCount = 0;
 
   /** Constructs a new SpanBaseModel instance. */
-  constructor(parent?: NoRecordSpan) {
+  constructor(tracer: types.TracerBase, parent?: NoRecordSpan) {
+    this.tracer = tracer;
     this.id = randomSpanId();
     if (parent) {
       this.root = parent.root;
@@ -199,7 +202,7 @@ export class NoRecordSpan implements types.Span {
    * @param [options] A SpanOptions object to start a child span.
    */
   startChildSpan(options?: types.SpanOptions): types.Span {
-    const noRecordChild = new NoRecordSpan(this);
+    const noRecordChild = new NoRecordSpan(this.tracer, this);
     if (options && options.name) noRecordChild.name = options.name;
     if (options && options.kind) noRecordChild.kind = options.kind;
     noRecordChild.start();

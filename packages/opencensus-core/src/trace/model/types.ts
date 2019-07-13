@@ -315,6 +315,11 @@ export interface Span {
   /** The Span ID of this span */
   readonly id: string;
 
+  /** A tracer object, exposong the tracer makes it possible to create child
+   * spans from the span instance like. span.tracer.startChildSpan()
+   */
+  tracer: TracerBase;
+
   /** If the parent span is in another process. */
   remoteParent: boolean;
 

@@ -20,8 +20,6 @@ import { NoRecordSpan } from './no-record-span';
 
 /** Implementation for the Span class that does not record trace events. */
 export class NoRecordRootSpan extends NoRecordSpan {
-  /** A tracer object */
-  private tracer: types.TracerBase;
   /** Its trace ID. */
   private traceIdLocal: string;
   /** Its trace state. */
@@ -31,6 +29,8 @@ export class NoRecordRootSpan extends NoRecordSpan {
    * parent was likely started on another machine.
    */
   private parentSpanIdLocal: string;
+  /** A tracer object */
+  tracer: types.TracerBase;
 
   /**
    * Constructs a new NoRecordRootSpanImpl instance.
@@ -50,7 +50,7 @@ export class NoRecordRootSpan extends NoRecordSpan {
     parentSpanId: string,
     traceState?: types.TraceState
   ) {
-    super();
+    super(tracer);
     this.tracer = tracer;
     this.traceIdLocal = traceId;
     this.name = name;

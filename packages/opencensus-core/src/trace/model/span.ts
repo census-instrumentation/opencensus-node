@@ -29,8 +29,6 @@ const STATUS_OK = {
 /** Defines a base model for spans. */
 export class Span implements types.Span {
   protected className: string;
-  /** A tracer object */
-  private tracer: types.TracerBase;
   /** The clock used to mesure the beginning and ending of a span */
   private clock!: Clock;
   /** Indicates if this span was started */
@@ -41,6 +39,8 @@ export class Span implements types.Span {
   private spansLocal: types.Span[];
   /** The Span ID of this span */
   readonly id: string;
+  /** A tracer object */
+  tracer: types.TracerBase;
   /** An object to log information to */
   logger: Logger = noopLogger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
@@ -386,7 +386,7 @@ export class Span implements types.Span {
         this.className,
         { id: this.id, name: this.name, kind: this.kind }
       );
-      return new NoRecordSpan();
+      return new NoRecordSpan(this.tracer);
     }
     if (!this.started) {
       this.logger.debug(
@@ -395,7 +395,7 @@ export class Span implements types.Span {
         this.className,
         { id: this.id, name: this.name, kind: this.kind }
       );
-      return new NoRecordSpan();
+      return new NoRecordSpan(this.tracer);
     }
 
     const child = new Span(this.tracer, this);
