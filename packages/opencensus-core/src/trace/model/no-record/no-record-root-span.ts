@@ -30,7 +30,7 @@ export class NoRecordRootSpan extends NoRecordSpan {
    */
   private parentSpanIdLocal: string;
   /** A tracer object */
-  tracer: types.TracerBase;
+  readonly tracer: types.TracerBase;
 
   /**
    * Constructs a new NoRecordRootSpanImpl instance.

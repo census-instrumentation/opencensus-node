@@ -30,7 +30,7 @@ export class RootSpan extends Span {
    */
   private parentSpanIdLocal: string;
   /** A tracer object */
-  tracer: types.TracerBase;
+  readonly tracer: types.TracerBase;
 
   /**
    * Constructs a new RootSpanImpl instance.

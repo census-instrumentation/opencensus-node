@@ -40,7 +40,7 @@ export class Span implements types.Span {
   /** The Span ID of this span */
   readonly id: string;
   /** A tracer object */
-  tracer: types.TracerBase;
+  readonly tracer: types.TracerBase;
   /** An object to log information to */
   logger: Logger = noopLogger;
   /** A set of attributes, each in the format [KEY]:[VALUE] */
