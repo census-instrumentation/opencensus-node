@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+- Feat, make `tracer` property available on spans.
 
 ## 0.0.15 - 2019-07-09
 - Update dependency codecov to 3.5 (#612)

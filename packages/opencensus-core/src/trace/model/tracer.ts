@@ -121,7 +121,7 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
 
     return super.startChildSpan(
       Object.assign(
-        { childOf: this.currentRootSpan || new NoRecordSpan() },
+        { childOf: this.currentRootSpan || new NoRecordSpan(this) },
         options
       )
     );

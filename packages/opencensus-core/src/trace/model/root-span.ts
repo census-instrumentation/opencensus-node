@@ -29,6 +29,8 @@ export class RootSpan extends Span {
    * parent was likely started on another machine.
    */
   private parentSpanIdLocal: string;
+  /** A tracer object */
+  readonly tracer: types.TracerBase;
 
   /**
    * Constructs a new RootSpanImpl instance.
@@ -49,6 +51,7 @@ export class RootSpan extends Span {
     traceState?: types.TraceState
   ) {
     super(tracer);
+    this.tracer = tracer;
     this.traceIdLocal = traceId;
     this.name = name;
     this.kind = kind;
