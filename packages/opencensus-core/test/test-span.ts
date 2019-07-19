@@ -51,17 +51,9 @@ describe('Span', () => {
     it('should use relative clock for child spans', () => {
       const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
       rootSpan.start();
-      const dayInMs = 24 * 60 * 60 * 1000;
-      const futureDate = Date.now() + dayInMs;
-      // Change rootSpan's clock to the future, so if child span doesn't pick
-      // root's clock and just uses new Date(), child span's time will be before
-      // root span's for sure.
-      // tslint:disable-next-line
-      rootSpan.clock.startTimeLocal = new Date(futureDate);
       const span = new Span(tracer, rootSpan);
       span.start();
       assert.ok(rootSpan.startTime.getTime() <= span.startTime.getTime());
-      assert.ok(futureDate <= span.startTime.getTime());
     });
   });
 
