@@ -47,6 +47,14 @@ describe('Span', () => {
       const span = new Span(tracer, rootSpan);
       assert.ok(span instanceof Span);
     });
+
+    it('should use relative clock for child spans', () => {
+      const rootSpan = new RootSpan(tracer, name, kind, traceId, parentSpanId);
+      rootSpan.start();
+      const span = new Span(tracer, rootSpan);
+      span.start();
+      assert.ok(rootSpan.startTime.getTime() <= span.startTime.getTime());
+    });
   });
 
   /**
