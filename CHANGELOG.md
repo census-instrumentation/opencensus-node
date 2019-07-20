@@ -3,7 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.0.16 - 2019-07-20
 - Feat, make `tracer` property available on spans.
+- fix(span): make child span clock relative to root span (#628)
+- chore(deps): bump lodash from 4.17.11 to 4.17.13 (#619)
+- chore(deps): bump lodash in /packages/opencensus-instrumentation-http (#624)
+- chore(deps): bump lodash in /packages/opencensus-exporter-zpages (#627)
+- chore(deps): bump lodash in /packages/opencensus-propagation-stackdriver (#621)
+- chore(deps): bump lodash in /packages/opencensus-nodejs (#620)
+- chore(deps): bump lodash in /packages/opencensus-exporter-zipkin (#626)
+- chore(deps): bump lodash in /packages/opencensus-exporter-stackdriver (#625)
+- chore(deps): bump lodash in /packages/opencensus-instrumentation-https (#623)
+- chore(deps): bump lodash in /packages/opencensus-propagation-b3 (#622)
+- chore(deps): bump lodash in /packages/opencensus-core (#618)
+- chore(deps): bump lodash.template from 4.4.0 to 4.5.0 (#617)
 
 ## 0.0.15 - 2019-07-09
 - Update dependency codecov to 3.5 (#612)
