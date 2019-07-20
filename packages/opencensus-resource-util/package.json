@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/resource-util",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "The OpenCensus Monitored Resource Util for Node.js is a collection of utilities for auto detecting monitored resource when exporting stats, based on the environment where the application is running.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -62,7 +62,7 @@
     "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.15",
+    "@opencensus/core": "^0.0.16",
     "gcp-metadata": "^2.0.0"
   }
 }
