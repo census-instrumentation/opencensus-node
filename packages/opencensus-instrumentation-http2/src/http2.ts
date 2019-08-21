@@ -78,7 +78,7 @@ export class Http2Plugin extends HttpPlugin {
     return (original: ConnectFunction): Func<http2.ClientHttp2Session> => {
       return function patchedConnect(
         this: Http2Plugin,
-        authority: string
+        authority: string | url.URL
       ): http2.ClientHttp2Session {
         const client = original.apply(this, arguments);
         shimmer.wrap(client, 'request', original =>
@@ -94,7 +94,7 @@ export class Http2Plugin extends HttpPlugin {
     const plugin = this;
     return (
       original: RequestFunction,
-      authority: string
+      authority: string | url.URL
     ): Func<http2.ClientHttp2Stream> => {
       return function patchedRequest(
         this: http2.Http2Session,
@@ -146,7 +146,7 @@ export class Http2Plugin extends HttpPlugin {
   private getMakeHttp2RequestTraceFunction(
     request: http2.ClientHttp2Stream,
     headers: http2.OutgoingHttpHeaders,
-    authority: string,
+    authority: string | url.URL,
     plugin: Http2Plugin
   ): Func<http2.ClientHttp2Stream> {
     return (span: Span): http2.ClientHttp2Stream => {
@@ -176,7 +176,10 @@ export class Http2Plugin extends HttpPlugin {
         const userAgent =
           headers['user-agent'] || headers['User-Agent'] || null;
 
-        const host = url.parse(authority).host;
+        const host = (authority instanceof url.URL
+          ? authority
+          : url.parse(authority)
+        ).host;
         if (host) {
           span.addAttribute(Http2Plugin.ATTRIBUTE_HTTP_HOST, host);
         }
