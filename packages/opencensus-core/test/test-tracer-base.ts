@@ -259,7 +259,7 @@ describe('Tracer Base', () => {
       );
     });
 
-    it('should create a tracer with default TraceParams when parameters with values higher than maximum limit are specified upon initialisation', () => {
+    it('should create a tracer with default TraceParams when parameters with values higher than limit are specified upon initialisation', () => {
       const traceParametersWithHigherThanMaximumValues: TraceParams = {
         numberOfAnnontationEventsPerSpan: 50,
         numberOfMessageEventsPerSpan: 200,
@@ -271,16 +271,16 @@ describe('Tracer Base', () => {
       tracer.start(defaultConfig);
       assert.strictEqual(
         tracer.activeTraceParams.numberOfAnnontationEventsPerSpan,
-        32
+        50
       );
       assert.strictEqual(
         tracer.activeTraceParams.numberOfAttributesPerSpan,
-        32
+        37
       );
-      assert.strictEqual(tracer.activeTraceParams.numberOfLinksPerSpan, 32);
+      assert.strictEqual(tracer.activeTraceParams.numberOfLinksPerSpan, 45);
       assert.strictEqual(
         tracer.activeTraceParams.numberOfMessageEventsPerSpan,
-        128
+        200
       );
     });
   });
@@ -382,6 +382,21 @@ describe('Tracer Base', () => {
         assert.strictEqual(rootSpan.allDescendants().length, 3);
       });
     });
+
+    it('should add attributes more than default limit when override', () => {
+      defaultConfig.traceParams = { numberOfAttributesPerSpan: 48 };
+      tracer.start(defaultConfig);
+      tracer.startRootSpan(options, rootSpan => {
+        const span = tracer.startChildSpan({
+          name: 'spanName',
+          childOf: rootSpan,
+        });
+        for (let i = 0; i < 40; i++) {
+          span.addAttribute(`attr ${i}`, i);
+        }
+        assert.strictEqual(Object.keys(span.attributes).length, 40);
+      });
+    });
   });
 
   /** Should not create a Span instance */
@@ -422,7 +437,7 @@ describe('Tracer Base', () => {
         });
       });
     });
-    it('should add add attributes to spans', () => {
+    it('should add attributes to spans', () => {
       assert.deepStrictEqual(
         rootSpanLocal.attributes,
         tracerConfig.defaultAttributes

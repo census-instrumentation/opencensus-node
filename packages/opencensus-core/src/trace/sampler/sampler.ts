@@ -118,45 +118,26 @@ export class TraceParamsBuilder {
   static getNumberOfAnnotationEventsPerSpan(
     traceParameters: TraceParams
   ): number {
-    if (
-      !traceParameters.numberOfAnnontationEventsPerSpan ||
-      traceParameters.numberOfAnnontationEventsPerSpan >
-        DEFAULT_SPAN_MAX_NUM_ANNOTATIONS
-    ) {
-      return DEFAULT_SPAN_MAX_NUM_ANNOTATIONS;
-    }
-    return traceParameters.numberOfAnnontationEventsPerSpan;
+    return !traceParameters.numberOfAnnontationEventsPerSpan
+      ? DEFAULT_SPAN_MAX_NUM_ANNOTATIONS
+      : traceParameters.numberOfAnnontationEventsPerSpan;
   }
 
   static getNumberOfAttributesPerSpan(traceParameters: TraceParams): number {
-    if (
-      !traceParameters.numberOfAttributesPerSpan ||
-      traceParameters.numberOfAttributesPerSpan >
-        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES
-    ) {
-      return DEFAULT_SPAN_MAX_NUM_ATTRIBUTES;
-    }
-    return traceParameters.numberOfAttributesPerSpan;
+    return !traceParameters.numberOfAttributesPerSpan
+      ? DEFAULT_SPAN_MAX_NUM_ATTRIBUTES
+      : traceParameters.numberOfAttributesPerSpan;
   }
 
   static getNumberOfMessageEventsPerSpan(traceParameters: TraceParams): number {
-    if (
-      !traceParameters.numberOfMessageEventsPerSpan ||
-      traceParameters.numberOfMessageEventsPerSpan >
-        DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS
-    ) {
-      return DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS;
-    }
-    return traceParameters.numberOfMessageEventsPerSpan;
+    return !traceParameters.numberOfMessageEventsPerSpan
+      ? DEFAULT_SPAN_MAX_NUM_MESSAGE_EVENTS
+      : traceParameters.numberOfMessageEventsPerSpan;
   }
 
   static getNumberOfLinksPerSpan(traceParameters: TraceParams): number {
-    if (
-      !traceParameters.numberOfLinksPerSpan ||
-      traceParameters.numberOfLinksPerSpan > DEFAULT_SPAN_MAX_NUM_LINKS
-    ) {
-      return DEFAULT_SPAN_MAX_NUM_LINKS;
-    }
-    return traceParameters.numberOfLinksPerSpan;
+    return !traceParameters.numberOfLinksPerSpan
+      ? DEFAULT_SPAN_MAX_NUM_LINKS
+      : traceParameters.numberOfLinksPerSpan;
   }
 }
