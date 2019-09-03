@@ -20,9 +20,9 @@
     "fix": "semistandard --fix"
   },
   "dependencies": {
-    "@opencensus/exporter-zipkin": "^0.0.16",
-    "@opencensus/nodejs": "^0.0.16",
-    "@opencensus/propagation-tracecontext": "^0.0.16",
+    "@opencensus/exporter-zipkin": "^0.0.17",
+    "@opencensus/nodejs": "^0.0.17",
+    "@opencensus/propagation-tracecontext": "^0.0.17",
     "http": "*"
   },
   "devDependencies": {
