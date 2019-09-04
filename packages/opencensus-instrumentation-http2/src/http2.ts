@@ -85,8 +85,6 @@ export class Http2Plugin extends HttpPlugin {
           plugin.getPatchRequestFunction()(original, authority)
         );
 
-        shimmer.unwrap(plugin.moduleExports, 'connect');
-
         return client;
       };
     };

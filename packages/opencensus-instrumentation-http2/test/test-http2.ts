@@ -25,8 +25,8 @@ import * as assert from 'assert';
 import * as http2 from 'http2';
 import * as semver from 'semver';
 
-import { plugin } from '../src/';
-import { Http2Plugin } from '../src/';
+import { Http2Plugin, plugin } from '../src/';
+import { IncomingHttpHeaders, ServerHttp2Stream } from 'http2';
 
 const VERSION = process.versions.node;
 
@@ -97,13 +97,35 @@ describe('Http2Plugin', () => {
         });
       });
     },
+    getAndAssertRootSpanExistence: (
+      client: http2.ClientHttp2Session,
+      options: {}
+    ) => {
+      return new Promise((resolve, reject) => {
+        const req = client.request(options);
+        req.on('response', headers => {
+          assert.ok(tracer.currentRootSpan);
+        });
+        let data = '';
+        req.on('data', chunk => {
+          data += chunk;
+        });
+        req.on('end', () => resolve(data));
+        req.on('error', err => reject(err));
+      });
+    },
   };
 
   let server: http2.Http2Server;
+  let server2: http2.Http2Server;
   let client: http2.ClientHttp2Session;
+  let client2: http2.ClientHttp2Session;
   const serverPort = 8080;
+  const serverPort2 = 8081;
   const host = `localhost:${serverPort}`;
+  const host2 = `localhost:${serverPort2}`;
   const authority = `http://${host}`;
+  const authority2 = `http://${host2}`;
 
   const log = logger.logger();
   const tracer = new CoreTracer();
@@ -118,8 +140,10 @@ describe('Http2Plugin', () => {
     tracer.registerSpanEventListener(spanVerifier);
 
     plugin.enable(http2, tracer, VERSION, {}, '');
-    server = http2.createServer();
-    server.on('stream', (stream, requestHeaders) => {
+    const streamHandler = (
+      stream: ServerHttp2Stream,
+      requestHeaders: IncomingHttpHeaders
+    ) => {
       const path = requestHeaders[':path'];
       let statusCode = 200;
       if (path && path.length > 1) {
@@ -127,10 +151,17 @@ describe('Http2Plugin', () => {
       }
       stream.respond({ ':status': statusCode, 'content-type': 'text/plain' });
       stream.end(`${statusCode}`);
-    });
+    };
+    server = http2.createServer();
+    server.on('stream', streamHandler);
     server.listen(serverPort);
 
+    server2 = http2.createServer();
+    server2.on('stream', streamHandler);
+    server2.listen(serverPort2);
+
     client = http2.connect(authority);
+    client2 = http2.connect(authority2);
   });
 
   beforeEach(() => {
@@ -139,7 +170,9 @@ describe('Http2Plugin', () => {
 
   after(() => {
     server.close();
+    server2.close();
     client.destroy();
+    client2.destroy();
   });
 
   /** Should intercept outgoing requests */
@@ -261,6 +294,31 @@ describe('Http2Plugin', () => {
       await http2Request.get(client, requestOptions).then(result => {
         assert.strictEqual(result, `${statusCode}`);
         assert.strictEqual(spanVerifier.endedSpans.length, 1);
+      });
+    });
+
+    it('should work correctly even when multiple clients are used', async () => {
+      const statusCode = 200;
+      const testPath = `/${statusCode}`;
+      const requestOptions = { ':method': 'GET', ':path': testPath };
+      const options = { name: 'TestRootSpan' };
+
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      await tracer.startRootSpan(options, async () => {
+        assert.ok(tracer.currentRootSpan);
+        await http2Request.getAndAssertRootSpanExistence(
+          client,
+          requestOptions
+        );
+      });
+
+      assert.strictEqual(spanVerifier.endedSpans.length, 2);
+      return tracer.startRootSpan(options, async () => {
+        assert.ok(tracer.currentRootSpan);
+        await http2Request.getAndAssertRootSpanExistence(
+          client2,
+          requestOptions
+        );
       });
     });
   });
