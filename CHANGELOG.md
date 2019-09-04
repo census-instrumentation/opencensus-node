@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.17 - 2019-09-03
+- fix: allow override global trace params limits (#643)
+- npm audit fix (#645)
+- Use Zipkin quickstart script in download instructions (#635)
+- Use HTTPS links in Zipkin exporter README (#636)
+
 ## 0.0.16 - 2019-07-20
 - Feat, make `tracer` property available on spans.
 - fix(span): make child span clock relative to root span (#628)
