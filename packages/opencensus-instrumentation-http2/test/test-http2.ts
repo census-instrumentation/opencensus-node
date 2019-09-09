@@ -27,6 +27,7 @@ import * as semver from 'semver';
 
 import { Http2Plugin, plugin } from '../src/';
 import { IncomingHttpHeaders, ServerHttp2Stream } from 'http2';
+import { URL } from 'url';
 
 const VERSION = process.versions.node;
 
@@ -123,9 +124,8 @@ describe('Http2Plugin', () => {
   const serverPort = 8080;
   const serverPort2 = 8081;
   const host = `localhost:${serverPort}`;
-  const host2 = `localhost:${serverPort2}`;
   const authority = `http://${host}`;
-  const authority2 = `http://${host2}`;
+  const authorityUrlObject = new URL('/', `http://${host}/`);
 
   const log = logger.logger();
   const tracer = new CoreTracer();
@@ -161,7 +161,7 @@ describe('Http2Plugin', () => {
     server2.listen(serverPort2);
 
     client = http2.connect(authority);
-    client2 = http2.connect(authority2);
+    client2 = http2.connect(authorityUrlObject);
   });
 
   beforeEach(() => {
@@ -197,6 +197,24 @@ describe('Http2Plugin', () => {
         const messageEvents = spanVerifier.endedSpans[0].messageEvents[0];
         assert.strictEqual(messageEvents.type, MessageEventType.RECEIVED);
         assert.strictEqual(messageEvents.id, 1);
+      });
+    });
+
+    it('should succeed when the client is connected using the url.URL object (#640)', async () => {
+      const statusCode = 200;
+      const testPath = `/${statusCode}`;
+      const requestOptions = {
+        ':method': 'GET',
+        ':path': testPath,
+      };
+
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+
+      await http2Request.get(client2, requestOptions).then(result => {
+        assert.strictEqual(result, statusCode.toString());
+        assert.strictEqual(spanVerifier.endedSpans.length, 2);
+        const span = spanVerifier.endedSpans[1];
+        assertSpanAttributes(span, statusCode, 'GET', host, testPath);
       });
     });
 
