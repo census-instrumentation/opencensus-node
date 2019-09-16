@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 - Fix a TypeError of url.parse (#640)
+- Map http attributes to the stackdriver format
 
 ## 0.0.17 - 2019-09-03
 - fix: allow override global trace params limits (#643)
