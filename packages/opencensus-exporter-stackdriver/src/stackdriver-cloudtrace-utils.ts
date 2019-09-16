@@ -21,6 +21,16 @@ const AGENT_LABEL_KEY = 'g.co/agent';
 const AGENT_LABEL_VALUE_STRING = `opencensus-node [${coreTypes.version}]`;
 const AGENT_LABEL_VALUE = createAttributeValue(AGENT_LABEL_VALUE_STRING);
 
+const HTTP_ATTRIBUTE_MAPPING: { [key: string]: string } = {
+  'http.host': '/http/host',
+  'http.method': '/http/method',
+  'http.path': '/http/path',
+  'http.route': '/http/route',
+  'http.user_agent': '/http/user_agent',
+  'http.status_code': '/http/status_code',
+  'http.url': '/http/url',
+};
+
 /**
  * Creates StackDriver Links from OpenCensus Link.
  * @param links coreTypes.Link[]
@@ -132,7 +142,8 @@ function createAttributesBuilder(
 ): types.Attributes {
   const attributeMap: Record<string, types.AttributeValue> = {};
   for (const key of Object.keys(attributes)) {
-    attributeMap[key] = createAttributeValue(attributes[key]);
+    const mapKey = HTTP_ATTRIBUTE_MAPPING[key] || key;
+    attributeMap[mapKey] = createAttributeValue(attributes[key]);
   }
   return { attributeMap, droppedAttributesCount };
 }

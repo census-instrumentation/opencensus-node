@@ -249,6 +249,39 @@ describe('Stackdriver CloudTrace Exporter Utils', () => {
         expectedAttributeMap
       );
     });
+
+    it('should map http attributes to the stackdriver format', () => {
+      const attributes = {
+        'http.host': 'localhost',
+        'http.method': 'GET',
+        'http.path': '/status',
+        'http.route': 'route',
+        'http.user_agent': 'agent',
+        'http.status_code': 200,
+        'http.url': 'http://localhost',
+      };
+
+      const expectedMap = {
+        'g.co/agent': {
+          stringValue: { value: `opencensus-node [${coreTypes.version}]` },
+        },
+        '/http/host': { stringValue: { value: 'localhost' } },
+        '/http/method': { stringValue: { value: 'GET' } },
+        '/http/path': { stringValue: { value: '/status' } },
+        '/http/route': { stringValue: { value: 'route' } },
+        '/http/user_agent': { stringValue: { value: 'agent' } },
+        '/http/status_code': { intValue: '200' },
+        '/http/url': { stringValue: { value: 'http://localhost' } },
+      };
+
+      const stackdriverAttribute = createAttributes(attributes, {}, 0);
+      assert.strictEqual(stackdriverAttribute.droppedAttributesCount, 0);
+      assert.strictEqual(
+        Object.keys(stackdriverAttribute.attributeMap!).length,
+        8
+      );
+      assert.deepStrictEqual(stackdriverAttribute.attributeMap, expectedMap);
+    });
   });
 
   describe('getResourceLabels()', () => {
