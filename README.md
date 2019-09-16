@@ -12,6 +12,8 @@ The library is in alpha stage and the API is subject to change.
 
 Please join [gitter](https://gitter.im/census-instrumentation/Lobby) for help or feedback on this project.
 
+**Note: OpenTelemetry is the next major version of the OpenTracing and OpenCensus projects. Read more [here] (https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289).**
+
 ## Installation
 
 Install OpenCensus with:
