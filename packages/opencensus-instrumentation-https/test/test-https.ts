@@ -20,6 +20,10 @@ import {
   Span,
   SpanEventListener,
   SpanKind,
+  HeaderGetter,
+  HeaderSetter,
+  Propagation,
+  SpanContext,
 } from '@opencensus/core';
 import * as assert from 'assert';
 import * as fs from 'fs';
@@ -56,6 +60,27 @@ function customAttributeFunction(
 }
 
 type RequestFunction = typeof https.request | typeof https.get;
+
+class DummyPropagation implements Propagation {
+  extract(getter: HeaderGetter): SpanContext {
+    return {
+      traceId: 'dummy-trace-id',
+      spanId: 'dummy-span-id',
+    } as SpanContext;
+  }
+
+  inject(setter: HeaderSetter, spanContext: SpanContext): void {
+    setter.setHeader('x-dummy-trace-id', spanContext.traceId || 'undefined');
+    setter.setHeader('x-dummy-span-id', spanContext.spanId || 'undefined');
+  }
+
+  generate(): SpanContext {
+    return {
+      traceId: 'dummy-trace-id',
+      spanId: 'dummy-span-id',
+    } as SpanContext;
+  }
+}
 
 const httpRequest = {
   request: (options: {} | string) => {
@@ -150,7 +175,11 @@ describe('HttpsPlugin', () => {
   const log = logger.logger();
   const tracer = new CoreTracer();
   const spanVerifier = new SpanVerifier();
-  tracer.start({ samplingRate: 1, logger: log });
+  tracer.start({
+    samplingRate: 1,
+    logger: log,
+    propagation: new DummyPropagation(),
+  });
 
   it('should return a plugin', () => {
     assert.ok(plugin instanceof HttpsPlugin);
@@ -368,6 +397,19 @@ describe('HttpsPlugin', () => {
           });
         }
       });
+    });
+
+    it('should create a rootSpan for GET requests and add propagation headers', async () => {
+      nock.enableNetConnect();
+      assert.strictEqual(spanVerifier.endedSpans.length, 0);
+      await httpRequest.get(`https://google.fr/`).then(result => {
+        assert.strictEqual(spanVerifier.endedSpans.length, 1);
+        assert.ok(spanVerifier.endedSpans[0].name.indexOf('GET /') >= 0);
+
+        const span = spanVerifier.endedSpans[0];
+        assertSpanAttributes(span, 301, 'GET', 'google.fr', '/');
+      });
+      nock.disableNetConnect();
     });
   });
 
