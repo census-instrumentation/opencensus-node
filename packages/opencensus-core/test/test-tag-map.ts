@@ -75,16 +75,16 @@ describe('TagMap()', () => {
       assert.deepStrictEqual(tags.get(key1), expectedTagValueWithMetadata);
     });
 
-    it('should throw an error when invalid tagKey', () => {
-      assert.throws(() => {
-        tagMap.set(invalidKey1, value1);
-      }, /^Error: Invalid TagKey name:/);
+    it('should silently ignore when invalid tagKey', () => {
+      tagMap.set(invalidKey1, value1);
+      const tags = tagMap.tagsWithMetadata;
+      assert.strictEqual(tags.size, 0);
     });
 
-    it('should throw an error when invalid tagValue', () => {
-      assert.throws(() => {
-        tagMap.set(key1, invalidValue1);
-      }, /^Error: Invalid TagValue:/);
+    it('should silently ignore when invalid tagValue', () => {
+      tagMap.set(key1, invalidValue1);
+      const tags = tagMap.tagsWithMetadata;
+      assert.strictEqual(tags.size, 0);
     });
 
     it('should not set duplicate tagkey and tagvalue', () => {
