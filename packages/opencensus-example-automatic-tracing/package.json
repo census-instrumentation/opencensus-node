@@ -8,6 +8,12 @@
     "@opencensus/exporter-instana": "^0.0.17",
     "@opencensus/exporter-stackdriver": "^0.0.17",
     "@opencensus/exporter-zipkin": "^0.0.17",
-    "@opencensus/nodejs": "^0.0.17"
-  }
+    "@opencensus/nodejs": "^0.0.17",
+    "snyk": "^1.230.5"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
