@@ -48,9 +48,9 @@ export interface JaegerTraceExporterOptions extends ExporterConfig {
 // to the original .ts file.
 let pjsonVersion: string;
 try {
-  pjsonVersion = require('../../package.json');
+  pjsonVersion = require('../../package.json').version;
 } catch {
-  pjsonVersion = require('../package.json');
+  pjsonVersion = require('../package.json').version;
 }
 
 /** Format and sends span information to Jaeger */
