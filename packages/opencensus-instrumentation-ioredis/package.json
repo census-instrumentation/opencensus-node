@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-ioredis",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Opencensus IORedis automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -67,7 +67,7 @@
     "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.17",
+    "@opencensus/core": "^0.0.18",
     "semver": "^6.0.0",
     "shimmer": "^1.2.0"
   }

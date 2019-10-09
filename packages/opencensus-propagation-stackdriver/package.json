@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/propagation-stackdriver",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Opencensus propagation package for Stackdriver format.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -37,7 +37,7 @@
     "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.17",
+    "@opencensus/core": "^0.0.18",
     "hex2dec": "^1.0.1",
     "uuid": "^3.2.1"
   },
