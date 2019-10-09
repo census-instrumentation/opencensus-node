@@ -3,8 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.0.18 - 2019-10-09
 - Fix a TypeError of url.parse (#640)
 - Map http attributes to the stackdriver format
+- Fix: silently ignore the invalid keys and values (#664)
+- Fix propagation breaking for https.get (#657)
+- Update dependency jaeger-client to ~3.16.0 (#656)
+- Fix the problem caused by multiple http2.connect calls (#650)
 
 ## 0.0.17 - 2019-09-03
 - fix: allow override global trace params limits (#643)
