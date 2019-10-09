@@ -14,8 +14,8 @@
     "lint": "npm run lint"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.17",
-    "@opencensus/exporter-stackdriver": "^0.0.17",
+    "@opencensus/core": "^0.0.18",
+    "@opencensus/exporter-stackdriver": "^0.0.18",
     "express": "^4.16.3"
   }
 }
