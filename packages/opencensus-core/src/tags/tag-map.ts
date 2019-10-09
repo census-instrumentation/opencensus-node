@@ -42,12 +42,7 @@ export class TagMap {
    * @param tagMetadata The TagMetadata associated with this Tag.
    */
   set(tagKey: TagKey, tagValue: TagValue, tagMetadata?: TagMetadata): void {
-    if (!isValidTagKey(tagKey)) {
-      throw new Error(`Invalid TagKey name: ${tagKey.name}`);
-    }
-    if (!isValidTagValue(tagValue)) {
-      throw new Error(`Invalid TagValue: ${tagValue.value}`);
-    }
+    if (!isValidTagKey(tagKey) || !isValidTagValue(tagValue)) return;
     let existingKey;
     for (const key of this.registeredTags.keys()) {
       if (key.name === tagKey.name) {
