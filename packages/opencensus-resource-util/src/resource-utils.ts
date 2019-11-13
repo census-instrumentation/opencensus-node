@@ -63,9 +63,17 @@ export async function getResourceType(): Promise<ResourceType> {
   return resourceType;
 }
 
-/** Determine if the GCP metadata server is currently available. */
+/** Determine if the GCP metadata server is currently available, and if an instance ID is available per compute engine */
 async function isRunningOnComputeEngine() {
-  return gcpMetadata.isAvailable();
+  const metadataAvailable = await gcpMetadata.isAvailable();
+  if(metadataAvailable) {
+    const instance = await getInstanceId();
+    if(instance !== '') {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
