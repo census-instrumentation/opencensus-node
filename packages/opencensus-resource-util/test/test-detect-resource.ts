@@ -20,6 +20,7 @@ import {
   HEADER_NAME,
   HEADER_VALUE,
   HOST_ADDRESS,
+  SECONDARY_HOST_ADDRESS,
 } from 'gcp-metadata';
 import * as nock from 'nock';
 import * as resource from '../src';
@@ -164,7 +165,11 @@ describe('detectResource', () => {
       .reply(200, () => 'project/zone/my-zone', HEADERS)
       .get(INSTANCE_ID_PATH)
       .reply(200, () => 4520031799277581759, HEADERS);
+    const scope1 = nock(SECONDARY_HOST_ADDRESS)
+      .get(INSTANCE_PATH)
+      .reply(200, {}, HEADERS);
     const { type, labels } = await resource.detectResource();
+    scope1.done();
     scope.done();
 
     assert.deepStrictEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
@@ -177,7 +182,6 @@ describe('detectResource', () => {
   it('should retry if the initial request fails', async () => {
     const scope = nock(HOST_ADDRESS)
       .get(INSTANCE_PATH)
-      .times(2)
       .reply(500)
       .get(INSTANCE_PATH)
       .reply(200, {}, HEADERS)
@@ -187,7 +191,11 @@ describe('detectResource', () => {
       .reply(200, () => 'project/zone/my-zone', HEADERS)
       .get(INSTANCE_ID_PATH)
       .reply(200, () => 4520031799277581759, HEADERS);
+    const secondaryScope = nock(SECONDARY_HOST_ADDRESS)
+      .get(INSTANCE_PATH)
+      .reply(200, {}, HEADERS);
     const { type, labels } = await resource.detectResource();
+    secondaryScope.done();
     scope.done();
 
     assert.deepStrictEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
@@ -207,7 +215,11 @@ describe('detectResource', () => {
       .reply(413)
       .get(INSTANCE_ID_PATH)
       .reply(400, undefined, HEADERS);
+    const secondaryScope = nock(SECONDARY_HOST_ADDRESS)
+      .get(INSTANCE_PATH)
+      .reply(200, {}, HEADERS);
     const { type, labels } = await resource.detectResource();
+    secondaryScope.done();
     scope.done();
 
     assert.deepStrictEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
@@ -226,7 +238,6 @@ describe('detectResource', () => {
     process.env.OC_RESOURCE_TYPE = 'global';
     process.env.OC_RESOURCE_LABELS = 'cloud.zone=zone1,user=user1,version=1.0';
     CoreResource.setup();
-
     const scope = nock(HOST_ADDRESS)
       .get(INSTANCE_PATH)
       .reply(200, {}, HEADERS)
@@ -236,7 +247,11 @@ describe('detectResource', () => {
       .reply(200, () => 'project/zone/my-zone', HEADERS)
       .get(INSTANCE_ID_PATH)
       .reply(200, () => 4520031799277581759, HEADERS);
+    const secondaryScope = nock(SECONDARY_HOST_ADDRESS)
+      .get(INSTANCE_PATH)
+      .reply(200, {}, HEADERS);
     const { type, labels } = await resource.detectResource();
+    secondaryScope.done();
     scope.done();
 
     assert.deepStrictEqual(type, 'global');
