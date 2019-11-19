@@ -26,6 +26,7 @@ const HEADERS = {
 };
 
 const HOST_ADDRESS = 'http://metadata.google.internal.';
+const SECONDARY_HOST_ADDRESS = 'http://169.254.169.254';
 
 export function oauth2<T extends {} = {}>(
   validator?: (body: T) => boolean
@@ -58,6 +59,10 @@ export function projectId(
 export function noDetectResource() {
   const scopes = [
     nock(HOST_ADDRESS)
+      .get('/computeMetadata/v1/instance')
+      .once()
+      .replyWithError({ code: 'ENOTFOUND' }),
+    nock(SECONDARY_HOST_ADDRESS)
       .get('/computeMetadata/v1/instance')
       .once()
       .replyWithError({ code: 'ENOTFOUND' }),
