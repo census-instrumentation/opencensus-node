@@ -51,6 +51,9 @@ export async function getDefaultResource(
       }
     }
   });
+  if (Object.keys(labels).length !== Object.keys(mappings).length) {
+    return { type: 'global', labels: { project_id: projectId } };
+  }
   return { type, labels };
 }
 
