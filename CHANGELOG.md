@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.19 - 2019-11-22
+- fix: fallback to global resource type when expected labels are missing (#711)
+- chore(deps): update dependency rimraf to v3 (#700)
+- add typedoc docs (#583)
+- chore: audit fix (#710)
+- fix(deps): update dependency jaeger-client to ~3.17.0 (#697)
+- chore: upgrade gcp-metadata to ^3.0.0 (#709)
+
 ## 0.0.18 - 2019-10-09
 - Fix a TypeError of url.parse (#640)
 - Map http attributes to the stackdriver format
