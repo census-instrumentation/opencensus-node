@@ -566,14 +566,15 @@ describe('Stackdriver Stats Exporter Utils', () => {
       process.env.OC_RESOURCE_LABELS =
         'k8s.pod.name=pod-xyz-123,' +
         'container.name=c1,k8s.namespace.name=default,' +
-        'cloud.zone=zone1';
+        'cloud.zone=zone1,k8s.cluster.name=cluster1';
       CoreResource.setup();
       const monitoredResource = await getDefaultResource('my-project-id');
       const { type, labels } = monitoredResource;
 
       assert.strictEqual(type, 'k8s_container');
-      assert.strictEqual(Object.keys(labels).length, 5);
+      assert.strictEqual(Object.keys(labels).length, 6);
       assert.deepStrictEqual(labels, {
+        cluster_name: 'cluster1',
         container_name: 'c1',
         namespace_name: 'default',
         pod_name: 'pod-xyz-123',
@@ -596,6 +597,18 @@ describe('Stackdriver Stats Exporter Utils', () => {
         project_id: 'my-project-id',
         zone: 'zone1',
       });
+    });
+
+    it('should fallback to global type is any of the label is missing', async () => {
+      process.env.OC_RESOURCE_TYPE = 'cloud.google.com/gce/instance';
+      process.env.OC_RESOURCE_LABELS = 'cloud.zone=zone1';
+      CoreResource.setup();
+      const monitoredResource = await getDefaultResource('my-project-id');
+      const { type, labels } = monitoredResource;
+
+      assert.strictEqual(type, 'global');
+      assert.strictEqual(Object.keys(labels).length, 1);
+      assert.deepStrictEqual(labels, { project_id: 'my-project-id' });
     });
 
     it('should return a aws MonitoredResource', async () => {
