@@ -40,7 +40,6 @@ const INSTANCE_PATH = BASE_PATH + '/instance';
 const INSTANCE_ID_PATH = BASE_PATH + '/instance/id';
 const PROJECT_ID_PATH = BASE_PATH + '/project/project-id';
 const ZONE_PATH = BASE_PATH + '/instance/zone';
-const HOSTNAME_PATH = BASE_PATH + '/instance/hostname';
 const CLUSTER_NAME_PATH = BASE_PATH + '/instance/attributes/cluster-name';
 const mockedAwsResponse = {
   instanceId: 'my-instance-id',
@@ -65,20 +64,20 @@ describe('detectResource', () => {
     delete process.env.CONTAINER_NAME;
     delete process.env.OC_RESOURCE_TYPE;
     delete process.env.OC_RESOURCE_LABELS;
+    delete process.env.HOSTNAME;
     CoreResource.setup();
   });
 
   it('should return GCP_GKE_CONTAINER resource when KUBERNETES_SERVICE_HOST is set', async () => {
     process.env.KUBERNETES_SERVICE_HOST = 'my-host';
+    process.env.HOSTNAME = 'my-hostname';
     const scope = nock(HOST_ADDRESS)
       .get(CLUSTER_NAME_PATH)
       .reply(200, () => 'my-cluster', HEADERS)
       .get(PROJECT_ID_PATH)
       .reply(200, () => 'my-project-id', HEADERS)
       .get(ZONE_PATH)
-      .reply(200, () => 'project/zone/my-zone', HEADERS)
-      .get(HOSTNAME_PATH)
-      .reply(200, () => 'my-hostname', HEADERS);
+      .reply(200, () => 'project/zone/my-zone', HEADERS);
     const { type, labels } = await resource.detectResource();
     scope.done();
 
@@ -95,6 +94,7 @@ describe('detectResource', () => {
   it('should return GCP_GKE_CONTAINER resource when KUBERNETES_SERVICE_HOST, NAMESPACE and CONTAINER_NAME is set', async () => {
     process.env.KUBERNETES_SERVICE_HOST = 'my-host';
     process.env.NAMESPACE = 'my-namespace';
+    process.env.HOSTNAME = 'my-hostname';
     process.env.CONTAINER_NAME = 'my-container-name';
     const scope = nock(HOST_ADDRESS)
       .get(CLUSTER_NAME_PATH)
@@ -102,9 +102,7 @@ describe('detectResource', () => {
       .get(PROJECT_ID_PATH)
       .reply(200, () => 'my-project-id', HEADERS)
       .get(ZONE_PATH)
-      .reply(200, () => 'project/zone/my-zone', HEADERS)
-      .get(HOSTNAME_PATH)
-      .reply(200, () => 'my-hostname', HEADERS);
+      .reply(200, () => 'project/zone/my-zone', HEADERS);
     const { type, labels } = await resource.detectResource();
     scope.done();
 
@@ -139,9 +137,7 @@ describe('detectResource', () => {
       .get(PROJECT_ID_PATH)
       .reply(200, () => 'my-project-id', HEADERS)
       .get(ZONE_PATH)
-      .reply(200, () => 'project/zone/my-zone', HEADERS)
-      .get(HOSTNAME_PATH)
-      .reply(200, () => 'my-hostname', HEADERS);
+      .reply(200, () => 'project/zone/my-zone', HEADERS);
     const { type, labels } = await resource.detectResource();
     scope.done();
 
