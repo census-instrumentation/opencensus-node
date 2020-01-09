@@ -104,18 +104,17 @@ export async function getComputerEngineResource(): Promise<Resource> {
 /** Returns Resource for GCP GKE container. */
 export async function getKubernetesEngineResource(): Promise<Resource> {
   if (Object.keys(gkeResourceLabels).length === 0) {
-    const [projectId, zoneId, clusterName, hostname] = await Promise.all([
+    const [projectId, zoneId, clusterName] = await Promise.all([
       getProjectId(),
       getZone(),
       getClusterName(),
-      getHostname(),
     ]);
     gkeResourceLabels[CLOUD_RESOURCE.ACCOUNT_ID_KEY] = projectId;
     gkeResourceLabels[CLOUD_RESOURCE.ZONE_KEY] = zoneId;
     gkeResourceLabels[K8S_RESOURCE.CLUSTER_NAME_KEY] = clusterName;
     gkeResourceLabels[K8S_RESOURCE.NAMESPACE_NAME_KEY] =
       process.env.NAMESPACE || '';
-    gkeResourceLabels[K8S_RESOURCE.POD_NAME_KEY] = hostname;
+    gkeResourceLabels[K8S_RESOURCE.POD_NAME_KEY] = os.hostname();
     gkeResourceLabels[CONTAINER_RESOURCE.NAME_KEY] =
       process.env.CONTAINER_NAME || '';
   }
