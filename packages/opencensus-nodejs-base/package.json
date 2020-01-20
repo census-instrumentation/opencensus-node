@@ -56,6 +56,6 @@
   "dependencies": {
     "@opencensus/core": "^0.0.19",
     "extend": "^3.0.2",
-    "require-in-the-middle": "^4.0.0"
+    "require-in-the-middle": "^5.0.0"
   }
 }
