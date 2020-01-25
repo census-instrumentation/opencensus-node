@@ -52,7 +52,7 @@
     "@types/mocha": "^5.2.5",
     "@types/nock": "^10.0.0",
     "@types/node": "^10.12.12",
-    "codecov": "^3.5.0",
+    "codecov": "^3.6.2",
     "gts": "^1.0.0",
     "mocha": "^6.1.0",
     "nock": "^10.0.0",
