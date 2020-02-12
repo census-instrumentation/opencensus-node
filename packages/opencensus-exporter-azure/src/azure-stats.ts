@@ -1,6 +1,7 @@
 import {
     ExporterConfig,
-    StatsEventListener
+    StatsEventListener,
+    clear
 } from '@opencensus/core';
 
 /**
@@ -8,12 +9,40 @@ import {
  */
 export interface AzureStatsExporterOptions extends ExporterConfig {
 
+    /**
+     * If specified, defines the number of milliseconds between uploading metrics
+     * to Azure Monitor. Optional, defaults to 60,000 (1 minute).
+     */
+    period?: number;
+
+    /**
+     * If specified, this will override the default OpenCensus prefix of an
+     * Azure Monitor metric. Optional.
+     */
+    prefix?: string;
+
 }
 
 /**
  * Formats and sends Stats to Azure Monitor.
  */
 export class AzureStatsExporter implements StatsEventListener {
+    // Define configurable variables.
+    private period: number;
+    private metricPrefix: string;
+    private onMetricUploadError?: (err: Error) => void;
+
+    // Define defaults for each configurable variable.
+    private static readonly PERIOD: number = 60000;
+    private static readonly METRIC_PREFIX: string = 'OpenCensus';
+
+    // Define all other exporter variables.
+    private timer: NodeJS.Timer;
+
+    constructor(options: AzureStatsExporterOptions) {
+        this.period = options.period !== undefined ? options.period : AzureStatsExporter.PERIOD;
+        this.metricPrefix = options.prefix !== undefined ? options.prefix : AzureStatsExporter.METRIC_PREFIX;
+    }
 
     /**
      * Is called whenever a view is registered.
@@ -37,7 +66,15 @@ export class AzureStatsExporter implements StatsEventListener {
      * Creates an Azure Monitor Stats exporter with an AzureStatsExporterOptions.
      */
     start(): void {
-        throw new Error("Method not implemented.");
+        this.timer = setInterval(async () => {
+            try {
+                await this.export();
+            } catch (err) {
+                if (typeof this.onMetricUploadError === 'function') {
+                    this.onMetricUploadError(err);
+                }
+            }
+        }, this.period);
     }
 
     /**
@@ -45,7 +82,14 @@ export class AzureStatsExporter implements StatsEventListener {
      * whenever the exporter is not needed anymore.
      */
     stop(): void {
-        throw new Error("Method not implemented.");
+        clearInterval(this.timer);
+    }
+
+    /**
+     * Polls the Metrics library for all registered metrics and uploads these to Azure Monitor.
+     */
+    async export() {
+
     }
 
 }
