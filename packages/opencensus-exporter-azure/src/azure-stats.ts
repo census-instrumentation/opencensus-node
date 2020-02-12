@@ -1,22 +1,25 @@
 import {
-    Exporter,
-    ExporterConfig
+    ExporterConfig,
+    StatsEventListener
 } from '@opencensus/core';
 
-export interface AzureStatsExporterOption extends ExporterConfig {
+export interface AzureStatsExporterOptions extends ExporterConfig {
 
 }
 
-export class AzureStatsExporter implements Exporter {
+export class AzureStatsExporter implements StatsEventListener {
 
-    publish(spans: import("@opencensus/core").Span[]): Promise<string | number | void> {
+    onRegisterView(view: import("@opencensus/core").View): void {
+        throw new Error("Method not implemented.");
+    }    onRecord(views: import("@opencensus/core").View[], measurement: import("@opencensus/core").Measurement, tags: Map<import("@opencensus/core").TagKey, import("@opencensus/core").TagValue>): void {
         throw new Error("Method not implemented.");
     }
-    
-    onStartSpan(span: import("@opencensus/core").Span): void {
+
+    start(): void {
         throw new Error("Method not implemented.");
     }
-    onEndSpan(span: import("@opencensus/core").Span): void {
+
+    stop(): void {
         throw new Error("Method not implemented.");
     }
 
