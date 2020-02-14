@@ -105,7 +105,9 @@ export class AzureStatsExporter implements StatsEventListener {
      * @param tags The tags to which the value is applied.
      */
     onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
-        throw new Error("Method not implemented.");
+        // Use the App Insights SDK to track this measurement.
+        // TODO: Build out the MetricTelemetry object to pass to the SDK.
+        telemetry.trackMetric(undefined);
     }
 
     /**
