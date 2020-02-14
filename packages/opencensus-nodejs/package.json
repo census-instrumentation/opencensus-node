@@ -44,7 +44,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.12",
     "@types/shimmer": "^1.0.1",
-    "codecov": "^3.5.0",
+    "codecov": "^3.6.2",
     "gts": "^1.0.0",
     "intercept-stdout": "^0.1.2",
     "mocha": "^6.1.0",
