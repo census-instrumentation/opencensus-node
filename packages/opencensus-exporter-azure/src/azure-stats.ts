@@ -1,13 +1,32 @@
 import {
     ExporterConfig,
     StatsEventListener,
-    clear
+    View,
+    Measurement,
+    TagKey,
+    TagValue,
+    logger,
+    Logger
 } from '@opencensus/core';
+
+import { 
+    start as startAppInsights, 
+    setup as setupAppInsights,
+    dispose as disposeAppInsights,
+    defaultClient as telemetry,
+    TelemetryClient }
+from 'applicationinsights';
 
 /**
  * Options for Azure Monitor configuration.
  */
 export interface AzureStatsExporterOptions extends ExporterConfig {
+
+    /**
+     * The Instrumentation Key found in your application's Azure Monitor Application Insights
+     * Overview page. Required.
+     */
+    instrumentationKey: string;
 
     /**
      * If specified, defines the number of milliseconds between uploading metrics
@@ -21,44 +40,71 @@ export interface AzureStatsExporterOptions extends ExporterConfig {
      */
     prefix?: string;
 
+    /**
+     * If specified, this will serve as the logger used by the exporter.
+     * Optional, default to use whatever logger is registered with OpenCensus.
+     */
+    logger?: Logger;
+
+    /**
+     * If specified, this function will be called whenever an error occurs uploading
+     * stats to Azure monitor. Optional.
+     */
+    onMetricUploadError?: (err: Error) => void;
+
+}
+
+const AzureStatsExporterDefaults: AzureStatsExporterOptions = {
+    instrumentationKey: undefined,
+    period: 60000,
+    prefix: 'OpenCensus',
+    logger: logger.logger()
 }
 
 /**
  * Formats and sends Stats to Azure Monitor.
  */
 export class AzureStatsExporter implements StatsEventListener {
-    // Define configurable variables.
-    private period: number;
-    private metricPrefix: string;
-    private onMetricUploadError?: (err: Error) => void;
-
-    // Define defaults for each configurable variable.
-    private static readonly PERIOD: number = 60000;
-    private static readonly METRIC_PREFIX: string = 'OpenCensus';
+    // Define the options that will be used within the exporter.
+    private options: AzureStatsExporterOptions;
 
     // Define all other exporter variables.
     private timer: NodeJS.Timer;
 
+    /**
+     * Configures a new Stats Exporter given a set of options.
+     * @param options Specific configuration information to use when constructing the exporter.
+     */
     constructor(options: AzureStatsExporterOptions) {
-        this.period = options.period !== undefined ? options.period : AzureStatsExporter.PERIOD;
-        this.metricPrefix = options.prefix !== undefined ? options.prefix : AzureStatsExporter.METRIC_PREFIX;
+        // Verify that the options passed in have actual values (no undefined values)
+        // for require parameters.
+        if (options.instrumentationKey === undefined) {
+            AzureStatsExporterDefaults.logger.error('You must specify an Instrumentation Key to create an Azure Monitor Stats Exporter.');
+        } 
+
+        // Start with the default options, and overwrite the defaults with any options specified
+        // in the constructor's options parameter.
+        this.options = { ...AzureStatsExporterDefaults, ...options };
+
+        // Configure the Application Insights SDK to use the Instrumentation Key from our options.
+        setupAppInsights(this.options.instrumentationKey);
     }
 
     /**
      * Is called whenever a view is registered.
      * @param view The registered view.
      */
-    onRegisterView(view: import("@opencensus/core").View): void {
+    onRegisterView(view: View): void {
         throw new Error("Method not implemented.");
     }    
     
     /**
      * Is called whenever a measure is recorded.
-     * @param views The views related to the measurement
-     * @param measurement The recorded measurement
-     * @param tags The tags to which the value is applied
+     * @param views The views related to the measurement.
+     * @param measurement The recorded measurement.
+     * @param tags The tags to which the value is applied.
      */
-    onRecord(views: import("@opencensus/core").View[], measurement: import("@opencensus/core").Measurement, tags: Map<import("@opencensus/core").TagKey, import("@opencensus/core").TagValue>): void {
+    onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
         throw new Error("Method not implemented.");
     }
 
@@ -66,15 +112,16 @@ export class AzureStatsExporter implements StatsEventListener {
      * Creates an Azure Monitor Stats exporter with an AzureStatsExporterOptions.
      */
     start(): void {
+        startAppInsights();
         this.timer = setInterval(async () => {
             try {
                 await this.export();
             } catch (err) {
-                if (typeof this.onMetricUploadError === 'function') {
-                    this.onMetricUploadError(err);
+                if (typeof this.options.onMetricUploadError === 'function') {
+                    this.options.onMetricUploadError(err);
                 }
             }
-        }, this.period);
+        }, this.options.period);
     }
 
     /**
@@ -83,6 +130,7 @@ export class AzureStatsExporter implements StatsEventListener {
      */
     stop(): void {
         clearInterval(this.timer);
+        disposeAppInsights();
     }
 
     /**
