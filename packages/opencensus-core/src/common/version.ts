@@ -14,21 +14,5 @@
  * limitations under the License.
  */
 
-interface Package {
-  version: string;
-}
-
-// Load the package details. Note that the `require` is performed at runtime,
-// which means package.json will be relative to the location of this file.
-// If this file has been compiled, it will be in the `/build` directory, so the
-// package path is relative to that location.  Otherwise, it will be relative
-// to the original .ts file.
-let pjson: Package;
-try {
-  pjson = require('../../../package.json');
-} catch {
-  pjson = require('../../package.json');
-}
-
 // Export the core package version
-export const version: string = pjson.version;
+export const version = '0.0.19';
