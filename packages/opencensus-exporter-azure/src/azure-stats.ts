@@ -54,6 +54,9 @@ export interface AzureStatsExporterOptions extends ExporterConfig {
 
 }
 
+/**
+ * Configuration defaults for an AzureStatsExporter.
+ */
 const AzureStatsExporterDefaults: AzureStatsExporterOptions = {
     instrumentationKey: undefined,
     period: 60000,
@@ -114,7 +117,12 @@ export class AzureStatsExporter implements StatsEventListener {
      * Creates an Azure Monitor Stats exporter with an AzureStatsExporterOptions.
      */
     start(): void {
+        // Start the App Insights SDK.
         startAppInsights();
+
+        // Set a timer using the interval (period) defined in the exporter's options.
+        // Each time the timer ticks, export any data that has been tracked by utilizing
+        // the exporter's export() function.
         this.timer = setInterval(async () => {
             try {
                 await this.export();
@@ -131,7 +139,10 @@ export class AzureStatsExporter implements StatsEventListener {
      * whenever the exporter is not needed anymore.
      */
     stop(): void {
+        // Stop the timer.
         clearInterval(this.timer);
+
+        // Pass the stop signal on to the App Insights SDK.
         disposeAppInsights();
     }
 
