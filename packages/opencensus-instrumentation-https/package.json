@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-https",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Opencensus https automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -65,8 +65,8 @@
     "typescript": "~2.9.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.19",
-    "@opencensus/instrumentation-http": "^0.0.19",
+    "@opencensus/core": "^0.0.20",
+    "@opencensus/instrumentation-http": "^0.0.20",
     "semver": "^6.0.0",
     "shimmer": "^1.2.0"
   }
