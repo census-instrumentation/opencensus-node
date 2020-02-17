@@ -6,16 +6,18 @@ import {
     TagKey,
     TagValue,
     logger,
-    Logger
+    Logger,
+    Metric,
+    MetricProducerManager,
+    Metrics
 } from '@opencensus/core';
 
 import { 
     start as startAppInsights, 
     setup as setupAppInsights,
     dispose as disposeAppInsights,
-    defaultClient as telemetry,
-    TelemetryClient }
-from 'applicationinsights';
+    defaultClient as telemetry
+} from 'applicationinsights';
 
 /**
  * Options for Azure Monitor configuration.
@@ -119,6 +121,7 @@ export class AzureStatsExporter implements StatsEventListener {
     start(): void {
         // Start the App Insights SDK.
         startAppInsights();
+        this.options.logger.info('Started App Insights SDK.');
 
         // Set a timer using the interval (period) defined in the exporter's options.
         // Each time the timer ticks, export any data that has been tracked by utilizing
@@ -132,6 +135,7 @@ export class AzureStatsExporter implements StatsEventListener {
                 }
             }
         }, this.options.period);
+        this.options.logger.info('Set export interval to ' + this.options.period + ' ms.');
     }
 
     /**
@@ -141,15 +145,22 @@ export class AzureStatsExporter implements StatsEventListener {
     stop(): void {
         // Stop the timer.
         clearInterval(this.timer);
+        this.options.logger.info('Clearing export interval.');
 
         // Pass the stop signal on to the App Insights SDK.
         disposeAppInsights();
+        this.options.logger.info('Disposed App Insights SDK.')
     }
 
     /**
      * Polls the Metrics library for all registered metrics and uploads these to Azure Monitor.
      */
     async export() {
+        this.options.logger.info('Starting export of metric batch.');
+        
+        const metricList: Metric[] = [];
+        const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
+
 
     }
 
