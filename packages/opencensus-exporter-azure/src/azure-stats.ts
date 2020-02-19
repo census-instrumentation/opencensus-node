@@ -9,8 +9,12 @@ import {
     Logger,
     Metric,
     MetricProducerManager,
-    Metrics
+    Metrics,
+    Measure,
+    AggregationData,
 } from '@opencensus/core';
+
+import Contracts = require("../node_modules/applicationinsights/out/Declarations/Contracts/TelemetryTypes/MetricTelemetry");
 
 import { 
     start as startAppInsights, 
@@ -18,6 +22,12 @@ import {
     dispose as disposeAppInsights,
     defaultClient as telemetry
 } from 'applicationinsights';
+
+export interface StatsParams {
+    registeredViews: View[];
+    registeredMeasures: Measure[];
+    recordedData: { [key: string]: AggregationData[] };
+  }
 
 /**
  * Options for Azure Monitor configuration.
@@ -76,6 +86,12 @@ export class AzureStatsExporter implements StatsEventListener {
     // Define all other exporter variables.
     private timer: NodeJS.Timer;
 
+    private statsParams: StatsParams = {
+        registeredViews: [],
+        registeredMeasures: [],
+        recordedData: {},
+      };
+
     /**
      * Configures a new Stats Exporter given a set of options.
      * @param options Specific configuration information to use when constructing the exporter.
@@ -100,7 +116,19 @@ export class AzureStatsExporter implements StatsEventListener {
      * @param view The registered view.
      */
     onRegisterView(view: View): void {
-        throw new Error("Method not implemented.");
+            // Adds the view to registeredViews array if it doesn't contain yet
+        if (!this.statsParams.registeredViews.find(v => v.name === view.name)) {
+            this.statsParams.registeredViews.push(view);
+        }
+        // Adds the measure to registeredMeasures array if it doesn't contain yet
+        if (
+            !this.statsParams.registeredMeasures.find(
+            m => m.name === view.measure.name
+            )
+        ) {
+            this.statsParams.registeredMeasures.push(view.measure);
+        }
+        
     }    
     
     /**
@@ -109,11 +137,49 @@ export class AzureStatsExporter implements StatsEventListener {
      * @param measurement The recorded measurement.
      * @param tags The tags to which the value is applied.
      */
-    onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
-        // Use the App Insights SDK to track this measurement.
-        // TODO: Build out the MetricTelemetry object to pass to the SDK.
-        telemetry.trackMetric(undefined);
+    // Use the App Insights SDK to track this measurement.
+    // TODO: Build out the MetricTelemetry object to pass to the SDK.
+    onRecord(
+        views: View[],
+        measurement: Measurement,
+        tags: Map<TagKey, TagValue>
+        ): void {
+        const tagValues = [...tags.values()];
+        views.map(view => {
+            const snapshot = view.getSnapshot(tagValues);
+            // Check if there is no data for the current view
+            if (!this.statsParams.recordedData[view.name]) {
+            this.statsParams.recordedData[view.name] = [snapshot];
+            } else if (
+            !this.statsParams.recordedData[view.name].find(s => s === snapshot)
+            ) {
+            // Push the snapshot if it hasn't recoreded before
+            this.statsParams.recordedData[view.name].push(snapshot);
+            }
+        });
+        var newMetric: Contracts.MetricTelemetry;
+        newMetric.name = measurement.measure.name;
+        newMetric.value = measurement.value;
+        var mapIter = tags.entries();
+        var tags_string:{
+            [key: string]: string;
+        }; 
+        for(var i =0; i < tags.size; i++){
+           tags_string = tags_string + tags[i] as {key: string};
+        }       
+        newMetric.properties = tags_string;
+        telemetry.trackMetric(newMetric);   
     }
+    
+    // var newMetric: Contracts.MetricTelemetry;
+    // newMetric.name = measurement.measure.name;
+    // newMetric.value = measurement.value;
+    // var mapIter = tags.entries();
+
+    // newMetric.properties = mapIter.next().value;
+
+    // telemetry.trackMetric(newMetric);
+    
 
     /**
      * Creates an Azure Monitor Stats exporter with an AzureStatsExporterOptions.
@@ -171,7 +237,7 @@ export class AzureStatsExporter implements StatsEventListener {
         }
 
         // Aggregate each metric before sending them to Azure Monitor.
-        
+
     }
 
 }
