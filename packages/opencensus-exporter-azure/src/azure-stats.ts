@@ -157,11 +157,21 @@ export class AzureStatsExporter implements StatsEventListener {
      */
     async export() {
         this.options.logger.info('Starting export of metric batch.');
-        
+
+        // Collect all of the metrics that will need to be exported in this batch.
         const metricList: Metric[] = [];
         const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
 
+        for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
+            for (const metric of metricProducer.getMetrics()) {
+                if (metric) {
+                    metricList.push(metric);
+                }
+            }
+        }
 
+        // Aggregate each metric before sending them to Azure Monitor.
+        
     }
 
 }
