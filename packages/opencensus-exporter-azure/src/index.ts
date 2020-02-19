@@ -1,2 +1,2 @@
-import AzureStatsExporter, AzureStatsExporterOptions from './azure-stats';
-import * from './azure-trace';
+export * from './azure-stats';
+export * from './azure-trace';
