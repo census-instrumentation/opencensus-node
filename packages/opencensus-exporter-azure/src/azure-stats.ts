@@ -44,7 +44,7 @@ export interface AzureStatsExporterOptions extends ExporterConfig {
      * If specified, defines the number of milliseconds between uploading metrics
      * to Azure Monitor. Optional, defaults to 60,000 (1 minute).
      */
-    period?: number;
+    periodInMillis?: number;
 
     /**
      * If specified, this will override the default OpenCensus prefix of an
@@ -71,7 +71,7 @@ export interface AzureStatsExporterOptions extends ExporterConfig {
  */
 const AzureStatsExporterDefaults: AzureStatsExporterOptions = {
     instrumentationKey: undefined,
-    period: 60000,
+    periodInMillis: 60000,
     prefix: 'OpenCensus',
     logger: logger.logger()
 }
@@ -202,8 +202,8 @@ export class AzureStatsExporter implements StatsEventListener {
                     this.options.onMetricUploadError(err);
                 }
             }
-        }, this.options.period);
-        this.options.logger.info('Set export interval to ' + this.options.period + ' ms.');
+        }, this.options.periodInMillis);
+        this.options.logger.info('Set export interval to ' + this.options.periodInMillis + ' ms.');
     }
 
     /**
