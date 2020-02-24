@@ -27,7 +27,7 @@ export interface StatsParams {
     registeredViews: View[];
     registeredMeasures: Measure[];
     recordedData: { [key: string]: AggregationData[] };
-  }
+}
 
 /**
  * Options for Azure Monitor configuration.
