@@ -139,6 +139,8 @@ export class AzureStatsExporter implements StatsEventListener {
      */
     // Use the App Insights SDK to track this measurement.
     // TODO: Build out the MetricTelemetry object to pass to the SDK.
+    // TODO: Try to break this out into smaller methods so we can clearly see
+    // the inputs and outputs.
     onRecord(
         views: View[],
         measurement: Measurement,
@@ -237,7 +239,12 @@ export class AzureStatsExporter implements StatsEventListener {
         }
 
         // Aggregate each metric before sending them to Azure Monitor.
-
+        // TODO: Aggregate metrics.
+        for (const metric of metricList) {
+            switch (metric.descriptor.type) {
+                
+            }
+        }
     }
 
 }
