@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.20 - 2020-02-18
+- fix(resources): GKE pod name label (#728)
+- chore: update dependency grpc to 1.24.2 (#750)
+- fix: core version (#753)
+- chore(deps): bump handlebars (#719)
+
 ## 0.0.19 - 2019-11-22
 - fix: fallback to global resource type when expected labels are missing (#711)
 - chore(deps): update dependency rimraf to v3 (#700)
