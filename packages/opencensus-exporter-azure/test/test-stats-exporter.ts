@@ -1,4 +1,7 @@
 import {
+    Logger
+} from '@opencensus/core';
+import {
     AzureStatsExporter,
     AzureStatsExporterOptions,
     IllegalOptionsError
@@ -11,6 +14,28 @@ import {
     assert
 } from 'chai';
 import * as sinon from 'sinon';
+
+class MockLogger implements Logger {
+    level?: string;
+    // tslint:disable-next-line:no-any
+    debugBuffer: any[] = [];
+  
+    cleanAll() {
+      this.debugBuffer = [];
+    }
+  
+    // tslint:disable-next-line:no-any
+    debug(message: string, ...args: any[]) {
+      this.debugBuffer.push(...args);
+    }
+  
+    // tslint:disable-next-line:no-any
+    error(...args: any[]) {}
+    // tslint:disable-next-line:no-any
+    warn(...args: any[]) {}
+    // tslint:disable-next-line:no-any
+    info(...args: any[]) {}
+  }
 
 describe('Exporter Construction', () => {
     const sandbox = sinon.createSandbox();
@@ -34,4 +59,12 @@ describe('Exporter Construction', () => {
             const exporter = new AzureStatsExporter(options);
         }, IllegalOptionsError, 'You must provide a valid instrumentation key.');
     });
+});
+
+describe('Single-Value Stats Exporting', () => {
+
+});
+
+describe('Batched Stats Exporter', () => {
+
 });
