@@ -66,11 +66,18 @@ export interface AzureStatsExporterOptions extends ExporterConfig {
 
 }
 
+export class IllegalOptionsError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'IllegalOptionsError';
+    }
+}
+
 /**
  * Configuration defaults for an AzureStatsExporter.
  */
-const AzureStatsExporterDefaults: AzureStatsExporterOptions = {
-    instrumentationKey: undefined,
+const AZURE_STATS_EXPORTER_DEFAULTS: AzureStatsExporterOptions = {
+    instrumentationKey: 'undefined',
     periodInMillis: 60000,
     prefix: 'OpenCensus',
     logger: logger.logger()
@@ -100,12 +107,18 @@ export class AzureStatsExporter implements StatsEventListener {
         // Verify that the options passed in have actual values (no undefined values)
         // for require parameters.
         if (options.instrumentationKey === undefined) {
-            AzureStatsExporterDefaults.logger.error('You must specify an Instrumentation Key to create an Azure Monitor Stats Exporter.');
+            logger.logger().error('You must specify an instrumentation key.');
+            throw new IllegalOptionsError('You must provide an instrumentation key.');
         } 
+
+        if (options.instrumentationKey === '') {
+            logger.logger().error('You must specify a valid instrumentation key.');
+            throw new IllegalOptionsError('You must provide a valid instrumentation key.');
+        }
 
         // Start with the default options, and overwrite the defaults with any options specified
         // in the constructor's options parameter.
-        this.options = { ...AzureStatsExporterDefaults, ...options };
+        this.options = { ...AZURE_STATS_EXPORTER_DEFAULTS, ...options };
 
         // Configure the Application Insights SDK to use the Instrumentation Key from our options.
         setupAppInsights(this.options.instrumentationKey);
@@ -159,17 +172,30 @@ export class AzureStatsExporter implements StatsEventListener {
             this.statsParams.recordedData[view.name].push(snapshot);
             }
         });
-        var newMetric: Contracts.MetricTelemetry;
-        newMetric.name = measurement.measure.name;
-        newMetric.value = measurement.value;
-        var mapIter = tags.entries();
-        var tags_string:{
-            [key: string]: string;
-        }; 
-        for(var i =0; i < tags.size; i++){
-           tags_string = tags_string + tags[i] as {key: string};
-        }       
-        newMetric.properties = tags_string;
+        let newMetric: Contracts.MetricTelemetry;
+        newMetric = {
+            name: measurement.measure.name,
+            value: measurement.value
+        };
+
+        // let tagMapAsStrings: {
+        //     [key: string]: string;
+        // }[] = [];
+
+        // for (let key in tags.keys()) {
+        //     tagMapAsStrings.push(
+
+        //     )
+        // }
+
+        // let mapIter = tags.entries();
+        // let tagsString: {
+        //     [key: string]: string;
+        // } = {}; 
+        // for(let i =0; i < tags.size; i++){
+        //    tagsString = tagsString + tags[i] as {key: string};
+        // }       
+        // newMetric.properties = tagsString;
         telemetry.trackMetric(newMetric);   
     }
     
@@ -242,7 +268,7 @@ export class AzureStatsExporter implements StatsEventListener {
         // TODO: Aggregate metrics.
         for (const metric of metricList) {
             switch (metric.descriptor.type) {
-                
+                default:
             }
         }
     }
