@@ -39,14 +39,14 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.6",
+    "@types/mocha": "^7.0.0",
     "@types/node": "^10.12.12",
     "@types/redis": "^2.8.10",
     "@types/semver": "^6.0.0",
     "@types/shimmer": "^1.0.1",
     "codecov": "^3.5.0",
     "gts": "^1.0.0",
-    "mocha": "^6.1.0",
+    "mocha": "^7.0.0",
     "nyc": "^14.0.0",
     "redis": "^2.8.0",
     "rimraf": "^3.0.0",
