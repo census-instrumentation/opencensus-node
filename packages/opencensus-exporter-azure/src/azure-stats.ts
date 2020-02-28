@@ -199,7 +199,8 @@ export class AzureStatsExporter implements StatsEventListener {
         //    tagsString = tagsString + tags[i] as {key: string};
         // }       
         // newMetric.properties = tagsString;
-        telemetry.trackMetric(newMetric);   
+        telemetry.trackMetric(newMetric);
+        this.options.logger.debug('Tracked metric: ', newMetric);   
     }
     
     // var newMetric: Contracts.MetricTelemetry;
