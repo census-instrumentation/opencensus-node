@@ -104,21 +104,22 @@ export class AzureStatsExporter implements StatsEventListener {
      * @param options Specific configuration information to use when constructing the exporter.
      */
     constructor(options: AzureStatsExporterOptions) {
+        // Start with the default options, and overwrite the defaults with any options specified
+        // in the constructor's options parameter. We do this before validating input so that
+        // the logger gets configured with the user specified logger, if provided.
+        this.options = { ...AZURE_STATS_EXPORTER_DEFAULTS, ...options };
+
         // Verify that the options passed in have actual values (no undefined values)
         // for require parameters.
         if (options.instrumentationKey === undefined) {
-            logger.logger().error('You must specify an instrumentation key.');
+            this.options.logger.error('You must provide an instrumentation key.');
             throw new IllegalOptionsError('You must provide an instrumentation key.');
         } 
 
         if (options.instrumentationKey === '') {
-            logger.logger().error('You must specify a valid instrumentation key.');
+            this.options.logger.error('You must provide a valid instrumentation key.');
             throw new IllegalOptionsError('You must provide a valid instrumentation key.');
         }
-
-        // Start with the default options, and overwrite the defaults with any options specified
-        // in the constructor's options parameter.
-        this.options = { ...AZURE_STATS_EXPORTER_DEFAULTS, ...options };
 
         // Configure the Application Insights SDK to use the Instrumentation Key from our options.
         setupAppInsights(this.options.instrumentationKey);
