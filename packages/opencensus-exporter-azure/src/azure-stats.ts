@@ -14,14 +14,16 @@ import {
     AggregationData,
 } from '@opencensus/core';
 
-import Contracts = require("../node_modules/applicationinsights/out/Declarations/Contracts/TelemetryTypes/MetricTelemetry");
-
 import { 
     start as startAppInsights, 
     setup as setupAppInsights,
     dispose as disposeAppInsights,
-    defaultClient as telemetry
+    defaultClient as telemetry,
 } from 'applicationinsights';
+
+import {
+    MetricTelemetry
+} from 'applicationinsights/out/Declarations/Contracts';
 
 export interface StatsParams {
     registeredViews: View[];
@@ -173,7 +175,7 @@ export class AzureStatsExporter implements StatsEventListener {
             this.statsParams.recordedData[view.name].push(snapshot);
             }
         });
-        let newMetric: Contracts.MetricTelemetry;
+        let newMetric: MetricTelemetry;
         newMetric = {
             name: measurement.measure.name,
             value: measurement.value
