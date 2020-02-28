@@ -1,5 +1,15 @@
 import {
-    Logger
+    Logger,
+    globalStats,
+    MeasureUnit,
+    Metrics,
+    Measure,
+    AggregationType,
+    TagKey,
+    TagValue,
+    TagMap,
+    View,
+    Measurement
 } from '@opencensus/core';
 import {
     AzureStatsExporter,
@@ -62,6 +72,71 @@ describe('Exporter Construction', () => {
 });
 
 describe('Single-Value Stats Exporting', () => {
+    const mockLogger = new MockLogger();
+    let exporterOptions: AzureStatsExporterOptions;
+    let exporter: AzureStatsExporter;
+    let measure: Measure;
+    let measurement: Measurement;
+    let aggregationType: AggregationType;
+    const tagKeys = [{ name: 'testKey1' }, { name: 'testKey2' }];
+    const tagValues = [{ value: 'testValue1' }, { value: 'testValue2' }];
+    const tagMap = new TagMap();
+    tagMap.set(tagKeys[0], tagValues[0]);
+    tagMap.set(tagKeys[1], tagValues[1]);
+
+    before(() => {
+        exporterOptions = {
+            instrumentationKey: '',
+            logger: mockLogger,
+        };
+        exporter = new AzureStatsExporter(exporterOptions);
+    });
+
+    afterEach(() => {
+        exporter.stop();
+        mockLogger.cleanAll();
+    });
+
+    it('should not export for empty data', () => {
+        globalStats.registerExporter(exporter);
+        assert.strictEqual(mockLogger.debugBuffer.length, 0);
+    });
+
+    it('should export the data', async () => {
+        const METRIC_NAME = 'metric-name';
+        const METRIC_DESCRIPTION = 'metric-description';
+        const UNIT = MeasureUnit.UNIT;
+        const METRIC_OPTIONS = {
+          description: METRIC_DESCRIPTION,
+          unit: UNIT,
+          labelKeys: [{ key: 'code', description: 'desc' }],
+        };
+
+        let views: View[] = [
+            globalStats.createView(
+                'test/firstView',
+                measure,
+                AggregationType.LAST_VALUE,
+                tagKeys,
+                'The first view'
+            ),
+            globalStats.createView(
+                'test/secondView',
+                measure,
+                AggregationType.LAST_VALUE,
+                tagKeys,
+                'The second view'
+            )
+        ];
+        let registeredViews: View[] = [];
+        let recordedMeasurements: Measurement[] = [];
+        let map: Map<TagKey, TagValue>;
+
+        const metricRegistry = Metrics.getMetricRegistry();
+        exporter.onRecord(views, measurement, map);
+
+
+    });
 
 });
 
