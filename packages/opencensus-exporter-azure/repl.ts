@@ -8,7 +8,8 @@ const readline = require('readline');
 const statsExporterModule = require('./build/src/azure-stats');
 
 const exporter = new statsExporterModule.AzureStatsExporter({
-    instrumentationKey: 'e3efe46f-5f1e-4b96-80de-60667b680b23'
+    instrumentationKey: 'e3efe46f-5f1e-4b96-80de-60667b680b23',
+    logger: new oc.logger.ConsoleLogger(process.argv[2] || 'info')
 });
 oc.globalStats.registerExporter(exporter);
 
