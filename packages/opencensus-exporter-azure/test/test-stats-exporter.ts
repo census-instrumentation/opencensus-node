@@ -52,7 +52,6 @@ class MockLogger implements Logger {
 }
 
 describe('Exporter Construction', () => {
-    const UNDEFINED_INSTRUMENTATION_KEY_ERROR_MSG = 'You must provide an instrumentation key.';
     const INVALID_INSTRUMENTATION_KEY_ERROR_MSG = 'You must provide a valid instrumentation key.';
 
     let exporter: AzureStatsExporter;
@@ -71,21 +70,20 @@ describe('Exporter Construction', () => {
         assert.throws(() => {
             // This should throw an error.
             exporter = new AzureStatsExporter(options);
-        }, IllegalOptionsError, UNDEFINED_INSTRUMENTATION_KEY_ERROR_MSG)
-        assert(mockLogger.debugBuffer.length === 0, 'An unexpected debug log occured.');
+        }, IllegalOptionsError, INVALID_INSTRUMENTATION_KEY_ERROR_MSG)
         assert(mockLogger.errorMessagesBuffer.length === 1, 'There was not exactly one error log.');
-        assert(mockLogger.errorMessagesBuffer[0] === UNDEFINED_INSTRUMENTATION_KEY_ERROR_MSG, 'Incorrect message given.');
+        assert(mockLogger.errorMessagesBuffer[0] === INVALID_INSTRUMENTATION_KEY_ERROR_MSG, 'Incorrect message given.');
     });
 
     it('Throws an error if the provided instrumentation key is an empty string.', () => {
         const options: AzureStatsExporterOptions = {
-            instrumentationKey: ''
+            instrumentationKey: '',
+            logger: mockLogger
         };
         assert.throws(() => {
             // This should throw an error.
             exporter = new AzureStatsExporter(options);
         }, IllegalOptionsError, INVALID_INSTRUMENTATION_KEY_ERROR_MSG);
-        assert(mockLogger.debugBuffer.length === 0, 'An unexpected debug log occured.');
         assert(mockLogger.errorMessagesBuffer.length === 1, 'There was not exactly one error log.');
         assert(mockLogger.errorMessagesBuffer[0] === INVALID_INSTRUMENTATION_KEY_ERROR_MSG, 'Incorrect message given.');
     });
@@ -106,7 +104,7 @@ describe('Single-Value Stats Exporting', () => {
 
     before(() => {
         exporterOptions = {
-            instrumentationKey: '',
+            instrumentationKey: 'fake-instrumentation-key',
             logger: mockLogger,
         };
         exporter = new AzureStatsExporter(exporterOptions);
