@@ -130,16 +130,14 @@ export class AzureStatsExporter implements StatsEventListener {
             // Adds the view to registeredViews array if it doesn't contain yet
         if (!this.statsParams.registeredViews.find(v => v.name === view.name)) {
             this.statsParams.registeredViews.push(view);
-        }
-        // Adds the measure to registeredMeasures array if it doesn't contain yet
-        if (
-            !this.statsParams.registeredMeasures.find(
-            m => m.name === view.measure.name
-            )
-        ) {
-            this.statsParams.registeredMeasures.push(view.measure);
+            this.options.logger.debug('New view registered: ' + view.name);
         }
         
+        // Adds the measure to registeredMeasures array if it doesn't contain yet
+        if (!this.statsParams.registeredMeasures.find(m => m.name === view.measure.name)) {
+            this.statsParams.registeredMeasures.push(view.measure);
+            this.options.logger.debug('New metric registered in ' + view.name + ': ' + view.measure.name);
+        }
     }    
     
     /**
@@ -149,7 +147,6 @@ export class AzureStatsExporter implements StatsEventListener {
      * @param tags The tags to which the value is applied.
      */
     // Use the App Insights SDK to track this measurement.
-    // TODO: Build out the MetricTelemetry object to pass to the SDK.
     // TODO: Try to break this out into smaller methods so we can clearly see
     // the inputs and outputs.
     onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
@@ -172,37 +169,9 @@ export class AzureStatsExporter implements StatsEventListener {
             value: measurement.value
         };
 
-        // let tagMapAsStrings: {
-        //     [key: string]: string;
-        // }[] = [];
-
-        // for (let key in tags.keys()) {
-        //     tagMapAsStrings.push(
-
-        //     )
-        // }
-
-        // let mapIter = tags.entries();
-        // let tagsString: {
-        //     [key: string]: string;
-        // } = {}; 
-        // for(let i =0; i < tags.size; i++){
-        //    tagsString = tagsString + tags[i] as {key: string};
-        // }       
-        // newMetric.properties = tagsString;
         ApplicationInsights.defaultClient.trackMetric(newMetric);
         this.options.logger.debug('Tracked metric: ', newMetric);   
-    }
-    
-    // var newMetric: Contracts.MetricTelemetry;
-    // newMetric.name = measurement.measure.name;
-    // newMetric.value = measurement.value;
-    // var mapIter = tags.entries();
-
-    // newMetric.properties = mapIter.next().value;
-
-    // telemetry.trackMetric(newMetric);
-    
+    }    
 
     /**
      * Creates an Azure Monitor Stats exporter with an AzureStatsExporterOptions.
