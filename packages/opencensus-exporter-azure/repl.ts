@@ -10,10 +10,9 @@ const statsExporterModule = require('./build/src/azure-stats');
 const exporter = new statsExporterModule.AzureStatsExporter({
     instrumentationKey: 'e3efe46f-5f1e-4b96-80de-60667b680b23'
 });
-exporter.start();
 oc.globalStats.registerExporter(exporter);
 
-const stream = fs.createReadStream('./test/test.txt');
+const stream = fs.createReadStream('./test.txt');
 const lineReader = readline.createInterface({ input: stream });
 
 // Configure OpenCensus Telemetry Tracking
