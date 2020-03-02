@@ -108,15 +108,10 @@ export class AzureStatsExporter implements StatsEventListener {
 
         // Verify that the options passed in have actual values (no undefined values)
         // for require parameters.
-        if (options.instrumentationKey === undefined) {
-            this.options.logger.error('You must provide an instrumentation key.');
-            throw new IllegalOptionsError('You must provide an instrumentation key.');
-        } 
-
-        if (options.instrumentationKey === '') {
+        if (!options.instrumentationKey) {
             this.options.logger.error('You must provide a valid instrumentation key.');
             throw new IllegalOptionsError('You must provide a valid instrumentation key.');
-        }
+        } 
 
         // Configure the Application Insights SDK to use the Instrumentation Key from our options.
         ApplicationInsights.setup(this.options.instrumentationKey).start();
@@ -132,7 +127,7 @@ export class AzureStatsExporter implements StatsEventListener {
             this.statsParams.registeredViews.push(view);
             this.options.logger.debug('New view registered: ' + view.name);
         }
-        
+
         // Adds the measure to registeredMeasures array if it doesn't contain yet
         if (!this.statsParams.registeredMeasures.find(m => m.name === view.measure.name)) {
             this.statsParams.registeredMeasures.push(view.measure);
