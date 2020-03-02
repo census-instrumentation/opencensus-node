@@ -14,12 +14,7 @@ import {
     AggregationData,
 } from '@opencensus/core';
 
-import { 
-    start as startAppInsights, 
-    setup as setupAppInsights,
-    dispose as disposeAppInsights,
-    defaultClient as telemetry,
-} from 'applicationinsights';
+import * as ApplicationInsights from 'applicationinsights';
 
 import {
     MetricTelemetry
@@ -124,7 +119,7 @@ export class AzureStatsExporter implements StatsEventListener {
         }
 
         // Configure the Application Insights SDK to use the Instrumentation Key from our options.
-        setupAppInsights(this.options.instrumentationKey);
+        ApplicationInsights.setup(this.options.instrumentationKey).start();
     }
 
     /**
@@ -157,11 +152,7 @@ export class AzureStatsExporter implements StatsEventListener {
     // TODO: Build out the MetricTelemetry object to pass to the SDK.
     // TODO: Try to break this out into smaller methods so we can clearly see
     // the inputs and outputs.
-    onRecord(
-        views: View[],
-        measurement: Measurement,
-        tags: Map<TagKey, TagValue>
-        ): void {
+    onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
         const tagValues = [...tags.values()];
         views.map(view => {
             const snapshot = view.getSnapshot(tagValues);
@@ -199,7 +190,7 @@ export class AzureStatsExporter implements StatsEventListener {
         //    tagsString = tagsString + tags[i] as {key: string};
         // }       
         // newMetric.properties = tagsString;
-        telemetry.trackMetric(newMetric);
+        ApplicationInsights.defaultClient.trackMetric(newMetric);
         this.options.logger.debug('Tracked metric: ', newMetric);   
     }
     
@@ -217,10 +208,6 @@ export class AzureStatsExporter implements StatsEventListener {
      * Creates an Azure Monitor Stats exporter with an AzureStatsExporterOptions.
      */
     start(): void {
-        // Start the App Insights SDK.
-        startAppInsights();
-        this.options.logger.info('Started App Insights SDK.');
-
         // Set a timer using the interval (period) defined in the exporter's options.
         // Each time the timer ticks, export any data that has been tracked by utilizing
         // the exporter's export() function.
@@ -246,7 +233,7 @@ export class AzureStatsExporter implements StatsEventListener {
         this.options.logger.info('Clearing export interval.');
 
         // Pass the stop signal on to the App Insights SDK.
-        disposeAppInsights();
+        ApplicationInsights.dispose();
         this.options.logger.info('Disposed App Insights SDK.')
     }
 
