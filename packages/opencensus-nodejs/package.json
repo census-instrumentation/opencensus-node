@@ -48,7 +48,7 @@
     "gts": "^1.0.0",
     "intercept-stdout": "^0.1.2",
     "mocha": "^7.0.0",
-    "nyc": "14.1.1",
+    "nyc": "15.0.0",
     "shimmer": "^1.2.0",
     "ts-node": "^8.0.0",
     "typescript": "~3.2.0"
