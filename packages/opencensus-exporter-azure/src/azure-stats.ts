@@ -145,7 +145,7 @@ export class AzureStatsExporter implements StatsEventListener {
     // TODO: Try to break this out into smaller methods so we can clearly see
     // the inputs and outputs.
     onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
-        const tagValues = [...tags.values()];
+        const tagValues = [...(tags.values())];
         views.map(view => {
             const snapshot = view.getSnapshot(tagValues);
             // Check if there is no data for the current view
@@ -164,9 +164,16 @@ export class AzureStatsExporter implements StatsEventListener {
             value: measurement.value
         };
 
-        ApplicationInsights.defaultClient.trackMetric(newMetric);
-        this.options.logger.debug('Tracked metric: ', newMetric);   
+
+        this.exportSingleMetric(newMetric);
+        // ApplicationInsights.defaultClient.trackMetric(newMetric);
+        // this.options.logger.debug('Tracked metric: ', newMetric);   
     }    
+
+    exportSingleMetric(metric: MetricTelemetry){
+        ApplicationInsights.defaultClient.trackMetric(metric);
+        this.options.logger.debug('Tracked metric: ',metric); 
+    }
 
     /**
      * Creates an Azure Monitor Stats exporter with an AzureStatsExporterOptions.

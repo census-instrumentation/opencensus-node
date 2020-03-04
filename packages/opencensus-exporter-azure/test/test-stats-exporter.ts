@@ -1,15 +1,16 @@
 import {
     Logger,
-    globalStats,
     MeasureUnit,
     Metrics,
+    globalStats,
     Measure,
     AggregationType,
     TagKey,
     TagValue,
     TagMap,
     View,
-    Measurement
+    Measurement,
+    MeasureType
 } from '@opencensus/core';
 import {
     AzureStatsExporter,
@@ -89,6 +90,8 @@ describe('Exporter Construction', () => {
     });
 });
 
+//Sends simple metric to onRecord method
+//Checks Logger and hopefully telemetry object
 describe('Single-Value Stats Exporting', () => {
     const mockLogger = new MockLogger();
     let exporterOptions: AzureStatsExporterOptions;
@@ -98,9 +101,14 @@ describe('Single-Value Stats Exporting', () => {
     let aggregationType: AggregationType;
     const tagKeys = [{ name: 'testKey1' }, { name: 'testKey2' }];
     const tagValues = [{ value: 'testValue1' }, { value: 'testValue2' }];
-    const tagMap = new TagMap();
-    tagMap.set(tagKeys[0], tagValues[0]);
-    tagMap.set(tagKeys[1], tagValues[1]);
+
+    const measureDouble = globalStats.createMeasureDouble(
+        'opencensus.io/test/double',
+        MeasureUnit.UNIT,
+        'Measure Double'
+      );
+    const measurement1: Measurement = { measure: measureDouble, value: 25 };
+    let stub;
 
     before(() => {
         exporterOptions = {
@@ -108,11 +116,14 @@ describe('Single-Value Stats Exporting', () => {
             logger: mockLogger,
         };
         exporter = new AzureStatsExporter(exporterOptions);
+        stub = sinon.stub(exporter, "exportSingleMetric");
     });
 
     afterEach(() => {
         exporter.stop();
         mockLogger.cleanAll();
+        globalStats.clear();
+        stub.resetBehavior();
     });
 
     it('should not export for empty data', () => {
@@ -123,36 +134,38 @@ describe('Single-Value Stats Exporting', () => {
     it('should export the data', async () => {
         const METRIC_NAME = 'metric-name';
         const METRIC_DESCRIPTION = 'metric-description';
-        const UNIT = MeasureUnit.UNIT;
         const METRIC_OPTIONS = {
           description: METRIC_DESCRIPTION,
-          unit: UNIT,
           labelKeys: [{ key: 'code', description: 'desc' }],
         };
 
         let views: View[] = [
             globalStats.createView(
                 'test/firstView',
-                measure,
+                measureDouble,
                 AggregationType.LAST_VALUE,
                 tagKeys,
                 'The first view'
             ),
             globalStats.createView(
                 'test/secondView',
-                measure,
+                measureDouble,
                 AggregationType.LAST_VALUE,
                 tagKeys,
                 'The second view'
             )
         ];
-        let registeredViews: View[] = [];
-        let recordedMeasurements: Measurement[] = [];
-        let map: Map<TagKey, TagValue>;
+        let map =  new Map(); //Map<TagKey, TagValue>;
+        map.set(tagKeys[0], tagValues[0]);
+        map.set(tagKeys[1], tagValues[1]);
 
         const metricRegistry = Metrics.getMetricRegistry();
-        exporter.onRecord(views, measurement, map);
+        const gauge = metricRegistry.addInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
+        gauge.getDefaultTimeSeries().add(100);
 
+        await exporter.onRecord(views, measurement1, map);
+        // assert.strictEqual(mockLogger.debugBuffer.length, 1);
+        assert(stub.called,"Application Insights SDk was not called");
 
     });
 
