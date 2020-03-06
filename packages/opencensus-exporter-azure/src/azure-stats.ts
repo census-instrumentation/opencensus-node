@@ -221,6 +221,7 @@ export class AzureStatsExporter implements StatsEventListener {
 
         // Aggregate each metric before sending them to Azure Monitor.
         // TODO: Aggregate metrics.
+        // MetricsExporterThread.cs in Opencensus C# will be helpful when implementing this.
         for (const metric of metricList) {
             switch (metric.descriptor.type) {
                 default:
