@@ -111,10 +111,9 @@ export class AzureStatsExporter implements StatsEventListener {
         if (!options.instrumentationKey) {
             this.options.logger.error('You must provide a valid instrumentation key.');
             throw new IllegalOptionsError('You must provide a valid instrumentation key.');
-        } 
+        }
 
-        // Configure the Application Insights SDK to use the Instrumentation Key from our options.
-        ApplicationInsights.setup(this.options.instrumentationKey).start();
+        this.setupAndStartApplicationInsights();
     }
 
     /**
@@ -122,17 +121,6 @@ export class AzureStatsExporter implements StatsEventListener {
      * @param view The registered view.
      */
     onRegisterView(view: View): void {
-            // Adds the view to registeredViews array if it doesn't contain yet
-        if (!this.statsParams.registeredViews.find(v => v.name === view.name)) {
-            this.statsParams.registeredViews.push(view);
-            this.options.logger.debug('New view registered: ' + view.name);
-        }
-
-        // Adds the measure to registeredMeasures array if it doesn't contain yet
-        if (!this.statsParams.registeredMeasures.find(m => m.name === view.measure.name)) {
-            this.statsParams.registeredMeasures.push(view.measure);
-            this.options.logger.debug('New metric registered in ' + view.name + ': ' + view.measure.name);
-        }
     }    
     
     /**
@@ -145,27 +133,14 @@ export class AzureStatsExporter implements StatsEventListener {
     // TODO: Try to break this out into smaller methods so we can clearly see
     // the inputs and outputs.
     onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
-        const tagValues = [...tags.values()];
-        views.map(view => {
-            const snapshot = view.getSnapshot(tagValues);
-            // Check if there is no data for the current view
-            if (!this.statsParams.recordedData[view.name]) {
-            this.statsParams.recordedData[view.name] = [snapshot];
-            } else if (
-            !this.statsParams.recordedData[view.name].find(s => s === snapshot)
-            ) {
-            // Push the snapshot if it hasn't recoreded before
-            this.statsParams.recordedData[view.name].push(snapshot);
-            }
-        });
-        let newMetric: MetricTelemetry;
-        newMetric = {
+        let newMetric: MetricTelemetry = {
             name: measurement.measure.name,
             value: measurement.value
         };
 
-        ApplicationInsights.defaultClient.trackMetric(newMetric);
-        this.options.logger.debug('Tracked metric: ', newMetric);   
+        this.exportSingleMetric(newMetric);
+        // ApplicationInsights.defaultClient.trackMetric(newMetric);
+        // this.options.logger.debug('Tracked metric: ', newMetric);   
     }    
 
     /**
@@ -175,16 +150,16 @@ export class AzureStatsExporter implements StatsEventListener {
         // Set a timer using the interval (period) defined in the exporter's options.
         // Each time the timer ticks, export any data that has been tracked by utilizing
         // the exporter's export() function.
-        this.timer = setInterval(async () => {
-            try {
-                await this.export();
-            } catch (err) {
-                if (typeof this.options.onMetricUploadError === 'function') {
-                    this.options.onMetricUploadError(err);
-                }
-            }
-        }, this.options.periodInMillis);
-        this.options.logger.info('Set export interval to ' + this.options.periodInMillis + ' ms.');
+        // this.timer = setInterval(async () => {
+        //     try {
+        //         await this.export();
+        //     } catch (err) {
+        //         if (typeof this.options.onMetricUploadError === 'function') {
+        //             this.options.onMetricUploadError(err);
+        //         }
+        //     }
+        // }, this.options.periodInMillis);
+        // this.options.logger.info('Set export interval to ' + this.options.periodInMillis + ' ms.');
     }
 
     /**
@@ -196,37 +171,61 @@ export class AzureStatsExporter implements StatsEventListener {
         clearInterval(this.timer);
         this.options.logger.info('Clearing export interval.');
 
-        // Pass the stop signal on to the App Insights SDK.
-        ApplicationInsights.dispose();
-        this.options.logger.info('Disposed App Insights SDK.')
+        this.disposeApplicationInsights();
     }
 
     /**
      * Polls the Metrics library for all registered metrics and uploads these to Azure Monitor.
      */
-    async export() {
-        this.options.logger.info('Starting export of metric batch.');
+    // async export() {
+    //     this.options.logger.info('Starting export of metric batch.');
 
-        // Collect all of the metrics that will need to be exported in this batch.
-        const metricList: Metric[] = [];
-        const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
+    //     // Collect all of the metrics that will need to be exported in this batch.
+    //     const metricList: Metric[] = [];
+    //     const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
 
-        for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
-            for (const metric of metricProducer.getMetrics()) {
-                if (metric) {
-                    metricList.push(metric);
-                }
-            }
-        }
+    //     for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
+    //         for (const metric of metricProducer.getMetrics()) {
+    //             if (metric) {
+    //                 metricList.push(metric);
+    //             }
+    //         }
+    //     }
 
-        // Aggregate each metric before sending them to Azure Monitor.
-        // TODO: Aggregate metrics.
-        // MetricsExporterThread.cs in Opencensus C# will be helpful when implementing this.
-        for (const metric of metricList) {
-            switch (metric.descriptor.type) {
-                default:
-            }
-        }
+    //     // Aggregate each metric before sending them to Azure Monitor.
+    //     // TODO: Aggregate metrics.
+    //     for (const metric of metricList) {
+    //         switch (metric.descriptor.type) {
+    //             default:
+    //         }
+    //     }
+    // }
+
+     /**
+     * Uses the Application Insights SDK to export a given MetricTelemetry object
+     * into Azure Monitor.
+     * @param metric The MetricTelemetry object to export to Azure Monitor.
+     */
+    private exportSingleMetric(metric: MetricTelemetry){
+        ApplicationInsights.defaultClient.trackMetric(metric);
+        this.options.logger.debug('Tracked metric: ',metric); 
+    }
+
+    /**
+     * Configures setup options and starts an Application Insights SDK client.
+     */
+    private setupAndStartApplicationInsights() {
+        // Configure the Application Insights SDK to use the Instrumentation Key from our options.
+        ApplicationInsights.setup(this.options.instrumentationKey).start();
+    }
+
+    /**
+     * Disposes of the active Application Insights SDK client.
+     */
+    private disposeApplicationInsights() {
+        // Pass the stop signal on to the App Insights SDK.
+        ApplicationInsights.dispose();
+        this.options.logger.info('Disposed App Insights SDK.');
     }
 
 }

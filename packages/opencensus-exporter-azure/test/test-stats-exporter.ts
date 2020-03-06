@@ -1,14 +1,7 @@
 import {
     Logger,
-    globalStats,
     MeasureUnit,
-    Metrics,
-    Measure,
-    AggregationType,
-    TagKey,
-    TagValue,
-    TagMap,
-    View,
+    globalStats,
     Measurement
 } from '@opencensus/core';
 import {
@@ -51,6 +44,10 @@ class MockLogger implements Logger {
     info(...args: any[]) {}
 }
 
+/**
+ * Tests construction of the exporter.
+ * Specifically, that instrumentation keys are valid.
+ */
 describe('Exporter Construction', () => {
     const INVALID_INSTRUMENTATION_KEY_ERROR_MSG = 'You must provide a valid instrumentation key.';
 
@@ -89,18 +86,25 @@ describe('Exporter Construction', () => {
     });
 });
 
+//Sends simple metric to onRecord method
+//Checks Logger and hopefully telemetry object
 describe('Single-Value Stats Exporting', () => {
+    // Define dependencies for the exporter.
     const mockLogger = new MockLogger();
     let exporterOptions: AzureStatsExporterOptions;
+
+    // Define the exporter itself.
     let exporter: AzureStatsExporter;
-    let measure: Measure;
-    let measurement: Measurement;
-    let aggregationType: AggregationType;
-    const tagKeys = [{ name: 'testKey1' }, { name: 'testKey2' }];
-    const tagValues = [{ value: 'testValue1' }, { value: 'testValue2' }];
-    const tagMap = new TagMap();
-    tagMap.set(tagKeys[0], tagValues[0]);
-    tagMap.set(tagKeys[1], tagValues[1]);
+
+    // Define the test metric.
+    const measure = globalStats.createMeasureDouble(
+        'opencensus.io/test/double',
+        MeasureUnit.UNIT,
+        'Measure Double'
+    );
+    const measurement: Measurement = { measure: measure, value: 25 };
+    
+    let stub;
 
     before(() => {
         exporterOptions = {
@@ -108,56 +112,23 @@ describe('Single-Value Stats Exporting', () => {
             logger: mockLogger,
         };
         exporter = new AzureStatsExporter(exporterOptions);
+        stub = sinon.stub(exporter, "exportSingleMetric");
     });
 
     afterEach(() => {
         exporter.stop();
         mockLogger.cleanAll();
+        globalStats.clear();
+        stub.resetBehavior();
     });
 
-    it('should not export for empty data', () => {
-        globalStats.registerExporter(exporter);
-        assert.strictEqual(mockLogger.debugBuffer.length, 0);
-    });
-
-    it('should export the data', async () => {
-        const METRIC_NAME = 'metric-name';
-        const METRIC_DESCRIPTION = 'metric-description';
-        const UNIT = MeasureUnit.UNIT;
-        const METRIC_OPTIONS = {
-          description: METRIC_DESCRIPTION,
-          unit: UNIT,
-          labelKeys: [{ key: 'code', description: 'desc' }],
-        };
-
-        let views: View[] = [
-            globalStats.createView(
-                'test/firstView',
-                measure,
-                AggregationType.LAST_VALUE,
-                tagKeys,
-                'The first view'
-            ),
-            globalStats.createView(
-                'test/secondView',
-                measure,
-                AggregationType.LAST_VALUE,
-                tagKeys,
-                'The second view'
-            )
-        ];
-        let registeredViews: View[] = [];
-        let recordedMeasurements: Measurement[] = [];
-        let map: Map<TagKey, TagValue>;
-
-        const metricRegistry = Metrics.getMetricRegistry();
-        exporter.onRecord(views, measurement, map);
-
-
+    it('Should export a simple metric.', async () => {
+        exporter.onRecord(undefined, measurement, undefined);
+        assert(stub.called, 'Application Insights SDk was not called');
     });
 
 });
 
 describe('Batched Stats Exporter', () => {
-
+    // TODO: Test batch functinoality once it has been implemented.
 });
