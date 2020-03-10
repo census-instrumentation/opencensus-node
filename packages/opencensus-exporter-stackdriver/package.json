@@ -67,6 +67,6 @@
     "@opencensus/core": "^0.0.20",
     "@opencensus/resource-util": "^0.0.20",
     "google-auth-library": "^4.0.0",
-    "googleapis": "^40.0.0"
+    "googleapis": "^47.0.0"
   }
 }
