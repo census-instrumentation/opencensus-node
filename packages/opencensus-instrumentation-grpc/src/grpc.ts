@@ -141,6 +141,9 @@ export class GrpcPlugin extends BasePlugin {
         'makeClientConstructor',
         this.getPatchClient()
       );
+
+      this.moduleExports.makeGenericClientConstructor =
+        GrpcClientModule.makeClientConstructor;
     }
 
     return this.moduleExports;
