@@ -83,7 +83,7 @@ export type SendUnaryDataCallback = (
   flags?: grpcTypes.writeFlags
 ) => void;
 
-type GrpcClientFunc = typeof Function & {
+export type GrpcClientFunc = typeof Function & {
   path: string;
   requestStream: boolean;
   responseStream: boolean;
@@ -507,7 +507,7 @@ export class GrpcPlugin extends BasePlugin {
         return original.apply(self, args);
       }
 
-      const metadata = this.getMetadata(original, args);
+      const metadata = GrpcPlugin.getMetadata(original, args);
       // if unary or clientStream
       if (!original.responseStream) {
         const callbackFuncIndex = findIndex(args, arg => {
@@ -566,53 +566,48 @@ export class GrpcPlugin extends BasePlugin {
   }
 
   /**
-   * Gets a metadata form args, creates a new one if not found.
+   * Gets a metadata from args, creates a new one if not found.
+   *
+   * This mutates the `args` array when there is no metadata or when there is
+   * a nullish metadata positional argument. After this function is executed
+   * it is guaranteed that `args` will have a metadata argument.
    *
    *  Code snippet inspired by:
    *  https://github.com/GoogleCloudPlatform/cloud-trace-nodejs/blob/src/plugins/plugin-grpc.ts#L96)
    */
-
-  private getMetadata(
+  static getMetadata(
     original: GrpcClientFunc,
     // tslint:disable-next-line:no-any
     args: any[]
   ): grpcTypes.Metadata {
-    let metadata: grpcTypes.Metadata;
+    let [metadata, metadataIndex] = getMetadataAndIndex(original, args);
 
-    // This finds an instance of Metadata among the arguments.
-    // A possible issue that could occur is if the 'options' parameter from
-    // the user contains an '_internal_repr' as well as a 'getMap' function,
-    // but this is an extremely rare case.
-    // tslint:disable-next-line:no-any
-    let metadataIndex = findIndex(args, (arg: any) => {
-      return (
-        arg &&
-        typeof arg === 'object' &&
-        arg._internal_repr &&
-        typeof arg.getMap === 'function'
-      );
-    });
-    if (metadataIndex === -1) {
-      metadata = new Metadata();
-      if (!original.requestStream) {
-        // unary or server stream
-        if (args.length === 0) {
-          // No argument (for the gRPC call) was provided, so we will have to
-          // provide one, since metadata cannot be the first argument.
-          // The internal representation of argument defaults to undefined
-          // in its non-presence.
-          // Note that we can't pass null instead of undefined because the
-          // serializer within gRPC doesn't accept it.
-          args.push(undefined);
+    if (metadata == null) {
+      metadata = new Metadata() as grpcTypes.Metadata;
+
+      if (metadataIndex === -1) {
+        // there is no argument for metadata, insert one
+        if (!original.requestStream) {
+          // unary or server stream
+          if (args.length === 0) {
+            // No argument (for the gRPC call) was provided, so we will have to
+            // provide one, since metadata cannot be the first argument.
+            // The internal representation of argument defaults to undefined
+            // in its non-presence.
+            // Note that we can't pass null instead of undefined because the
+            // serializer within gRPC doesn't accept it.
+            args.push(undefined);
+          }
+          metadataIndex = 1;
+        } else {
+          // client stream or bidi
+          metadataIndex = 0;
         }
-        metadataIndex = 1;
+        args.splice(metadataIndex, 0, metadata);
       } else {
-        // client stream or bidi
-        metadataIndex = 0;
+        // null metadata provided, replace
+        args[metadataIndex] = metadata;
       }
-      args.splice(metadataIndex, 0, metadata);
-    } else {
-      metadata = args[metadataIndex];
     }
     return metadata;
   }
@@ -762,3 +757,61 @@ export class GrpcPlugin extends BasePlugin {
 
 const plugin = new GrpcPlugin();
 export { plugin };
+
+// tslint:disable-next-line:no-any
+function isMetadata(arg: any): arg is grpcTypes.Metadata {
+  return arg instanceof Metadata;
+}
+
+/**
+ * Get the positional metadata argument and its index.
+ *
+ * The index can only be -1 (not found), 0 or 1.
+ */
+function getMetadataAndIndex(
+  clientFn: GrpcClientFunc,
+  // tslint:disable-next-line:no-any
+  args: any[]
+): [grpcTypes.Metadata | null | undefined, -1 | 0 | 1] {
+  let metadataIndex: -1 | 0 | 1 = -1;
+
+  // get metadata index
+  // when in doubt we assume it is an "options" argument
+  if (!clientFn.requestStream && !clientFn.responseStream) {
+    // unary call: [argument [, metadata] [, options], callback]
+    if (args.length > 3) {
+      // [argument, metadata, options, callback]
+      metadataIndex = 1;
+    } else if (args.length === 3 && isMetadata(args[1])) {
+      // [argument, metadata, callback]
+      metadataIndex = 1;
+    }
+  } else if (!clientFn.requestStream && clientFn.responseStream) {
+    // server stream: [argument [, metadata] [, options]]
+    if (args.length > 2) {
+      metadataIndex = 1;
+    } else if (args.length === 2 && isMetadata(args[1])) {
+      metadataIndex = 1;
+    }
+  } else if (clientFn.requestStream && !clientFn.responseStream) {
+    // client stream: [[, metadata] [, options], callback]
+    if (args.length > 2) {
+      metadataIndex = 0;
+    } else if (args.length === 2 && isMetadata(args[0])) {
+      metadataIndex = 0;
+    }
+  } else {
+    // bidi: [[, metadata] [, options]]
+    if (args.length > 1) {
+      metadataIndex = 0;
+    } else if (args.length === 1 && isMetadata(args[0])) {
+      metadataIndex = 0;
+    }
+  }
+
+  // even when metadataIndex != -1 the metadata can be nullish
+  // a user provided metadata argument can be null or undefined
+  return metadataIndex === -1
+    ? [undefined, metadataIndex]
+    : [args[metadataIndex], metadataIndex];
+}

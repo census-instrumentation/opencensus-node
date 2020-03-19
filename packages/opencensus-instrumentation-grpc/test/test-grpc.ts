@@ -36,6 +36,7 @@ import {
   GRPC_TRACE_KEY,
   GrpcModule,
   GrpcPlugin,
+  GrpcClientFunc,
   plugin,
   SendUnaryDataCallback,
 } from '../src/';
@@ -1006,4 +1007,192 @@ describe('GrpcPlugin() ', function() {
       assert.deepStrictEqual(actualTagMap, null);
     });
   });
+
+  describe('getMetadata', () => {
+    describe('on unary requester', () => {
+      const unaryRequester = clientFn(false, false);
+      const request = { request: true };
+      const cb = () => {};
+
+      it('should return provided metadata and not mutate args', () => {
+        const meta = new grpcModule.Metadata();
+        const args = [request, meta, cb]; // [arg, meta, cb]
+        const gotMeta = GrpcPlugin.getMetadata(unaryRequester, args);
+        assert.strictEqual(gotMeta, meta);
+        assert.deepStrictEqual(args, [request, meta, cb]);
+      });
+
+      it('should replace provided null metadata with Metadata instance', () => {
+        const args = [request, null, null, cb]; // [arg, meta, opt, cb]
+        const gotMeta = GrpcPlugin.getMetadata(unaryRequester, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta, null, cb]);
+      });
+
+      it('should insert Metadata instance in args when in doubt between metadata and options', () => {
+        const args = [request, null, cb]; // [arg, (meta|opt), cb]
+        const gotMeta = GrpcPlugin.getMetadata(unaryRequester, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta, null, cb]);
+      });
+
+      it('should insert Metadata instance in args when only options is provided', () => {
+        const opt = { opt: true };
+        const args = [request, opt, cb]; // [arg, opt, cb]
+        const gotMeta = GrpcPlugin.getMetadata(unaryRequester, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta, opt, cb]);
+      });
+
+      it('should insert Metadata instance in args when no options or metadata are provided', () => {
+        const args = [request, cb]; // [arg, cb]
+        const gotMeta = GrpcPlugin.getMetadata(unaryRequester, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta, cb]);
+      });
+    });
+
+    describe('on server streamer', () => {
+      const serverStreamer = clientFn(false, true);
+      const request = { request: true };
+
+      it('should return provided metadata and not mutate args', () => {
+        const meta = new grpcModule.Metadata();
+        const args = [request, meta]; // [arg, meta]
+        const gotMeta = GrpcPlugin.getMetadata(serverStreamer, args);
+        assert.strictEqual(gotMeta, meta);
+        assert.deepStrictEqual(args, [request, meta]);
+      });
+
+      it('should replace provided null metadata with Metadata instance', () => {
+        const args = [request, null, null]; // [arg, meta, opt]
+        const gotMeta = GrpcPlugin.getMetadata(serverStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta, null]);
+      });
+
+      it('should insert Metadata instance in args when in doubt between metadata and options', () => {
+        const args = [request, null]; // [arg, (meta|opt)]
+        const gotMeta = GrpcPlugin.getMetadata(serverStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta, null]);
+      });
+
+      it('should insert Metadata instance in args when only options is provided', () => {
+        const opt = { opt: true };
+        const args = [request, opt]; // [arg, opt]
+        const gotMeta = GrpcPlugin.getMetadata(serverStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta, opt]);
+      });
+
+      it('should insert Metadata instance in args when no options or metadata are provided', () => {
+        const args = [request]; // [arg]
+        const gotMeta = GrpcPlugin.getMetadata(serverStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [request, gotMeta]);
+      });
+
+      it('should insert request and Metadata in args when args are empty', () => {
+        const args: object[] = [];
+        const gotMeta = GrpcPlugin.getMetadata(serverStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [undefined, gotMeta]);
+      });
+    });
+
+    describe('on client streamer', () => {
+      const clientStreamer = clientFn(true, false);
+      const cb = () => {};
+
+      it('should return provided metadata and not mutate args', () => {
+        const meta = new grpcModule.Metadata();
+        const args = [meta, cb];
+        const gotMeta = GrpcPlugin.getMetadata(clientStreamer, args);
+        assert.strictEqual(gotMeta, meta);
+        assert.deepStrictEqual(args, [meta, cb]);
+      });
+
+      it('should replace provided null metadata with Metadata instance', () => {
+        const args = [null, null, cb]; // [meta, opt, cb]
+        const gotMeta = GrpcPlugin.getMetadata(clientStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta, null, cb]);
+      });
+
+      it('should insert Metadata instance in args when in doubt between metadata and options', () => {
+        const args = [null, cb]; // [(meta|opt), cb]
+        const gotMeta = GrpcPlugin.getMetadata(clientStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta, null, cb]);
+      });
+
+      it('should insert Metadata instance in args when only options is provided', () => {
+        const opt = { opt: true };
+        const args = [opt, cb];
+        const gotMeta = GrpcPlugin.getMetadata(clientStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta, opt, cb]);
+      });
+
+      it('should insert Metadata instance in args when no options or metadata are provided', () => {
+        const args = [cb];
+        const gotMeta = GrpcPlugin.getMetadata(clientStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta, cb]);
+      });
+    });
+
+    describe('on bidi streamer', () => {
+      const bidiStreamer = clientFn(true, true);
+
+      it('should return provided metadata and not mutate args', () => {
+        const meta = new grpcModule.Metadata();
+        const args = [meta];
+        const gotMeta = GrpcPlugin.getMetadata(bidiStreamer, args);
+        assert.strictEqual(gotMeta, meta);
+        assert.deepStrictEqual(args, [meta]);
+      });
+
+      it('should replace provided null metadata with Metadata instance', () => {
+        const args = [null, null]; // [meta, opt]
+        const gotMeta = GrpcPlugin.getMetadata(bidiStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta, null]);
+      });
+
+      it('should insert Metadata instance in args when in doubt between metadata and options', () => {
+        const args = [null]; // [(meta|opt)]
+        const gotMeta = GrpcPlugin.getMetadata(bidiStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta, null]);
+      });
+
+      it('should insert Metadata instance in args when only options is provided', () => {
+        const opt = { opt: true };
+        const args = [opt];
+        const gotMeta = GrpcPlugin.getMetadata(bidiStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta, opt]);
+      });
+
+      it('should insert Metadata instance in args when no options or metadata are provided', () => {
+        const args: object[] = [];
+        const gotMeta = GrpcPlugin.getMetadata(bidiStreamer, args);
+        assert.ok(gotMeta instanceof grpcModule.Metadata);
+        assert.deepStrictEqual(args, [gotMeta]);
+      });
+    });
+  });
 });
+
+function clientFn(
+  requestStream: boolean,
+  responseStream: boolean
+): GrpcClientFunc {
+  const fn = (() => {}) as GrpcClientFunc;
+  fn.path = '/Mock.mock/Mock';
+  fn.requestStream = requestStream;
+  fn.responseStream = responseStream;
+  return fn;
+}
