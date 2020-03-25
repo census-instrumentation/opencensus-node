@@ -84,6 +84,14 @@ describe('Exporter Construction', () => {
         assert(mockLogger.errorMessagesBuffer.length === 1, 'There was not exactly one error log.');
         assert(mockLogger.errorMessagesBuffer[0] === INVALID_INSTRUMENTATION_KEY_ERROR_MSG, 'Incorrect message given.');
     });
+
+    it('Attempts to start the exporter if a seemingly valid instrumentation key is provided.', () => {
+        const options: AzureStatsExporterOptions = {
+            instrumentationKey: 'seemingly-valid',
+            logger: mockLogger
+        };
+        assert
+    });
 });
 
 //Sends simple metric to onRecord method
