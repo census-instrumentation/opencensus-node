@@ -12,6 +12,7 @@ import {
     Metrics,
     Measure,
     AggregationData,
+    MetricDescriptorType,
 } from '@opencensus/core';
 
 import * as ApplicationInsights from 'applicationinsights';
@@ -150,16 +151,16 @@ export class AzureStatsExporter implements StatsEventListener {
         // Set a timer using the interval (period) defined in the exporter's options.
         // Each time the timer ticks, export any data that has been tracked by utilizing
         // the exporter's export() function.
-        // this.timer = setInterval(async () => {
-        //     try {
-        //         await this.export();
-        //     } catch (err) {
-        //         if (typeof this.options.onMetricUploadError === 'function') {
-        //             this.options.onMetricUploadError(err);
-        //         }
-        //     }
-        // }, this.options.periodInMillis);
-        // this.options.logger.info('Set export interval to ' + this.options.periodInMillis + ' ms.');
+        this.timer = setInterval(async () => {
+            try {
+                await this.export();
+            } catch (err) {
+                if (typeof this.options.onMetricUploadError === 'function') {
+                    this.options.onMetricUploadError(err);
+                }
+            }
+        }, this.options.periodInMillis);
+        this.options.logger.info('Set export interval to ' + this.options.periodInMillis + ' ms.');
     }
 
     /**
@@ -177,29 +178,50 @@ export class AzureStatsExporter implements StatsEventListener {
     /**
      * Polls the Metrics library for all registered metrics and uploads these to Azure Monitor.
      */
-    // async export() {
-    //     this.options.logger.info('Starting export of metric batch.');
+    async export() {
+        this.options.logger.info('Starting export of metric batch.');
 
-    //     // Collect all of the metrics that will need to be exported in this batch.
-    //     const metricList: Metric[] = [];
-    //     const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
+        // Collect all of the metrics that will need to be exported in this batch.
+        const metricList: Metric[] = [];
+        const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
 
-    //     for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
-    //         for (const metric of metricProducer.getMetrics()) {
-    //             if (metric) {
-    //                 metricList.push(metric);
-    //             }
-    //         }
-    //     }
+        // According to OpenCensus documentation, MetricProducer.getMetrics() returns a list
+        // of metrics to be exported, therefore we will use that function to retrieve metrics.
+        for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
+            for (const metric of metricProducer.getMetrics()) {
+                if (metric) {
+                    metricList.push(metric);
+                }
+            }
+        }
 
-    //     // Aggregate each metric before sending them to Azure Monitor.
-    //     // TODO: Aggregate metrics.
-    //     for (const metric of metricList) {
-    //         switch (metric.descriptor.type) {
-    //             default:
-    //         }
-    //     }
-    // }
+        // Aggregate each metric before sending them to Azure Monitor.
+        // TODO: Aggregate metrics.
+        for (const metric of metricList) {
+            switch (metric.descriptor.type) {
+                case MetricDescriptorType.UNSPECIFIED:
+                    // Log a warning as this type should not be used.
+                    break;
+                case MetricDescriptorType.GAUGE_INT64:
+                case MetricDescriptorType.GAUGE_DOUBLE:
+                    // Aggregate these by (averaging, mode, etc) and uploading just the average
+                    break;
+                case MetricDescriptorType.CUMULATIVE_INT64:
+                case MetricDescriptorType.CUMULATIVE_DOUBLE:
+                    // Likely these will be aggregated the same as above, but for now I am keeping them
+                    // separate. If same aggregation procedures can be used, we will have all Int64/Doubles
+                    // fall through into the same block.
+                    break;
+                case MetricDescriptorType.GAUGE_DISTRIBUTION:
+                    // Need to look into how Azure monitor accepts distribution values.
+                    break;
+                case MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
+                    // Need to look into how Azure monitor accepts distribution values.
+                    break;
+                default:
+            }
+        }
+    }
 
      /**
      * Uses the Application Insights SDK to export a given MetricTelemetry object
