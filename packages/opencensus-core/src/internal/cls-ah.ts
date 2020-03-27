@@ -28,7 +28,7 @@ import * as shimmer from 'shimmer';
 
 const WRAPPED = Symbol('context_wrapped');
 /** A map of AsyncResource IDs to Context objects. */
-let contexts: { [asyncId: number]: Context } = {};
+let contexts: Map<number, Context> = new Map();
 let current: Context = {};
 
 // Create the hook.
@@ -137,13 +137,14 @@ function init(
   parentUid: number,
   parentHandle: {}
 ) {
-  contexts[uid] = current;
+  contexts.set(uid, current);
 }
 
 /** before is called just before the resource's callback is called. */
 function before(uid: number) {
-  if (contexts[uid]) {
-    current = contexts[uid];
+  const maybeCurrent = contexts.get(uid);
+  if (maybeCurrent !== undefined) {
+    current = maybeCurrent;
   }
 }
 
@@ -152,7 +153,7 @@ function before(uid: number) {
  * its entry in the map.
  */
 function destroy(uid: number) {
-  delete contexts[uid];
+  contexts.delete(uid);
 }
 
 export function createNamespace(): CLSNamespace {
@@ -161,7 +162,7 @@ export function createNamespace(): CLSNamespace {
 
 export function destroyNamespace(): void {
   current = {};
-  contexts = {};
+  contexts = new Map();
 }
 
 export function getNamespace(): CLSNamespace {
