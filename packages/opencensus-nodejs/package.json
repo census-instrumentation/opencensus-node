@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/nodejs",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "OpenCensus is a toolkit for collecting application performance and behavior data.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -54,8 +54,8 @@
     "typescript": "~3.2.0"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.20",
-    "@opencensus/instrumentation-all": "^0.0.20",
-    "@opencensus/nodejs-base": "^0.0.20"
+    "@opencensus/core": "^0.0.21",
+    "@opencensus/instrumentation-all": "^0.0.21",
+    "@opencensus/nodejs-base": "^0.0.21"
   }
 }
