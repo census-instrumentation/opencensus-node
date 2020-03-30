@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.21 - 2020-03-30
+- chore(core): store cls contexts on a Map (#786)
+- fix: `opencensus-instrumentation-grpc` reduce vulnerabilities (#749)
+
 ## 0.0.20 - 2020-02-18
 - fix(resources): GKE pod name label (#728)
 - chore: update dependency grpc to 1.24.2 (#750)
