@@ -11,6 +11,7 @@ import {
 } from '@opencensus/core';
 
 import * as ApplicationInsights from 'applicationinsights';
+import { IllegalOptionsError } from './azure-stats';
 
 export interface TraceParams {
     registeredViews: View[];
@@ -48,13 +49,6 @@ export interface AzureTraceExporterOptions extends ExporterConfig {
      */
     prefix?: string;
 
-}
-
-export class IllegalOptionsError extends Error {
-    constructor(message: string) {
-        super(message);
-        this.name = 'IllegalOptionsError';
-    }
 }
 
 /**
