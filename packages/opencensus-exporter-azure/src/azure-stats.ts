@@ -221,9 +221,17 @@ export class AzureStatsExporter implements StatsEventListener {
 
         // According to OpenCensus documentation, MetricProducer.getMetrics() returns a list
         // of metrics to be exported, therefore we will use that function to retrieve metrics.
-        for (const metricProducer of metricProducerManager.getAllMetricProducer()) {
+        const metricProducers = metricProducerManager.getAllMetricProducer()
+        this.options.logger.debug('There are ' + metricProducers.size.toString() + ' metric producers.')
+        for (const metricProducer of metricProducers) {
+            this.options.logger.debug('Processing metrics from: ' + JSON.stringify(metricProducer));
+
+            const metrics = metricProducer.getMetrics();
+            this.options.logger.debug('Metric Producer [' + Object.keys(metricProducer)[0] +'] has ' + metrics.length + ' metrics.');
             for (const metric of metricProducer.getMetrics()) {
                 if (metric) {
+                    this.options.logger.debug("Adding metric [" + metric.descriptor.name + "] to metricList.");
+                    this.options.logger.debug(metric.descriptor.name.toUpperCase() + ': ' + JSON.stringify(metric))
                     metricList.push(metric);
                 }
             }
@@ -232,12 +240,13 @@ export class AzureStatsExporter implements StatsEventListener {
         // Aggregate each metric before sending them to Azure Monitor.
         // TODO: Aggregate metrics.
         for (const metric of metricList) {
+            this.options.logger.info('Metric: ' + JSON.stringify(metric));
             let aggregateValue: number;
-            console.log(metric);
             switch (metric.descriptor.type) {
                 case MetricDescriptorType.GAUGE_INT64:
                 case MetricDescriptorType.GAUGE_DOUBLE:
-                    aggregateValue = this.getMetricAggreation<number>(metric);
+                    aggregateValue = this.getMetricAggreation(metric);
+                    this.options.logger.info(aggregateValue);
                     break;
                 case MetricDescriptorType.CUMULATIVE_INT64:
                 case MetricDescriptorType.CUMULATIVE_DOUBLE:
@@ -264,13 +273,16 @@ export class AzureStatsExporter implements StatsEventListener {
         }
     }
 
-    private getMetricAggreation<T>(metric: Metric): T {
+    private getMetricAggreation(metric: Metric) {
         switch(this.options.aggregationMethod) {
             case AggregationMethod.AVERAGE:
-                // Metric.TimeSeries is an array of TimeSeries
-                // Each of these has an array of points
-                // Need to collect all the points from each timeseries and aggregate them
-        }
+                const allPoints = metric.timeseries.map(timeseries  => timeseries.points).reduce((a, b) => [...a, ...b]);
+                const allValues : number[] = allPoints.map(point => <number>point.value);
+
+                this.options.logger.debug('Points being logged: ' + allValues);
+
+                return allValues.reduce((a, b) => a + b) / allValues.length;
+            }
         return null;
     }
 
