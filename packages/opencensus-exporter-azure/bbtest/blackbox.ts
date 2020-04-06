@@ -1,6 +1,6 @@
 // Import Core OpenCensus and our Azure Exporter module.
-import OpenCensus = require('@opencensus/core');
-import AzureStats = require('../build/src/azure-stats');
+const OpenCensus = require('@opencensus/core');
+const AzureStats = require('../build/src/azure-stats');
 
 function exportSingleMetrics() {
     // Construct and register an AzureStatsExporter with the OpenCensus library.
