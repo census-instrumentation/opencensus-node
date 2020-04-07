@@ -68,6 +68,8 @@ export class AzureTraceExporter implements Exporter {
 
     private buffer: ExporterBuffer;
 
+    private config: ExporterConfig;
+
     // Define all other exporter variables.
     private timer: NodeJS.Timer;
 
@@ -81,12 +83,13 @@ export class AzureTraceExporter implements Exporter {
      * Configures a new Trace Exporter given a set of options.
      * @param options Specific configuration information to use when constructing the exporter.
      */
-    constructor(config: ExporterConfig, options: AzureTraceExporterOptions) {
+    constructor(options: AzureTraceExporterOptions, config: ExporterConfig) {
         // Start with the default options, and overwrite the defaults with any options specified
         // in the constructor's options parameter. We do this before validating input so that
         // the logger gets configured with the user specified logger, if provided.
         this.options = { ...AZURE_TRACE_EXPORTER_DEFAULTS, ...options };
         this.buffer = new ExporterBuffer(this, config);
+        this.config = config;
 
         // Verify that the options passed in have actual values (no undefined values)
         // for require parameters.
@@ -116,7 +119,7 @@ export class AzureTraceExporter implements Exporter {
         });
   
         ApplicationInsights.defaultClient.trackTrace({
-            message: "Telemtry trace",
+            message: "Telemetry trace",
             severity: ApplicationInsights.Contracts.SeverityLevel.Information,
             properties: spans.map.arguments.result
         });
@@ -124,7 +127,7 @@ export class AzureTraceExporter implements Exporter {
     }
     
     onStartSpan(span: Span): void {
-        throw new Error("Method not implemented.");
+        this.buffer = new ExporterBuffer(this, this.config);
     }
     onEndSpan(span: Span): void {
         this.buffer.addToBuffer(span);
