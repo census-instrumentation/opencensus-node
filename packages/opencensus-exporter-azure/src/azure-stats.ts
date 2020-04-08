@@ -118,6 +118,8 @@ export class AzureStatsExporter implements StatsEventListener {
     // Define all other exporter variables.
     private timer: NodeJS.Timer;
 
+    private trackedMeasures: Map<string, number[]>;
+
     /**
      * Configures a new Stats Exporter given a set of options.
      * @param options Specific configuration information to use when constructing the exporter.
@@ -136,6 +138,8 @@ export class AzureStatsExporter implements StatsEventListener {
         }
 
         this.setupAndStartApplicationInsights();
+
+        this.trackedMeasures = new Map();
     }
 
     /**
@@ -143,6 +147,12 @@ export class AzureStatsExporter implements StatsEventListener {
      * @param view The registered view.
      */
     onRegisterView(view: View): void {
+        const measure = view.measure.name;
+        
+        if (!this.trackedMeasures.has(measure)) {
+            this.trackedMeasures.set(measure, []);
+            this.options.logger.info('Now tracking measure: ' + measure);
+        }
     }
 
     /**
@@ -154,12 +164,19 @@ export class AzureStatsExporter implements StatsEventListener {
     // Use the App Insights SDK to track this measurement.
     onRecord(views: View[], measurement: Measurement, tags: Map<TagKey, TagValue>): void {
         if (this.options.exportMode === ExportMode.SINGLE_VALUE) {
+            this.options.logger.info('Preparing to export single value [' + measurement.value + '] for ' + 
+                'measure: [' + measurement.measure.name + ']');
             let newMetric: MetricTelemetry = {
                 name: measurement.measure.name,
                 value: measurement.value
             };
 
             this.exportSingleMetric(newMetric);
+        } else {
+            // Get the name of the measure and track it's value so we can export it with the next batch.
+            const measure = measurement.measure.name;
+
+            this.trackedMeasures.get(measure).push(measurement.value);
         }
     }
 
@@ -213,77 +230,29 @@ export class AzureStatsExporter implements StatsEventListener {
             return;
         }
         
-        this.options.logger.info('Starting export of metric batch.');
+        let trackedMetricsCount = this.trackedMeasures.size;
+        this.options.logger.debug('Currently tracking ' + trackedMetricsCount + ' metric' + 
+            (trackedMetricsCount > 1 ? 's.' : '.'));
 
-        // Collect all of the metrics that will need to be exported in this batch.
-        const metricList: Metric[] = [];
-        const metricProducerManager: MetricProducerManager = Metrics.getMetricProducerManager();
+        // Go through each measure, aggregate it, and export it.
+        for (let measure of this.trackedMeasures.keys()) {
+            let valuesCount = this.trackedMeasures.get(measure).length;
+            // Get the aggregated value.
+            let aggregatedValue = this.getAggregation(this.trackedMeasures.get(measure));
 
-        // According to OpenCensus documentation, MetricProducer.getMetrics() returns a list
-        // of metrics to be exported, therefore we will use that function to retrieve metrics.
-        const metricProducers = metricProducerManager.getAllMetricProducer()
-        this.options.logger.debug('There are ' + metricProducers.size.toString() + ' metric producers.')
-        for (const metricProducer of metricProducers) {
-            this.options.logger.debug('Processing metrics from: ' + JSON.stringify(metricProducer));
+            // Construct the MetricTelemetry object expected by the App Insights SDK.
+            // Export this as if it were a single metric.
+            this.options.logger.info('Preparing to export batch value [' + aggregatedValue+ '] for ' + 
+                'measure: [' + measure + '] based on ' + valuesCount + ' values.');
+            let metricToExport: MetricTelemetry = {
+                name: measure,
+                value: aggregatedValue
+            };
+            this.exportSingleMetric(metricToExport);
 
-            const metrics = metricProducer.getMetrics();
-            this.options.logger.debug('Metric Producer [' + Object.keys(metricProducer)[0] +'] has ' + metrics.length + ' metrics.');
-            for (const metric of metricProducer.getMetrics()) {
-                if (metric) {
-                    this.options.logger.debug("Adding metric [" + metric.descriptor.name + "] to metricList.");
-                    this.options.logger.debug(metric.descriptor.name.toUpperCase() + ': ' + JSON.stringify(metric))
-                    metricList.push(metric);
-                }
-            }
+            // Clear the tracked values so we don't handle a single value more than once.
+            this.trackedMeasures.set(measure, []);
         }
-
-        // Aggregate each metric before sending them to Azure Monitor.
-        // TODO: Aggregate metrics.
-        for (const metric of metricList) {
-            this.options.logger.info('Metric: ' + JSON.stringify(metric));
-            let aggregateValue: number;
-            switch (metric.descriptor.type) {
-                case MetricDescriptorType.GAUGE_INT64:
-                case MetricDescriptorType.GAUGE_DOUBLE:
-                    aggregateValue = this.getMetricAggreation(metric);
-                    this.options.logger.info(aggregateValue);
-                    break;
-                case MetricDescriptorType.CUMULATIVE_INT64:
-                case MetricDescriptorType.CUMULATIVE_DOUBLE:
-                    // Likely these will be aggregated the same as above, but for now I am keeping them
-                    // separate. If same aggregation procedures can be used, we will have all Int64/Doubles
-                    // fall through into the same block.
-                    break;
-                case MetricDescriptorType.GAUGE_DISTRIBUTION:
-                    // Need to look into how Azure monitor accepts distribution values.
-                    break;
-                case MetricDescriptorType.CUMULATIVE_DISTRIBUTION:
-                    // Need to look into how Azure monitor accepts distribution values.
-                    break;
-                case MetricDescriptorType.UNSPECIFIED:
-                    // Log a warning as this type should not be used.
-                    break;
-                default:
-            }
-
-            this.exportSingleMetric({
-                name: metric.descriptor.name,
-                value: aggregateValue
-            });
-        }
-    }
-
-    private getMetricAggreation(metric: Metric) {
-        switch(this.options.aggregationMethod) {
-            case AggregationMethod.AVERAGE:
-                const allPoints = metric.timeseries.map(timeseries  => timeseries.points).reduce((a, b) => [...a, ...b]);
-                const allValues : number[] = allPoints.map(point => <number>point.value);
-
-                this.options.logger.debug('Points being logged: ' + allValues);
-
-                return allValues.reduce((a, b) => a + b) / allValues.length;
-            }
-        return null;
     }
 
     /**
@@ -296,6 +265,10 @@ export class AzureStatsExporter implements StatsEventListener {
             return false;            
         }
         return true;
+    }
+
+    private getAggregation(values: number[]) : number {
+        return values.reduce((a, b) => a + b) / values.length;
     }
 
     /**
