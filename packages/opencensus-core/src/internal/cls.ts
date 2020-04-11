@@ -20,6 +20,7 @@
 import * as CLS from 'cls-hooked';
 
 export type Namespace = CLS.Namespace;
+// eslint-disable-next-line no-any
 export type Func<T> = (...args: any[]) => T;
 
 const TRACE_NAMESPACE = 'opencensus.io';
