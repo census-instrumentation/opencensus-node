@@ -251,6 +251,7 @@ export class AzureStatsExporter implements StatsEventListener {
             this.exportSingleMetric(metricToExport);
 
             // Clear the tracked values so we don't handle a single value more than once.
+            // Make sure this is most efficent way to clear.
             this.trackedMeasures.set(measure, []);
         }
     }
