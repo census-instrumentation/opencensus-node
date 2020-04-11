@@ -139,7 +139,7 @@ export class CoreTracer extends CoreTracerBase implements types.Tracer {
       return fn;
     }
     const namespace = this.contextManager;
-    return namespace.bind<T>(fn);
+    return namespace.bind(fn);
   }
 
   /**

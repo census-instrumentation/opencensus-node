@@ -17,39 +17,24 @@
 // Original file from Stackdriver Trace Agent for Node.js
 // https://github.com/GoogleCloudPlatform/cloud-trace-nodejs
 
-import * as CLS from 'continuation-local-storage';
-import * as semver from 'semver';
+import * as CLS from 'cls-hooked';
 
 export type Namespace = CLS.Namespace;
-export type Func<T> = CLS.Func<T>;
-
-const useAsyncHooks: boolean = semver.satisfies(process.version, '>=8'); //&&
-// !!process.env.GCLOUD_TRACE_NEW_CONTEXT;
-
-const cls: typeof CLS = useAsyncHooks
-  ? require('./cls-ah')
-  : require('continuation-local-storage');
+// tslint:disable-next-line:no-any
+export type Func<T> = (...args: any[]) => T;
 
 const TRACE_NAMESPACE = 'opencensus.io';
 
-/**
- * Stack traces are captured when a root span is started. Because the stack
- * trace height varies on the context propagation mechanism, to keep published
- * stack traces uniform we need to remove the top-most frames when using the
- * c-l-s module. Keep track of this number here.
- */
-export const ROOT_SPAN_STACK_OFFSET = useAsyncHooks ? 0 : 2;
-
 export function createNamespace(): CLS.Namespace {
-  return cls.createNamespace(TRACE_NAMESPACE);
+  return CLS.createNamespace(TRACE_NAMESPACE);
 }
 
 export function destroyNamespace(): void {
-  cls.destroyNamespace(TRACE_NAMESPACE);
+  CLS.destroyNamespace(TRACE_NAMESPACE);
 }
 
 export function getNamespace(): CLS.Namespace {
-  return cls.getNamespace(TRACE_NAMESPACE);
+  return CLS.getNamespace(TRACE_NAMESPACE);
 }
 
 export const contextManager = createNamespace();
