@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-all",
-  "version": "0.0.19",
+  "version": "0.0.21",
   "description": "This package has dependencies to all default instrumentation packages.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -38,12 +38,12 @@
     "access": "public"
   },
   "dependencies": {
-    "@opencensus/instrumentation-grpc": "^0.0.19",
-    "@opencensus/instrumentation-http": "^0.0.19",
-    "@opencensus/instrumentation-http2": "^0.0.19",
-    "@opencensus/instrumentation-https": "^0.0.19",
-    "@opencensus/instrumentation-ioredis": "^0.0.19",
-    "@opencensus/instrumentation-mongodb": "^0.0.19",
-    "@opencensus/instrumentation-redis": "^0.0.19"
+    "@opencensus/instrumentation-grpc": "^0.0.21",
+    "@opencensus/instrumentation-http": "^0.0.21",
+    "@opencensus/instrumentation-http2": "^0.0.21",
+    "@opencensus/instrumentation-https": "^0.0.21",
+    "@opencensus/instrumentation-ioredis": "^0.0.21",
+    "@opencensus/instrumentation-mongodb": "^0.0.21",
+    "@opencensus/instrumentation-redis": "^0.0.21"
   }
 }

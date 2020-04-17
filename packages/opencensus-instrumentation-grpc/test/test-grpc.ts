@@ -508,7 +508,7 @@ describe('GrpcPlugin() ', function() {
               grpcModule.status.OK
             );
             if (method.method === grpcClient.unaryMethod) {
-              assertStats(testExporter, 107);
+              assertStats(testExporter, 125);
             }
             assertPropagation(clientRoot, serverRoot);
           });
@@ -546,7 +546,7 @@ describe('GrpcPlugin() ', function() {
                 grpcModule.status.OK
               );
               if (method.method === grpcClient.unaryMethod) {
-                assertStats(testExporter, 170);
+                assertStats(testExporter, 188);
               }
               assertPropagation(clientRoot, serverRoot);
               assert.deepStrictEqual(globalStats.getCurrentTagContext(), tags);

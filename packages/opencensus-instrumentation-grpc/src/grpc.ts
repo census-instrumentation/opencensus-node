@@ -65,7 +65,7 @@ interface Status {
 type ServerCall =
   | typeof grpcTypes.ServerUnaryCall
   | typeof grpcTypes.ServerReadableStream
-  | typeof grpcTypes.ServerWriteableStream
+  | typeof grpcTypes.ServerWritableStream
   | typeof grpcTypes.ServerDuplexStream;
 
 type ServerCallWithMeta = ServerCall & {
