@@ -2,7 +2,8 @@ import {
     Logger,
     MeasureUnit,
     globalStats,
-    Measurement
+    Measurement,
+    AggregationType
 } from '@opencensus/core';
 import {
     AzureStatsExporter,
@@ -23,6 +24,7 @@ class MockLogger implements Logger {
     // tslint:disable-next-line:no-any
     debugBuffer: any[] = [];
     errorMessagesBuffer: any[] = [];
+    infoBuffer: any[] = [];
   
     cleanAll() {
       this.debugBuffer = [];
@@ -41,7 +43,9 @@ class MockLogger implements Logger {
     // tslint:disable-next-line:no-any
     warn(...args: any[]) {}
     // tslint:disable-next-line:no-any
-    info(...args: any[]) {}
+    info(message: string, ...args: any[]) {
+        this.infoBuffer.push(message);
+    }
 }
 
 /**
@@ -130,13 +134,50 @@ describe('Single-Value Stats Exporting', () => {
         stub.resetBehavior();
     });
 
-    it('Should export a simple metric.', async () => {
+    it('Should export a simple metric.', () => {
         exporter.onRecord(undefined, measurement, undefined);
         assert(stub.called, 'Application Insights SDk was not called');
     });
 
 });
 
-describe('Batched Stats Exporter', () => {
-    // TODO: Test batch functinoality once it has been implemented.
+describe('Batch Functionality', () => {
+    const mockLogger = new MockLogger();
+    let exporterOptions: AzureStatsExporterOptions;
+
+    let exporter: AzureStatsExporter;
+
+    const measure = globalStats.createMeasureDouble(
+        'opencensus.io/test/doule',
+        MeasureUnit.UNIT,
+        'Measure Double'
+    );
+
+    const view = globalStats.createView(
+        'test/view',
+        measure,
+        AggregationType.COUNT,
+        null,
+        'This is a test view.'
+    );
+
+    before(() => {
+        exporterOptions = {
+            instrumentationKey: 'fake-instrumentation-key',
+            logger: mockLogger
+        };
+        exporter = new AzureStatsExporter(exporterOptions);
+    });
+
+    afterEach(() => {
+        exporter.stop();
+        mockLogger.cleanAll();
+        globalStats.clear();
+    });
+
+    it('Should register the metric contained within a view, when a new view is registered.', () => {
+        exporter.onRegisterView(view);
+        assert(mockLogger.infoBuffer.length === 1, 'There was not an info log message.');
+        assert(mockLogger.infoBuffer[0] === 'Now tracking measure: ' + measure.name)
+    });
 });
