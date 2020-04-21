@@ -58,7 +58,7 @@
     "@types/once": "^1.4.0",
     "@types/semver": "^7.0.0",
     "@types/shimmer": "^1.0.1",
-    "@types/uuid": "^3.4.3",
+    "@types/uuid": "^7.0.0",
     "codecov": "^3.6.2",
     "gts": "^1.0.0",
     "intercept-stdout": "^0.1.2",
@@ -73,6 +73,6 @@
     "log-driver": "^1.2.7",
     "semver": "^7.0.0",
     "shimmer": "^1.2.0",
-    "uuid": "^3.2.1"
+    "uuid": "^7.0.0"
   }
 }
