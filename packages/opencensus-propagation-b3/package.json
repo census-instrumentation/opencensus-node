@@ -51,7 +51,7 @@
   "devDependencies": {
     "@types/mocha": "^7.0.0",
     "@types/node": "^10.12.12",
-    "@types/uuid": "^3.4.3",
+    "@types/uuid": "^7.0.0",
     "codecov": "^3.6.2",
     "gts": "^1.0.0",
     "mocha": "^7.0.0",
@@ -63,6 +63,6 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.0.21",
-    "uuid": "^3.2.1"
+    "uuid": "^7.0.0"
   }
 }
