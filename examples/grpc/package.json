@@ -17,16 +17,20 @@
   },
   "scripts": {
     "lint": "semistandard *.js",
-    "fix": "semistandard --fix"
+    "fix": "semistandard --fix",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.4.0",
     "@opencensus/exporter-stackdriver": "^0.0.20",
     "@opencensus/instrumentation-grpc": "^0.0.20",
     "@opencensus/nodejs": "^0.0.20",
-    "grpc": "^1.18.0"
+    "grpc": "^1.18.0",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "semistandard": "^13.0.1"
-  }
+  },
+  "snyk": true
 }
