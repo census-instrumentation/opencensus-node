@@ -17,15 +17,19 @@
   },
   "scripts": {
     "lint": "semistandard *.js",
-    "fix": "semistandard --fix"
+    "fix": "semistandard --fix",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "@opencensus/exporter-zipkin": "^0.0.20",
     "@opencensus/nodejs": "^0.0.20",
     "@opencensus/propagation-tracecontext": "^0.0.20",
-    "http": "*"
+    "http": "*",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "semistandard": "^13.0.1"
-  }
+  },
+  "snyk": true
 }
