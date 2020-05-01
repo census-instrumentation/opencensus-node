@@ -42,10 +42,13 @@ const AZURE_TRACE_EXPORTER_DEFAULTS: AzureTraceExporterOptions = {
 
 export class AzureTraceExporter implements Exporter {
 
+    /**Custom options for Trace Exporter */
     private options: AzureTraceExporterOptions;
 
+     /** Buffer object to store the spans. */
     private buffer: ExporterBuffer;
 
+    /** Exporter Config Object for Azure Monitor */
     private config: ExporterConfig;
 
     // Define all other exporter variables.
@@ -61,53 +64,86 @@ export class AzureTraceExporter implements Exporter {
      * Configures a new Trace Exporter given a set of options.
      * @param options Specific configuration information to use when constructing the exporter.
      */
-    constructor(options: AzureTraceExporterOptions, config: ExporterConfig) {
+    constructor(options: AzureTraceExporterOptions) {
         // Start with the default options, and overwrite the defaults with any options specified
         // in the constructor's options parameter. We do this before validating input so that
         // the logger gets configured with the user specified logger, if provided.
         this.options = { ...AZURE_TRACE_EXPORTER_DEFAULTS, ...options };
-        this.buffer = new ExporterBuffer(this, config);
-        this.config = config;
+
+        // Init ExporterConfig
+        this.config = {
+            bufferSize: this.options.maxBatchSizeInBytes,
+            bufferTimeout: this.options.maxBatchInterval,
+            logger: this.options.logger
+        }
+        this.buffer = new ExporterBuffer(this, this.config);
 
         // Verify that the options passed in have actual values (no undefined values)
         // for require parameters.
         if (!options.instrumentationKey) {
             this.options.logger.error('You must provide a valid instrumentation key.');
             throw new IllegalOptionsError('You must provide a valid instrumentation key.');
-        } 
+        }
 
         // Configure the Application Insights SDK to use the Instrumentation Key from our options.
         ApplicationInsights.setup(this.options.instrumentationKey).start();
     }
+
+    /**
+    * Sends the spans information to the console.
+    * @param spans The stored spans
+    */
     publish(spans: Span[]): Promise<string | number | void> {
         // Iterate over all root spans formating the data the way we want
+        this.options.logger.debug(spans.length);
+        let ROOT_NAME = "";
+        let children : { [key: string]: string} = {};
         spans.map((root) => {
-        const ROOT_STR = `RootSpan: {traceId: ${root.traceId}, spanId: ${
-            root.id}, name: ${root.name} }`;
-  
-        const SPANS_STR: string[] = root.spans.map(
-            (span) => [`\t\t{spanId: ${span.id}, name: ${span.name}}`].join(
-                '\n'));
-  
-        const result: string[] = [];
-        result.push(
-            ROOT_STR + '\n\tChildSpans:\n' +
-            `${SPANS_STR.join('\n')}`);
-        // console.log(`${result}`);
+            const ROOT_STR = `RootSpan: {traceId: ${root.traceId}, spanId: ${
+                root.id}, name: ${root.name} }`;
+
+            const SPANS_STR: string[] = root.spans.map(
+                (span) => [`\t\t{spanId: ${span.id}, name: ${span.name}}`].join(
+                    '\n'));
+
+            root.spans.map(
+                (span) => children[span.id] = span.name
+            );
+            const result: string[] = [];
+            result.push(
+                ROOT_STR + '\n\tChildSpans:\n' +
+                `${SPANS_STR.join('\n')}`);
+            this.options.logger.debug('Result string <azure-trace.ts:121>: ' + result[0]);
+
+            ROOT_NAME = root.name;
+
         });
-  
+
         ApplicationInsights.defaultClient.trackTrace({
-            message: "Telemetry trace",
+            message: ROOT_NAME,
             severity: ApplicationInsights.Contracts.SeverityLevel.Information,
-            properties: spans.map.arguments.result
+            properties: children
         });
+
         return Promise.resolve();
     }
-    
+
+    /** 
+    * Our onStartSpan will do nothing. The exporting logic will be concentrated
+    * at the onEndSpan event.
+    */
     onStartSpan(span: Span): void {
-        this.buffer = new ExporterBuffer(this, this.config);
     }
+
+    /**
+    * Called whenever a span is ended.
+    * @param span Ended span.
+    */
     onEndSpan(span: Span): void {
+        // We will just add the ended span to the buffer and wait for it to call
+	    // the exporter back giving all the stored spans.
+        if (!span.isRootSpan()) return;
         this.buffer.addToBuffer(span);
+        this.options.logger.debug('Added to buffer: ' + span.name);
     }
 }
