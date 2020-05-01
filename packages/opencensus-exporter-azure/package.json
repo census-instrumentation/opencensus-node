@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/exporter-azure",
-  "version": "0.0.19",
+  "version": "0.0.21",
   "description": "OpenCensus Azure Exporter allows the user to send stats and traces collected with OpenCensus Node.js to Azure Monitor.",
   "type": "module",
   "main": "index.ts",
