@@ -16,3 +16,4 @@
 
 export * from './azure-stats';
 export * from './azure-trace';
+export * from './types';

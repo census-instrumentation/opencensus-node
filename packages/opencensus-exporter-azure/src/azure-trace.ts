@@ -18,54 +18,16 @@ import {
     Exporter,
     ExporterConfig,
     Span,
-    Logger,
     logger,
-    View,
-    Measure,
-    AggregationData,
     ExporterBuffer
 } from '@opencensus/core';
 
 import * as ApplicationInsights from 'applicationinsights';
-import { IllegalOptionsError } from './azure-stats';
-
-export interface TraceParams {
-    registeredViews: View[];
-    registeredMeasures: Measure[];
-    recordedData: { [key: string]: AggregationData[] };
-}
-
-export interface AzureTraceExporterOptions extends ExporterConfig {
-    /**
-     * The Instrumentation Key found in your application's Azure Monitor Application Insights
-     * Overview page. Required.
-     */
-    instrumentationKey: string;
-
-    /**
-     * If specified, this will serve as the logger used by the exporter.
-     * Optional, default to use whatever logger is registered with OpenCensus.
-     */
-    logger?: Logger;
-
-    /**
-     * Max size of telemetry batch.
-     * If a batch exceeds this limit, it is immediately sent and a new batch is started
-     */
-    maxBatchSizeInBytes?: number;
-
-    /**
-     * How long to batch telemetry for before sending (milliseconds)
-     */
-    maxBatchInterval?: number;
-
-    /**
-     * If specified, this will override the default OpenCensus prefix of an
-     * Azure Monitor metric. Optional.
-     */
-    prefix?: string;
-
-}
+import { 
+    IllegalOptionsError,
+    AzureTraceExporterOptions,
+    TraceParams
+} from './types';
 
 /**
  * Configuration defaults for an AzureTraceExporter.
