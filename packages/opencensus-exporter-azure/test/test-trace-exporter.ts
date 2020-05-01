@@ -3,11 +3,11 @@ import {
   } from '@opencensus/core';
   import {
     AzureTraceExporter,
-    AzureTraceExporterOptions,
   } from '../src/azure-trace';
   import {
+    AzureTraceExporterOptions,
     IllegalOptionsError
-  } from '../src/azure-stats'
+  } from '../src/types';
   import {
     describe,
     it,

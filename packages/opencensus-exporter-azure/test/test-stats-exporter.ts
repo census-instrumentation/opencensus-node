@@ -23,9 +23,11 @@ import {
 } from '@opencensus/core';
 import {
     AzureStatsExporter,
+} from '../src/azure-stats';
+import {
     AzureStatsExporterOptions,
     IllegalOptionsError
-} from '../src/azure-stats';
+} from '../src/types';
 import {
     describe,
     it
