@@ -6,17 +6,26 @@ import {
     ExporterConfig
 } from '@opencensus/core';
 
+/**
+ * Parameters needed to annotate a stat with OpenCensus metadata.
+ */
 export interface StatsParams {
     registeredViews: View[];
     registeredMeasures: Measure[];
     recordedData: { [key: string]: AggregationData[] };
 }
 
+/**
+ * Enumeration to differentiate between single value and batch exporting.
+ */
 export enum ExportMode {
     SINGLE_VALUE = 0,
     BATCH = 1
 }
 
+/**
+ * Aggregation method enumerations for use by ExporterOptions.
+ */
 export enum AggregationMethod {
     AVERAGE = 0,
     MIN = 1,
@@ -74,6 +83,9 @@ export interface AzureStatsExporterOptions extends ExporterConfig {
 
 }
 
+/**
+ * Custom error for use when an exporter is supplied with bad options.
+ */
 export class IllegalOptionsError extends Error {
     constructor(message: string) {
         super(message);
@@ -81,12 +93,18 @@ export class IllegalOptionsError extends Error {
     }
 }
 
+/**
+ * Params needed to annotate a trace.
+ */
 export interface TraceParams {
     registeredViews: View[];
     registeredMeasures: Measure[];
     recordedData: { [key: string]: AggregationData[] };
 }
 
+/**
+ * Options used to configure an AzureTraceExporter.
+ */
 export interface AzureTraceExporterOptions extends ExporterConfig {
     /**
      * The Instrumentation Key found in your application's Azure Monitor Application Insights
