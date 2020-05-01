@@ -21,7 +21,7 @@ const AzureStats = require('../build/src/azure-stats');
 function exportSingleMetrics() {
     // Construct and register an AzureStatsExporter with the OpenCensus library.
     const exporter = new AzureStats.AzureStatsExporter({
-        instrumentationKey: 'fa3cb2ed-0f0d-463d-a8f2-0c0c382fa9fc',
+        instrumentationKey: 'xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
         logger: new OpenCensus.logger.ConsoleLogger(process.argv[2] || 'info')
     });
     OpenCensus.globalStats.registerExporter(exporter);

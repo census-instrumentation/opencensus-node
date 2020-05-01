@@ -20,7 +20,7 @@ const OC = require('@opencensus/core');
 function exportSingleMetric() {
     // Construct and register an AzureStatsExporter with the OpenCensus library.
     const exporter = new AS.AzureStatsExporter({
-        instrumentationKey: 'fa3cb2ed-0f0d-463d-a8f2-0c0c382fa9fc',
+        instrumentationKey: 'xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
         logger: new OC.logger.ConsoleLogger(process.argv[2] || 'info'),
         periodInMillis: 15000,
         exportMode: AS.ExportMode.BATCH,
