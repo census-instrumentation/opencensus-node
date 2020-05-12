@@ -1,0 +1,8 @@
+{
+    "nyc": {
+        "all": true,
+        "include": [
+            "test/**/*.ts"
+        ]
+    }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "@opencensus/exporter-azure",
+  "version": "0.0.21",
+  "description": "OpenCensus Azure Exporter allows the user to send stats and traces collected with OpenCensus Node.js to Azure Monitor.",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "test": "nyc mocha -r ts-node/register test/**/*.ts",
+    "compile": "tsc -p .",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile"
+  },
+  "author": "NCSU SDC Spring 2020 Team 05",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@opencensus/core": "0.0.19",
+    "@types/continuation-local-storage": "^3.2.2",
+    "applicationinsights": "^1.7.2",
+    "continuation-local-storage": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.9",
+    "@types/mocha": "^7.0.1",
+    "@types/node": "^10.17.16",
+    "chai": "^4.2.0",
+    "fs": "0.0.1-security",
+    "mocha": "^7.0.1",
+    "nyc": "^15.0.0",
+    "readline": "^1.3.0",
+    "sinon": "^9.0.0",
+    "ts-node": "^8.6.2",
+    "typescript": "~3.7.0"
+  }
+}
