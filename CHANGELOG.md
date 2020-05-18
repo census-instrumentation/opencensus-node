@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.22 - 2020-05-18
+- fix(deps): update dependency uuid to v8 (#807)
+- Addition of Stats Exporter for Microsoft Azure (#795)
+- chore(deps): bump jquery from 3.4.1 to 3.5.0 (#801)
+- fix(deps): update dependency uuid to v7 (#779)
+- chore(deps): update dependency google-proto-files to v2 (#796)
+- chore(deps): update dependency nodemon to v2 (#771)
+- fix(deps): update dependency semver to v7 (#778)
+
 ## 0.0.21 - 2020-03-30
 - chore(core): store cls contexts on a Map (#786)
 - fix: `opencensus-instrumentation-grpc` reduce vulnerabilities (#749)
