@@ -225,12 +225,13 @@ describe('Tracer Base', () => {
       });
     });
 
-    it('should create the new RootSpan with no propagation (options bit is not set)', () => {
+    it('should create the new NoRecordRootSpan with propagation options bit set to not-sample)', () => {
       const tracer = new CoreTracerBase();
       tracer.start(defaultConfig);
       traceOptions.spanContext!.options = 0x0;
       tracer.startRootSpan(traceOptions, rootSpan => {
         assert.ok(rootSpan);
+        assert.ok(rootSpan instanceof NoRecordRootSpan);
         assert.strictEqual(rootSpan.name, traceOptions.name);
         assert.strictEqual(rootSpan.kind, traceOptions.kind);
         assert.strictEqual(rootSpan.traceId, spanContextPropagated.traceId);
