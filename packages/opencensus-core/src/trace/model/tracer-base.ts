@@ -262,11 +262,15 @@ export class CoreTracerBase implements types.TracerBase {
     }
     let propagatedSample = null;
     // if there is a context propagation, keep the decision
-    if (options && options.spanContext && options.spanContext.options) {
+    if (
+      options &&
+      options.spanContext &&
+      options.spanContext.options !== undefined
+    ) {
       propagatedSample = (options.spanContext.options & this.IS_SAMPLED) !== 0;
+      return !!propagatedSample;
     }
-
-    // Propagated sample or use the default global sampler
-    return !!propagatedSample || this.sampler.shouldSample(traceId);
+    // default global sampler
+    return this.sampler.shouldSample(traceId);
   }
 }
