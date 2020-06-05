@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/instrumentation-grpc",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "Opencensus grpc automatic instrumentation package.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -65,8 +65,8 @@
     "typescript": "~2.8.3"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.21",
-    "@opencensus/propagation-binaryformat": "^0.0.21",
+    "@opencensus/core": "^0.0.22",
+    "@opencensus/propagation-binaryformat": "^0.0.22",
     "grpc": "^1.24.2",
     "lodash": "^4.17.11",
     "object-sizeof": "^1.3.0",
