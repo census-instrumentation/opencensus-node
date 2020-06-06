@@ -55,7 +55,7 @@
     "@types/node": "^10.12.12",
     "@types/shimmer": "^1.0.1",
     "codecov": "^3.6.2",
-    "gts": "^1.0.0",
+    "gts": "^2.0.0",
     "mocha": "^7.0.0",
     "nyc": "^14.0.0",
     "protobufjs": "^6.8.8",
