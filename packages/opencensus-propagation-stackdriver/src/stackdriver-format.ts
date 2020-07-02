@@ -42,13 +42,22 @@ const TRACE_TRUE = 0x1;
 
 /** Propagates span context through Stackdriver Format propagation. */
 export class StackdriverFormat implements Propagation {
+  headerName: string;
+
+  constructor(config?: { headerName?: string }) {
+    if (config && config.headerName) {
+      this.headerName = config.headerName;
+    } else {
+      this.headerName = TRACE_CONTEXT_HEADER_NAME;
+    }
+  }
   /**
    * Gets the span context from a request headers. If there is no span context
    * in the headers, null is returned.
    * @param getter
    */
   extract(getter: HeaderGetter): SpanContext | null {
-    const traceContextHeader = getter.getHeader(TRACE_CONTEXT_HEADER_NAME);
+    const traceContextHeader = getter.getHeader(this.headerName);
     if (typeof traceContextHeader !== 'string') {
       return null;
     }
@@ -83,7 +92,7 @@ export class StackdriverFormat implements Propagation {
       header += `;o=${spanContext.options}`;
     }
 
-    setter.setHeader(TRACE_CONTEXT_HEADER_NAME, header);
+    setter.setHeader(this.headerName, header);
   }
 
   /** Generate SpanContexts */
