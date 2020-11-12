@@ -66,6 +66,6 @@
     "@grpc/proto-loader": "^0.5.0",
     "@opencensus/core": "^0.0.22",
     "@opencensus/nodejs": "^0.0.22",
-    "grpc": "^1.20.3"
+    "grpc": "^1.24.4"
   }
 }
