@@ -54,8 +54,7 @@ const compose = (...fns: ValidationFn[]): ValidationFn => {
 };
 
 /**
- * Determines if the given traceId is valid based on section 2.2.2.1 of the
- * Trace Context spec.
+ * Determines if the given traceId is valid based on https://www.jaegertracing.io/docs/1.21/client-libraries/#value
  */
 export const isValidTraceId = compose(
   isHex,
@@ -64,8 +63,7 @@ export const isValidTraceId = compose(
 );
 
 /**
- * Determines if the given spanId is valid based on section 2.2.2.2 of the Trace
- * Context spec.
+ * Determines if the given spanId is valid based on https://www.jaegertracing.io/docs/1.21/client-libraries/#value
  */
 export const isValidSpanId = compose(
   isHex,
@@ -74,8 +72,7 @@ export const isValidSpanId = compose(
 );
 
 /**
- * Determines if the given option is valid based on section 2.2.3 of the Trace
- * Context spec.
+ * Determines if the given option is valid based on https://www.jaegertracing.io/docs/1.21/client-libraries/#value
  */
 export const isValidOption = compose(
   isHex,
