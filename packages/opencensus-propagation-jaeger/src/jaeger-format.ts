@@ -22,7 +22,12 @@ import {
 } from '@opencensus/core';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
-import { isValidSpanId, isValidTraceId } from './validators';
+import {
+  formatTraceId,
+  formatSpanId,
+  isValidSpanId,
+  isValidTraceId,
+} from './validators';
 
 // TRACER_STATE_HEADER_NAME is the header key used for a span's serialized
 // context.
@@ -57,8 +62,8 @@ export class JaegerFormat implements Propagation {
     const tracerStateHeaderParts = tracerStateHeader.split(':');
     if (tracerStateHeaderParts.length !== 4) return null;
 
-    const traceId = tracerStateHeaderParts[0];
-    const spanId = tracerStateHeaderParts[1];
+    const traceId = formatTraceId(tracerStateHeaderParts[0]);
+    const spanId = formatSpanId(tracerStateHeaderParts[1]);
     const jflags = Number(
       '0x' +
         (isNaN(Number(tracerStateHeaderParts[3]))

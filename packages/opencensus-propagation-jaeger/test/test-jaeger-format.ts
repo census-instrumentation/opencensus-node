@@ -62,6 +62,66 @@ describe('JaegerPropagation', () => {
       );
       assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
     });
+
+    it('should format traceId for 64Bit Hex id without leading zeros', () => {
+      const spanContext = jaegerFormat.generate();
+      spanContext.traceId = '70c2f20bd65603bd';
+      const getter = helperGetter(
+        `${spanContext.traceId}:${spanContext.spanId}::${spanContext.options}`
+      );
+      assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
+    });
+
+    it('should format traceId for 64Bit Hex id with leading zeros when needed', () => {
+      const spanContext = jaegerFormat.generate();
+      spanContext.traceId = 'c2f20bd65603bd';
+      const compareSpanContext = { ...spanContext };
+      compareSpanContext.traceId = '00c2f20bd65603bd';
+      const getter = helperGetter(
+        `${spanContext.traceId}:${spanContext.spanId}::${spanContext.options}`
+      );
+      assert.deepStrictEqual(jaegerFormat.extract(getter), compareSpanContext);
+    });
+
+    it('should format traceId for 128Bit Hex id without leading zeros', () => {
+      const spanContext = jaegerFormat.generate();
+      spanContext.traceId = '929985345ae64c35acddd590f13ffc82';
+      const getter = helperGetter(
+        `${spanContext.traceId}:${spanContext.spanId}::${spanContext.options}`
+      );
+      assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
+    });
+
+    it('should format traceId for 128Bit Hex id with leading zeros when needed', () => {
+      const spanContext = jaegerFormat.generate();
+      spanContext.traceId = '9985345ae64c35acddd590f13ffc82';
+      const compareSpanContext = { ...spanContext };
+      compareSpanContext.traceId = '009985345ae64c35acddd590f13ffc82';
+      const getter = helperGetter(
+        `${spanContext.traceId}:${spanContext.spanId}::${spanContext.options}`
+      );
+      assert.deepStrictEqual(jaegerFormat.extract(getter), compareSpanContext);
+    });
+  });
+
+  it('should format spanId without leading zeros', () => {
+    const spanContext = jaegerFormat.generate();
+    spanContext.spanId = '70c2f20bd65603bd';
+    const getter = helperGetter(
+      `${spanContext.traceId}:${spanContext.spanId}::${spanContext.options}`
+    );
+    assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
+  });
+
+  it('should format spanId with leading zeros when needed', () => {
+    const spanContext = jaegerFormat.generate();
+    spanContext.spanId = 'c2f20bd65603bd';
+    const compareSpanContext = { ...spanContext };
+    compareSpanContext.spanId = '00c2f20bd65603bd';
+    const getter = helperGetter(
+      `${spanContext.traceId}:${spanContext.spanId}::${spanContext.options}`
+    );
+    assert.deepStrictEqual(jaegerFormat.extract(getter), compareSpanContext);
   });
 
   describe('inject', () => {
@@ -103,6 +163,50 @@ describe('JaegerPropagation', () => {
 
       jaegerFormat.inject(setter, emptySpanContext);
       assert.deepStrictEqual(jaegerFormat.extract(getter), null);
+    });
+
+    it('should inject spancontext with 64Bit traceID', () => {
+      const spanContext = {
+        traceId: '70c2f20bd65603bd',
+        spanId: '5ba4ceca5d0edd4c',
+        options: SAMPLED_VALUE,
+      };
+      const headers: { [key: string]: string | string[] | undefined } = {};
+      const setter: HeaderSetter = {
+        setHeader(name: string, value: string) {
+          headers[name] = value;
+        },
+      };
+      const getter: HeaderGetter = {
+        getHeader(name: string) {
+          return headers[name];
+        },
+      };
+
+      jaegerFormat.inject(setter, spanContext);
+      assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
+    });
+
+    it('should inject spancontext with 128Bit traceID', () => {
+      const spanContext = {
+        traceId: '929985345ae64c35acddd590f13ffc82',
+        spanId: '5ba4ceca5d0edd4c',
+        options: SAMPLED_VALUE,
+      };
+      const headers: { [key: string]: string | string[] | undefined } = {};
+      const setter: HeaderSetter = {
+        setHeader(name: string, value: string) {
+          headers[name] = value;
+        },
+      };
+      const getter: HeaderGetter = {
+        getHeader(name: string) {
+          return headers[name];
+        },
+      };
+
+      jaegerFormat.inject(setter, spanContext);
+      assert.deepStrictEqual(jaegerFormat.extract(getter), spanContext);
     });
   });
 

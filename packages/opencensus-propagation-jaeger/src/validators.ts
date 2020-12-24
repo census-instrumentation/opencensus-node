@@ -54,12 +54,21 @@ const compose = (...fns: ValidationFn[]): ValidationFn => {
 };
 
 /**
+ * Compose a set of validation functions into a single validation call.
+ */
+const orCompose = (...fns: ValidationFn[]): ValidationFn => {
+  return (value: string) => {
+    return fns.reduce((isValid, fn) => isValid || fn(value), false);
+  };
+};
+
+/**
  * Determines if the given traceId is valid based on https://www.jaegertracing.io/docs/1.21/client-libraries/#value
  */
 export const isValidTraceId = compose(
   isHex,
   isNotAllZeros,
-  isLength(32)
+  orCompose(isLength(32), isLength(16))
 );
 
 /**
@@ -78,3 +87,20 @@ export const isValidOption = compose(
   isHex,
   isLength(2)
 );
+
+/**
+ * Formats a traceId to 64Bit or 128Bit Hex and add leading zeroes
+ */
+export const formatTraceId = (id: string) => {
+  if (id.length > 16) {
+    return ('0000000000000000000000000000000' + id).substr(-32);
+  }
+  return ('000000000000000' + id).substr(-16);
+};
+
+/**
+ * Formats a spanId to 64Bit and add leading zeroes
+ */
+export const formatSpanId = (id: string) => {
+  return ('000000000000000' + id).substr(-16);
+};
