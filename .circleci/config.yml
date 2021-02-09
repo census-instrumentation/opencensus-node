@@ -1,51 +1,26 @@
----
+version: 2.1
+
 release_tags: &release_tags
   tags:
     only: /^v\d+(\.\d+){2}(-.*)?$/
 
-test_env: &test_env
-  OPENCENSUS_MONGODB_TESTS: 1
-  OPENCENSUS_REDIS_TESTS: 1
-
-# "Include" for unit tests definition.
-unit_tests: &unit_tests
-  steps:
-    - checkout
-    - run:
-        name: Install modules and dependencies.
-        command: npm install
-    - run:
-        name: Check code style and linting
-        command: npm run check
-    - run:
-        name: Ensure code compiles to JS.
-        command: npm run compile
-    - run:
-        name: Run unit tests.
-        command: npm run test
-    - run:
-        name: Submit coverage data to codecov.
-        command: npm run codecov
-        when: always
-
-mongo_service: &mongo_service
-  image: mongo
-redis_service: &redis_service
-  image: redis
-
-version: 2.0
 workflows:
   version: 2
   tests:
     jobs:
-      - node8:
+      # Separate node8 from others to ignore any packages that no longer
+      # support node8
+      - unit_tests:
+          name: node8
           filters: *release_tags
-      - node10:
+          node_version: 8
+          npm_script_extra_args: --ignore @opencensus/exporter-stackdriver
+      - unit_tests:
+          name: node<< matrix.node_version >>
           filters: *release_tags
-      - node11:
-          filters: *release_tags
-      - node12:
-          filters: *release_tags
+          matrix:
+            parameters:
+              node_version: [10, 11, 12]
       - publish_npm:
           requires:
             - node8
@@ -58,38 +33,44 @@ workflows:
             <<: *release_tags
 
 jobs:
-  node8:
+  unit_tests:
     docker:
-      - image: node:8
+      - image: node:<< parameters.node_version >>
         user: node
-        environment: *test_env
-      - *mongo_service
-      - *redis_service
-    <<: *unit_tests
-  node10:
-    docker:
-      - image: node:10
-        user: node
-        environment: *test_env
-      - *mongo_service
-      - *redis_service
-    <<: *unit_tests
-  node11:
-    docker:
-      - image: node:11
-        user: node
-        environment: *test_env
-      - *mongo_service
-      - *redis_service
-    <<: *unit_tests
-  node12:
-    docker:
-      - image: node:12
-        user: node
-        environment: *test_env
-      - *mongo_service
-      - *redis_service
-    <<: *unit_tests
+        environment:
+          OPENCENSUS_MONGODB_TESTS: 1
+          OPENCENSUS_REDIS_TESTS: 1
+      - mongo_service:
+        image: mongo
+      - redis_service:
+        image: redis
+    parameters:
+      node_version:
+        description: The node version to run the tests with
+        type: integer
+      npm_script_extra_args:
+        description: Extra arguments passed to npm scripts
+        type: string
+        default: ""
+    steps:
+      - checkout
+      - run:
+          name: Install modules and dependencies.
+          command: npm install
+      - run:
+          name: Check code style and linting
+          command: npm run check -- << parameters.npm_script_extra_args >>
+      - run:
+          name: Ensure code compiles to JS.
+          command: npm run compile -- << parameters.npm_script_extra_args >>
+      - run:
+          name: Run unit tests.
+          command: npm run test -- << parameters.npm_script_extra_args >>
+      - run:
+          name: Submit coverage data to codecov.
+          command: npm run codecov -- << parameters.npm_script_extra_args >>
+          when: always
+
   publish_npm:
     docker:
       - image: node:8

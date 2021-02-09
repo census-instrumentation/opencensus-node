@@ -108,9 +108,7 @@ describe('Stackdriver Trace Exporter', function() {
               displayName: { value: 'root-test' },
               endTime: rootSpan.endTime.toISOString(),
               links: { droppedLinksCount: 0, link: [] },
-              name: `projects/fake-project-id/traces/${
-                rootSpan.traceId
-              }/spans/${rootSpan.id}`,
+              name: `projects/fake-project-id/traces/${rootSpan.traceId}/spans/${rootSpan.id}`,
               sameProcessAsParentSpan: true,
               spanId: rootSpan.id,
               stackTrace: undefined,
@@ -135,9 +133,7 @@ describe('Stackdriver Trace Exporter', function() {
               displayName: { value: 'spanTest' },
               endTime: span.endTime.toISOString(),
               links: { droppedLinksCount: 0, link: [] },
-              name: `projects/fake-project-id/traces/${span.traceId}/spans/${
-                span.id
-              }`,
+              name: `projects/fake-project-id/traces/${span.traceId}/spans/${span.id}`,
               parentSpanId: rootSpan.id,
               sameProcessAsParentSpan: true,
               spanId: span.id,
@@ -200,16 +196,13 @@ describe('Stackdriver Trace Exporter', function() {
           const span = tracer.startChildSpan({ name: 'sdExportTestChildSpan' });
 
           nocks.oauth2(body => true);
-          nocks.batchWrite(
-            PROJECT_ID,
-            (body: { spans: Span[] }): boolean => {
-              assert.strictEqual(body.spans.length, 2);
-              const spans = body.spans;
-              assert.strictEqual(spans[0].spanId, rootSpan.id);
-              assert.strictEqual(spans[1].spanId, span.id);
-              return true;
-            }
-          );
+          nocks.batchWrite(PROJECT_ID, (body: { spans: Span[] }): boolean => {
+            assert.strictEqual(body.spans.length, 2);
+            const spans = body.spans;
+            assert.strictEqual(spans[0].spanId, rootSpan.id);
+            assert.strictEqual(spans[1].spanId, span.id);
+            return true;
+          });
           span.end();
           rootSpan.end();
 
@@ -273,16 +266,13 @@ describe('Stackdriver Trace Exporter', function() {
             });
 
             nocks.oauth2(body => true);
-            nocks.batchWrite(
-              PROJECT_ID,
-              (body: { spans: Span[] }): boolean => {
-                assert.strictEqual(body.spans.length, 2);
-                const spans = body.spans;
-                assert.strictEqual(spans[0].spanId, rootSpan.id);
-                assert.strictEqual(spans[1].spanId, span.id);
-                return true;
-              }
-            );
+            nocks.batchWrite(PROJECT_ID, (body: { spans: Span[] }): boolean => {
+              assert.strictEqual(body.spans.length, 2);
+              const spans = body.spans;
+              assert.strictEqual(spans[0].spanId, rootSpan.id);
+              assert.strictEqual(spans[1].spanId, span.id);
+              return true;
+            });
             span.end();
             rootSpan.end();
 

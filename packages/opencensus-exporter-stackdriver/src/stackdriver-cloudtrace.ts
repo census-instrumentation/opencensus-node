@@ -58,7 +58,10 @@ export class StackdriverTraceExporter implements Exporter {
       getDefaultResource(this.projectId)
     );
     if (options.credentials) {
-      auth = new GoogleAuth({ credentials: options.credentials });
+      auth = new GoogleAuth({
+        credentials: options.credentials,
+        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+      });
     }
   }
 
@@ -116,9 +119,7 @@ export class StackdriverTraceExporter implements Exporter {
     resourceLabels: Record<string, AttributeValue>,
     numberOfChildren = 0
   ): Span {
-    const spanName = `projects/${this.projectId}/traces/${span.traceId}/spans/${
-      span.id
-    }`;
+    const spanName = `projects/${this.projectId}/traces/${span.traceId}/spans/${span.id}`;
 
     const spanBuilder: Span = {
       name: spanName,
@@ -158,8 +159,8 @@ export class StackdriverTraceExporter implements Exporter {
    * service.
    * @param spans
    */
-  private batchWriteSpans(spans: SpansWithCredentials) {
-    return new Promise((resolve, reject) => {
+  private batchWriteSpans(spans: SpansWithCredentials): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
       // TODO: Consider to use gRPC call (BatchWriteSpansRequest) for sending
       // data to backend :
       // https://cloud.google.com/trace/docs/reference/v2/rpc/google.devtools.
@@ -187,9 +188,7 @@ export class StackdriverTraceExporter implements Exporter {
     stackdriverSpans: Span[]
   ): Promise<SpansWithCredentials> {
     try {
-      const client = await auth.getClient({
-        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-      });
+      const client = await auth.getClient();
 
       return {
         name: `projects/${this.projectId}`,
