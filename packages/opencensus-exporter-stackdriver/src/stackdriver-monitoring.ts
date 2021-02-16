@@ -88,7 +88,10 @@ export class StackdriverStatsExporter implements StatsEventListener {
     }
     this.DEFAULT_RESOURCE = getDefaultResource(this.projectId);
     if (options.credentials) {
-      auth = new GoogleAuth({ credentials: options.credentials });
+      auth = new GoogleAuth({
+        credentials: options.credentials,
+        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+      });
     }
   }
 
@@ -251,9 +254,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
    * and authenticates the client.
    */
   private async authorize(): Promise<JWT> {
-    const client = await auth.getClient({
-      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-    });
+    const client = await auth.getClient();
     return client as JWT;
   }
 
