@@ -13,7 +13,7 @@
   "author": "NCSU SDC Spring 2020 Team 05",
   "license": "Apache-2.0",
   "dependencies": {
-    "@opencensus/core": "0.0.19",
+    "@opencensus/core": "0.0.22",
     "@types/continuation-local-storage": "^3.2.2",
     "applicationinsights": "^1.7.2",
     "continuation-local-storage": "^3.2.1"
