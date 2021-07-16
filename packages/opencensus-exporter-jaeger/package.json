@@ -60,7 +60,7 @@
     "rimraf": "^3.0.0",
     "ts-mocha": "^7.0.0",
     "ts-node": "^8.0.0",
-    "typescript": "~3.2.0"
+    "typescript": "~3.9.0"
   },
   "dependencies": {
     "@opencensus/core": "^0.0.22",
