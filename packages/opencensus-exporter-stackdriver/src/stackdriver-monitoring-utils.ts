@@ -108,6 +108,15 @@ export function createTimeSeriesList(
   return timeSeriesList;
 }
 
+/** Returns an array with arrays of the given size. */
+export function partitionList(list: TimeSeries[], chunkSize: number) {
+  const results = [];
+  while (list.length) {
+    results.push(list.splice(0, chunkSize));
+  }
+  return results;
+}
+
 /** Creates Metric type. */
 function createMetricType(name: string, metricPrefix: string): string {
   return path.join(metricPrefix, name);
