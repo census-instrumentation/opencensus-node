@@ -53,7 +53,7 @@
   "devDependencies": {
     "@types/ioredis": "^4.0.9",
     "@types/mocha": "^7.0.0",
-    "@types/node": "^10.12.12",
+    "@types/node": "^14.0.0",
     "@types/semver": "^7.0.0",
     "@types/shimmer": "^1.0.1",
     "codecov": "^3.5.0",
