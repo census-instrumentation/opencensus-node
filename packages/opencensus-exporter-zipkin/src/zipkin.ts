@@ -74,6 +74,7 @@ export class ZipkinTraceExporter implements Exporter {
       (options.url && url.parse(options.url)) ||
       url.parse(ZipkinTraceExporter.DEFAULT_URL);
     this.serviceName = options.serviceName;
+    // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'this' is not assignable to param... Remove this comment to see the full error message
     this.buffer = new ExporterBuffer(this, options);
     this.logger = options.logger || logger.logger();
   }
@@ -237,6 +238,7 @@ export class ZipkinTraceExporter implements Exporter {
    * Send the spans to zipkin service
    * @param spans The list of spans to transmit to Zipkin.
    */
+  // @ts-expect-error ts-migrate(2416) FIXME: Property 'publish' in type 'ZipkinTraceExporter' i... Remove this comment to see the full error message
   publish(spans: Span[]) {
     const spanList = this.mountSpanList(spans);
 

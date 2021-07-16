@@ -80,6 +80,7 @@ export class Http2Plugin extends HttpPlugin {
         this: Http2Plugin,
         authority: string | url.URL
       ): http2.ClientHttp2Session {
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
         const client = original.apply(this, arguments);
         shimmer.wrap(client, 'request', original =>
           plugin.getPatchRequestFunction()(original, authority)
@@ -102,9 +103,11 @@ export class Http2Plugin extends HttpPlugin {
       ): http2.ClientHttp2Stream {
         // Do not trace ourselves
         if (headers['x-opencensus-outgoing-request']) {
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Http2Session' is not assignable ... Remove this comment to see the full error message
           return original.apply(this, arguments);
         }
 
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Http2Session' is not assignable ... Remove this comment to see the full error message
         const request = original.apply(this, arguments);
         plugin.tracer.wrapEmitter(request);
 
@@ -222,6 +225,7 @@ export class Http2Plugin extends HttpPlugin {
       return function patchedCreateServer(
         this: Http2Plugin
       ): http2.Http2Server {
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
         const server = original.apply(this, arguments);
         shimmer.wrap(
           server.constructor.prototype,
@@ -247,6 +251,7 @@ export class Http2Plugin extends HttpPlugin {
         headers: http2.IncomingHttpHeaders
       ): http2.ClientHttp2Stream {
         if (event !== 'stream') {
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Http2Server' is not assignable t... Remove this comment to see the full error message
           return original.apply(this, arguments);
         }
 
@@ -277,10 +282,12 @@ export class Http2Plugin extends HttpPlugin {
           // per stream.
           stream.respond = originalRespond;
           statusCode = arguments[0][':status'];
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
           return stream.respond.apply(this, arguments);
         };
 
         return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Http2Server' is not assignable t... Remove this comment to see the full error message
           if (!rootSpan) return original.apply(this, arguments);
 
           plugin.tracer.wrapEmitter(stream);
@@ -288,6 +295,7 @@ export class Http2Plugin extends HttpPlugin {
           const originalEnd = stream.end;
           stream.end = function(this: http2.Http2Stream) {
             stream.end = originalEnd;
+            // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
             const returned = stream.end.apply(this, arguments);
 
             const userAgent = (headers['user-agent'] ||
@@ -325,6 +333,7 @@ export class Http2Plugin extends HttpPlugin {
             return returned;
           };
 
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Http2Server' is not assignable t... Remove this comment to see the full error message
           return original.apply(this, arguments);
         });
       };

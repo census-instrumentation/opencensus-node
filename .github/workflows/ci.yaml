@@ -6,5 +6,52 @@ name: ci
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [8, 10, 12, 14, 16]
+        include:
+          # use npm 7 by default
+          - npm-version: ^7
+          - node: 8
+            # overrides for node 8
+            npm-version: ^6
+            lerna-extra-args: --ignore @opencensus/exporter-stackdriver
+    env:
+      OPENCENSUS_MONGODB_TESTS: 1
+      OPENCENSUS_REDIS_TESTS: 1
+    services:
+      mongo_service:
+        image: mongo
+        ports: ["27017:27017"]
+      redis_service:
+        image: redis
+        ports: ["6379:6379"]
+
     steps:
-      - run: echo "hello world"
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: v1-node-${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            v1-node-${{ matrix.node }}-
+            v1-node-
+      - name: Upgrade to latest npm
+        run: npm install -g npm@${{ matrix.npm-version }}
+      - name: Print node/npm version
+        run: node --version && npm --version
+
+      # compile runs in prepare
+      - name: Install modules and dependencies, compile
+        run: npm install
+
+      # lint runs in posttest
+      - name: Run unit tests and lint
+        run: npm run test -- ${{ matrix.lerna-extra-args }}
+      - name: Submit coverage data to codecov.
+        run: npm run codecov -- ${{ matrix.lerna-extra-args }}
+        if: ${{ success() && matrix.node == '12' }}
