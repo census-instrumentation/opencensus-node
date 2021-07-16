@@ -173,6 +173,7 @@ export class GrpcPlugin extends BasePlugin {
         deserialize: grpcTypes.deserialize<RequestType>,
         type: string
       ) {
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
         const result = originalRegister.apply(this, arguments);
         const handlerSet = this.handlers[name];
 
@@ -205,6 +206,7 @@ export class GrpcPlugin extends BasePlugin {
 
               return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
                 if (!rootSpan) {
+                  // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type 'handleCall<RequestType... Remove this comment to see the full error message
                   return originalFunc.call(self, call, callback);
                 }
 
@@ -314,6 +316,7 @@ export class GrpcPlugin extends BasePlugin {
     }
 
     plugin.tracer.wrapEmitter(call);
+    // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type 'handleCall<RequestType... Remove this comment to see the full error message
     return original.call(self, call, patchedCallback);
   }
 
@@ -359,6 +362,7 @@ export class GrpcPlugin extends BasePlugin {
       endSpan();
     });
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     return original.call(self, call);
   }
 
@@ -377,8 +381,10 @@ export class GrpcPlugin extends BasePlugin {
         serviceName: string,
         options: grpcTypes.GenericClientOptions
       ) {
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
         const client = original.apply(this, arguments);
         shimmer.massWrap(
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Client' is not assignable to par... Remove this comment to see the full error message
           client.prototype,
           Object.keys(methods) as never[],
           plugin.getPatchedClientMethods()
@@ -528,6 +534,7 @@ export class GrpcPlugin extends BasePlugin {
       span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_KIND, span.kind);
 
       const call = original.apply(self, args);
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Function' is not assignable to p... Remove this comment to see the full error message
       plugin.tracer.wrapEmitter(call);
 
       // if server stream or bidi
@@ -535,6 +542,7 @@ export class GrpcPlugin extends BasePlugin {
         // Both error and status events can be emitted
         // the first one emitted set spanEnded to true
         let spanEnded = false;
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'on' does not exist on type 'Function'.
         call.on('error', (err: grpcTypes.ServiceError) => {
           // span.status = plugin.traceStatus(err.code);
           span.addAttribute(GrpcPlugin.ATTRIBUTE_GRPC_ERROR_NAME, err.name);
@@ -548,6 +556,7 @@ export class GrpcPlugin extends BasePlugin {
           }
         });
 
+        // @ts-expect-error ts-migrate(2339) FIXME: Property 'on' does not exist on type 'Function'.
         call.on('status', (status: Status) => {
           span.setStatus(GrpcPlugin.convertGrpcStatusToSpanStatus(status.code));
           span.addAttribute(

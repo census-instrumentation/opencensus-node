@@ -119,6 +119,7 @@ describe('Zipkin Exporter', function() {
           span1.end();
           rootSpan.end();
           return exporter.publish([rootSpan]).then(result => {
+            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             assert.strictEqual(result.statusCode, 202);
 
             if (!OPENCENSUS_NETWORK_TESTS) {
@@ -290,6 +291,7 @@ describe('Zipkin Exporter', function() {
           span.end();
           rootSpan.end();
           return exporter.publish([rootSpan]).then(result => {
+            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             assert.strictEqual(result.statusCode, 404);
 
             if (!OPENCENSUS_NETWORK_TESTS) {

@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^7.0.0",
-    "@types/node": "^10.12.12",
+    "@types/node": "^10.17.60",
     "@types/uuid": "^7.0.0",
     "codecov": "^3.6.2",
     "google-proto-files": "^2.0.0",
@@ -60,12 +60,12 @@
     "nyc": "^14.0.0",
     "rimraf": "^3.0.0",
     "ts-node": "^8.0.0",
-    "typescript": "~3.2.0"
+    "typescript": "^3.9.10"
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.5.0",
     "@opencensus/core": "^0.0.22",
     "@opencensus/nodejs": "^0.0.22",
-    "grpc": "^1.20.3"
+    "grpc": "^1.24.10"
   }
 }

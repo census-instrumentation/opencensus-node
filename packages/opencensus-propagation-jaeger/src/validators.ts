@@ -48,7 +48,9 @@ const isLength = (length: number): ValidationFn => {
  * Compose a set of validation functions into a single validation call.
  */
 const compose = (...fns: ValidationFn[]): ValidationFn => {
+  // @ts-expect-error ts-migrate(2322) FIXME: Type '(value: string) => ValidationFn' is not assi... Remove this comment to see the full error message
   return (value: string) => {
+    // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
     return fns.reduce((isValid, fn) => isValid && fn(value), true);
   };
 };
@@ -57,7 +59,9 @@ const compose = (...fns: ValidationFn[]): ValidationFn => {
  * Compose a set of validation functions into a single validation call.
  */
 const orCompose = (...fns: ValidationFn[]): ValidationFn => {
+  // @ts-expect-error ts-migrate(2322) FIXME: Type '(value: string) => ValidationFn' is not assi... Remove this comment to see the full error message
   return (value: string) => {
+    // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
     return fns.reduce((isValid, fn) => isValid || fn(value), false);
   };
 };
