@@ -16,7 +16,7 @@ jobs:
           - node: 8
             # overrides for node 8
             npm-version: ^6
-            lerna-extra-args: --ignore @opencensus/exporter-stackdriver
+            lerna-extra-args: --ignore @opencensus/exporter-stackdriver --ignore @opencensus/resource-util
     env:
       OPENCENSUS_MONGODB_TESTS: 1
       OPENCENSUS_REDIS_TESTS: 1
