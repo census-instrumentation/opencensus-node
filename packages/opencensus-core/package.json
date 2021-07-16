@@ -52,9 +52,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/continuation-local-storage": "^3.2.1",
+    "@types/continuation-local-storage": "3.2.1",
     "@types/mocha": "^7.0.0",
-    "@types/node": "^10.12.12",
+    "@types/node": "^10.17.60",
     "@types/once": "^1.4.0",
     "@types/semver": "^7.0.0",
     "@types/shimmer": "^1.0.1",
@@ -66,7 +66,7 @@
     "nyc": "14.1.1",
     "ts-mocha": "^7.0.0",
     "ts-node": "^8.0.0",
-    "typescript": "~2.9.0"
+    "typescript": "^3.9.10"
   },
   "dependencies": {
     "continuation-local-storage": "^3.2.1",

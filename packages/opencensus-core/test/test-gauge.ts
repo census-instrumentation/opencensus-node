@@ -67,6 +67,7 @@ describe('GAUGE_INT64', () => {
       EMPTY_CONSTANT_LABELS
     );
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -414,6 +415,7 @@ describe('GAUGE_DOUBLE', () => {
       EMPTY_CONSTANT_LABELS
     );
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time

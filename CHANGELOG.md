@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 - chore(stackdriver): upgrade google-auth-library, drop node8 (#887)
+- chore: upgrade gRPC, ts to newest compatible version (#907)
+  BREAKING CHANGE: upgrade to TypeScript 3.x
 
 ## 0.0.22 - 2020-05-18
 - fix(deps): update dependency uuid to v8 (#807)

@@ -51,7 +51,7 @@
   "devDependencies": {
     "@types/mocha": "^7.0.0",
     "@types/nock": "^10.0.0",
-    "@types/node": "^9.4.7",
+    "@types/node": "^10.17.60",
     "@types/semver": "^7.0.0",
     "@types/shimmer": "^1.0.1",
     "codecov": "^3.6.2",
@@ -62,7 +62,7 @@
     "rimraf": "^3.0.0",
     "ts-mocha": "^7.0.0",
     "ts-node": "^8.0.0",
-    "typescript": "~2.9.0"
+    "typescript": "^3.9.10"
   },
   "dependencies": {
     "@opencensus/core": "^0.0.22",

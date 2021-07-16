@@ -133,6 +133,7 @@ export class MongoDBPlugin extends BasePlugin {
           }
         }
 
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
         return original.apply(this, arguments);
       };
     };
@@ -180,6 +181,7 @@ export class MongoDBPlugin extends BasePlugin {
           }
         }
 
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
         return original.apply(this, arguments);
       };
     };

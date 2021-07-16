@@ -369,11 +369,13 @@ describe('GrpcPlugin() ', function() {
   ];
 
   // Compare two arrays using an equal function f
+  // @ts-expect-error ts-migrate(7031) FIXME: Binding element 'x' implicitly has an 'any' type.
   // tslint:disable-next-line:no-any
   const arrayIsEqual = (f: any) => ([x, ...xs]) => ([y, ...ys]): any =>
     x === undefined && y === undefined
       ? true
-      : Boolean(f(x)(y)) && arrayIsEqual(f)(xs)(ys);
+      : // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'any[]' is not assignable to para... Remove this comment to see the full error message
+        Boolean(f(x)(y)) && arrayIsEqual(f)(xs)(ys);
 
   // Return true if two requests has the same num value
   const requestEqual = (x: TestRequestResponse) => (y: TestRequestResponse) =>
@@ -384,7 +386,8 @@ describe('GrpcPlugin() ', function() {
     y: TestRequestResponse | TestRequestResponse[]
   ) =>
     x instanceof Array && y instanceof Array
-      ? arrayIsEqual(requestEqual)(x)(y)
+      ? // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'TestRequestResponse[]' is not as... Remove this comment to see the full error message
+        arrayIsEqual(requestEqual)(x)(y)
       : !(x instanceof Array) && !(y instanceof Array)
       ? requestEqual(x)(y)
       : false;
@@ -487,6 +490,7 @@ describe('GrpcPlugin() ', function() {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
         const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
         const args = [client, method.request];
+        // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type '((client: TestGrpcClie... Remove this comment to see the full error message
         await method.method
           .apply(this, args)
           .then((result: TestRequestResponse | TestRequestResponse[]) => {
@@ -525,6 +529,7 @@ describe('GrpcPlugin() ', function() {
         tags.set({ name: 'testKey1' }, { value: 'value1' });
         tags.set({ name: 'testKey2' }, { value: 'value2' });
         return globalStats.withTagContext(tags, async () => {
+          // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type '((client: TestGrpcClie... Remove this comment to see the full error message
           await method.method
             .apply(this, args)
             .then((result: TestRequestResponse | TestRequestResponse[]) => {
@@ -564,6 +569,7 @@ describe('GrpcPlugin() ', function() {
         return tracer.startRootSpan(options, async (root: Span) => {
           assert.strictEqual(root.name, options.name);
           const args = [client, method.request];
+          // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type '((client: TestGrpcClie... Remove this comment to see the full error message
           await method.method
             .apply(this, args)
             .then((result: TestRequestResponse | TestRequestResponse[]) => {
@@ -606,6 +612,7 @@ describe('GrpcPlugin() ', function() {
           return tracer.startRootSpan(options, async (root: Span) => {
             assert.strictEqual(root.name, options.name);
             const args = [client, method.request];
+            // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type '((client: TestGrpcClie... Remove this comment to see the full error message
             await method.method
               .apply(this, args)
               .then((result: TestRequestResponse | TestRequestResponse[]) => {
@@ -664,6 +671,7 @@ describe('GrpcPlugin() ', function() {
                 ? method.request.slice(0, method.request.length)
                 : method.request;
             const args = [client, insertError(errRequest)(errorCode)];
+            // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type '((client: TestGrpcClie... Remove this comment to see the full error message
             await method.method
               .apply(this, args)
               .catch((err: grpcModule.ServiceError) => {
@@ -691,6 +699,7 @@ describe('GrpcPlugin() ', function() {
                   ? method.request.slice(0, method.request.length)
                   : method.request;
               const args = [client, insertError(errRequest)(errorCode)];
+              // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type '((client: TestGrpcClie... Remove this comment to see the full error message
               await method.method
                 .apply(this, args)
                 .catch((err: grpcModule.ServiceError) => {

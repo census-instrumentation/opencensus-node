@@ -336,12 +336,14 @@ describe('OpenCensus Agent Exporter', () => {
           const span = message.spans[0];
           if (!span) {
             assert.fail('span is null or undefined');
+            // @ts-expect-error ts-migrate(7027) FIXME: Unreachable code detected.
             return;
           }
 
           // Name / Context
           if (!span.name) {
             assert.fail('span.name is null or undefined');
+            // @ts-expect-error ts-migrate(7027) FIXME: Unreachable code detected.
             return;
           }
           assert.strictEqual(span.name.value, 'root');
@@ -349,6 +351,7 @@ describe('OpenCensus Agent Exporter', () => {
 
           if (!span.tracestate) {
             assert.fail('span.tracestate is null or undefined');
+            // @ts-expect-error ts-migrate(7027) FIXME: Unreachable code detected.
             return;
           }
           assert.deepStrictEqual(span.tracestate.entries, [
@@ -365,6 +368,7 @@ describe('OpenCensus Agent Exporter', () => {
           // Attributes
           if (!span.attributes) {
             assert.fail('span.attributes is null or undefined');
+            // @ts-expect-error ts-migrate(7027) FIXME: Unreachable code detected.
             return;
           }
           assert.deepStrictEqual(span.attributes.attributeMap, {
@@ -561,6 +565,7 @@ describe('OpenCensus Agent Exporter', () => {
           // Name / Context
           if (!span.name) {
             assert.fail('span.name is null or undefined');
+            // @ts-expect-error ts-migrate(7027) FIXME: Unreachable code detected.
             return;
           }
           assert.strictEqual(span.name.value, 'root');
@@ -568,6 +573,7 @@ describe('OpenCensus Agent Exporter', () => {
 
           if (!span.tracestate) {
             assert.fail('span.tracestate is null or undefined');
+            // @ts-expect-error ts-migrate(7027) FIXME: Unreachable code detected.
             return;
           }
           assert.deepStrictEqual(span.tracestate.entries, [
@@ -584,6 +590,7 @@ describe('OpenCensus Agent Exporter', () => {
           // Attributes
           if (!span.attributes) {
             assert.fail('span.attributes is null or undefined');
+            // @ts-expect-error ts-migrate(7027) FIXME: Unreachable code detected.
             return;
           }
           assert.deepStrictEqual(span.attributes.attributeMap, {
