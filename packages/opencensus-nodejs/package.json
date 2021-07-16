@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@types/extend": "^3.0.0",
-    "@types/mocha": "^7.0.0",
+    "@types/mocha": "^8.0.0",
     "@types/node": "^10.12.12",
     "@types/shimmer": "^1.0.1",
     "codecov": "^3.6.2",

@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@types/continuation-local-storage": "^3.2.1",
-    "@types/mocha": "^7.0.0",
+    "@types/mocha": "^8.0.0",
     "@types/node": "^10.12.12",
     "@types/once": "^1.4.0",
     "@types/semver": "^7.0.0",
