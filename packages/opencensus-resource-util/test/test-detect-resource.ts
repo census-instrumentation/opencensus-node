@@ -21,6 +21,7 @@ import {
   HEADER_VALUE,
   HOST_ADDRESS,
   SECONDARY_HOST_ADDRESS,
+  resetIsAvailableCache,
 } from 'gcp-metadata';
 import * as nock from 'nock';
 import * as resource from '../src';
@@ -58,6 +59,7 @@ describe('detectResource', () => {
 
   beforeEach(() => {
     nock.cleanAll();
+    resetIsAvailableCache();
     resourceUtil.clear();
     delete process.env.KUBERNETES_SERVICE_HOST;
     delete process.env.NAMESPACE;
@@ -176,23 +178,28 @@ describe('detectResource', () => {
   });
 
   it('should retry if the initial request fails', async () => {
-    const scope = nock(HOST_ADDRESS)
-      .get(INSTANCE_PATH)
-      .reply(500)
-      .get(INSTANCE_PATH)
-      .reply(200, {}, HEADERS)
-      .get(PROJECT_ID_PATH)
-      .reply(200, () => 'my-project-id', HEADERS)
-      .get(ZONE_PATH)
-      .reply(200, () => 'project/zone/my-zone', HEADERS)
-      .get(INSTANCE_ID_PATH)
-      .reply(200, () => 4520031799277581759, HEADERS);
-    const secondaryScope = nock(SECONDARY_HOST_ADDRESS)
-      .get(INSTANCE_PATH)
-      .reply(200, {}, HEADERS);
+    // gcp-metadata uses Promise.race between the two addresses, so set them up to
+    // each fail once then one of them will succeed after.
+    function configureNock(scope: nock.Scope): nock.Scope {
+      return scope
+        .get(INSTANCE_PATH)
+        .reply(500)
+        .get(INSTANCE_PATH)
+        .reply(200, {}, HEADERS)
+        .get(PROJECT_ID_PATH)
+        .reply(200, () => 'my-project-id', HEADERS)
+        .get(ZONE_PATH)
+        .reply(200, () => 'project/zone/my-zone', HEADERS)
+        .get(INSTANCE_ID_PATH)
+        .reply(200, () => 4520031799277581759, HEADERS);
+    }
+
+    const scope = configureNock(nock(HOST_ADDRESS));
+    const secondaryScope = configureNock(nock(SECONDARY_HOST_ADDRESS));
     const { type, labels } = await resource.detectResource();
-    secondaryScope.done();
-    scope.done();
+
+    // One of the two scopes should be fully consumed
+    assert.ok(scope.isDone() || secondaryScope.isDone());
 
     assert.deepStrictEqual(type, resource.GCP_GCE_INSTANCE_TYPE);
     assert.strictEqual(Object.keys(labels).length, 3);
