@@ -8,69 +8,13 @@ workflows:
   version: 2
   tests:
     jobs:
-      # Separate node8 from others to ignore any packages that no longer
-      # support node8
-      - unit_tests:
-          name: node8
-          filters: *release_tags
-          node_version: 8
-          npm_script_extra_args: --ignore @opencensus/exporter-stackdriver
-      - unit_tests:
-          name: node<< matrix.node_version >>
-          filters: *release_tags
-          matrix:
-            parameters:
-              node_version: [10, 11, 12]
       - publish_npm:
-          requires:
-            - node8
-            - node10
-            - node11
-            - node12
           filters:
             branches:
               ignore: /.*/
             <<: *release_tags
 
 jobs:
-  unit_tests:
-    docker:
-      - image: node:<< parameters.node_version >>
-        user: node
-        environment:
-          OPENCENSUS_MONGODB_TESTS: 1
-          OPENCENSUS_REDIS_TESTS: 1
-      - mongo_service:
-        image: mongo
-      - redis_service:
-        image: redis
-    parameters:
-      node_version:
-        description: The node version to run the tests with
-        type: integer
-      npm_script_extra_args:
-        description: Extra arguments passed to npm scripts
-        type: string
-        default: ""
-    steps:
-      - checkout
-      - run:
-          name: Install modules and dependencies.
-          command: npm install
-      - run:
-          name: Check code style and linting
-          command: npm run check -- << parameters.npm_script_extra_args >>
-      - run:
-          name: Ensure code compiles to JS.
-          command: npm run compile -- << parameters.npm_script_extra_args >>
-      - run:
-          name: Run unit tests.
-          command: npm run test -- << parameters.npm_script_extra_args >>
-      - run:
-          name: Submit coverage data to codecov.
-          command: npm run codecov -- << parameters.npm_script_extra_args >>
-          when: always
-
   publish_npm:
     docker:
       - image: node:8
