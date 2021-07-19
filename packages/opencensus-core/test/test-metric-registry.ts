@@ -47,6 +47,7 @@ describe('addInt64Gauge', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -129,6 +130,7 @@ describe('addDoubleGauge', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -226,6 +228,7 @@ describe('addDerivedInt64Gauge', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -330,6 +333,7 @@ describe('addDerivedDoubleGauge', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -392,6 +396,7 @@ describe('addInt64Cumulative', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -474,6 +479,7 @@ describe('addDoubleCumulative', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -560,6 +566,7 @@ describe('addDerivedInt64Cumulative', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -669,6 +676,7 @@ describe('addDerivedDoubleCumulative', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time
@@ -793,6 +801,7 @@ describe('Add multiple gauges', () => {
   beforeEach(() => {
     registry = new MetricRegistry();
 
+    // @ts-expect-error ts-migrate(2741) FIXME: Property 'bigint' is missing in type '() => [numbe... Remove this comment to see the full error message
     process.hrtime = () => [100, 1e7];
     Date.now = () => 1450000000000;
     // Force the clock to recalibrate the time offset with the mocked time

@@ -209,6 +209,7 @@ export class HttpPlugin extends BasePlugin {
       return function incomingRequest(event: string, ...args: any[]): boolean {
         // Only traces request events
         if (event !== 'request') {
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
           return original.apply(this, arguments);
         }
         const startTime = Date.now();
@@ -221,6 +222,7 @@ export class HttpPlugin extends BasePlugin {
         if (
           plugin.isIgnored(path, request, plugin.options.ignoreIncomingPaths)
         ) {
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
           return original.apply(this, arguments);
         }
 
@@ -244,6 +246,7 @@ export class HttpPlugin extends BasePlugin {
         }
 
         return plugin.tracer.startRootSpan(traceOptions, rootSpan => {
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
           if (!rootSpan) return original.apply(this, arguments);
 
           plugin.tracer.wrapEmitter(request);
@@ -255,6 +258,7 @@ export class HttpPlugin extends BasePlugin {
 
           response.end = function(this: ServerResponse) {
             response.end = originalEnd;
+            // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
             const returned = response.end.apply(this, arguments);
 
             const requestUrl = request.url ? url.parse(request.url) : null;
@@ -329,6 +333,7 @@ export class HttpPlugin extends BasePlugin {
             return returned;
           };
 
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
           return original.apply(this, arguments);
         });
       };

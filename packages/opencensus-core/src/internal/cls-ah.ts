@@ -92,6 +92,7 @@ class AsyncHooksNamespace implements CLSNamespace {
     const contextWrapper = function(this: {}) {
       const oldContext = current;
       current = boundContext;
+      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'IArguments' is not assignable to... Remove this comment to see the full error message
       const res = cb.apply(this, arguments) as T;
       current = oldContext;
       return res;
@@ -118,6 +119,7 @@ class AsyncHooksNamespace implements CLSNamespace {
       if (ee[method]) {
         shimmer.wrap(ee, method, oldMethod => {
           return function(this: {}, event: string, cb: Func<void>) {
+            // @ts-expect-error ts-migrate(2684) FIXME: The 'this' context of type '((event: string | symb... Remove this comment to see the full error message
             return oldMethod.call(this, event, ns.bind(cb));
           };
         });

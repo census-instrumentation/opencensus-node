@@ -146,6 +146,7 @@ describe('Stats', () => {
     }
 
     it('should not create a view with distribution aggregation when no bucket boundaries were given', () => {
+      // @ts-expect-error ts-migrate(2769) FIXME: No overload matches this call.
       assert.throws(globalStats.createView, 'No bucketBoundaries specified');
     });
   });
