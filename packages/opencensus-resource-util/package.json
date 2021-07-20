@@ -24,7 +24,7 @@
   "author": "OpenCensus Authors",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
   },
   "files": [
     "build/src/**/*.js",
@@ -63,6 +63,6 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.0.22",
-    "gcp-metadata": "^3.0.0"
+    "gcp-metadata": "^4.3.0"
   }
 }
