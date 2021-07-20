@@ -52,7 +52,7 @@
   "devDependencies": {
     "@types/express": "4.17.13",
     "@types/express-serve-static-core": "4.17.24",
-    "@types/mocha": "7.0.2",
+    "@types/mocha": "8.2.3",
     "@types/node": "10.17.60",
     "@types/serve-static": "1.13.10",
     "axios": "0.21.1",
