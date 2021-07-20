@@ -1,18 +1,11 @@
 {
-  "extends": [
-    "config:base",
-    "docker:disable"
-  ],
-  "pinVersions": false,
-  "rebaseStalePrs": true,
-  "schedule": [
-    "after 9am and before 3pm"
-  ],
-  "gitAuthor": null,
+  "extends": ["config:base", "docker:disable", ":pinOnlyDevDependencies"],
+  "schedule": ["after 9am and before 3pm"],
   "packageRules": [
     {
-      "extends": "packages:linters",
-      "groupName": "linters"
+      "groupName": "all non-major dependencies",
+      "updateTypes": ["patch", "minor"],
+      "groupSlug": "all-minor-patch"
     }
   ]
 }
