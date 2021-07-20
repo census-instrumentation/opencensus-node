@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/chai": "4.2.21",
-    "@types/mocha": "7.0.2",
+    "@types/mocha": "8.2.3",
     "@types/node": "10.17.60",
     "chai": "4.3.4",
     "fs": "0.0.1-security",
