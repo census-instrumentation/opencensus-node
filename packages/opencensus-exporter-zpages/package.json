@@ -57,7 +57,7 @@
     "@types/mocha": "7.0.1",
     "@types/node": "10.17.60",
     "axios": "0.21.1",
-    "codecov": "3.6.5",
+    "codecov": "3.7.1",
     "gts": "1.0.0",
     "mocha": "7.1.0",
     "nyc": "14.1.1",
