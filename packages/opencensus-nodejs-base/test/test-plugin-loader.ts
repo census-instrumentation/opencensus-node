@@ -57,15 +57,11 @@ describe('Plugin Loader', () => {
         assert.ok(plugins[TEST_MODULES[3]]);
         assert.strictEqual(
           plugins[TEST_MODULES[0]],
-          `@opencensus/${
-            Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
-          }-simple-module`
+          `@opencensus/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-simple-module`
         );
         assert.strictEqual(
           plugins[TEST_MODULES[1]],
-          `@opencensus/${
-            Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
-          }-nonexistent-module`
+          `@opencensus/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-nonexistent-module`
         );
         assert.strictEqual(
           plugins[TEST_MODULES[2]],
@@ -73,9 +69,7 @@ describe('Plugin Loader', () => {
         );
         assert.strictEqual(
           plugins[TEST_MODULES[3]],
-          `@opencensus/${
-            Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
-          }-load-internal-file-module`
+          `@opencensus/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-load-internal-file-module`
         );
       });
     });

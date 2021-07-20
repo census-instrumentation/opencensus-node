@@ -70,9 +70,7 @@ export class PluginLoader {
    * @returns The default name for that package.
    */
   private static defaultPackageName(moduleName: string): string {
-    return `${Constants.OPENCENSUS_SCOPE}/${
-      Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX
-    }-${moduleName}`;
+    return `${Constants.OPENCENSUS_SCOPE}/${Constants.DEFAULT_PLUGIN_PACKAGE_NAME_PREFIX}-${moduleName}`;
   }
 
   /**

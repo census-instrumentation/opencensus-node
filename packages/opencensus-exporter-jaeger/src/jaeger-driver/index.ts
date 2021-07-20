@@ -125,9 +125,9 @@ export function spanToThrift(span: Span): ThriftSpan {
     ? Utils.encodeInt64(span.parentSpanId)
     : ThriftUtils.emptyBuffer;
 
-  const traceId = `00000000000000000000000000000000${
-    span.spanContext.traceId
-  }`.slice(-32);
+  const traceId = `00000000000000000000000000000000${span.spanContext.traceId}`.slice(
+    -32
+  );
 
   const high = traceId.slice(0, 16);
   const low = traceId.slice(16);
@@ -151,20 +151,18 @@ export function spanToThrift(span: Span): ThriftSpan {
 
 function getThriftReference(links: Link[]): ThriftReference[] {
   return links
-    .map(
-      (link): ThriftReference | null => {
-        const refType = getThriftType(link.type);
-        if (!refType) return null;
+    .map((link): ThriftReference | null => {
+      const refType = getThriftType(link.type);
+      if (!refType) return null;
 
-        const traceId = `00000000000000000000000000000000${link.traceId}`.slice(
-          -32
-        );
-        const traceIdHigh = Utils.encodeInt64(traceId.slice(0, 16));
-        const traceIdLow = Utils.encodeInt64(traceId.slice(16));
-        const spanId = Utils.encodeInt64(link.spanId);
-        return { traceIdLow, traceIdHigh, spanId, refType };
-      }
-    )
+      const traceId = `00000000000000000000000000000000${link.traceId}`.slice(
+        -32
+      );
+      const traceIdHigh = Utils.encodeInt64(traceId.slice(0, 16));
+      const traceIdLow = Utils.encodeInt64(traceId.slice(16));
+      const spanId = Utils.encodeInt64(link.spanId);
+      return { traceIdLow, traceIdHigh, spanId, refType };
+    })
     .filter(ref => !!ref) as ThriftReference[];
 }
 

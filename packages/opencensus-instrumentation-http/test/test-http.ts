@@ -309,9 +309,7 @@ describe('HttpPlugin', () => {
     const httpErrorCodes = [400, 401, 403, 404, 429, 501, 503, 504, 500];
 
     for (let i = 0; i < httpErrorCodes.length; i++) {
-      it(`should test rootSpan for GET requests with http error ${
-        httpErrorCodes[i]
-      }`, async () => {
+      it(`should test rootSpan for GET requests with http error ${httpErrorCodes[i]}`, async () => {
         const testPath = '/outgoing/rootSpan/1';
         doNock(
           urlHost,
@@ -358,9 +356,7 @@ describe('HttpPlugin', () => {
     });
 
     for (let i = 0; i < httpErrorCodes.length; i++) {
-      it(`should test a child spans for GET requests with http error ${
-        httpErrorCodes[i]
-      }`, () => {
+      it(`should test a child spans for GET requests with http error ${httpErrorCodes[i]}`, () => {
         const testPath = '/outgoing/rootSpan/childs/1';
         doNock(
           urlHost,

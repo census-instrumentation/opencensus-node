@@ -425,9 +425,12 @@ export class GrpcPlugin extends BasePlugin {
             name: traceOptions.name,
             kind: traceOptions.kind,
           });
-          return plugin.makeGrpcClientRemoteCall(original, args, this, plugin)(
-            span
-          );
+          return plugin.makeGrpcClientRemoteCall(
+            original,
+            args,
+            this,
+            plugin
+          )(span);
         }
       };
     };

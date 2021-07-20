@@ -481,12 +481,8 @@ describe('GrpcPlugin() ', function() {
   }
 
   methodList.map(method => {
-    describe(`Test automatic tracing for grpc remote method ${
-      method.description
-    }`, () => {
-      it(`should create a rootSpan for client and for server - ${
-        method.description
-      }`, async () => {
+    describe(`Test automatic tracing for grpc remote method ${method.description}`, () => {
+      it(`should create a rootSpan for client and for server - ${method.description}`, async () => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
         const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
         const args = [client, method.request];
@@ -518,9 +514,7 @@ describe('GrpcPlugin() ', function() {
           });
       });
 
-      it(`should create a rootSpan for client and for server with tag context- ${
-        method.description
-      }`, () => {
+      it(`should create a rootSpan for client and for server with tag context- ${method.description}`, () => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
         const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
         const args = [client, method.request];
@@ -559,9 +553,7 @@ describe('GrpcPlugin() ', function() {
         });
       });
 
-      it(`should create a childSpan for client and rootSpan for server -  ${
-        method.description
-      }`, () => {
+      it(`should create a childSpan for client and rootSpan for server -  ${method.description}`, () => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
         const options = { name: 'TestRootSpan' };
         const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
@@ -598,9 +590,7 @@ describe('GrpcPlugin() ', function() {
         });
       });
 
-      it(`should create a childSpan for client and rootSpan for server with tag context -  ${
-        method.description
-      }`, () => {
+      it(`should create a childSpan for client and rootSpan for server with tag context -  ${method.description}`, () => {
         assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
         const options = { name: 'TestRootSpan' };
         const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
@@ -661,9 +651,7 @@ describe('GrpcPlugin() ', function() {
         // tslint:disable-next-line:no-any
         const errorCode = Number(grpcModule.status[key as any]);
         if (errorCode > grpcModule.status.OK) {
-          it(`should raise an error for client/server rootSpans - ${
-            method.description
-          } - status = ${key}`, async () => {
+          it(`should raise an error for client/server rootSpans - ${method.description} - status = ${key}`, async () => {
             assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
             const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;
             const errRequest =
@@ -685,9 +673,7 @@ describe('GrpcPlugin() ', function() {
               });
           });
 
-          it(`should raise an error for client childSpan/server rootSpan - ${
-            method.description
-          } - status = ${key}`, () => {
+          it(`should raise an error for client childSpan/server rootSpan - ${method.description} - status = ${key}`, () => {
             assert.strictEqual(rootSpanVerifier.endedRootSpans.length, 0);
             const options = { name: 'TestRootSpan' };
             const spanName = `grpc.pkg_test.GrpcTester/${method.methodName}`;

@@ -78,19 +78,12 @@ export const isValidTraceId = compose(
 /**
  * Determines if the given spanId is valid based on https://www.jaegertracing.io/docs/1.21/client-libraries/#value
  */
-export const isValidSpanId = compose(
-  isHex,
-  isNotAllZeros,
-  isLength(16)
-);
+export const isValidSpanId = compose(isHex, isNotAllZeros, isLength(16));
 
 /**
  * Determines if the given option is valid based on https://www.jaegertracing.io/docs/1.21/client-libraries/#value
  */
-export const isValidOption = compose(
-  isHex,
-  isLength(2)
-);
+export const isValidOption = compose(isHex, isLength(2));
 
 /**
  * Formats a traceId to 64Bit or 128Bit Hex and add leading zeroes
