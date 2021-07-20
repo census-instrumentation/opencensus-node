@@ -49,6 +49,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/bson": "1.0.11",
     "@types/mocha": "7.0.2",
     "@types/mongodb": "3.6.20",
     "@types/node": "10.17.60",

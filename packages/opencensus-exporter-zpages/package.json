@@ -53,6 +53,8 @@
     "@opencensus/nodejs": "^0.0.22",
     "@types/ejs": "3.0.7",
     "@types/express": "4.17.13",
+    "@types/express-serve-static-core": "4.17.24",
+    "@types/serve-static": "1.13.10",
     "@types/extend": "3.0.1",
     "@types/mocha": "7.0.2",
     "@types/node": "10.17.60",

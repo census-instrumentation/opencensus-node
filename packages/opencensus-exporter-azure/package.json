@@ -14,7 +14,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@opencensus/core": "0.0.19",
-    "@types/continuation-local-storage": "3.2.3",
+    "@types/continuation-local-storage": "3.2.1",
     "applicationinsights": "^1.7.2",
     "continuation-local-storage": "^3.2.1"
   },
