@@ -98,9 +98,7 @@ describe('Recorder', () => {
   for (const measure of measures) {
     describe(`for count aggregation data of ${measure.type} values`, () => {
       for (const testCase of testCases) {
-        it(`should record measurements ${
-          testCase.description
-        } correctly`, () => {
+        it(`should record measurements ${testCase.description} correctly`, () => {
           const countData: CountData = {
             type: AggregationType.COUNT,
             tagValues,
@@ -122,13 +120,9 @@ describe('Recorder', () => {
       }
     });
 
-    describe(`for last value aggregation data of ${
-      measure.type
-    } values`, () => {
+    describe(`for last value aggregation data of ${measure.type} values`, () => {
       for (const testCase of testCases) {
-        it(`should record measurements ${
-          testCase.description
-        } correctly`, () => {
+        it(`should record measurements ${testCase.description} correctly`, () => {
           const lastValueData: LastValueData = {
             type: AggregationType.LAST_VALUE,
             tagValues,
@@ -152,9 +146,7 @@ describe('Recorder', () => {
 
     describe(`for sum aggregation data of ${measure.type} values`, () => {
       for (const testCase of testCases) {
-        it(`should record measurements ${
-          testCase.description
-        } correctly`, () => {
+        it(`should record measurements ${testCase.description} correctly`, () => {
           const sumData: SumData = {
             type: AggregationType.SUM,
             tagValues,
@@ -177,13 +169,9 @@ describe('Recorder', () => {
       }
     });
 
-    describe(`for distribution aggregation data of ${
-      measure.type
-    } values`, () => {
+    describe(`for distribution aggregation data of ${measure.type} values`, () => {
       for (const testCase of testCases) {
-        it(`should record measurements ${
-          testCase.description
-        } correctly`, () => {
+        it(`should record measurements ${testCase.description} correctly`, () => {
           const distributionData: DistributionData = {
             type: AggregationType.DISTRIBUTION,
             tagValues,

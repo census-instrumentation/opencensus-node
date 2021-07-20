@@ -251,9 +251,7 @@ export class PrometheusStatsExporter implements StatsEventListener {
     labels.forEach(label => {
       if (label === PrometheusStatsExporter.RESERVED_HISTOGRAM_LABEL) {
         throw new Error(
-          `${
-            PrometheusStatsExporter.RESERVED_HISTOGRAM_LABEL
-          } is a reserved label keyword`
+          `${PrometheusStatsExporter.RESERVED_HISTOGRAM_LABEL} is a reserved label keyword`
         );
       }
     });

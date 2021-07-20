@@ -67,9 +67,7 @@ export class ConsoleExporter implements Exporter {
    */
   publish(spans: modelTypes.Span[]) {
     spans.map(span => {
-      const ROOT_STR = `RootSpan: {traceId: ${span.traceId}, spanId: ${
-        span.id
-      }, name: ${span.name} }`;
+      const ROOT_STR = `RootSpan: {traceId: ${span.traceId}, spanId: ${span.id}, name: ${span.name} }`;
       const SPANS_STR: string[] = span.spans.map(child =>
         [`\t\t{spanId: ${child.id}, name: ${child.name}}`].join('\n')
       );

@@ -189,9 +189,7 @@ describe('BaseView', () => {
     tags.set(tagKey2, tagValue2);
 
     for (const aggregationTestCase of aggregationTestCases) {
-      it(`should record measurements on a View with ${
-        aggregationTestCase.description
-      } Aggregation Data type`, () => {
+      it(`should record measurements on a View with ${aggregationTestCase.description} Aggregation Data type`, () => {
         const view = new BaseView(
           'test/view/name',
           measure,
@@ -308,9 +306,7 @@ describe('BaseView', () => {
 
       const { descriptor, timeseries } = view.getMetric(mockStartTime);
 
-      describe(`Aggregation type: ${
-        aggregationTestCase.aggregationType
-      }`, () => {
+      describe(`Aggregation type: ${aggregationTestCase.aggregationType}`, () => {
         it('should have descriptor', () => {
           assert.ok(descriptor);
           assert.deepStrictEqual(descriptor, {

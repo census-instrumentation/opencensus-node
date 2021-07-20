@@ -422,9 +422,11 @@ export class HttpPlugin extends BasePlugin {
             name: traceOptions.name,
             kind: traceOptions.kind,
           });
-          return plugin.getMakeRequestTraceFunction(request, options, plugin)(
-            span
-          );
+          return plugin.getMakeRequestTraceFunction(
+            request,
+            options,
+            plugin
+          )(span);
         }
       };
     };

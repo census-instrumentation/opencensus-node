@@ -59,27 +59,16 @@ const compose = (...fns: ValidationFn[]): ValidationFn => {
  * Determines if the given traceId is valid based on section 2.2.2.1 of the
  * Trace Context spec.
  */
-export const isValidTraceId = compose(
-  isHex,
-  isNotAllZeros,
-  isLength(32)
-);
+export const isValidTraceId = compose(isHex, isNotAllZeros, isLength(32));
 
 /**
  * Determines if the given spanId is valid based on section 2.2.2.2 of the Trace
  * Context spec.
  */
-export const isValidSpanId = compose(
-  isHex,
-  isNotAllZeros,
-  isLength(16)
-);
+export const isValidSpanId = compose(isHex, isNotAllZeros, isLength(16));
 
 /**
  * Determines if the given option is valid based on section 2.2.3 of the Trace
  * Context spec.
  */
-export const isValidOption = compose(
-  isHex,
-  isLength(2)
-);
+export const isValidOption = compose(isHex, isLength(2));
