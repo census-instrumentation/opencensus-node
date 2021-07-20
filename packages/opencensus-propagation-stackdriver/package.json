@@ -26,15 +26,15 @@
   "author": "OpenCensus Authors",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/mocha": "^7.0.0",
-    "@types/node": "^10.17.60",
-    "@types/uuid": "^7.0.0",
-    "codecov": "^3.6.2",
-    "gts": "^1.0.0",
-    "mocha": "^7.0.0",
-    "nyc": "^14.0.0",
-    "ts-mocha": "^7.0.0",
-    "typescript": "^3.9.10"
+    "@types/mocha": "7.0.1",
+    "@types/node": "10.17.60",
+    "@types/uuid": "7.0.2",
+    "codecov": "3.6.5",
+    "gts": "1.0.0",
+    "mocha": "7.1.0",
+    "nyc": "14.0.0",
+    "ts-mocha": "7.0.0",
+    "typescript": "3.9.10"
   },
   "dependencies": {
     "@opencensus/core": "^0.0.22",
