@@ -4,5 +4,8 @@
     "group:allNonMajor",
     "docker:disable"
   ],
-  "dependencyDashboard": true
+  "dependencyDashboard": true,
+  "lockFileMaintenance": {
+    "enabled": true
+  }
 }
