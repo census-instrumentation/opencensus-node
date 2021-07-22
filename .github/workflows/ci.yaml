@@ -47,7 +47,9 @@ jobs:
 
       # compile runs in prepare
       - name: Install modules and dependencies, compile
-        run: npm install
+        run: |
+          npm install --ignore-scripts
+          npm run bootstrap -- ${{ matrix.lerna-extra-args }}
 
       # lint runs in posttest
       - name: Run unit tests and lint
