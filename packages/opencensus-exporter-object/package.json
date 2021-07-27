@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/exporter-object",
-  "version": "0.0.22",
+  "version": "0.1.0",
   "description": "OpenCensus Object Exporter allows the user to collect and access traces with OpenCensus Node.js.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -61,6 +61,6 @@
     "typescript": "3.9.10"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.22"
+    "@opencensus/core": "^0.1.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/exporter-stackdriver",
-  "version": "0.0.22",
+  "version": "0.1.0",
   "description": "OpenCensus Exporter Stackdriver allows user to send collected traces to Stackdriver",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -65,8 +65,8 @@
     "typescript": "3.9.10"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.22",
-    "@opencensus/resource-util": "^0.0.22",
+    "@opencensus/core": "^0.1.0",
+    "@opencensus/resource-util": "^0.1.0",
     "google-auth-library": "^6.1.6",
     "googleapis": "67.0.0"
   }

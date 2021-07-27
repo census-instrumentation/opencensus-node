@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/propagation-jaeger",
-  "version": "0.0.22",
+  "version": "0.1.0",
   "description": "Opencensus propagation package for jaeger's format.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -61,7 +61,7 @@
     "typescript": "3.9.10"
   },
   "dependencies": {
-    "@opencensus/core": "^0.0.22",
+    "@opencensus/core": "^0.1.0",
     "uuid": "^8.0.0"
   }
 }
