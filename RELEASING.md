@@ -16,7 +16,7 @@ Create a new branch called `x.y.z-proposal` from the current commit.
 
 Use below command to initialize all package directories.
 
-```
+```bash
 npm install
 ```
 
@@ -49,20 +49,31 @@ Merge the PR, and pull the changes locally (using the commands in the first step
 
 ## Publish all packages
 
-Go into each directory and use `npm publish` to publish the package. You can use the following
-script to automate this.
+Publish the packages with Wombot (see internal documentation). First, get a
+token:
 
 ```bash
-#!/bin/bash
-
-for dir in $(ls packages); do
- pushd packages/$dir
- npm publish
- popd
-done
+# Run and follow instructions to get a 24h token
+npm login --registry https://wombat-dressing-room.appspot.com
 ```
 
-Check your e-mail and make sure the number of “you’ve published this module” emails matches the number you expect.
+Go into each directory and use `npm publish` to publish the package. You can use the following
+script to automate this:
+
+```bash
+lerna exec --no-bail --no-private -- npm publish --registry https://wombat-dressing-room.appspot.com
+```
+
+Verify the new latest version on npm is the released version (this may take a
+few minutes to update) with:
+
+```bash
+lerna exec --no-private -- 'echo -e $(npm show $LERNA_PACKAGE_NAME dist-tags.latest --json) $LERNA_PACKAGE_NAME'
+```
+
+If any packages are not showing the correct version, try publishing them
+individually by cd'ing into the package directory and running `npm publish
+--registry https://wombat-dressing-room.appspot.com`.
 
 ## Publish the GitHub Release
 
