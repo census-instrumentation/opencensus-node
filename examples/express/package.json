@@ -21,9 +21,9 @@
     "fix": "semistandard --fix"
   },
   "dependencies": {
-    "@opencensus/exporter-zipkin": "^0.0.20",
-    "@opencensus/nodejs": "^0.0.20",
-    "@opencensus/propagation-b3": "^0.0.20",
+    "@opencensus/exporter-zipkin": "^0.1.0",
+    "@opencensus/nodejs": "^0.1.0",
+    "@opencensus/propagation-b3": "^0.1.0",
     "cookie-parser": "^1.4.4",
     "express": "^4.17.0",
     "http": "*",
