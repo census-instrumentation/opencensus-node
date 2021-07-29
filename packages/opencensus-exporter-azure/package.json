@@ -4,6 +4,7 @@
   "description": "OpenCensus Azure Exporter allows the user to send stats and traces collected with OpenCensus Node.js to Azure Monitor.",
   "type": "module",
   "main": "index.ts",
+  "repository": "census-instrumentation/opencensus-node",
   "scripts": {
     "test": "nyc mocha -r ts-node/register test/**/*.ts",
     "compile": "tsc -p .",

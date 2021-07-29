@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "zipkin.js",
+  "repository": "census-instrumentation/opencensus-node",
   "dependencies": {
     "@opencensus/exporter-instana": "^0.1.0",
     "@opencensus/exporter-stackdriver": "^0.1.0",
