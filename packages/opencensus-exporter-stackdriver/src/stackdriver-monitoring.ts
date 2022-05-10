@@ -129,7 +129,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       }
     }
 
-    this.createTimeSeries(metricsList);
+    await this.createTimeSeries(metricsList);
   }
 
   /**
