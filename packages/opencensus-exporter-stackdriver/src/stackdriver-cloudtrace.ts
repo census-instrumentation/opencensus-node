@@ -22,7 +22,7 @@ import {
 } from '@opencensus/core';
 import { logger, Logger } from '@opencensus/core';
 import { auth as globalAuth, GoogleAuth, JWT } from 'google-auth-library';
-import { google } from 'googleapis';
+import { google, cloudtrace_v2 } from 'googleapis';
 import { getDefaultResource } from './common-utils';
 import {
   createAttributes,
@@ -39,7 +39,6 @@ import {
 } from './types';
 
 google.options({ headers: { 'x-opencensus-outgoing-request': 0x1 } });
-const cloudTrace = google.cloudtrace('v2');
 let auth = globalAuth;
 
 /** Format and sends span information to Stackdriver */
@@ -49,6 +48,7 @@ export class StackdriverTraceExporter implements Exporter {
   logger: Logger;
   failBuffer: SpanContext[] = [];
   private RESOURCE_LABELS: Promise<Record<string, AttributeValue>>;
+  private _cloudTrace: cloudtrace_v2.Cloudtrace;
 
   constructor(options: StackdriverExporterOptions) {
     this.projectId = options.projectId;
@@ -63,6 +63,11 @@ export class StackdriverTraceExporter implements Exporter {
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       });
     }
+    this._cloudTrace = google.cloudtrace({
+      version: 'v2',
+      rootUrl:
+        'https://' + (options.apiEndpoint || 'cloudtrace.googleapis.com'),
+    });
   }
 
   /**
@@ -165,17 +170,20 @@ export class StackdriverTraceExporter implements Exporter {
       // data to backend :
       // https://cloud.google.com/trace/docs/reference/v2/rpc/google.devtools.
       // cloudtrace.v2#google.devtools.cloudtrace.v2.TraceService
-      cloudTrace.projects.traces.batchWrite(spans, (err: Error | null) => {
-        if (err) {
-          err.message = `batchWriteSpans error: ${err.message}`;
-          this.logger.error(err.message);
-          reject(err);
-        } else {
-          const successMsg = 'batchWriteSpans successfully';
-          this.logger.debug(successMsg);
-          resolve(successMsg);
+      this._cloudTrace.projects.traces.batchWrite(
+        spans,
+        (err: Error | null) => {
+          if (err) {
+            err.message = `batchWriteSpans error: ${err.message}`;
+            this.logger.error(err.message);
+            reject(err);
+          } else {
+            const successMsg = 'batchWriteSpans successfully';
+            this.logger.debug(successMsg);
+            resolve(successMsg);
+          }
         }
-      });
+      );
     });
   }
 

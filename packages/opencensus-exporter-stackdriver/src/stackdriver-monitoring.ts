@@ -29,7 +29,7 @@ import {
   View,
 } from '@opencensus/core';
 import { auth as globalAuth, GoogleAuth, JWT } from 'google-auth-library';
-import { google } from 'googleapis';
+import { google, monitoring_v3 } from 'googleapis';
 import { getDefaultResource } from './common-utils';
 import {
   createMetricDescriptorData,
@@ -50,7 +50,6 @@ const OC_HEADER = {
 };
 
 google.options({ headers: OC_HEADER });
-const monitoring = google.monitoring('v3');
 let auth = globalAuth;
 
 /** Format and sends Stats to Stackdriver */
@@ -71,6 +70,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
   > = new Map();
   private DEFAULT_RESOURCE: Promise<MonitoredResource>;
   logger: Logger;
+  private _monitoring: monitoring_v3.Monitoring;
 
   constructor(options: StackdriverExporterOptions) {
     this.period =
@@ -93,6 +93,11 @@ export class StackdriverStatsExporter implements StatsEventListener {
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       });
     }
+    this._monitoring = google.monitoring({
+      version: 'v3',
+      rootUrl:
+        'https://' + (options.apiEndpoint || 'monitoring.googleapis.com'),
+    });
   }
 
   /**
@@ -195,7 +200,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        monitoring.projects.timeSeries.create(
+        this._monitoring.projects.timeSeries.create(
           request,
           { headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT] },
           (err: Error | null) => {
@@ -224,7 +229,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        monitoring.projects.metricDescriptors.create(
+        this._monitoring.projects.metricDescriptors.create(
           request,
           { headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT] },
           (err: Error | null) => {
