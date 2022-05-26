@@ -70,7 +70,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
   > = new Map();
   private DEFAULT_RESOURCE: Promise<MonitoredResource>;
   logger: Logger;
-  private _monitoring: monitoring_v3.Monitoring;
+  private monitoring: monitoring_v3.Monitoring;
 
   constructor(options: StackdriverExporterOptions) {
     this.period =
@@ -93,7 +93,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       });
     }
-    this._monitoring = google.monitoring({
+    this.monitoring = google.monitoring({
       version: 'v3',
       rootUrl:
         'https://' + (options.apiEndpoint || 'monitoring.googleapis.com'),
@@ -200,7 +200,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        this._monitoring.projects.timeSeries.create(
+        this.monitoring.projects.timeSeries.create(
           request,
           { headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT] },
           (err: Error | null) => {
@@ -229,7 +229,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       };
 
       return new Promise((resolve, reject) => {
-        this._monitoring.projects.metricDescriptors.create(
+        this.monitoring.projects.metricDescriptors.create(
           request,
           { headers: OC_HEADER, userAgentDirectives: [OC_USER_AGENT] },
           (err: Error | null) => {
