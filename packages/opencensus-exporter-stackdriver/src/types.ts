@@ -156,6 +156,11 @@ export interface StackdriverExporterOptions extends ExporterConfig {
    * instead of your application default credentials. Optional
    */
   credentials?: JWTInput;
+  /**
+   * The endpoint of the service. Defaults to cloudtrace.googleapis.com
+   * for trace, and monitoring.googleapis.com for monitoring.
+   */
+  apiEndpoint?: string;
 
   /**
    * Is called whenever the exporter fails to upload metrics to stackdriver.
