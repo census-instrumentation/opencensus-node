@@ -67,6 +67,6 @@
   "dependencies": {
     "@opencensus/core": "^0.1.0",
     "express": "^4.16.3",
-    "prom-client": "^11.1.1"
+    "prom-client": "^14.0.0"
   }
 }
