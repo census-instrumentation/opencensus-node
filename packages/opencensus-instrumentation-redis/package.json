@@ -39,7 +39,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/mocha": "8.2.3",
+    "@types/mocha": "9.1.1",
     "@types/node": "10.17.60",
     "@types/redis": "2.8.31",
     "@types/semver": "7.3.7",
