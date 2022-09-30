@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@types/mocha": "8.2.3",
-    "@types/node": "10.17.60",
+    "@types/node": "16.11.62",
     "@types/uuid": "7.0.5",
     "codecov": "3.8.3",
     "gts": "1.1.2",

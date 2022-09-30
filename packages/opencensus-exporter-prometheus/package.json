@@ -53,7 +53,7 @@
     "@types/express": "4.17.13",
     "@types/express-serve-static-core": "4.17.24",
     "@types/mocha": "8.2.3",
-    "@types/node": "10.17.60",
+    "@types/node": "16.11.62",
     "@types/serve-static": "1.13.10",
     "axios": "0.21.2",
     "codecov": "3.8.3",
