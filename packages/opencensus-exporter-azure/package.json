@@ -19,6 +19,9 @@
     "applicationinsights": "^1.7.2",
     "continuation-local-storage": "^3.2.1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/chai": "4.2.21",
     "@types/mocha": "8.2.3",
