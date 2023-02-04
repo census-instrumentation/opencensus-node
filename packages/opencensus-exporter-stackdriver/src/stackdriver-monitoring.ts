@@ -108,9 +108,7 @@ export class StackdriverStatsExporter implements StatsEventListener {
       try {
         await this.export();
       } catch (err) {
-        if (typeof this.onMetricUploadError === 'function') {
-          this.onMetricUploadError(err);
-        }
+        this.reportMetricUploadError(err);
       }
     }, this.period);
   }
@@ -134,7 +132,15 @@ export class StackdriverStatsExporter implements StatsEventListener {
       }
     }
 
-    this.createTimeSeries(metricsList);
+    this.createTimeSeries(metricsList).catch(err => {
+      this.reportMetricUploadError(err);
+    });
+  }
+
+  private reportMetricUploadError(err) {
+    if (typeof this.onMetricUploadError === 'function') {
+      this.onMetricUploadError(err);
+    }
   }
 
   /**
