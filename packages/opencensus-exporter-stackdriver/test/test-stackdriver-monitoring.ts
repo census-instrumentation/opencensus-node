@@ -66,12 +66,31 @@ describe('Stackdriver Stats Exporter', () => {
     const mockLogger = new MockLogger();
     let exporterOptions: StackdriverExporterOptions;
     let exporter: StackdriverStatsExporter;
+    const METRIC_NAME = 'metric-name';
+    const METRIC_DESCRIPTION = 'metric-description';
+    const UNIT = MeasureUnit.UNIT;
+    const METRIC_OPTIONS = {
+      description: METRIC_DESCRIPTION,
+      unit: UNIT,
+      labelKeys: [{ key: 'code', description: 'desc' }],
+    };
+
+    const metricRegistry = Metrics.getMetricRegistry();
+
+    const gauge = metricRegistry.addInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
+
+    // tslint:disable-next-line:no-any
+    let metricUploadErrors: any[];
 
     before(() => {
+      metricUploadErrors = [];
       exporterOptions = {
         period: 0,
         projectId: PROJECT_ID,
         logger: mockLogger,
+        onMetricUploadError: err => {
+          metricUploadErrors.push(err);
+        },
       };
       nocks.noDetectResource();
       exporter = new StackdriverStatsExporter(exporterOptions);
@@ -90,18 +109,6 @@ describe('Stackdriver Stats Exporter', () => {
     });
 
     it('should export the data', async () => {
-      const METRIC_NAME = 'metric-name';
-      const METRIC_DESCRIPTION = 'metric-description';
-      const UNIT = MeasureUnit.UNIT;
-      const METRIC_OPTIONS = {
-        description: METRIC_DESCRIPTION,
-        unit: UNIT,
-        labelKeys: [{ key: 'code', description: 'desc' }],
-      };
-
-      const metricRegistry = Metrics.getMetricRegistry();
-
-      const gauge = metricRegistry.addInt64Gauge(METRIC_NAME, METRIC_OPTIONS);
       gauge.getDefaultTimeSeries().add(100);
 
       nocks.metricDescriptors(PROJECT_ID);
@@ -144,6 +151,21 @@ describe('Stackdriver Stats Exporter', () => {
         assert.strictEqual(timeSeries.valueType, ValueType.INT64);
         assert.ok(timeSeries.points.length > 0);
         assert.deepStrictEqual(timeSeries.points[0].value.int64Value, 100);
+      });
+    });
+
+    it('should export the data with an error', async () => {
+      gauge.getDefaultTimeSeries().add(100);
+
+      nocks.metricDescriptors(PROJECT_ID);
+      nocks.timeSeriesNock(PROJECT_ID).replyWithError('intentional failure');
+
+      await exporter.export();
+
+      await new Promise(resolve => setTimeout(resolve, DELAY)).then(() => {
+        assert.strictEqual(metricUploadErrors.length, 1);
+        const message = metricUploadErrors[0].message;
+        assert.ok(message.indexOf('intentional failure') >= 0, message);
       });
     });
   });

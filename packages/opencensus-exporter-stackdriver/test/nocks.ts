@@ -127,17 +127,24 @@ export function batchWrite<T extends {} = {}>(
   return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }
 
+export function timeSeriesNock<T extends {} = {}>(
+  project: string,
+  validator?: (body: T) => boolean
+) {
+  validator = validator || accept;
+  return nock('https://monitoring.googleapis.com').post(
+    '/v3/projects/' + project + '/timeSeries',
+    validator
+  );
+}
+
 export function timeSeries<T extends {} = {}>(
   project: string,
   validator?: (body: T) => boolean,
   reply?: () => string,
   withError?: boolean
 ) {
-  validator = validator || accept;
-  const interceptor = nock('https://monitoring.googleapis.com').post(
-    '/v3/projects/' + project + '/timeSeries',
-    validator
-  );
+  const interceptor = timeSeriesNock<T>(project, validator);
   return reply ? interceptor.reply(reply) : interceptor.reply(200);
 }
 
