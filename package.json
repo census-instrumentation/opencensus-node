@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "10.17.60",
-    "lerna": "3.22.1",
+    "lerna": "5.1.8",
     "typedoc": "0.20.37",
     "typescript": "3.9.10"
   }
