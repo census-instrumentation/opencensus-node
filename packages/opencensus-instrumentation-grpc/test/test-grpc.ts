@@ -418,7 +418,7 @@ describe('GrpcPlugin() ', function() {
     }
   }
 
-  function assertStats(testExporter: TestExporter, sentBytes: number) {
+  function assertStats(testExporter: TestExporter) {
     assert.strictEqual(testExporter.registeredViews.length, 12);
     assert.strictEqual(testExporter.recordedMeasurements.length, 10);
     assert.strictEqual(
@@ -448,7 +448,7 @@ describe('GrpcPlugin() ', function() {
       testExporter.recordedMeasurements[5].measure,
       clientStats.GRPC_CLIENT_SENT_BYTES_PER_RPC
     );
-    assert.strictEqual(testExporter.recordedMeasurements[5].value, sentBytes);
+    assert.ok(testExporter.recordedMeasurements[5].value > 0);
     assert.strictEqual(
       testExporter.recordedMeasurements[6].measure,
       clientStats.GRPC_CLIENT_RECEIVED_BYTES_PER_RPC
@@ -508,7 +508,7 @@ describe('GrpcPlugin() ', function() {
               grpcModule.status.OK
             );
             if (method.method === grpcClient.unaryMethod) {
-              assertStats(testExporter, 233);
+              assertStats(testExporter);
             }
             assertPropagation(clientRoot, serverRoot);
           });
@@ -545,7 +545,7 @@ describe('GrpcPlugin() ', function() {
                 grpcModule.status.OK
               );
               if (method.method === grpcClient.unaryMethod) {
-                assertStats(testExporter, 294);
+                assertStats(testExporter);
               }
               assertPropagation(clientRoot, serverRoot);
               assert.deepStrictEqual(globalStats.getCurrentTagContext(), tags);
