@@ -50,7 +50,7 @@
     "mocha": "7.2.0",
     "nyc": "15.1.0",
     "shimmer": "1.2.1",
-    "ts-node": "8.10.2",
+    "ts-node": "10.9.1",
     "typescript": "3.9.10"
   },
   "dependencies": {
