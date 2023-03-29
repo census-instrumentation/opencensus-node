@@ -25,7 +25,7 @@ jobs:
       OPENCENSUS_REDIS_TESTS: 1
     services:
       mongo_service:
-        image: mongo
+        image: mongo:5
         ports: ["27017:27017"]
       redis_service:
         image: redis
