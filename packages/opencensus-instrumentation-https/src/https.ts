@@ -15,6 +15,7 @@
  */
 
 import { Func } from '@opencensus/core';
+import 'http';
 import { HttpPlugin } from '@opencensus/instrumentation-http';
 import * as http from 'http';
 import * as https from 'https';

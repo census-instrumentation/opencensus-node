@@ -23,6 +23,7 @@ import {
   SpanKind,
   TraceOptions,
 } from '@opencensus/core';
+import 'http';
 import { HttpPlugin } from '@opencensus/instrumentation-http';
 import * as http2 from 'http2';
 import * as shimmer from 'shimmer';
