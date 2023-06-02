@@ -32,12 +32,14 @@ import {
   createTimeSeriesList,
   OPENCENSUS_TASK_VALUE_DEFAULT,
   TEST_ONLY,
+  partitionList,
 } from '../src/stackdriver-monitoring-utils';
 import {
   Distribution,
   MetricDescriptor,
   MetricKind,
   ValueType,
+  TimeSeries,
 } from '../src/types';
 import * as nocks from './nocks';
 
@@ -627,6 +629,36 @@ describe('Stackdriver Stats Exporter Utils', () => {
         project_id: 'my-project-id',
         aws_account: 'id1',
       });
+    });
+  });
+
+  describe('partitionList()', () => {
+    const timeSeriesList: TimeSeries[] = [];
+    for (let i = 0; i < 205; i++) {
+      timeSeriesList.push({
+        metric: {
+          type: 'custom.googleapis.com/opencensus/metric-name-' + i,
+          labels: {},
+        },
+        resource: { type: 'global', labels: {} },
+        metricKind: MetricKind.GAUGE,
+        valueType: ValueType.INT64,
+        points: [
+          {
+            interval: { endTime: '2019-01-09T01:52:55.00000001Z' },
+            value: {
+              int64Value: i,
+            },
+          },
+        ],
+      });
+    }
+
+    it('should return a partition lists', () => {
+      const list = partitionList(timeSeriesList, 200);
+      assert.strictEqual(list.length, 2);
+      assert.strictEqual(list[0].length, 200);
+      assert.strictEqual(list[1].length, 5);
     });
   });
 });

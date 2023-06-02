@@ -34,6 +34,7 @@ import { getDefaultResource } from './common-utils';
 import {
   createMetricDescriptorData,
   createTimeSeriesList,
+  partitionList,
 } from './stackdriver-monitoring-utils';
 import {
   MonitoredResource,
@@ -48,6 +49,10 @@ const OC_USER_AGENT = {
 const OC_HEADER = {
   'x-opencensus-outgoing-request': 0x1,
 };
+
+// Stackdriver Monitoring v3 only accepts up to 200 TimeSeries per
+// CreateTimeSeries call.
+const MAX_BATCH_EXPORT_SIZE = 200;
 
 google.options({ headers: OC_HEADER });
 let auth = globalAuth;
@@ -192,6 +197,15 @@ export class StackdriverStatsExporter implements StatsEventListener {
       return Promise.resolve();
     }
 
+    for (const batchedTimeSeries of partitionList(
+      timeSeries,
+      MAX_BATCH_EXPORT_SIZE
+    )) {
+      this._createTimeSeries(batchedTimeSeries);
+    }
+  }
+
+  private async _createTimeSeries(timeSeries: TimeSeries[]) {
     return this.authorize().then(authClient => {
       const request = {
         name: `projects/${this.projectId}`,
