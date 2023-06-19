@@ -16,7 +16,7 @@
   "dependencies": {
     "@opencensus/core": "^0.1.0",
     "@types/continuation-local-storage": "3.2.1",
-    "applicationinsights": "^1.7.2",
+    "applicationinsights": "^2.0.0",
     "continuation-local-storage": "^3.2.1"
   },
   "devDependencies": {
