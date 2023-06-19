@@ -41,14 +41,14 @@
   "devDependencies": {
     "@types/mocha": "8.2.3",
     "@types/node": "10.17.60",
-    "@types/redis": "2.8.31",
+    "@types/redis": "4.0.10",
     "@types/semver": "7.3.7",
     "@types/shimmer": "1.0.2",
     "codecov": "3.8.3",
     "gts": "1.1.2",
     "mocha": "7.2.0",
     "nyc": "15.1.0",
-    "redis": "3.1.2",
+    "redis": "4.6.7",
     "rimraf": "3.0.2",
     "ts-node": "8.10.2",
     "typescript": "3.9.10"
