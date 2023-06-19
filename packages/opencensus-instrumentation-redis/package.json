@@ -50,7 +50,7 @@
     "nyc": "15.1.0",
     "redis": "3.1.2",
     "rimraf": "3.0.2",
-    "ts-node": "8.10.2",
+    "ts-node": "10.9.1",
     "typescript": "3.9.10"
   },
   "dependencies": {
