@@ -51,14 +51,14 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/ioredis": "4.26.6",
+    "@types/ioredis": "4.28.10",
     "@types/mocha": "8.2.3",
     "@types/node": "10.17.60",
-    "@types/semver": "7.3.7",
+    "@types/semver": "7.5.0",
     "@types/shimmer": "1.0.2",
     "codecov": "3.8.3",
     "gts": "1.1.2",
-    "ioredis": "4.27.6",
+    "ioredis": "4.28.5",
     "mocha": "7.2.0",
     "nyc": "15.1.0",
     "rimraf": "3.0.2",

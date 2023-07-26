@@ -64,6 +64,6 @@
   },
   "dependencies": {
     "@opencensus/core": "^0.1.0",
-    "jaeger-client": "~3.18.0"
+    "jaeger-client": "~3.19.0"
   }
 }

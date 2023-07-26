@@ -52,11 +52,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/continuation-local-storage": "3.2.1",
+    "@types/continuation-local-storage": "3.2.4",
     "@types/mocha": "8.2.3",
     "@types/node": "10.17.60",
     "@types/once": "1.4.0",
-    "@types/semver": "7.3.7",
+    "@types/semver": "7.5.0",
     "@types/shimmer": "1.0.2",
     "@types/uuid": "7.0.5",
     "codecov": "3.8.3",
