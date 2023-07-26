@@ -41,8 +41,8 @@
   "devDependencies": {
     "@types/mocha": "8.2.3",
     "@types/node": "10.17.60",
-    "@types/redis": "2.8.31",
-    "@types/semver": "7.3.7",
+    "@types/redis": "2.8.32",
+    "@types/semver": "7.5.0",
     "@types/shimmer": "1.0.2",
     "codecov": "3.8.3",
     "gts": "1.1.2",

@@ -53,17 +53,17 @@
     "@types/node": "10.17.60",
     "@types/uuid": "7.0.5",
     "codecov": "3.8.3",
-    "google-proto-files": "2.4.0",
+    "google-proto-files": "2.5.2",
     "gts": "1.1.2",
     "mocha": "7.2.0",
-    "nodemon": "2.0.12",
+    "nodemon": "2.0.22",
     "nyc": "15.1.0",
     "rimraf": "3.0.2",
     "ts-node": "8.10.2",
     "typescript": "3.9.10"
   },
   "dependencies": {
-    "@grpc/proto-loader": "^0.6.0",
+    "@grpc/proto-loader": "^0.7.0",
     "@opencensus/core": "^0.1.0",
     "@opencensus/nodejs": "^0.1.0",
     "grpc": "^1.24.10"
